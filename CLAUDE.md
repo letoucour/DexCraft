@@ -66,7 +66,8 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 - Sons synthétisés dans le navigateur, aucun fichier audio. Bouton de coupure dans l'en-tête.
 - Classement : trié par cartes différentes, Pokémon et mégas confondus. Barre segmentée par rareté, sur 1 118 cartes. Mythiques et transcendantes affichées en pastilles ✦ et ❖, hors classement. Le détail par rareté porte une version (`BYR_V`) : l'incrémenter à chaque changement d'ordre des raretés.
 - Favoris : protégés de la défausse, retirés automatiquement si la carte quitte la collection.
-- Mode développeur : bloc en bas du profil, visible pour les adresses de `ADMIN_EMAILS`, actif seulement si l'interrupteur est allumé. Outils : test des animations mythique et transcendante, crédits et boosters à un joueur, badge Alpha testeur, changement de pseudo, réinitialisation de la collection ou du profil, vidage du marché avec restitution des cartes et crédits.
+- Mode développeur : bloc en bas du profil, visible pour les adresses de `ADMIN_EMAILS`, actif seulement si l'interrupteur est allumé. Outils : test des animations mythique et transcendante, crédits et boosters à un joueur, badge Alpha testeur, changement de pseudo, réinitialisation de la collection ou du profil, vidage du marché avec restitution des cartes et crédits, et remise à zéro générale (`resetEveryone`, confirmation en tapant RESET) : tous les joueurs repartent comme un compte neuf, en gardant pseudo, badge Alpha testeur et mode développeur ; le marché est vidé.
+- Titres : affichés à côté du nom (profil, classement, annonces) par `badgeTag`, et listés dans la section « Titres » du profil. « ♛ Maître » est automatique : le joueur possède toutes les cartes de `DEX_ORDER` (1 025 Pokémon et 93 mégas, hors mythiques et transcendantes). Il disparaît si une carte quitte la collection. « ✦ Alpha testeur » est attribué à la main (`alpha` dans le profil).
 
 ## 5. Contraintes permanentes
 

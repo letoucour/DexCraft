@@ -496,6 +496,11 @@ h3{font-size:1.1rem}
 .badge-alpha{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 10px;border-radius:999px;font-weight:700;font-size:.78rem;color:#2b1f00;
   background:linear-gradient(100deg,#ffe27a,#ffcf3f 45%,#ffb000);box-shadow:0 1px 4px rgba(0,0,0,.25);vertical-align:middle;white-space:nowrap}
 .badge-alpha.sm{font-size:.68rem;padding:1px 8px;margin-left:6px}
+.badge-alpha.master{color:#ffcf3f;background:linear-gradient(100deg,#2a1d52,#4b2d86 50%,#2a1d52);box-shadow:0 0 0 1px #ffcf3f,0 1px 6px rgba(120,80,220,.45)}
+.titles{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.title-row .badge-alpha{margin-left:0}
+.title-row.locked .badge-alpha{filter:grayscale(1);opacity:.5}
 .dev-panel{border-color:var(--danger)}
 .dev-chip{background:var(--danger);color:#fff;border-color:var(--danger);font-size:.8rem}
 .shop-cta{margin-top:14px;background:transparent;border:1px solid var(--line);color:var(--ink-soft)}
@@ -1138,7 +1143,12 @@ function avatarHTML(av,size=36){
   return `<span class="ava" style="--s:${size}px;--c1:${c1};--c2:${c2}" title="${esc(n)}">${src?`<img src="${esc(src)}" alt="" onerror="this.remove()">`:""}<b aria-hidden="true">${esc(n[0])}</b></span>`;
 }
 function alphaOf(id){const p=id===ME?S:PLAYERS[id];return !!(p&&p.alpha)}
-function badgeTag(id,small){return alphaOf(id)?`<span class="badge-alpha${small?" sm":""}" title="Alpha testeur">✦ Alpha testeur</span>`:""}
+/* Titre Maître : toutes les cartes du jeu, Pokémon et méga-évolutions, hors mythiques et transcendantes */
+const masterCount=coll=>DEX_ORDER.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
+function masterOf(id){return masterCount(collOf(id))===DEX_ORDER.length}
+const MASTER_TAG=sm=>`<span class="badge-alpha master${sm?" sm":""}" title="Possède toutes les cartes du jeu">♛ Maître</span>`;
+const ALPHA_TAG=sm=>`<span class="badge-alpha${sm?" sm":""}" title="Alpha testeur">✦ Alpha testeur</span>`;
+function badgeTag(id,small){return (masterOf(id)?MASTER_TAG(small):"")+(alphaOf(id)?ALPHA_TAG(small):"")}
 function avatarOf(id){const pl=id===ME?S:PLAYERS[id];return pl?pl.avatar:null}
 async function refreshProfiles(){
   if(!user)return;const ids=new Set(Object.keys(PLAYERS));for(const m of Object.values(MARKET)){[m.seller,m.bidder,m.owner,m.taker].forEach(x=>x&&ids.add(x))}
@@ -1463,6 +1473,14 @@ function vProfile(){
     </div>
   </section>
 
+  <section class="section panel">
+    <h3>Titres</h3>
+    <p class="muted" style="margin:4px 0 0">Vos titres s’affichent à côté de votre nom : profil, classement et annonces.</p>
+    <div class="titles">${(()=>{const n=masterCount(S.coll),all=DEX_ORDER.length,ok=n===all;
+      return `<div class="title-row${ok?"":" locked"}">${MASTER_TAG()}<span class="muted">${ok?"Obtenu : vous possédez toutes les cartes du jeu.":`Toutes les cartes du jeu, Pokémon et méga-évolutions : ${fmtN(n)} / ${fmtN(all)}.`}</span></div>`})()}
+      ${S.alpha?`<div class="title-row">${ALPHA_TAG()}<span class="muted">Attribué par le créateur du jeu.</span></div>`:""}</div>
+  </section>
+
   <section class="section">
     <h2>Image de profil</h2>
     <p class="muted">Choisissez parmi les Pokémon de votre collection. Si la carte quitte votre collection (vente, échange, défausse ou évolution), l’image de profil est retirée.</p>
@@ -1495,7 +1513,10 @@ function vProfile(){
       <label class="field" style="flex:1;min-width:200px">Nouveau pseudo<input id="gr-pseudo" data-keep="gr-pseudo" maxlength="20" placeholder="Laisser vide pour effacer"></label>
       <button class="btn" data-act="set-pseudo">Changer le pseudo</button></div>
     <p class="muted" style="margin:6px 0 0;font-size:.85rem">Le badge et le pseudo s’appliquent au joueur choisi ci-dessus. Il apparaît sur son profil, au classement et sur ses annonces.</p>
-    <p class="muted" style="margin:6px 0 0;font-size:.85rem">Les valeurs négatives retirent des crédits ou des boosters. Le total ne descend jamais sous zéro.</p>`
+    <p class="muted" style="margin:6px 0 0;font-size:.85rem">Les valeurs négatives retirent des crédits ou des boosters. Le total ne descend jamais sous zéro.</p>
+    <h3 style="margin-top:18px">Remise à zéro générale</h3>
+    <p class="muted" style="margin:4px 0 10px;font-size:.85rem">Tous les joueurs repartent comme un compte neuf : aucune carte, ${fmtN(START_CREDITS)} crédits, ${MAXP} boosters, offres uniques de la boutique de nouveau disponibles. Le marché est vidé. Pseudos et badges Alpha testeur sont conservés.</p>
+    <div class="actions"><button class="btn danger" data-act="reset-all">Réinitialiser toutes les collections</button></div>`
     :`<p class="muted" style="margin:10px 0 0">Disponible seulement dans la version publiée, où les autres joueurs existent.</p>`}
     <p class="muted" style="margin:8px 0 0;font-size:.85rem">La boutique est gratuite pour vous. « Tester la carte mythique » joue l’animation sans ajouter de carte. « Réinitialiser ma collection » efface cartes, crédits, boosters, favoris, achats uniques et annonces en cours, en gardant votre pseudo. « Reset profil » efface tout, pseudo et image de profil compris.</p>`
     :`<p class="muted" style="margin:10px 0 0;font-size:.85rem">Activez le mode pour afficher les outils de test et rendre la boutique gratuite.</p>`}
@@ -1729,6 +1750,22 @@ function clearMarket(){
     for(const [mid_] of entries){try{await db.doc("market/"+mid_).delete()}catch(e){fails++;console.warn(e)}}
     MARKET={};renderAll();
     toast(`Marché vidé : ${cards} carte${cards>1?"s":""} rendue${cards>1?"s":""}${credits?`, ${fmtN(credits)} crédits remboursés`:""}${fails?`, ${fails} erreur${fails>1?"s":""}`:""}.`);
+  });
+}
+/* Remise à zéro générale : chaque joueur repart comme un compte neuf,
+   en gardant son pseudo, son badge Alpha testeur et son mode développeur. Le marché est vidé. */
+function resetEveryone(){
+  run(async()=>{
+    let players=0,fails=0;
+    for(const mid_ of Object.keys(MARKET)){try{await db.doc("market/"+mid_).delete()}catch(e){fails++;console.warn(e)}}
+    for(const uid of new Set([...Object.keys(PLAYERS),ME])){
+      try{
+        const ok=await mutatePlayer(uid,s=>{const keep={pseudo:s.pseudo,alpha:s.alpha,dev:s.dev};Object.keys(s).forEach(k=>delete s[k]);Object.assign(s,newState(),keep)});
+        if(ok)players++;
+      }catch(e){fails++;console.warn(e)}
+    }
+    MARKET={};reveal=null;hitsMode=false;discardSel=null;renderAll();
+    toast(`${players} joueur${players>1?"s":""} remis à zéro${fails?`, ${fails} erreur${fails>1?"s":""} : vérifiez que vous êtes dans la table admins`:""}.`);
   });
 }
 function setPseudo(uid,v){
@@ -2244,6 +2281,16 @@ document.addEventListener("click",e=>{
         <p>${n} annonce${n>1?"s":""} en cours ${n>1?"seront supprimées":"sera supprimée"}. Chaque carte mise en vente, proposée à l’échange ou engagée dans une proposition revient à son propriétaire, et les crédits bloqués dans les enchères sont remboursés.</p>
         <div class="actions"><button class="btn danger" data-act="clear-market-go" ${n?"":"disabled"}>Tout vider</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break}
     case"clear-market-go":closeDlg();clearMarket();break;
+    case"reset-all":{if(!devOn()||mode!=="online")break;
+      const n=new Set([...Object.keys(PLAYERS),ME]).size;
+      openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Réinitialiser toutes les collections ?</h2>
+        <p>Les ${n} joueurs, vous compris, perdent toutes leurs cartes et repartent comme un compte neuf : ${fmtN(START_CREDITS)} crédits, ${MAXP} boosters, offres uniques de la boutique de nouveau disponibles. Toutes les annonces du marché sont supprimées. Seuls les pseudos et les badges Alpha testeur sont conservés.</p>
+        <p><b>C’est définitif.</b> Tapez RESET pour confirmer.</p>
+        <label class="field">Confirmation<input id="reset-all-txt" autocomplete="off" placeholder="RESET"></label>
+        <div class="actions"><button class="btn danger" data-act="reset-all-go">Tout réinitialiser</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break}
+    case"reset-all-go":{if(!devOn()||mode!=="online")break;
+      if(($("#reset-all-txt").value||"").trim().toUpperCase()!=="RESET"){toast("Tapez RESET pour confirmer.");break}
+      closeDlg();resetEveryone();break}
     case"reset-once":if(devOn())run(async()=>{await mutateMe(s=>{s.bought={}});toast("Offres uniques réinitialisées pour votre compte.")});break;
     case"buy-packs":buyPacks(shopQty);break;
     case"qty":shopQty=+b.dataset.q;renderView();break;
