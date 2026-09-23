@@ -51,7 +51,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 - Pseudo : un changement tous les 7 jours à partir de la validation (`pseudoTs` dans le profil), après une boîte de confirmation. L'outil administrateur n'est pas soumis au délai.
 - Évolution : 3 exemplaires d'un Pokémon donnent 1 carte de son évolution, ou d'une de ses méga-évolutions. « Évolution rapide » traite d'un coup tous les Pokémon possédés à 4 exemplaires ou plus dont l'évolution manque.
 - Maximum 10 enchères simultanées par joueur.
-- Boutique : `ALPHA_FREE = false`. Le Pack fondateur reste gratuit (`free:true`). Le Pack de démarrage (5 €) et le Pack Wailord (20 €) sont payants, mais les paiements en euros sont désactivés : note « Paiement indisponible pendant l’alpha » et boîte « Paiement indisponible » au clic, comme pour les crédits. Un encadré vert rappelle que le jeu se joue entièrement gratuitement et qu'on n'achète que si on peut se le permettre : à garder.
+- Boutique : `ALPHA_FREE = false`. Le Pack fondateur reste gratuit (`free:true`). Le Pack de démarrage (5 €) et le Pack Wailord (20 €) sont payants, mais les paiements en euros sont désactivés : note « Paiement indisponible pendant la bêta » et boîte « Paiement indisponible » au clic, comme pour les crédits. Un encadré vert rappelle que le jeu se joue entièrement gratuitement et qu'on n'achète que si on peut se le permettre : à garder.
 
 ### Marché
 
@@ -90,4 +90,6 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 - Modifier `index.html` directement, en gardant le style du code existant : fonctions courtes, chaînes en français, pas de dépendance nouvelle.
 - Après chaque modification, vérifier au minimum : ouverture d'un booster, collection, évolutions, enchères, échanges, profil.
 - Commit en français, une phrase claire décrivant le changement. Le push sur `main` déclenche le déploiement GitHub Pages.
+- **Version** : `APP_VERSION` dans `index.html`, affichée en bas à gauche. À **chaque push**, monter le dernier chiffre (0.2.1 → 0.2.2 → 0.2.3…). Mise à jour majeure de la bêta : 0.3.0, puis nouveau cycle. Sortie publique : 1.0.0. Citer la version dans le message de commit.
+- Ne pousser que sur signal explicite de Theo (« push »).
 - Prévenir les testeurs de recharger avec Ctrl + F5.
