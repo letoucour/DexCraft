@@ -1181,7 +1181,17 @@ function revealHeadHTML(){
 }
 function revealActionsHTML(){
   if(reveal.every(c=>c.shown))return `<button class="btn primary" data-act="done-reveal">Continuer</button>`;
-  return `<button class="btn" data-act="flip-all">Tout retourner</button>${hitsMode?"":`<button class="btn" data-act="hits-only">Aller aux Hits</button>`}`;
+  return `${flippingAll?`<button class="btn primary" data-act="flip-fast">Plus vite !</button>`:`<button class="btn" data-act="flip-all">Tout retourner</button>`}${hitsMode?"":`<button class="btn" data-act="hits-only">Aller aux Hits</button>`}`;
+}
+/* « Plus vite ! » : retourne tout d'un coup, sauf les mythiques et les transcendantes */
+function flipFast(){
+  if(!reveal)return;flipAbort=true;flippingAll=false;flipGen++;
+  let top=-1;
+  reveal.forEach(c=>{const r=rar(c.id);if(!c.shown&&r<6){c.shown=true;c.fx=true;top=Math.max(top,r)}});
+  if(top>=0)SFX.flip(Math.min(top,3));
+  renderView();
+  const next=handCards().find(b=>!reveal[+b.dataset.i].shown);
+  if(next){centerCard(next,true);fanUpdate()}
 }
 function recapHTML(){
   if(!hitsMode)return "";
@@ -1474,15 +1484,15 @@ function vProfile(){
       <button class="btn danger" data-act="clear-market">Vider enchères et échanges</button></div>
     <h3 style="margin-top:18px">Créditer un joueur</h3>
     ${mode==="online"?`<div class="actions" style="margin-top:10px;align-items:end">
-      <label class="field" style="flex:1;min-width:200px">Joueur<select id="gr-user">${Object.keys(PLAYERS).sort((a,b)=>(PLAYERS[b].unique||0)-(PLAYERS[a].unique||0)).map(id=>`<option value="${esc(id)}"${id===ME?" selected":""}>${esc(nameOf(id))}${id===ME?" (vous)":""} — ${PLAYERS[id].unique||0}/1025, ${fmtN(PLAYERS[id].credits||0)} crédits</option>`).join("")}</select></label>
-      <label class="field">Crédits<input type="number" id="gr-cred" value="0" step="100" style="width:120px"></label>
-      <label class="field">Boosters<input type="number" id="gr-packs" value="0" style="width:110px"></label>
+      <label class="field" style="flex:1;min-width:200px">Joueur<select id="gr-user" data-keep="gr-user">${Object.keys(PLAYERS).sort((a,b)=>(PLAYERS[b].unique||0)-(PLAYERS[a].unique||0)).map(id=>`<option value="${esc(id)}"${id===ME?" selected":""}>${esc(nameOf(id))}${id===ME?" (vous)":""} — ${PLAYERS[id].unique||0}/1025, ${fmtN(PLAYERS[id].credits||0)} crédits</option>`).join("")}</select></label>
+      <label class="field">Crédits<input type="number" id="gr-cred" data-keep="gr-cred" value="0" step="100" style="width:120px"></label>
+      <label class="field">Boosters<input type="number" id="gr-packs" data-keep="gr-packs" value="0" style="width:110px"></label>
       <button class="btn primary" data-act="grant">Appliquer</button></div>
     <div class="actions" style="margin-top:12px">
       <button class="btn" data-act="badge" data-on="1">Donner le badge Alpha testeur</button>
       <button class="btn" data-act="badge" data-on="0">Retirer le badge</button></div>
     <div class="actions" style="margin-top:12px;align-items:end">
-      <label class="field" style="flex:1;min-width:200px">Nouveau pseudo<input id="gr-pseudo" maxlength="20" placeholder="Laisser vide pour effacer"></label>
+      <label class="field" style="flex:1;min-width:200px">Nouveau pseudo<input id="gr-pseudo" data-keep="gr-pseudo" maxlength="20" placeholder="Laisser vide pour effacer"></label>
       <button class="btn" data-act="set-pseudo">Changer le pseudo</button></div>
     <p class="muted" style="margin:6px 0 0;font-size:.85rem">Le badge et le pseudo s’appliquent au joueur choisi ci-dessus. Il apparaît sur son profil, au classement et sur ses annonces.</p>
     <p class="muted" style="margin:6px 0 0;font-size:.85rem">Les valeurs négatives retirent des crédits ou des boosters. Le total ne descend jamais sous zéro.</p>`
@@ -1787,7 +1797,7 @@ function detail(id){
       <p class="muted" style="margin:4px 0 0">${myAuctions(S)}/${MAX_AUCTIONS} enchères en cours${myAuctions(S)>=MAX_AUCTIONS?". Attendez qu’une vente se termine pour en lancer une autre.":""}</p>
       <div class="actions" style="margin-top:10px;align-items:end">
       <label class="field">Prix de départ<input type="number" id="a-start" min="1" value="${[20,40,100,300,600,1000,5000,15000][r]}" style="width:110px"></label>
-      <label class="field">Durée<select id="a-dur"><option value="1">1 heure</option><option value="6">6 heures</option><option value="24" selected>24 heures</option><option value="72">3 jours</option></select></label>
+      <label class="field">Durée<select id="a-dur">${[[.25,"15 min"],[.5,"30 min"],[1,"1 heure"],[2,"2 heures"],[3,"3 heures"],[6,"6 heures"],[12,"12 heures"]].map(([h,l])=>`<option value="${h}"${h===12?" selected":""}>${l}</option>`).join("")}</select></label>
       <button class="btn primary" data-act="do-auction" data-id="${id}" ${myAuctions(S)>=MAX_AUCTIONS?"disabled":""}>Mettre en vente</button></div></div>
     <div class="panel"><h3>Proposer à l’échange</h3>
       <div class="actions" style="margin-top:10px;align-items:end">
@@ -1831,20 +1841,22 @@ function flipOne(b,c){
   if(r===6){legendSoon=true;setTimeout(()=>mythicFx(c.id),450)}
   if(r===7){legendSoon=true;setTimeout(()=>transFx(c.id),450)}
 }
-let flippingAll=false,flipAbort=false,flipLock=false;
+let flippingAll=false,flipAbort=false,flipLock=false,flipGen=0;
 async function flipAll(){
   if(flippingAll)return;flippingAll=true;flipAbort=false;
+  const gen=++flipGen,stop=()=>!reveal||flipAbort||gen!==flipGen;
+  updateReveal();
   try{
     for(const b of handCards()){
-      if(!reveal||flipAbort)return;
+      if(stop())return;
       const c=reveal[+b.dataset.i];if(!c||c.shown||!b.isConnected)continue;
       centerCard(b);await sleep(RM()?0:300);
-      if(!reveal||flipAbort)return;
+      if(stop())return;
       flipOne(b,c);updateReveal();const r=rar(c.id);
       if(r>=5){await waitLegend();}else await sleep([260,1000,1350,1850,2050][r]);
-      if(!reveal||flipAbort)return;
+      if(stop())return;
     }
-  }finally{flippingAll=false}
+  }finally{if(gen===flipGen){flippingAll=false;updateReveal()}}
 }
 function waitLegend(){return new Promise(res=>{const t=setInterval(()=>{if(!document.querySelector(".legend")&&!legendSoon){clearInterval(t);res()}},150)})}
 let legendSoon=false;
@@ -2194,6 +2206,7 @@ document.addEventListener("click",e=>{
     case"hand-prev":handStep(-1);break;
     case"hand-next":handStep(1);break;
     case"flip-all":flipAll();break;
+    case"flip-fast":flipFast();break;
     case"hits-only":{if(!reveal)break;flipAbort=true;hitsMode=true;
       reveal.forEach(c=>{if(!isHit(c))c.shown=true});handScroll=0;renderView();
       const left=reveal.filter(c=>!c.shown).length;
@@ -2379,7 +2392,7 @@ function watchShared(){
     db.collection("market").onSnapshot(snap=>{
       const m={};snap.docs.forEach(d=>m[d.id]=d.data());MARKET=m;
       if(!snap.metadata.fromCache)marketReady=true;
-      refreshProfiles().then(()=>{if(view!=="booster"&&view!=="collection")renderView()});
+      refreshProfiles().then(()=>{if(view!=="booster"&&view!=="collection"&&view!=="profile")renderView()});
       if(mode==="online")settle();
     },e=>{DIAG.readErr=true;DIAG.err=String(e&&e.message||e);console.warn(e)});
     db.collection("players").onSnapshot(snap=>{
