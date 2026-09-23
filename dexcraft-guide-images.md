@@ -99,16 +99,19 @@ Les illustrations officielles font environ 475 × 475 pixels en PNG : compte plu
    winget install ImageMagick.ImageMagick
    ```
    Puis ferme et rouvre le terminal.
-2. Convertis toutes les images en WebP 256 × 256 :
+2. Mets les PNG d'origine de côté (ce dossier n'est pas envoyé sur GitHub), puis convertis-les en WebP 256 × 256 dans `images` :
    ```
    cd C:\DexCraft
-   magick mogrify -resize 256x256 -quality 80 -format webp images\*.png
+   New-Item -ItemType Directory -Force images-png
+   Move-Item images\*.png images-png\
+   magick mogrify -path images -resize 256x256 -quality 80 -format webp images-png\*.png
    ```
-   Chaque `1.png` donne un `1.webp` à côté. L'ensemble devrait tenir autour de 20 à 30 Mo.
-3. Vérifie quelques `.webp` en les ouvrant, puis supprime les PNG :
+   Chaque `images-png\1.png` donne `images\1.webp`.
+3. Génère la planche de contrôle, puis ouvre `outils\planche-images.html` dans ton navigateur :
    ```
-   Remove-Item images\*.png
+   powershell -ExecutionPolicy Bypass -File outils\planche-images.ps1
    ```
+   Elle montre chaque image avec son numéro, son nom et son poids. Les filtres « Méga » et « Manquantes », la recherche et le fond en damier (pour voir la transparence) aident à repérer une erreur.
 
 Si tu préfères garder les PNG, saute cette étape : il suffira d'indiquer `.png` au lieu de `.webp` à l'étape 5.
 
