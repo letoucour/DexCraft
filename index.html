@@ -496,6 +496,7 @@ h3{font-size:1.1rem}
 .badge-alpha{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 10px;border-radius:999px;font-weight:700;font-size:.78rem;color:#2b1f00;
   background:linear-gradient(100deg,#ffe27a,#ffcf3f 45%,#ffb000);box-shadow:0 1px 4px rgba(0,0,0,.25);vertical-align:middle;white-space:nowrap}
 .badge-alpha.sm{font-size:.68rem;padding:1px 8px;margin-left:6px}
+.badge-alpha.beta{color:#fff;background:linear-gradient(100deg,#2f7fe0,#4fc3ff 50%,#2f7fe0)}
 .badge-alpha.master{color:#ffcf3f;background:linear-gradient(100deg,#2a1d52,#4b2d86 50%,#2a1d52);box-shadow:0 0 0 1px #ffcf3f,0 1px 6px rgba(120,80,220,.45)}
 .titles{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -846,6 +847,7 @@ function packInfo(s,now=Date.now()){
 function stamp(s){s.unique=Object.keys(s.coll).filter(k=>!isSpec(k)).length;s.myth=Object.keys(s.coll).filter(k=>rar(+k)===6).length;s.trans=Object.keys(s.coll).filter(k=>rar(+k)===7).length;
   s.byr=[0,0,0,0,0,0,0,0];for(const k of Object.keys(s.coll))s.byr[rar(+k)]++;s.byrV=BYR_V;s.total=Object.values(s.coll).reduce((a,b)=>a+b,0);if(s.avatar&&!s.coll[String(s.avatar)])s.avatar=null;
   if(s.fav)for(const k of Object.keys(s.fav))if(!s.coll[k])delete s.fav[k];
+  if(BETA_OPEN)s.beta=true;
   s.updated=Date.now()}
 
 let queue=Promise.resolve();
@@ -866,11 +868,10 @@ async function mutateMe(fn){
 function rollRarity(){let x=rnd(SCALE);for(let r=0;r<ODDS_K.length;r++){if(x<ODDS_K[r])return r;x-=ODDS_K[r]}return 0}
 let opening=false;
 const MULTI=5;
-const OPEN_OPTS=[1,5,10,20,50,100];
-const BULK_MIN=20; // au-delà, on ne garde que les hits en main
+const OPEN_OPTS=[1,5,10];
 const available=s=>packInfo(s).n+(s.bonus||0);
 function openPack(k=1){
-  if(opening)return;opening=true;
+  if(opening||!OPEN_OPTS.includes(k))return;opening=true;
   run(async()=>{
     let drawn=null;
     const ok=await mutateMe(s=>{
@@ -887,7 +888,6 @@ function openPack(k=1){
     SFX.open(k>1);
     const pk=$(".pack");if(pk&&!matchMedia("(prefers-reduced-motion: reduce)").matches){pk.classList.add("tear");await sleep(520)}
     reveal=drawn;hitsMode=false;handScroll=0;
-    if(k>=BULK_MIN){hitsMode=true;reveal.forEach(c=>{if(!isHit(c))c.shown=true})}
     renderView();window.scrollTo(0,0);
   }).finally(()=>{opening=false});
 }
@@ -1147,8 +1147,16 @@ function alphaOf(id){const p=id===ME?S:PLAYERS[id];return !!(p&&p.alpha)}
 const masterCount=coll=>DEX_ORDER.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
 function masterOf(id){return masterCount(collOf(id))===DEX_ORDER.length}
 const MASTER_TAG=sm=>`<span class="badge-alpha master${sm?" sm":""}" title="Possède toutes les cartes du jeu">♛ Maître</span>`;
-const ALPHA_TAG=sm=>`<span class="badge-alpha${sm?" sm":""}" title="Alpha testeur">✦ Alpha testeur</span>`;
-function badgeTag(id,small){return (masterOf(id)?MASTER_TAG(small):"")+(alphaOf(id)?ALPHA_TAG(small):"")}
+const ALPHA_DESC="A aidé au développement en Alpha de DexCraft";
+const ALPHA_TAG=sm=>`<span class="badge-alpha${sm?" sm":""}" title="${ALPHA_DESC}">✦ Alpha testeur</span>`;
+/* Titre Bêta testeur : donné à tous les joueurs tant que BETA_OPEN est vrai, et enregistré
+   dans leur profil (champ beta). Passez BETA_OPEN à false à la fin de la bêta : ceux qui
+   ont joué pendant la bêta gardent le titre, les nouveaux ne l'ont plus. */
+const BETA_OPEN=true;
+const BETA_DESC="A participé à la Bêta ouverte de DexCraft";
+const BETA_TAG=sm=>`<span class="badge-alpha beta${sm?" sm":""}" title="${BETA_DESC}">◈ Bêta testeur</span>`;
+function betaOf(id){const p=id===ME?S:PLAYERS[id];return BETA_OPEN||!!(p&&p.beta)}
+function badgeTag(id,small){return (masterOf(id)?MASTER_TAG(small):"")+(alphaOf(id)?ALPHA_TAG(small):"")+(betaOf(id)?BETA_TAG(small):"")}
 function avatarOf(id){const pl=id===ME?S:PLAYERS[id];return pl?pl.avatar:null}
 async function refreshProfiles(){
   if(!user)return;const ids=new Set(Object.keys(PLAYERS));for(const m of Object.values(MARKET)){[m.seller,m.bidder,m.owner,m.taker].forEach(x=>x&&ids.add(x))}
@@ -1281,9 +1289,7 @@ function vBooster(){
       <p>Dans votre collection, vous pouvez défausser vos doubles contre des crédits selon leur rareté, en mettre jusqu’à ${MAX_AUCTIONS} aux enchères en même temps pour gagner des crédits, ou les proposer à l’échange contre une carte de même rareté.</p>
     </div></details>
     <div class="pack-wrap"><button class="pack-hit" data-act="open" ${p.n<1&&!S.bonus?"disabled":""} aria-label="Ouvrir un booster"><div class="pack"><div class="pack-body"></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div></div></button><div class="pack-shadow"></div></div>
-    <div class="open-row">${OPEN_OPTS.map(k=>`<button class="btn${available(S)>=k?" primary":""}" data-act="open-n" data-n="${k}" ${available(S)<k?"disabled":""} title="${available(S)<k?`Il faut ${k} booster${k>1?"s":""} disponible${k>1?"s":""}`:`Ouvrir ${k} booster${k>1?"s":""} d’un coup`}">Ouvrir${k>1?" "+k:""}</button>`).join("")}</div>
-    ${available(S)>=BULK_MIN?`<p class="muted" style="font-size:.85rem">À partir de ${BULK_MIN} boosters, le tirage passe directement en mode « Aller aux Hits » : le reste part dans le récapitulatif.</p>`:""}
-    <div class="stock"><div class="big">${p.n}<span class="of"> / ${MAXP}</span></div><div class="muted">boosters disponibles</div>
+    <div class="open-row">${OPEN_OPTS.map(k=>`<button class="btn${available(S)>=k?" primary":""}" data-act="open-n" data-n="${k}" ${available(S)<k?"disabled":""} title="${available(S)<k?`Il faut ${k} booster${k>1?"s":""} disponible${k>1?"s":""}`:`Ouvrir ${k} booster${k>1?"s":""} d’un coup`}">Ouvrir${k>1?" "+k:""}</button>`).join("")}</div>    <div class="stock"><div class="big">${p.n}<span class="of"> / ${MAXP}</span></div><div class="muted">boosters disponibles</div>
       <div class="stock-bar">${Array.from({length:MAXP},(_,i)=>`<i class="${i<p.n?"on":""}"></i>`).join("")}</div>
       <div class="muted">${p.next?`Prochain dans <b data-countdown="${p.next}">${fmtLeft(p.next-Date.now())}</b>`:"Réserve pleine"}</div>
       ${S.bonus?`<div class="bonus-line"><b>+ ${S.bonus}</b> booster${S.bonus>1?"s":""} acheté${S.bonus>1?"s":""}, ouvert${S.bonus>1?"s":""} une fois la réserve gratuite vide</div>`:""}</div>
@@ -1467,10 +1473,11 @@ function vProfile(){
 
   <section class="section panel">
     <h3>Pseudo</h3>
-    <div class="actions" style="margin-top:10px;align-items:end">
-      <label class="field" style="flex:1;min-width:200px">Affiché aux autres joueurs<input id="pseudo" data-keep="pseudo" maxlength="20" placeholder="${esc((PROFILES[ME]&&PROFILES[ME].name)||"Votre pseudo")}" value="${esc(S.pseudo)}"></label>
-      <button class="btn primary" data-act="save-pseudo">Enregistrer</button>
+    ${(()=>{const nx=pseudoNext(S),lock=nx>Date.now();return `<div class="actions" style="margin-top:10px;align-items:end">
+      <label class="field" style="flex:1;min-width:200px">Affiché aux autres joueurs<input id="pseudo" data-keep="pseudo" maxlength="20" placeholder="${esc((PROFILES[ME]&&PROFILES[ME].name)||"Votre pseudo")}" value="${esc(S.pseudo)}"${lock?" disabled":""}></label>
+      <button class="btn primary" data-act="save-pseudo"${lock?" disabled":""}>Enregistrer</button>
     </div>
+    <p class="muted" style="margin:8px 0 0;font-size:.85rem">${lock?`Prochain changement possible le ${fmtDate(nx)}.`:`Après un changement, vous devrez attendre ${PSEUDO_DAYS} jours avant le suivant.`}</p>`})()}
   </section>
 
   <section class="section panel">
@@ -1478,7 +1485,8 @@ function vProfile(){
     <p class="muted" style="margin:4px 0 0">Vos titres s’affichent à côté de votre nom : profil, classement et annonces.</p>
     <div class="titles">${(()=>{const n=masterCount(S.coll),all=DEX_ORDER.length,ok=n===all;
       return `<div class="title-row${ok?"":" locked"}">${MASTER_TAG()}<span class="muted">${ok?"Obtenu : vous possédez toutes les cartes du jeu.":`Toutes les cartes du jeu, Pokémon et méga-évolutions : ${fmtN(n)} / ${fmtN(all)}.`}</span></div>`})()}
-      ${S.alpha?`<div class="title-row">${ALPHA_TAG()}<span class="muted">Attribué par le créateur du jeu.</span></div>`:""}</div>
+      ${S.alpha?`<div class="title-row">${ALPHA_TAG()}<span class="muted">${ALPHA_DESC}.</span></div>`:""}
+      ${betaOf(ME)?`<div class="title-row">${BETA_TAG()}<span class="muted">${BETA_DESC}.</span></div>`:""}</div>
   </section>
 
   <section class="section">
@@ -1650,7 +1658,7 @@ let shopQty=1;
 // Offres achetables une seule fois par joueur
 /* Pendant les phases de test, les offres uniques payantes sont offertes.
    Passez ALPHA_FREE à false pour rétablir les prix en euros. */
-const ALPHA_FREE=true;
+const ALPHA_FREE=false;
 const ONCE=[
   /* Offre gratuite des phases de test : supprimez cette ligne après la bêta. */
   {key:"founder",name:"Pack fondateur",euros:"Gratuit",credits:4000,packs:10,free:true,desc:"Offert à tous les joueurs des phases de pré-alpha, alpha et bêta. Merci d’être là si tôt.",tone:"founder"},
@@ -1710,7 +1718,7 @@ function buyCredits(i){
   const cp=CREDIT_PACKS[i||0]||CREDIT_PACKS[0];
   if(!devOn()){
     openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Paiement indisponible</h2>
-      <p class="muted">L’achat de crédits en euros n’est pas encore ouvert. Vous pouvez gagner des crédits en vendant vos cartes aux enchères ou en défaussant vos doubles.</p>
+      <p class="muted">Les achats en euros ne sont pas encore ouverts. Vous pouvez gagner des crédits en vendant vos cartes aux enchères ou en défaussant vos doubles.</p>
       <div class="actions"><button class="btn primary" data-act="close">Compris</button></div></div>`,true);return;
   }
   run(async()=>{const ok=await mutateMe(s=>{s.credits+=cp.credits});if(ok)toast(`+${fmtN(cp.credits)} crédits (mode développeur).`)});
@@ -1760,12 +1768,38 @@ function resetEveryone(){
     for(const mid_ of Object.keys(MARKET)){try{await db.doc("market/"+mid_).delete()}catch(e){fails++;console.warn(e)}}
     for(const uid of new Set([...Object.keys(PLAYERS),ME])){
       try{
-        const ok=await mutatePlayer(uid,s=>{const keep={pseudo:s.pseudo,alpha:s.alpha,dev:s.dev};Object.keys(s).forEach(k=>delete s[k]);Object.assign(s,newState(),keep)});
+        const ok=await mutatePlayer(uid,s=>{const keep={pseudo:s.pseudo,pseudoTs:s.pseudoTs,alpha:s.alpha,beta:s.beta,dev:s.dev};Object.keys(s).forEach(k=>delete s[k]);Object.assign(s,newState(),keep)});
         if(ok)players++;
       }catch(e){fails++;console.warn(e)}
     }
     MARKET={};reveal=null;hitsMode=false;discardSel=null;renderAll();
     toast(`${players} joueur${players>1?"s":""} remis à zéro${fails?`, ${fails} erreur${fails>1?"s":""} : vérifiez que vous êtes dans la table admins`:""}.`);
+  });
+}
+/* Pseudo choisi par le joueur : un changement tous les 7 jours, à partir de la validation.
+   L'outil administrateur setPseudo n'est pas soumis à ce délai. */
+const PSEUDO_DAYS=7,PSEUDO_WAIT=PSEUDO_DAYS*24*3600*1000;
+const pseudoNext=s=>s.pseudoTs?s.pseudoTs+PSEUDO_WAIT:0;
+const fmtDate=t=>new Date(t).toLocaleString("fr-FR",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});
+function pseudoDlg(v){
+  if(v===S.pseudo){toast("C’est déjà votre pseudo.");return}
+  const nx=pseudoNext(S);if(nx>Date.now()){toast(`Prochain changement possible le ${fmtDate(nx)}.`);return}
+  openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
+    <h2>${v?`Devenir « ${esc(v)} » ?`:"Retirer votre pseudo ?"}</h2>
+    <p>${v?"Ce pseudo sera affiché aux autres joueurs.":"Votre nom de compte sera affiché à la place."}</p>
+    <div class="evo-warn big"><span aria-hidden="true">!</span> Vous ne pourrez plus changer de pseudo pendant ${PSEUDO_DAYS} jours, soit jusqu’au ${fmtDate(Date.now()+PSEUDO_WAIT)}.</div>
+    <div class="actions"><button class="btn primary" data-act="save-pseudo-go" data-v="${esc(v)}">Valider</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
+}
+function savePseudo(v){
+  run(async()=>{
+    let why="";
+    const ok=await mutateMe(s=>{
+      if(s.pseudo===v){why="same";return false}
+      if(pseudoNext(s)>Date.now()){why="wait";return false}
+      s.pseudo=v;s.pseudoTs=Date.now();
+    });
+    if(!ok){toast(why==="wait"?`Prochain changement possible le ${fmtDate(pseudoNext(S))}.`:"C’est déjà votre pseudo.");return}
+    toast(v?`Pseudo enregistré : ${v}.`:"Pseudo retiré, votre nom de compte est affiché.");
   });
 }
 function setPseudo(uid,v){
@@ -1802,7 +1836,7 @@ function resetAll(full){
   if(!devOn())return;
   run(async()=>{
     if(mode==="online"&&S.listings){for(const mid of Object.keys(S.listings)){try{await db.doc("market/"+mid).delete()}catch(e){}}}
-    await mutateMe(s=>{const dev=s.dev,pseudo=s.pseudo;const n=newState();Object.keys(s).forEach(k=>delete s[k]);Object.assign(s,n,full?{dev}:{dev,pseudo});});
+    await mutateMe(s=>{const dev=s.dev,pseudo=s.pseudo,pseudoTs=s.pseudoTs;const n=newState();Object.keys(s).forEach(k=>delete s[k]);Object.assign(s,n,full?{dev}:{dev,pseudo,pseudoTs});});
     reveal=null;hitsMode=false;discardSel=null;view=full?"profile":"booster";renderAll();
     toast(full?"Profil entièrement réinitialisé.":"Collection réinitialisée.");
   });
@@ -2298,7 +2332,8 @@ document.addEventListener("click",e=>{
     case"logout":if(SB)SB.auth.signOut();break;
     case"toggle-fav":run(async()=>{let on=false;const ok=await mutateMe(s=>{s.fav=s.fav||{};if(s.fav[id])delete s.fav[id];else s.fav[id]=1;on=!!s.fav[id]});if(ok){toast(on?`${nm(id)} ajouté à vos favoris.`:`${nm(id)} retiré de vos favoris.`);if(dlg.open)detail(id)}});break;
     case"set-avatar":run(async()=>{const ok=await mutateMe(s=>{if(!has(s,id))return false;s.avatar=id});if(ok)toast(`${nm(id)} est votre nouvelle image de profil.`);else toast("Ce Pokémon n’est plus dans votre collection.")});break;
-    case"save-pseudo":{const v=($("#pseudo").value||"").replace(/\s+/g," ").trim().slice(0,20);run(async()=>{await mutateMe(s=>{if(s.pseudo===v)return false;s.pseudo=v});toast(v?`Pseudo enregistré : ${v}.`:"Pseudo retiré, votre nom de compte est affiché.")});break}
+    case"save-pseudo":pseudoDlg(($("#pseudo").value||"").replace(/\s+/g," ").trim().slice(0,20));break;
+    case"save-pseudo-go":closeDlg();savePseudo(b.dataset.v);break;
     case"discard-mode":discardSel={};filt.own="own";renderView();break;
     case"discard-cancel":discardSel=null;renderView();break;
     case"sel-clear":discardSel={};renderView();break;

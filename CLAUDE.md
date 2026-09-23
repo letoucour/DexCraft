@@ -47,10 +47,11 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 
 - Nouveau joueur : 3 100 crédits, 10 boosters.
 - Un booster gratuit toutes les 10 minutes, réserve de 10 maximum. Les boosters achetés vont dans une réserve séparée (`bonus`), sans limite, et sont consommés après les gratuits.
-- Ouverture par 1, 5, 10, 20, 50 ou 100. À partir de 20, le mode « Aller aux Hits » s'active tout seul.
+- Ouverture par 1, 5 ou 10 boosters maximum (`OPEN_OPTS`). Les ouvertures par 20, 50 et 100 ont été retirées.
+- Pseudo : un changement tous les 7 jours à partir de la validation (`pseudoTs` dans le profil), après une boîte de confirmation. L'outil administrateur n'est pas soumis au délai.
 - Évolution : 3 exemplaires d'un Pokémon donnent 1 carte de son évolution, ou d'une de ses méga-évolutions. « Évolution rapide » traite d'un coup tous les Pokémon possédés à 4 exemplaires ou plus dont l'évolution manque.
 - Maximum 10 enchères simultanées par joueur.
-- Boutique : `ALPHA_FREE = true` rend les offres uniques gratuites pendant les phases de test. Les paiements en euros sont désactivés, un bandeau rouge l'annonce.
+- Boutique : `ALPHA_FREE = false`. Le Pack fondateur reste gratuit (`free:true`). Le Pack de démarrage (5 €) et le Pack Wailord (20 €) sont payants, mais les paiements en euros sont désactivés : note « Paiement indisponible pendant l’alpha » et boîte « Paiement indisponible » au clic, comme pour les crédits.
 
 ### Marché
 
@@ -67,7 +68,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 - Classement : trié par cartes différentes, Pokémon et mégas confondus. Barre segmentée par rareté, sur 1 118 cartes. Mythiques et transcendantes affichées en pastilles ✦ et ❖, hors classement. Le détail par rareté porte une version (`BYR_V`) : l'incrémenter à chaque changement d'ordre des raretés.
 - Favoris : protégés de la défausse, retirés automatiquement si la carte quitte la collection.
 - Mode développeur : bloc en bas du profil, visible pour les adresses de `ADMIN_EMAILS`, actif seulement si l'interrupteur est allumé. Outils : test des animations mythique et transcendante, crédits et boosters à un joueur, badge Alpha testeur, changement de pseudo, réinitialisation de la collection ou du profil, vidage du marché avec restitution des cartes et crédits, et remise à zéro générale (`resetEveryone`, confirmation en tapant RESET) : tous les joueurs repartent comme un compte neuf, en gardant pseudo, badge Alpha testeur et mode développeur ; le marché est vidé.
-- Titres : affichés à côté du nom (profil, classement, annonces) par `badgeTag`, et listés dans la section « Titres » du profil. « ♛ Maître » est automatique : le joueur possède toutes les cartes de `DEX_ORDER` (1 025 Pokémon et 93 mégas, hors mythiques et transcendantes). Il disparaît si une carte quitte la collection. « ✦ Alpha testeur » est attribué à la main (`alpha` dans le profil).
+- Titres : affichés à côté du nom (profil, classement, annonces) par `badgeTag`, et listés dans la section « Titres » du profil. « ♛ Maître » est automatique : le joueur possède toutes les cartes de `DEX_ORDER` (1 025 Pokémon et 93 mégas, hors mythiques et transcendantes). Il disparaît si une carte quitte la collection. « ✦ Alpha testeur » est attribué à la main (`alpha` dans le profil), description « A aidé au développement en Alpha de DexCraft ». « ◈ Bêta testeur » est donné à tous les joueurs tant que `BETA_OPEN = true`, et enregistré dans leur profil (`beta`) à chaque sauvegarde ; description « A participé à la Bêta ouverte de DexCraft ». À la fin de la bêta, passer `BETA_OPEN` à false : les joueurs de la bêta gardent le titre, les nouveaux ne l'ont pas.
 
 ## 5. Contraintes permanentes
 
@@ -82,7 +83,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 1. Découper `index.html` en modules : données, cartes, marché, animations, interface.
 2. Intégrer les visuels des cartes quand ils seront disponibles.
 3. Passer les tirages et les transactions côté serveur.
-4. Brancher un paiement réel, puis remettre `ALPHA_FREE = false`.
+4. Brancher un paiement réel pour le Pack de démarrage, le Pack Wailord et les crédits.
 
 ## 7. Comment travailler sur ce dépôt
 
