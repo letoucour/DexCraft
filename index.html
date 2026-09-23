@@ -800,9 +800,9 @@ const gems=r=>r===7?"❖":r===6?"✦":r===5?"★":r===4?"✪":"◆".repeat(r+1);
 const pct=v=>v.toLocaleString("fr-FR",{maximumFractionDigits:3})+" %";
 const ROMAN=["","I","II","III","IV","V","VI","VII","VIII","IX"];
 const STATN=["PV","Atq","Déf","A.Spé","D.Spé","Vit"];
-/* Visuels : laissez vide ici. Sur votre propre site, indiquez le chemin de vos images,
-   {id} est remplacé par le numéro du Pokémon (ex. "/images/pokemon/{id}.png"). */
-const IMG_URL="";
+/* Visuels : dossier images du dépôt, un fichier par carte ({id} = numéro de la carte).
+   Chemin relatif, sans / au début : le site est publié sous /DexCraft/. Voir dexcraft-guide-images.md. */
+const IMG_URL="images/{id}.webp";
 const PER=10*60*1000, MAXP=10, CARDS=5, START_CREDITS=3100;
 // Crédits gagnés par carte défaussée, de Commune (0) à Transcendante (7)
 const DISCARD=[2,5,10,15,18,20,50,100];
@@ -1135,7 +1135,7 @@ function miniHTML(id,{count=0,missing=false,sel=0,choice=false,act="detail"}={})
   <div class="mi"><div class="mn">${missing?"???":esc(n)}</div><div class="mm"><span>${r>=6?RAR[r]:ex&&ex.base?"№ "+pad(ex.base)+" Méga":"№ "+pad(id)}</span><span class="mg">${gems(r)}</span></div></div></button>`}
 function who(id){if(id===ME)return"vous";return nameOf(id)}
 function nameOf(id){const pl=id===ME?S:PLAYERS[id];if(pl&&pl.pseudo)return pl.pseudo;const p=PROFILES[id];return (p&&p.name)||"Un dresseur"}
-function imgFor(id){return IMG_URL?IMG_URL.replace("{id}",id):""}
+function imgFor(id){return IMG_URL&&rar(id)<6?IMG_URL.replace("{id}",id):""} // pas d'image pour les mythiques et les transcendantes
 function avatarHTML(av,size=36){
   if(!av||!D(av))return `<span class="ava ava-none" style="--s:${size}px" aria-hidden="true">◆</span>`;
   const [n,,,ty,,,,,ex]=D(av);

@@ -74,14 +74,14 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 
 - **Tout en français**, y compris les messages d'erreur et les commentaires de code.
 - **Ne jamais dévoiler** l'existence des mythiques et des transcendantes dans un texte visible par un joueur qui n'en possède pas.
-- **Aucune illustration officielle** n'est intégrée. La variable `IMG_URL` vaut `""` (désactivée). Pour brancher les visuels, la passer à `"images/{id}.png"` ; `{id}` est remplacé par le numéro de la carte, et `dexcraft-images.json` donne la correspondance des 1 127 fichiers attendus. Les visuels appartiennent à Nintendo, Game Freak et The Pokémon Company : à remplacer par des créations originales avant toute ouverture publique.
+- **Illustrations** : `IMG_URL = "images/{id}.webp"` (chemin relatif, jamais de `/` au début : le site est sous `/DexCraft/`). Le dossier `images` contient 1 118 WebP 256 × 256 : les 1 025 Pokémon et 93 mégas, illustrations officielles tirées de PokeAPI, sauf Méga-Nigirigon (4092) fournie par Theo. `imgFor` n'affiche **aucune image** pour les mythiques et les transcendantes (rareté 6 et 7) : Theo fournira leurs images plus tard, il faudra alors lever ce blocage. PNG d'origine dans `images-png/` et images fournies dans `images-perso/`, tous deux ignorés par git. Les illustrations officielles appartiennent à Nintendo, Game Freak et The Pokémon Company : risque de demande de retrait, choix assumé par Theo.
 - **La logique tourne dans le navigateur.** Un joueur à l'aise techniquement peut tricher. À déplacer côté serveur (fonctions Supabase) avant un lancement public, en priorité les tirages, les crédits et les transferts.
 - **Compatibilité des données** : un changement de format des annonces impose de vider le marché avec `delete from public.docs where coll = 'market';`. Ne jamais supprimer les lignes `coll = 'players'`.
 
 ## 6. Chantiers ouverts
 
 1. Découper `index.html` en modules : données, cartes, marché, animations, interface.
-2. Intégrer les visuels des cartes : procédure complète dans `dexcraft-guide-images.md`. Le script `outils/telecharger-images.ps1` (options `-Essai` et `-Seulement "1,6"`) récupère 1 117 illustrations sur 1 127 depuis PokeAPI ; restent à fournir à la main Méga-Nigirigon (4092) et les 9 mythiques et transcendantes.
+2. Images des 9 mythiques et transcendantes, à fournir par Theo dans `images-perso/` (nommées par numéro), puis à convertir et à autoriser dans `imgFor`. Procédure et outils : `dexcraft-guide-images.md`, `outils/telecharger-images.ps1`, `outils/planche-images.ps1` (planche de contrôle), `outils/serveur-local.ps1` (test sur http://localhost:8123). Conversion : `magick in.png -trim +repage -resize 240x240 -background none -gravity center -extent 256x256 -quality 80 images/<id>.webp`.
 3. Passer les tirages et les transactions côté serveur.
 4. Brancher un paiement réel pour le Pack de démarrage, le Pack Wailord et les crédits.
 
