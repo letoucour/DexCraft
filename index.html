@@ -849,6 +849,8 @@ function stamp(s){s.unique=Object.keys(s.coll).filter(k=>!isSpec(k)).length;s.my
   s.byr=[0,0,0,0,0,0,0,0];for(const k of Object.keys(s.coll))s.byr[rar(+k)]++;s.byrV=BYR_V;s.total=Object.values(s.coll).reduce((a,b)=>a+b,0);if(s.avatar&&!s.coll[String(s.avatar)])s.avatar=null;
   if(s.fav)for(const k of Object.keys(s.fav))if(!s.coll[k])delete s.fav[k];
   if(BETA_OPEN)s.beta=true;
+  // date d'obtention du titre Maître : départage les Maîtres au classement, effacée si le titre est perdu
+  if(masterCount(s.coll)===DEX_ORDER.length){if(!s.masterTs)s.masterTs=Date.now()}else delete s.masterTs;
   s.updated=Date.now()}
 
 let queue=Promise.resolve();
@@ -1435,8 +1437,8 @@ function vRanking(){
   const ro=mode!=="online"?`<div class="notice" style="margin-top:12px">Vous voyez le classement des joueurs connectés, mais votre partie n’y figure pas : elle est enregistrée sur cet appareil uniquement.</div>`:"";
   const rows=Object.entries(PLAYERS).map(([id,p])=>{
     const byr=p.byrV===BYR_V?p.byr:null,mega=byr?byr[4]||0:0;
-    return {id,u:p.unique||0,mega,score:(p.unique||0)+mega,t:p.total||0,c:p.credits||0,m:p.myth||0,x:p.trans||0,byr};
-  }).sort((a,b)=>b.score-a.score||b.t-a.t);
+    return {id,u:p.unique||0,mega,score:(p.unique||0)+mega,t:p.total||0,c:p.credits||0,m:p.myth||0,x:p.trans||0,byr,mt:p.masterTs||Infinity};
+  }).sort((a,b)=>b.score-a.score||(a.score===LB_TOTAL&&a.mt!==b.mt?a.mt-b.mt:0)||b.t-a.t); // entre Maîtres : le premier à avoir obtenu le titre devant
   return `<h1>Classement</h1><p class="muted">Classé par nombre de cartes différentes, Pokémon et méga-évolutions confondus : le classement suit donc exactement le remplissage des barres. Les mythiques et les transcendantes ne comptent pas, ce sont des trophées.</p>
   <div class="lb-legend">${[0,1,2,3,4,5].map(i=>`<span><i class="seg r${i}"></i>${RAR[i]}</span>`).join("")}</div>
   ${ro}
