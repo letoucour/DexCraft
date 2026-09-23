@@ -29,7 +29,10 @@ as $$
 declare
   max_players constant int := 10;   -- <<< changez la limite ici
 begin
+  -- Un upsert déclenche aussi ce trigger quand le profil existe déjà :
+  -- on ne compte que les vrais nouveaux joueurs.
   if new.coll = 'players'
+     and not exists (select 1 from public.docs where path = new.path)
      and (select count(*) from public.docs where coll = 'players') >= max_players then
     raise exception 'ALPHA_FULL';
   end if;

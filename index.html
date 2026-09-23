@@ -656,10 +656,8 @@ const EVO={"1":[2],"2":[3],"4":[5],"5":[6],"7":[8],"8":[9],"10":[11],"11":[12],"
 const EVO_COST=3; // [nom, catégorie, génération, types, taille dm, poids hg, stats, rareté]
 const TYPES=[null,["Normal","#9a9c8e"],["Combat","#e0782a"],["Vol","#6fa3dc"],["Poison","#9141cb"],["Sol","#9a6a2f"],["Roche","#a39a6c"],["Insecte","#8a9a1b"],["Spectre","#704170"],["Acier","#5a95ad"],["Feu","#e03a2a"],["Eau","#2f80e8"],["Plante","#3a9a2a"],["Électrik","#e8b400"],["Psy","#e8457c"],["Glace","#3bbbd8"],["Dragon","#5060e1"],["Ténèbres","#5a4a4b"],["Fée","#e070e0"]];
 const RAR=["Commune","Peu commune","Rare","Épique","Méga-évolution","Légendaire","Mythique","Transcendante"];
-/* Cartes mythiques : n'apparaissent nulle part tant qu'elles ne sont pas obtenues.
-   Chacune a 0,1 % de chance par carte, retirés à la rareté Commune.
-   Pour en ajouter une : une nouvelle entrée avec un numéro 2002, 2003…
-   [nom, catégorie, génération, types, taille (dm), poids (hg), stats, 5] */
+/* Méga-évolutions (rareté 4) : numéros 4001 et suivants, champ base = Pokémon d'origine.
+   [nom, catégorie, génération, types, taille (dm), poids (hg), stats, rareté, extra] */
 const MEGA={
   4001:["Méga-Florizarre","Pokémon Graine",6,[12,4],24,1555,[80,100,123,122,120,80],4,{"base":3}],
   4002:["Méga-Dracaufeu X","Pokémon Flamme",6,[10,16],17,1105,[78,130,111,130,85,100],4,{"base":6}],
@@ -756,13 +754,14 @@ const MEGA={
   4093:["Méga-Glaivodo","Dragon Glace",6,[16,15],21,3150,[115,175,117,105,101,87],4,{"base":998}]
 };
 const SPEC=Object.assign({},MEGA,{
-  /* Mythiques (rareté 5) : numéros 2001 et suivants */
+  /* Mythiques (rareté 6) : numéros 2001 et suivants. Invisibles tant qu'on ne les a pas.
+     En ajouter une ne change pas le taux global de la rareté, seulement la répartition. */
   2001:["Mewtwo en Armure","Pokémon Génétique",1,[14],20,1220,[106,110,90,154,90,130],6],
   2002:["Pikachu Surfeur","Pokémon Souris",1,[13],4,60,[35,55,40,50,50,90],6],
   2003:["Pikachu Volant","Pokémon Souris",1,[13],4,60,[35,55,40,50,50,90],6],
   2004:["Dracolosse Postier","Pokémon Dragon",1,[16,3],22,2100,[91,134,95,100,100,80],6],
   2005:["Sachanobi","Pokémon Ninja",6,[11,17],15,400,[72,145,67,153,71,132],6],
-  /* Transcendantes (rareté 6) : numéros 3001 et suivants.
+  /* Transcendantes (rareté 7) : numéros 3001 et suivants.
      Cartes sans statistiques : chips = étiquettes, lines = texte de la carte. */
   3001:["Dresseur Red","Dresseur de Bourg Palette",1,[],0,0,[],7,{c1:"#e03a2a",c2:"#7a1410",chips:["Dresseur"],lines:["Champion du Mont Argent","Ne dit jamais un mot"],foot:"Kanto"}],
   3002:["Dresseuse Cynthia","Maîtresse de la Ligue de Sinnoh",4,[],0,0,[],7,{c1:"#3a3f7a",c2:"#111530",chips:["Dresseuse"],lines:["Championne invaincue de Sinnoh","Passionnée d’archéologie"],foot:"Sinnoh"}],
@@ -798,7 +797,7 @@ const STATN=["PV","Atq","Déf","A.Spé","D.Spé","Vit"];
    {id} est remplacé par le numéro du Pokémon (ex. "/images/pokemon/{id}.png"). */
 const IMG_URL="";
 const PER=10*60*1000, MAXP=10, CARDS=5, START_CREDITS=3100;
-// Crédits gagnés par carte défaussée : Commune, Peu commune, Rare, Épique, Légendaire
+// Crédits gagnés par carte défaussée, de Commune (0) à Transcendante (7)
 const DISCARD=[2,5,10,15,18,20,50,100];
 const MAX_AUCTIONS=10;
 const dVal=id=>DISCARD[rar(+id)];
@@ -1094,20 +1093,6 @@ function placeBid(id,amount){
     toast(`Offre de ${amount} crédits enregistrée.`);
   });
 }
-function acceptTrade(id,give){
-  return run(async()=>{
-    const ref=db.doc("market/"+id);await lease(ref);
-    const snap=await ref.get();if(!snap.exists){toast("Cet échange n’est plus disponible.");return}
-    const m=snap.data();
-    if(m.status!=="open"){toast("Cet échange vient d’être conclu par quelqu’un d’autre.");return}
-    if(m.owner===ME||rar(give)!==rar(m.card)||(m.want&&m.want!==give)){toast("Cette carte ne correspond pas à la demande.");return}
-    const ok=await mutateMe(s=>{if(!has(s,give))return false;add(s,give,-1);add(s,m.card)});
-    if(!ok){toast("Vous ne possédez plus cette carte.");return}
-    try{await ref.update({status:"done",taker:ME,got:give,doneAt:Date.now()})}
-    catch(e){await mutateMe(s=>{add(s,m.card,-1);add(s,give)});throw e}
-    closeDlg();toast(`Échange conclu : ${nm(m.card)} rejoint votre collection.`);
-  });
-}
 function discard(sel){
   for(const id of Object.keys(sel))if(S.fav&&S.fav[id])delete sel[id];
   const n=Object.values(sel).reduce((a,b)=>a+b,0),v=selValue(sel);if(!n)return;
@@ -1320,7 +1305,7 @@ function vCollection(){
     <select data-f="g" aria-label="Génération">${opt("g","all","Toutes générations")}${ROMAN.slice(1).map((r,i)=>opt("g",i+1,"Génération "+r)).join("")}</select>
   </div>
   ${discardSel?(()=>{
-    const dup=[0,0,0,0,0,0,0];let favSkipped=0;
+    const dup=[0,0,0,0,0,0,0,0];let favSkipped=0;
     for(const [k,v] of Object.entries(S.coll)){if(v<2)continue;if(S.fav&&S.fav[k]){favSkipped+=v-1;continue}dup[rar(+k)]+=v-1}
     const selR=i=>{let n=0;for(const [k,v] of Object.entries(discardSel))if(rar(+k)===i)n+=v;return n};
     return `<div class="discard-help">
@@ -2476,7 +2461,8 @@ async function startOnline(session){
     return;
   }
   mode="online";
-  if(S.byrV!==BYR_V)run(()=>mutateMe(()=>{})); // met à jour le détail par rareté des anciens profilsrenderAll();
+  if(S.byrV!==BYR_V)run(()=>mutateMe(()=>{})); // met à jour le détail par rareté des anciens profils
+  renderAll();
 }
 
 (async()=>{
