@@ -1526,8 +1526,9 @@ function vProfile(){
     <p class="muted" style="margin:6px 0 0;font-size:.85rem">Le badge et le pseudo s’appliquent au joueur choisi ci-dessus. Il apparaît sur son profil, au classement et sur ses annonces.</p>
     <p class="muted" style="margin:6px 0 0;font-size:.85rem">Les valeurs négatives retirent des crédits ou des boosters. Le total ne descend jamais sous zéro.</p>
     <h3 style="margin-top:18px">Remise à zéro générale</h3>
-    <p class="muted" style="margin:4px 0 10px;font-size:.85rem">Tous les joueurs repartent de zéro : aucune carte, ${fmtN(START_CREDITS)} crédits, 0 booster (le booster gratuit reprend toutes les 10 minutes), offres uniques de la boutique de nouveau récupérables une fois, dont le Pack fondateur. Le marché est vidé. Pseudos et titres Alpha et Bêta testeur sont conservés.</p>
-    <div class="actions"><button class="btn danger" data-act="reset-all">Réinitialiser toutes les collections</button></div>`
+    <p class="muted" style="margin:4px 0 10px;font-size:.85rem">Tous les joueurs repartent de zéro : aucune carte, ${fmtN(START_CREDITS)} crédits, ${MAXP} boosters gratuits, offres uniques de la boutique de nouveau récupérables une fois, dont le Pack fondateur. Le marché est vidé. Pseudos et titres Alpha et Bêta testeur sont conservés.</p>
+    <div class="actions"><button class="btn danger" data-act="reset-all">Réinitialiser toutes les collections</button>
+      <button class="btn" data-act="fill-packs">Remplir la réserve de boosters de tous les joueurs</button></div>`
     :`<p class="muted" style="margin:10px 0 0">Disponible seulement dans la version publiée, où les autres joueurs existent.</p>`}
     <p class="muted" style="margin:8px 0 0;font-size:.85rem">La boutique est gratuite pour vous. « Tester la carte mythique » joue l’animation sans ajouter de carte. « Réinitialiser ma collection » efface cartes, crédits, boosters, favoris, achats uniques et annonces en cours, en gardant votre pseudo. « Reset profil » efface tout, pseudo et image de profil compris.</p>`
     :`<p class="muted" style="margin:10px 0 0;font-size:.85rem">Activez le mode pour afficher les outils de test et rendre la boutique gratuite.</p>`}
@@ -1772,7 +1773,7 @@ function resetEveryone(){
     for(const mid_ of Object.keys(MARKET)){try{await db.doc("market/"+mid_).delete()}catch(e){fails++;console.warn(e)}}
     for(const uid of new Set([...Object.keys(PLAYERS),ME])){
       try{
-        const ok=await mutatePlayer(uid,s=>{const keep={pseudo:s.pseudo,pseudoTs:s.pseudoTs,alpha:s.alpha,beta:s.beta,dev:s.dev};Object.keys(s).forEach(k=>delete s[k]);Object.assign(s,newState(),{packs:0,packTs:Date.now()},keep)});
+        const ok=await mutatePlayer(uid,s=>{const keep={pseudo:s.pseudo,pseudoTs:s.pseudoTs,alpha:s.alpha,beta:s.beta,dev:s.dev};Object.keys(s).forEach(k=>delete s[k]);Object.assign(s,newState(),keep)});
         if(ok)players++;
       }catch(e){fails++;console.warn(e)}
     }
@@ -1804,6 +1805,17 @@ function savePseudo(v){
     });
     if(!ok){toast(why==="wait"?`Prochain changement possible le ${fmtDate(pseudoNext(S))}.`:"C’est déjà votre pseudo.");return}
     toast(v?`Pseudo enregistré : ${v}.`:"Pseudo retiré, votre nom de compte est affiché.");
+  });
+}
+/* Remplit la réserve de boosters gratuits de tous les joueurs (10/10) */
+function fillAllPacks(){
+  run(async()=>{
+    let players=0,fails=0;
+    for(const uid of new Set([...Object.keys(PLAYERS),ME])){
+      try{if(await mutatePlayer(uid,s=>{s.packs=MAXP;s.packTs=Date.now()}))players++}catch(e){fails++;console.warn(e)}
+    }
+    renderAll();
+    toast(`Réserve de ${MAXP} boosters remplie pour ${players} joueur${players>1?"s":""}${fails?`, ${fails} erreur${fails>1?"s":""}`:""}.`);
   });
 }
 function setPseudo(uid,v){
@@ -2322,10 +2334,16 @@ document.addEventListener("click",e=>{
     case"reset-all":{if(!devOn()||mode!=="online")break;
       const n=new Set([...Object.keys(PLAYERS),ME]).size;
       openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Réinitialiser toutes les collections ?</h2>
-        <p>Les ${n} joueurs, vous compris, perdent toutes leurs cartes et repartent de zéro : ${fmtN(START_CREDITS)} crédits, 0 booster, offres uniques de la boutique de nouveau récupérables une fois, dont le Pack fondateur. Toutes les annonces du marché sont supprimées. Seuls les pseudos et les titres Alpha et Bêta testeur sont conservés.</p>
+        <p>Les ${n} joueurs, vous compris, perdent toutes leurs cartes et repartent de zéro : ${fmtN(START_CREDITS)} crédits, ${MAXP} boosters gratuits, offres uniques de la boutique de nouveau récupérables une fois, dont le Pack fondateur. Toutes les annonces du marché sont supprimées. Seuls les pseudos et les titres Alpha et Bêta testeur sont conservés.</p>
         <p><b>C’est définitif.</b> Tapez RESET pour confirmer.</p>
         <label class="field">Confirmation<input id="reset-all-txt" autocomplete="off" placeholder="RESET"></label>
         <div class="actions"><button class="btn danger" data-act="reset-all-go">Tout réinitialiser</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break}
+    case"fill-packs":{if(!devOn()||mode!=="online")break;
+      const n=new Set([...Object.keys(PLAYERS),ME]).size;
+      openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Remplir la réserve de boosters ?</h2>
+        <p>Les ${n} joueurs, vous compris, auront leur réserve de boosters gratuits pleine : ${MAXP} / ${MAXP}. Rien d’autre ne change.</p>
+        <div class="actions"><button class="btn primary" data-act="fill-packs-go">Remplir</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break}
+    case"fill-packs-go":closeDlg();if(devOn()&&mode==="online")fillAllPacks();break;
     case"reset-all-go":{if(!devOn()||mode!=="online")break;
       if(($("#reset-all-txt").value||"").trim().toUpperCase()!=="RESET"){toast("Tapez RESET pour confirmer.");break}
       closeDlg();resetEveryone();break}
