@@ -1,6 +1,6 @@
 # DexCraft — mettre l'alpha en ligne gratuitement
 
-Objectif : une adresse web que vos testeurs ouvrent sans compte Claude, avec sauvegarde en ligne, classement, enchères et échanges partagés, limité à 10 joueurs. Coût : 0 €.
+Objectif : une adresse web que vos testeurs ouvrent sans compte Claude, avec sauvegarde en ligne, classement, enchères et échanges partagés. Coût : 0 €.
 
 Deux services gratuits suffisent : **Supabase** pour les comptes et la base de données, **Netlify** pour héberger la page.
 
@@ -74,7 +74,7 @@ Votre adresse doit apparaître. Rechargez le jeu : vous pouvez désormais crédi
 
 ## 7. Inviter vos testeurs
 
-Envoyez l'adresse Netlify. Chacun crée son compte et joue. Le onzième reçoit le message « L'alpha est complète ».
+Envoyez l'adresse Netlify. Chacun crée son compte et joue. Il n'y a pas de limite de joueurs.
 
 ---
 

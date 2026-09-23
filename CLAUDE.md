@@ -4,7 +4,7 @@ Ce fichier remplace l'historique des conversations. Toute session Claude Code do
 
 ## 1. Le projet en deux phrases
 
-DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de wiki-masters.com : on ouvre des boosters, on complète une collection, on échange et on vend aux enchères entre joueurs. Il tourne actuellement en alpha privée, limitée à 10 joueurs.
+DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de wiki-masters.com : on ouvre des boosters, on complète une collection, on échange et on vend aux enchères entre joueurs. Il tourne actuellement en alpha privée, sans limite de joueurs.
 
 **Propriétaire du projet :** Theo (theo.lostria@gmail.com), administrateur du jeu.
 
@@ -82,7 +82,6 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 2. Intégrer les visuels des cartes quand ils seront disponibles.
 3. Passer les tirages et les transactions côté serveur.
 4. Brancher un paiement réel, puis remettre `ALPHA_FREE = false`.
-5. Augmenter la limite de joueurs au-delà de 10, dans la fonction `check_player_limit` du SQL. Elle ne compte que les nouveaux profils : un `upsert` d'un profil existant déclenche aussi le trigger, il ne doit jamais être bloqué. Garder aussi `MAX_PLAYERS` dans `index.html` à la même valeur.
 
 ## 7. Comment travailler sur ce dépôt
 

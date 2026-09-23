@@ -21,29 +21,9 @@ create table if not exists public.admins (
   uid uuid primary key
 );
 
--- 3) Limite du nombre de joueurs
-create or replace function public.check_player_limit()
-returns trigger
-language plpgsql
-as $$
-declare
-  max_players constant int := 10;   -- <<< changez la limite ici
-begin
-  -- Un upsert déclenche aussi ce trigger quand le profil existe déjà :
-  -- on ne compte que les vrais nouveaux joueurs.
-  if new.coll = 'players'
-     and not exists (select 1 from public.docs where path = new.path)
-     and (select count(*) from public.docs where coll = 'players') >= max_players then
-    raise exception 'ALPHA_FULL';
-  end if;
-  return new;
-end;
-$$;
-
+-- 3) Pas de limite de joueurs : on retire l'ancienne limite si elle existe encore
 drop trigger if exists docs_player_limit on public.docs;
-create trigger docs_player_limit
-  before insert on public.docs
-  for each row execute function public.check_player_limit();
+drop function if exists public.check_player_limit();
 
 -- 4) Verrou court utilisé par le jeu (enchères, échanges, évolutions)
 create or replace function public.acquire_lease(p_path text, p_holder text, p_until timestamptz)
@@ -149,7 +129,7 @@ select 'droits docs OK'    as verif,
 --   select path, data->>'pseudo' as pseudo, data->>'unique' as pokemon, data->>'credits' as credits
 --   from public.docs where coll = 'players';
 --
--- Libérer une place :
+-- Supprimer un joueur :
 --   delete from public.docs where path = 'players/<uuid-du-joueur>';
 --
 -- Tout remettre à zéro :

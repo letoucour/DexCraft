@@ -638,7 +638,7 @@ dialog::backdrop{background:rgba(10,12,30,.72)}
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="gate" class="gate"><div class="gate-box">
   <div class="brand" style="justify-content:center;font-size:1.6rem"><span class="gem">◆</span>DexCraft</div>
-  <p class="muted" id="gate-sub">Alpha test privée, limitée à 10 joueurs.</p>
+  <p class="muted" id="gate-sub">Alpha test privée.</p>
   <form id="gate-form" autocomplete="on">
     <label class="field">Adresse e-mail<input type="email" id="gate-mail" required autocomplete="email" placeholder="vous@exemple.com"></label>
     <label class="field">Mot de passe<input type="password" id="gate-pass" required minlength="6" autocomplete="current-password" placeholder="6 caractères minimum"></label>
@@ -2300,7 +2300,6 @@ const DIAG={claude:true,db:false,user:false,id:false,write:null,err:""};
    ============================================================ */
 const SUPABASE_URL="https://hxrbzhmzjeuhmaioqhdd.supabase.co";
 const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4cmJ6aG16amV1aG1haW9xaGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNDk0NzEsImV4cCI6MjEwNTcyNTQ3MX0.1FIiAPVzkaVxiN2s5DzZoJsmWCivIW7nFam8QWqBgAE";
-const MAX_PLAYERS=10;
 /* Vos comptes administrateurs : le mode développeur s'affiche pour ces adresses.
    Pour pouvoir aussi créditer les autres joueurs, ajoutez-vous à la table admins (voir le guide). */
 const ADMIN_EMAILS=["theo.lostria@gmail.com"];
@@ -2334,7 +2333,7 @@ function makeDb(sb){
         },
         async set(obj){
           const {error}=await sb.from("docs").upsert({path,coll,data:obj,updated_at:nowIso()},{onConflict:"path"});
-          if(error)throw new Error(error.message.includes("ALPHA_FULL")?"L’alpha est complète ("+MAX_PLAYERS+" joueurs).":error.message);
+          if(error)throw new Error(error.message);
           cache[coll]=cache[coll]||{};cache[coll][id]=obj;emit(coll);
         },
         async update(partial){
@@ -2455,7 +2454,6 @@ async function startOnline(session){
   }catch(e){
     console.error(e);
     const m=String(e.message||e);DIAG.err=m;
-    if(m.includes("complète")||m.includes("ALPHA_FULL")){showGate(true);gateMsg("L’alpha est complète : "+MAX_PLAYERS+" joueurs maximum.");await SB.auth.signOut();return}
     startLocal();
     toast(/row-level security|policy/i.test(m)?"Écriture refusée par Supabase : vérifiez les règles du script SQL.":"Sauvegarde en ligne indisponible : "+m);
     return;
