@@ -526,6 +526,7 @@ h3{font-size:1.1rem}
 .pay-banner{display:flex;gap:12px;align-items:flex-start;margin-top:16px;border:2px solid var(--danger);background:color-mix(in srgb,var(--danger) 16%,var(--surface));
   border-radius:14px;padding:14px 18px;color:var(--ink);font-weight:700}
 .pay-banner::before{content:"!";flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--danger);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.f2p-note{margin-top:12px;border:2px solid var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surface));border-radius:14px;padding:12px 18px;color:var(--ink)}
 .offer-big.starter{border-color:#5fd68f}
 .offer-big.wailord{border-color:#4fc3ff;background:linear-gradient(160deg,color-mix(in srgb,#4fc3ff 12%,var(--surface)),var(--surface) 60%)}
 .offer-big.done{opacity:.6}
@@ -1693,6 +1694,7 @@ function vShop(){
   const dev=devOn(),cost=shopQty*PACK_PRICE,can=dev||S.credits>=cost;
   return `<h1>Boutique</h1><p class="muted">Vous avez <b>${fmtN(S.credits)} crédits</b>. Les crédits servent aux enchères et à l’achat de boosters.</p>
   <div class="pay-banner"><span>Les achats en euros sont désactivés pendant l’alpha : aucun paiement n’est possible dans le jeu pour le moment. ${ALPHA_FREE?"En attendant, les offres uniques sont offertes à tous les testeurs.":"Les offres gratuites et les achats en crédits fonctionnent normalement."}</span></div>
+  <div class="f2p-note"><b>DexCraft se joue entièrement gratuitement.</b> Toutes les cartes s’obtiennent sans rien payer, avec les boosters gratuits, les enchères, les échanges et les évolutions. Les packs payants ne font que gagner du temps : n’en achetez que si vous pouvez vraiment vous le permettre.</div>
   ${dev?`<div class="dev-banner"><b>Mode développeur actif :</b> tous les achats sont gratuits pour vous. Désactivez-le depuis votre profil.</div>`:""}
   ${(()=>{const av=ONCE.filter(o=>!(S.bought&&S.bought[o.key]));return av.length?`<h2 style="margin-top:18px">Offres uniques</h2>
   <div class="shop once-row">${av.map(o=>onceHTML(o,dev)).join("")}</div>`:""})()}

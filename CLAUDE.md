@@ -51,7 +51,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 - Pseudo : un changement tous les 7 jours à partir de la validation (`pseudoTs` dans le profil), après une boîte de confirmation. L'outil administrateur n'est pas soumis au délai.
 - Évolution : 3 exemplaires d'un Pokémon donnent 1 carte de son évolution, ou d'une de ses méga-évolutions. « Évolution rapide » traite d'un coup tous les Pokémon possédés à 4 exemplaires ou plus dont l'évolution manque.
 - Maximum 10 enchères simultanées par joueur.
-- Boutique : `ALPHA_FREE = false`. Le Pack fondateur reste gratuit (`free:true`). Le Pack de démarrage (5 €) et le Pack Wailord (20 €) sont payants, mais les paiements en euros sont désactivés : note « Paiement indisponible pendant l’alpha » et boîte « Paiement indisponible » au clic, comme pour les crédits.
+- Boutique : `ALPHA_FREE = false`. Le Pack fondateur reste gratuit (`free:true`). Le Pack de démarrage (5 €) et le Pack Wailord (20 €) sont payants, mais les paiements en euros sont désactivés : note « Paiement indisponible pendant l’alpha » et boîte « Paiement indisponible » au clic, comme pour les crédits. Un encadré vert rappelle que le jeu se joue entièrement gratuitement et qu'on n'achète que si on peut se le permettre : à garder.
 
 ### Marché
 
@@ -81,7 +81,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 ## 6. Chantiers ouverts
 
 1. Découper `index.html` en modules : données, cartes, marché, animations, interface.
-2. Intégrer les visuels des cartes quand ils seront disponibles.
+2. Intégrer les visuels des cartes : procédure complète dans `dexcraft-guide-images.md`. Le script `outils/telecharger-images.ps1` (options `-Essai` et `-Seulement "1,6"`) récupère 1 117 illustrations sur 1 127 depuis PokeAPI ; restent à fournir à la main Méga-Nigirigon (4092) et les 9 mythiques et transcendantes.
 3. Passer les tirages et les transactions côté serveur.
 4. Brancher un paiement réel pour le Pack de démarrage, le Pack Wailord et les crédits.
 
