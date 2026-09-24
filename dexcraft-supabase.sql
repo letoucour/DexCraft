@@ -6,7 +6,8 @@
 --  Installation complète, dans cet ordre :
 --    1. dexcraft-supabase.sql  (ce fichier : tables et droits)
 --    2. dexcraft-config.sql    (données du jeu, généré par outils\generer-config.ps1)
---    3. dexcraft-serveur.sql   (fonctions du jeu : le serveur est l'arbitre)
+--    3. dexcraft-serveur.sql   (fonctions du jeu, partie 1 : le serveur est l'arbitre)
+--    4. dexcraft-serveur-2.sql (fonctions du jeu, partie 2 : marché, VoltoBataille, administration)
 --  Depuis la 0.4.0, les joueurs ne peuvent QUE LIRE la table docs : toute
 --  modification passe par les fonctions dc_* de dexcraft-serveur.sql.
 -- ============================================================
