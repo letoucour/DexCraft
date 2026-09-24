@@ -1,7 +1,14 @@
 -- ============================================================
---  DexCraft — base de données pour l'alpha test (Supabase)
+--  DexCraft — base de données (Supabase)
 --  À coller dans Supabase > SQL Editor > New query, puis "Run".
 --  Ce script peut être relancé autant de fois que nécessaire.
+--
+--  Installation complète, dans cet ordre :
+--    1. dexcraft-supabase.sql  (ce fichier : tables et droits)
+--    2. dexcraft-config.sql    (données du jeu, généré par outils\generer-config.ps1)
+--    3. dexcraft-serveur.sql   (fonctions du jeu : le serveur est l'arbitre)
+--  Depuis la 0.4.0, les joueurs ne peuvent QUE LIRE la table docs : toute
+--  modification passe par les fonctions dc_* de dexcraft-serveur.sql.
 -- ============================================================
 
 -- 1) Table unique : profils des joueurs et annonces du marché
@@ -53,16 +60,16 @@ $$;
 
 grant execute on function public.acquire_lease(text, text, timestamptz) to authenticated;
 
--- 5) Droits d'accès : sans ces lignes, le jeu reçoit « permission denied for table docs »
+-- 5) Droits d'accès : les joueurs connectés LISENT seulement (anti-triche, 0.4.0)
 grant usage on schema public to anon, authenticated;
-grant select, insert, update, delete on public.docs   to authenticated;
-grant select                        on public.admins to authenticated;
+grant select on public.docs   to authenticated;
+grant select on public.admins to authenticated;
+revoke insert, update, delete on public.docs from anon, authenticated;
 
--- et pour les tables créées plus tard
-alter default privileges in schema public
-  grant select, insert, update, delete on tables to authenticated;
+-- aucune écriture automatique sur les tables créées plus tard
+alter default privileges in schema public revoke insert, update, delete on tables from authenticated;
 
--- 6) Sécurité : chacun n'écrit que son propre profil
+-- 6) Sécurité : lecture pour les joueurs connectés, écriture uniquement par les fonctions du jeu
 alter table public.docs   enable row level security;
 alter table public.admins enable row level security;
 
@@ -73,19 +80,6 @@ drop policy if exists admins_read on public.admins;
 create policy docs_read on public.docs
   for select to authenticated
   using (true);
-
-create policy docs_write on public.docs
-  for all to authenticated
-  using (
-    coll = 'market'
-    or path = 'players/' || auth.uid()::text
-    or exists (select 1 from public.admins a where a.uid = auth.uid())
-  )
-  with check (
-    coll = 'market'
-    or path = 'players/' || auth.uid()::text
-    or exists (select 1 from public.admins a where a.uid = auth.uid())
-  );
 
 create policy admins_read on public.admins
   for select to authenticated
