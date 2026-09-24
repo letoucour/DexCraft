@@ -2046,7 +2046,7 @@ function buyCredits(i){
   const cp=CREDIT_PACKS[i||0]||CREDIT_PACKS[0];
   if(!devOn()){
     openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Paiement indisponible</h2>
-      <p class="muted">Les achats en euros ne sont pas encore ouverts. Vous pouvez gagner des crédits en vendant vos cartes aux enchères ou en défaussant vos doubles.</p>
+      <p class="muted">Les achats en euros ne sont pas encore ouverts. Vous pouvez gagner des crédits en vendant vos cartes aux enchères, en défaussant vos doubles, ou jusqu’à ${fmtN(VB_CAP)} crédits par jour à la VoltoBataille.</p>
       <div class="actions"><button class="btn primary" data-act="close">Compris</button></div></div>`,true);return;
   }
   run(async()=>{const ok=await mutateMe(s=>{s.credits+=cp.credits});if(ok)toast(`+${fmtN(cp.credits)} crédits (mode développeur).`)});
