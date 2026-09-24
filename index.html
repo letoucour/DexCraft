@@ -499,9 +499,20 @@ h3{font-size:1.1rem}
 .badge-alpha.beta{color:#fff;background:linear-gradient(100deg,#2f7fe0,#4fc3ff 50%,#2f7fe0)}
 .badge-alpha.master{color:#ffcf3f;background:linear-gradient(100deg,#2a1d52,#4b2d86 50%,#2a1d52);box-shadow:0 0 0 1px #ffcf3f,0 1px 6px rgba(120,80,220,.45)}
 .titles{display:flex;flex-direction:column;gap:10px;margin-top:10px}
-.title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.title-row .badge-alpha{margin-left:0}
-.title-row.locked .badge-alpha{filter:grayscale(1);opacity:.5}
+.badge-alpha.tc{color:#fff;background:var(--tc);text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.badge-alpha.tier{color:#2a3050;background:linear-gradient(100deg,#eef1f8,#b9c2d2 50%,#eef1f8)}
+.badge-alpha.secret{color:#e5ccff;background:#1b1530;box-shadow:0 0 0 1px #b46cff}
+.badge-alpha.myth{color:#fff;background:linear-gradient(90deg,#ff4f4f,#ffcf3f,#5fd68f,#4fc3ff,#b46cff,#ff4fd8);text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.badge-alpha.trans{color:#23283d;background:linear-gradient(100deg,#fff,#9aa3b5 30%,#f2f4f8 55%,#7d8496 80%,#e8ecf5)}
+.title-group h4{margin:16px 0 0;font-family:var(--display);font-size:1rem}
+.title-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:8px}
+.title-pick{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:8px 10px;min-width:0}
+.title-pick .badge-alpha{margin-left:0}
+.title-pick[aria-pressed="true"]{border-color:var(--gold);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--gold)}
+.title-pick.locked .badge-alpha{filter:grayscale(1);opacity:.5}
+.tp-d{font-size:.78rem;color:var(--ink-soft);line-height:1.25}
+.tp-bar{width:100%;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.tp-bar b{display:block;height:100%;background:var(--gold)}
 .dev-panel{border-color:var(--danger)}
 .dev-chip{background:var(--danger);color:#fff;border-color:var(--danger);font-size:.8rem}
 .shop-cta{margin-top:14px;background:transparent;border:1px solid var(--line);color:var(--ink-soft)}
@@ -857,6 +868,8 @@ function stamp(s){s.unique=Object.keys(s.coll).filter(k=>!isSpec(k)).length;s.my
   if(BETA_OPEN)s.beta=true;
   // date d'obtention du titre Maître : départage les Maîtres au classement, effacée si le titre est perdu
   if(masterCount(s.coll)===DEX_ORDER.length){if(!s.masterTs)s.masterTs=Date.now()}else delete s.masterTs;
+  // un titre choisi puis perdu (carte vendue, échangée…) quitte la sélection
+  if(Array.isArray(s.titles))s.titles=s.titles.filter(k=>TITLE_BY[k]&&titleEarned(TITLE_BY[k],s)).slice(0,TITLE_MAX);
   s.updated=Date.now()}
 
 let queue=Promise.resolve();
@@ -1151,21 +1164,84 @@ function avatarHTML(av,size=36){
   const src=imgFor(av);
   return `<span class="ava" style="--s:${size}px;--c1:${c1};--c2:${c2}" title="${esc(n)}">${src?`<img src="${esc(src)}" alt="" onerror="this.remove()">`:""}<b aria-hidden="true">${esc(n[0])}</b></span>`;
 }
-function alphaOf(id){const p=id===ME?S:PLAYERS[id];return !!(p&&p.alpha)}
-/* Titre Maître : toutes les cartes du jeu, Pokémon et méga-évolutions, hors mythiques et transcendantes */
-const masterCount=coll=>DEX_ORDER.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
-function masterOf(id){return masterCount(collOf(id))===DEX_ORDER.length}
-const MASTER_TAG=sm=>`<span class="badge-alpha master${sm?" sm":""}" title="Possède toutes les cartes du jeu">♛ Maître</span>`;
-const ALPHA_DESC="A aidé au développement en Alpha de DexCraft";
-const ALPHA_TAG=sm=>`<span class="badge-alpha${sm?" sm":""}" title="${ALPHA_DESC}">✦ Alpha testeur</span>`;
+/* ---------- titres ---------- */
 /* Titre Bêta testeur : donné à tous les joueurs tant que BETA_OPEN est vrai, et enregistré
    dans leur profil (champ beta). Passez BETA_OPEN à false à la fin de la bêta : ceux qui
    ont joué pendant la bêta gardent le titre, les nouveaux ne l'ont plus. */
 const BETA_OPEN=true;
-const BETA_DESC="A participé à la Bêta ouverte de DexCraft";
-const BETA_TAG=sm=>`<span class="badge-alpha beta${sm?" sm":""}" title="${BETA_DESC}">◈ Bêta testeur</span>`;
-function betaOf(id){const p=id===ME?S:PLAYERS[id];return BETA_OPEN||!!(p&&p.beta)}
-function badgeTag(id,small){return (masterOf(id)?MASTER_TAG(small):"")+(alphaOf(id)?ALPHA_TAG(small):"")+(betaOf(id)?BETA_TAG(small):"")}
+/* Maître : toutes les cartes du jeu, Pokémon et méga-évolutions, hors mythiques et transcendantes */
+const masterCount=coll=>DEX_ORDER.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
+const POKE_IDS=DEX.map((d,i)=>i+1);
+const STARTER_IDS=[1,4,7,152,155,158,252,255,258,387,390,393,495,498,501,650,653,656,722,725,728,810,813,816,906,909,912];
+const REGIONS=["","Kanto","Johto","Hoenn","Sinnoh","Unys","Kalos","Alola","Galar","Paldea"];
+const REGION_C=["","#d8433a","#b8912a","#2f9e5b","#5a6fd0","#3a3a46","#2f7fe0","#e0782a","#9141cb","#c8324b"];
+/* Paliers du Pokédex : nombre de Pokémon différents (1 à 1025, sans les mégas) */
+const DEX_TIERS=[[50,"Novice"],[151,"Gamin"],[300,"Scout"],[450,"Ranger"],[600,"Champion d’Arène"],[750,"As"],[900,"Conseil 4"],[1025,"Champion de la Ligue"]];
+/* Chaque titre : k clé, n nom, ic icône, d description, g groupe, cls/c style,
+   ids + need (cartes à posséder) ou test(profil). hidden : jamais montré tant qu'il n'est pas obtenu.
+   Les mythiques et les transcendantes ne comptent que pour Secret, Mythique et Transcendant. */
+const TITLES=[
+  {k:"alpha",n:"Alpha testeur",ic:"✦",g:"Spéciaux",d:"A aidé au développement en Alpha de DexCraft",test:p=>!!p.alpha},
+  {k:"beta",n:"Bêta testeur",ic:"◈",g:"Spéciaux",cls:"beta",d:"A participé à la Bêta ouverte de DexCraft",test:p=>BETA_OPEN||!!p.beta},
+  {k:"secret",n:"Secret",ic:"⁂",g:"Spéciaux",cls:"secret",d:"A obtenu une carte secrète",test:p=>HIDDEN_IDS.some(x=>(p.coll||{})[x]>0),hidden:true},
+  {k:"mythique",n:"Mythique",ic:"✦",g:"Spéciaux",cls:"myth",d:"Possède toutes les cartes mythiques",ids:MYTH_IDS,hidden:true},
+  {k:"transcendant",n:"Transcendant",ic:"❖",g:"Spéciaux",cls:"trans",d:"Possède toutes les cartes transcendantes",ids:TRANS_IDS,hidden:true},
+  ...DEX_TIERS.map(([need,n])=>({k:"dex"+need,n,ic:"★",g:"Pokédex",cls:"tier",d:need===POKE_IDS.length?"A obtenu tous les Pokémon du Pokédex":`A obtenu ${fmtN(need)} Pokémon différents`,ids:POKE_IDS,need})),
+  {k:"maitre",n:"Maître",ic:"♛",g:"Pokédex",cls:"master",d:"Possède toutes les cartes du jeu, Pokémon et méga-évolutions",ids:DEX_ORDER},
+  {k:"starters",n:"Starters",ic:"✿",g:"Collections",cls:"tc",c:"#e0782a",d:"A obtenu tous les starters des 9 générations",ids:STARTER_IDS},
+  ...[0,1,2,3,5].map(r=>({k:"rar"+r,n:["Commun","Peu commun","Rare","Épique","","Légendaire"][r],ic:gems(r),g:"Collections",cls:"tc",c:["#7d8196","#2f9e5b","#2f7fe0","#9a4fe6","","#c98a00"][r],
+    d:`Possède toutes les cartes ${RAR[r].toLowerCase()}s`,ids:BYR[r]})),
+  ...REGIONS.slice(1).map((reg,i)=>({k:"gen"+(i+1),n:"Maître de "+reg,ic:"✧",g:"Régions",cls:"tc",c:REGION_C[i+1],
+    d:`A obtenu tous les Pokémon de la génération ${ROMAN[i+1]} (${reg})`,ids:POKE_IDS.filter(x=>DEX[x-1][2]===i+1)})),
+  ...TYPES.slice(1).map(([tn,col],i)=>({k:"type"+(i+1),n:tn,ic:"●",g:"Types",cls:"tc",c:col,
+    d:`Possède tous les Pokémon de type ${tn}`,ids:POKE_IDS.filter(x=>DEX[x-1][3].includes(i+1))})),
+];
+const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
+const TITLE_MAX=3,TITLE_DEFAULT=["alpha","beta","maitre"];
+const profOf=id=>id===ME?S:PLAYERS[id];
+const ownCount=(ids,coll)=>ids.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
+function titleProgress(t,p){const need=t.need||(t.ids?t.ids.length:1);return [t.ids?ownCount(t.ids,p.coll||{}):titleEarned(t,p)?1:0,need]}
+function titleEarned(t,p){if(!p)return false;if(t.test)return t.test(p);const [n,need]=titleProgress(t,p);return n>=need}
+/* Titres choisis par le joueur (3 au plus), sinon ceux par défaut. Alpha puis Bêta passent devant. */
+function titleSel(p){return Array.isArray(p.titles)?p.titles:TITLE_DEFAULT}
+function titlesOf(id){
+  const p=profOf(id);if(!p)return [];
+  const sel=titleSel(p).filter(k=>TITLE_BY[k]&&titleEarned(TITLE_BY[k],p));
+  const rank=k=>k==="alpha"?0:k==="beta"?1:2;
+  return sel.map((k,i)=>[k,i]).sort((a,b)=>rank(a[0])-rank(b[0])||a[1]-b[1]).slice(0,TITLE_MAX).map(([k])=>TITLE_BY[k]);
+}
+function titleTag(t,sm){return `<span class="badge-alpha${t.cls?" "+t.cls:""}${sm?" sm":""}"${t.c?` style="--tc:${t.c}"`:""} title="${esc(t.d)}">${t.ic} ${esc(t.n)}</span>`}
+function badgeTag(id,small){return titlesOf(id).map(t=>titleTag(t,small)).join("")}
+/* Section « Titres » du profil : les titres obtenus se choisissent, les autres montrent la progression */
+function titlesPanelHTML(){
+  const shown=titlesOf(ME).map(t=>t.k);
+  const groups=[...new Set(TITLES.map(t=>t.g))].map(g=>{
+    const items=TITLES.filter(t=>t.g===g).map(t=>({t,ok:titleEarned(t,S)})).filter(x=>x.ok||!x.t.hidden);
+    if(!items.length)return "";
+    const got=items.filter(x=>x.ok).length;
+    return `<div class="title-group"><h4>${g} <span class="muted">${got} / ${items.length}</span></h4><div class="title-grid">${items.map(({t,ok})=>{
+      if(ok)return `<button class="title-pick" data-act="title-toggle" data-k="${t.k}" aria-pressed="${shown.includes(t.k)}">${titleTag(t)}<span class="tp-d">${esc(t.d)}</span></button>`;
+      const [n,need]=titleProgress(t,S);
+      return `<div class="title-pick locked">${titleTag(t)}<span class="tp-d">${esc(t.d)}</span>${t.ids?`<span class="tp-bar"><b style="width:${Math.min(100,n*100/need)}%"></b></span><span class="tp-d">${fmtN(n)} / ${fmtN(need)}</span>`:""}</div>`;
+    }).join("")}</div></div>`;
+  }).join("");
+  return `<p class="muted" style="margin:4px 0 0">Choisissez jusqu’à ${TITLE_MAX} titres parmi ceux obtenus : ils s’affichent à côté de votre nom, au profil, au classement et sur vos annonces. Alpha testeur et Bêta testeur passent toujours en premier. <b>${shown.length} / ${TITLE_MAX} affichés</b>${shown.length?` : ${titlesOf(ME).map(t=>titleTag(t,true)).join("")}`:""}</p>${groups}`;
+}
+function toggleTitle(k){
+  run(async()=>{
+    let why="";
+    const ok=await mutateMe(s=>{
+      const t=TITLE_BY[k];if(!t||!titleEarned(t,s)){why="lost";return false}
+      const sel=titleSel(s).filter(x=>TITLE_BY[x]&&titleEarned(TITLE_BY[x],s));
+      if(sel.includes(k))s.titles=sel.filter(x=>x!==k);
+      else if(sel.length>=TITLE_MAX){why="max";return false}
+      else s.titles=[...sel,k];
+    });
+    if(!ok)toast(why==="max"?`${TITLE_MAX} titres au maximum : retirez-en un avant d’en choisir un autre.`:"Vous n’avez plus ce titre.");
+  });
+}
+function alphaOf(id){const p=profOf(id);return !!(p&&p.alpha)}
+function betaOf(id){return titleEarned(TITLE_BY.beta,profOf(id))}
 function avatarOf(id){const pl=id===ME?S:PLAYERS[id];return pl?pl.avatar:null}
 async function refreshProfiles(){
   if(!user)return;const ids=new Set(Object.keys(PLAYERS));for(const m of Object.values(MARKET)){[m.seller,m.bidder,m.owner,m.taker].forEach(x=>x&&ids.add(x))}
@@ -1491,11 +1567,7 @@ function vProfile(){
 
   <section class="section panel">
     <h3>Titres</h3>
-    <p class="muted" style="margin:4px 0 0">Vos titres s’affichent à côté de votre nom : profil, classement et annonces.</p>
-    <div class="titles">${(()=>{const n=masterCount(S.coll),all=DEX_ORDER.length,ok=n===all;
-      return `<div class="title-row${ok?"":" locked"}">${MASTER_TAG()}<span class="muted">${ok?"Obtenu : vous possédez toutes les cartes du jeu.":`Toutes les cartes du jeu, Pokémon et méga-évolutions : ${fmtN(n)} / ${fmtN(all)}.`}</span></div>`})()}
-      ${S.alpha?`<div class="title-row">${ALPHA_TAG()}<span class="muted">${ALPHA_DESC}.</span></div>`:""}
-      ${betaOf(ME)?`<div class="title-row">${BETA_TAG()}<span class="muted">${BETA_DESC}.</span></div>`:""}</div>
+    ${titlesPanelHTML()}
   </section>
 
   <section class="section">
@@ -2344,6 +2416,7 @@ document.addEventListener("click",e=>{
         <p><b>C’est définitif.</b> Tapez RESET pour confirmer.</p>
         <label class="field">Confirmation<input id="reset-all-txt" autocomplete="off" placeholder="RESET"></label>
         <div class="actions"><button class="btn danger" data-act="reset-all-go">Tout réinitialiser</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break}
+    case"title-toggle":toggleTitle(b.dataset.k);break;
     case"fill-packs":{if(!devOn()||mode!=="online")break;
       const n=new Set([...Object.keys(PLAYERS),ME]).size;
       openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Remplir la réserve de boosters ?</h2>
