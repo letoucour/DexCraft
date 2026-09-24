@@ -62,6 +62,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 ## 4. Interface, décisions prises
 
 - Ouverture de booster : main de cartes en éventail, défilement horizontal, carte centrale mise en avant.
+- **VoltoBataille** (onglet `volto`, depuis la 0.3.0) : Voltorbe Flip du casino de Johto. 5 × 5 cartes (1, 2, 3 ou Voltorbe), indicateurs de points et de Voltorbe par ligne et colonne, gains = produit des cartes retournées, mode mémo, 8 niveaux (`VB_LEVELS`), montée d'un niveau par victoire, retour au nombre de cartes retournées après une défaite ou un encaissement. Gains versés en crédits dans la limite de `VB_CAP` = 2 000 par jour (barre de progression, remise à zéro à minuit heure du joueur). Profil : `volto = {day, gained, level}`. Manche en cours en mémoire seulement (`VB`). Lien depuis l'écran des boosters : « En attendant vos boosters, une petite VoltoBataille ? ». Son `SFX.boom` pour l'explosion.
 - Écran des boosters : bandeau d'aide en bas (« Changez d’image de profil… »), clic vers le profil, masquable par la croix (préférence `dc-hint-profil` dans le navigateur).
 - Animations par rareté, de plus en plus fortes : rien en Commune, reflet vert en Peu commune, bleu en Rare, gerbe violette en Épique, turquoise en Méga, scène plein écran en Légendaire, fanfare et feux d'artifice en Mythique, scène argentée la plus longue en Transcendante.
 - Dos de carte : bleu par défaut, rouge en Mythique, métallisé gris en Transcendante.
