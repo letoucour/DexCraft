@@ -62,6 +62,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 ## 4. Interface, décisions prises
 
 - Ouverture de booster : main de cartes en éventail, défilement horizontal, carte centrale mise en avant.
+- Écran des boosters : bandeau d'aide en bas (« Changez d’image de profil… »), clic vers le profil, masquable par la croix (préférence `dc-hint-profil` dans le navigateur).
 - Animations par rareté, de plus en plus fortes : rien en Commune, reflet vert en Peu commune, bleu en Rare, gerbe violette en Épique, turquoise en Méga, scène plein écran en Légendaire, fanfare et feux d'artifice en Mythique, scène argentée la plus longue en Transcendante.
 - Dos de carte : bleu par défaut, rouge en Mythique, métallisé gris en Transcendante.
 - Reflets des cartes : Rare, bande de reflet bleue ; Épique, halo violet dans le fond de carte et reflet violet ; Légendaire, fond doré avec des lignes holographiques aux couleurs du ou des types (`--c1`, `--c2`) et reflet brillant.
@@ -98,7 +99,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 - Modifier `index.html` directement, en gardant le style du code existant : fonctions courtes, chaînes en français, pas de dépendance nouvelle.
 - Après chaque modification, vérifier au minimum : ouverture d'un booster, collection, évolutions, enchères, échanges, profil.
 - Commit en français, une phrase claire décrivant le changement. Le push sur `main` déclenche le déploiement GitHub Pages.
-- **Version** : `APP_VERSION` dans `index.html`, affichée en bas à gauche. À **chaque push**, monter le dernier chiffre (0.2.1 → 0.2.2 → 0.2.3…). Mise à jour majeure de la bêta : 0.3.0, puis nouveau cycle. Sortie publique : 1.0.0. Citer la version dans le message de commit.
+- **Version** : `APP_VERSION` dans `index.html`, affichée en bas à gauche. À **chaque push**, monter le dernier chiffre (0.2.1 → 0.2.2 → 0.2.3…), sauf si Theo dit explicitement qu'un ajout mineur ne change pas la version (alors ni version ni patchnote). Mise à jour majeure de la bêta : 0.3.0, puis nouveau cycle. Sortie publique : 1.0.0. Citer la version dans le message de commit.
 - Ne pousser que sur signal explicite de Theo (« push »).
 - **Patchnote** : à chaque push validé, donner à Theo un patchnote récapitulatif de la version, rédigé pour les joueurs.
 - Toujours répondre à Theo en français.

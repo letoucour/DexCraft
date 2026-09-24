@@ -638,6 +638,12 @@ dialog::backdrop{background:rgba(10,12,30,.72)}
 .my-trades.alert{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
 .mt-pend{background:var(--gold);color:var(--gold-ink);border-radius:999px;padding:1px 10px;font-size:.85rem}
 .mt-arrow{margin-left:auto;color:var(--ink-soft)}
+.profile-hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(26px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;align-items:center;gap:4px;
+  width:min(620px,calc(100% - 24px));background:var(--surface);border:1px solid var(--gold);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:4px 4px 4px 14px}
+.ph-go{flex:1;background:none;border:0;padding:6px 0;text-align:left;font-size:.85rem;font-weight:700;color:var(--ink);line-height:1.3}
+.ph-go::before{content:"◆ ";color:var(--gold)}
+.ph-x{flex:0 0 auto;width:32px;height:32px;border:0;border-radius:10px;background:none;color:var(--ink-soft);font-size:1.2rem;line-height:1}
+.ph-x:hover{background:var(--surface-2)}
 .trade-info{display:flex;flex-direction:column;gap:8px}
 .trade-info>.tag,.trade-info>.tag-row{align-self:flex-start}
 .tag-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -1425,8 +1431,11 @@ function vBooster(){
       <div class="muted">${p.next?`Prochain dans <b data-countdown="${p.next}">${fmtLeft(p.next-Date.now())}</b>`:"Réserve pleine"}</div>
       ${S.bonus?`<div class="bonus-line"><b>+ ${S.bonus}</b> booster${S.bonus>1?"s":""} acheté${S.bonus>1?"s":""}, ouvert${S.bonus>1?"s":""} une fois la réserve gratuite vide</div>`:""}</div>
     <button class="btn shop-cta" data-view="shop">Acheter des boosters, ${PACK_PRICE} crédits l’unité</button>
-  </div>`;
+  </div>
+  ${hintHidden()?"":`<div style="height:64px" aria-hidden="true"></div><div class="profile-hint"><button class="ph-go" data-view="profile">Changez d’image de profil, de pseudo et voyez la progression de vos titres en cliquant sur votre pseudo pour aller dans votre profil.</button><button class="ph-x" data-act="hide-hint" aria-label="Masquer ce message">×</button></div>`}`;
 }
+/* Bandeau d'aide de l'écran des boosters, masquable (préférence gardée sur l'appareil) */
+function hintHidden(){try{return localStorage.getItem("dc-hint-profil")==="1"}catch(e){return false}}
 function filtered(){
   const q=filt.q.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const out=[];
@@ -2484,6 +2493,7 @@ document.addEventListener("click",e=>{
         <div class="actions"><button class="btn danger" data-act="reset-all-go">Tout réinitialiser</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break}
     case"title-toggle":toggleTitle(b.dataset.k);break;
     case"title-info":titleInfo(b.dataset.k);break;
+    case"hide-hint":try{localStorage.setItem("dc-hint-profil","1")}catch(e){}{const h=$(".profile-hint");if(h)h.remove()}break;
     case"fill-packs":{if(!devOn()||mode!=="online")break;
       const n=new Set([...Object.keys(PLAYERS),ME]).size;
       openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Remplir la réserve de boosters ?</h2>
