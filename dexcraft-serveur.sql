@@ -23,6 +23,9 @@ alter table public.vb_rounds enable row level security;
 alter table public.game_config enable row level security;
 revoke all on public.vb_rounds, public.game_config from anon, authenticated;
 
+-- ---------- ancien verrou (remplacé par les verrous des fonctions ci-dessous) ----------
+drop function if exists public.acquire_lease(text, text, timestamptz);
+
 -- ---------- droits : lecture seule pour les joueurs ----------
 drop policy if exists docs_write on public.docs;
 drop policy if exists docs_read  on public.docs;

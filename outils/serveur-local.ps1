@@ -11,6 +11,7 @@ $types = @{ ".html"="text/html; charset=utf-8"; ".js"="text/javascript"; ".css"=
             ".png"="image/png"; ".webp"="image/webp"; ".jpg"="image/jpeg"; ".svg"="image/svg+xml"; ".md"="text/plain; charset=utf-8" }
 $ecoute = New-Object Net.HttpListener
 $ecoute.Prefixes.Add("http://localhost:$Port/")
+$ecoute.Prefixes.Add("http://127.0.0.1:$Port/")   # deuxième adresse : une autre session de jeu, pour tester à deux comptes
 $ecoute.Start()
 Write-Host "Serveur DexCraft : http://localhost:$Port/  (Ctrl + C pour arrêter)"
 try {

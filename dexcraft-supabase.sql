@@ -32,33 +32,8 @@ create table if not exists public.admins (
 drop trigger if exists docs_player_limit on public.docs;
 drop function if exists public.check_player_limit();
 
--- 4) Verrou court utilisé par le jeu (enchères, échanges, évolutions)
-create or replace function public.acquire_lease(p_path text, p_holder text, p_until timestamptz)
-returns boolean
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  updated int;
-begin
-  update public.docs
-     set lease_holder = p_holder,
-         lease_until  = p_until
-   where path = p_path
-     and (lease_until is null or lease_until < now() or lease_holder = p_holder);
-  get diagnostics updated = row_count;
-  if updated > 0 then
-    return true;
-  end if;
-  if not exists (select 1 from public.docs where path = p_path) then
-    return true;   -- le document n'existe pas encore : rien à verrouiller
-  end if;
-  return false;
-end;
-$$;
-
-grant execute on function public.acquire_lease(text, text, timestamptz) to authenticated;
+-- 4) Ancien verrou du jeu, remplacé par les verrous des fonctions du serveur (0.4.0) : supprimé
+drop function if exists public.acquire_lease(text, text, timestamptz);
 
 -- 5) Droits d'accès : les joueurs connectés LISENT seulement (anti-triche, 0.4.0)
 grant usage on schema public to anon, authenticated;
@@ -99,7 +74,6 @@ end $$;
 -- 8) Vérification : ces lignes doivent répondre sans erreur
 select 'table docs OK'     as verif, count(*) as lignes from public.docs;
 select 'table admins OK'   as verif, count(*) as lignes from public.admins;
-select 'fonction lease OK' as verif, public.acquire_lease('test/verif', 'setup', now()) as resultat;
 select 'droits docs OK'    as verif,
        has_table_privilege('authenticated', 'public.docs', 'SELECT') as lecture,
        has_table_privilege('authenticated', 'public.docs', 'INSERT') as ecriture;
