@@ -4,7 +4,7 @@ Ce fichier remplace l'historique des conversations. Toute session Claude Code do
 
 ## 1. Le projet en deux phrases
 
-DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de wiki-masters.com : on ouvre des boosters, on complète une collection, on échange et on vend aux enchères entre joueurs. Il tourne actuellement en alpha privée, sans limite de joueurs.
+DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de wiki-masters.com : on ouvre des boosters, on complète une collection, on échange et on vend aux enchères entre joueurs. Il tourne actuellement en bêta ouverte (version affichée en bas à gauche), sans limite de joueurs.
 
 **Propriétaire du projet :** Theo (theo.lostria@gmail.com), administrateur du jeu.
 
@@ -93,8 +93,9 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 
 1. Découper `index.html` en modules : données, cartes, marché, animations, interface.
 2. Images des 9 mythiques et transcendantes, à fournir par Theo dans `images-perso/` (nommées par numéro), puis à convertir et à autoriser dans `imgFor`. Procédure et outils : `dexcraft-guide-images.md`, `outils/telecharger-images.ps1`, `outils/planche-images.ps1` (planche de contrôle), `outils/serveur-local.ps1` (test sur http://localhost:8123). Conversion : `magick in.png -trim +repage -resize 240x240 -background none -gravity center -extent 256x256 -quality 80 images/<id>.webp`.
-3. Passer les tirages et les transactions côté serveur.
-4. Brancher un paiement réel pour le Pack de démarrage, le Pack Wailord et les crédits.
+3. **Version 0.4.0 : anti-triche, en cours.** Aujourd'hui un joueur peut modifier son profil depuis la console (F12), par exemple `mutateMe(s=>{s.credits=999999})`. Objectif : le serveur devient l'arbitre. Les joueurs ne peuvent plus écrire directement dans `players/*` (règles RLS). Chaque action passe par une fonction SQL `security definer` qui vérifie et applique : tirages avec hasard côté serveur, défausse, évolution, boutique, enchères et échanges, VoltoBataille avec plateau caché côté serveur, réglages cosmétiques et outils administrateur. Compteurs `stats` et champs dérivés (`unique`, `byr`, `total`, `masterTs`) calculés côté serveur. Tests sur un **projet Supabase de test** séparé, jamais sur la production ; ensuite, script SQL à lancer par Theo sur la production, puis push immédiat. Les progressions sont conservées (mêmes profils).
+4. Domaine personnalisé (prévu) : GitHub Pages, Settings, Pages, Custom domain, plus DNS chez le registraire, et ajouter l'adresse dans Supabase (Authentication, URL Configuration). L'ancienne adresse redirige ; les joueurs se reconnectent une fois.
+5. Brancher un paiement réel (Stripe) pour le Pack de démarrage, le Pack Wailord et les crédits, après la 0.4.0 : Stripe Checkout ou Payment Link, puis webhook vers une fonction Supabase qui crédite le compte côté serveur.
 
 ## 7. Comment travailler sur ce dépôt
 
