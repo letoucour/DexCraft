@@ -78,6 +78,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
   - Collections : « Starters » (les 27 starters de base, `STARTER_IDS`), et Commun, Peu commun, Rare, Épique, Méga, Légendaire (toutes les cartes de la rareté ; Méga = les 93 méga-évolutions).
   - Régions : « Maître de Kanto » à « Maître de Paldea », tous les Pokémon d'une génération. Types : un titre par type (« Psy », « Feu »…), tous les Pokémon du type. Mégas exclues des régions et des types.
   - Mythiques et transcendantes ne comptent que pour Secret, Mythique et Transcendant.
+  - Activité (20 titres) : compteurs `stats` du profil, sans rétroactivité (`bump`). Boosters ouverts (Déballeur 100, Ouvre-boosters 1 000, Accro aux boosters 5 000), évolutions (Éleveur 50, Évolutionniste 250), enchères vendues (Commerçant 10, Marchand 50), enchères remportées (Enchérisseur 10, Collectionneur avisé 50), échanges conclus (Négociant 20, Diplomate 80, Charismatique 200), cartes défaussées (Recycleur 500), crédits détenus d'un coup (Fortuné 50 000, Magnat 250 000, `maxCr` posé par `stamp`), jours de jeu (Fidèle 30, Vétéran 100, `touchDay` dans `mutateMe`), manches de VoltoBataille gagnées (Joueur de casino 50), Chanceux (2 Légendaires dans un booster), Démineur (manche gagnée au niveau 8).
   - Un clic sur un titre affiché à côté d'un nom ouvre « Comment l’obtenir ? » (`titleInfo`). Pour Secret, Mythique et Transcendant, la condition (fenêtre et infobulle) est remplacée par « ??? », sauf si le joueur qui regarde a lui-même ce titre (`titleHow`).
 
 ## 5. Contraintes permanentes

@@ -950,7 +950,8 @@ function newState(){return{coll:{},packs:MAXP,packTs:Date.now(),credits:START_CR
 function norm(s){s=s||newState();s.coll=s.coll||{};s.listings=s.listings||{};s.escrow=s.escrow||{};if(typeof s.credits!=="number")s.credits=START_CREDITS;if(typeof s.packs!=="number")s.packs=MAXP;if(!s.packTs)s.packTs=Date.now();
   delete s.seen;delete s.seenN;
   if(s.avatar===undefined)s.avatar=null;if(typeof s.bonus!=="number")s.bonus=0;s.dev=!!s.dev;s.alpha=!!s.alpha;if(!s.bought||typeof s.bought!=='object')s.bought={};if(!s.fav||typeof s.fav!=='object')s.fav={};if(typeof s.pseudo!=="string")s.pseudo="";
-  if(!s.volto||typeof s.volto!=="object")s.volto={day:"",gained:0,level:1};return s}
+  if(!s.volto||typeof s.volto!=="object")s.volto={day:"",gained:0,level:1};
+  if(!s.stats||typeof s.stats!=="object")s.stats={};return s}
 function add(s,id,n=1){const k=String(id);s.coll[k]=(s.coll[k]||0)+n;if(s.coll[k]<=0)delete s.coll[k]}
 function has(s,id){return (s.coll[String(id)]||0)>0}
 function packInfo(s,now=Date.now()){
@@ -962,6 +963,7 @@ function stamp(s){s.unique=Object.keys(s.coll).filter(k=>!isSpec(k)).length;s.my
   s.byr=[0,0,0,0,0,0,0,0];for(const k of Object.keys(s.coll))s.byr[rar(+k)]++;s.byrV=BYR_V;s.total=Object.values(s.coll).reduce((a,b)=>a+b,0);if(s.avatar&&!s.coll[String(s.avatar)])s.avatar=null;
   if(s.fav)for(const k of Object.keys(s.fav))if(!s.coll[k])delete s.fav[k];
   if(BETA_OPEN)s.beta=true;
+  if(s.stats&&s.credits>(s.stats.maxCr||0))s.stats.maxCr=s.credits; // titres Fortuné et Magnat
   // date d'obtention du titre Maître : départage les Maîtres au classement, effacée si le titre est perdu
   if(masterCount(s.coll)===DEX_ORDER.length){if(!s.masterTs)s.masterTs=Date.now()}else delete s.masterTs;
   // un titre choisi puis perdu (carte vendue, échangée…) quitte la sélection
@@ -975,11 +977,14 @@ async function lease(ref){
   for(let i=0;i<10;i++){const r=await ref.acquire({holder:TAB,ttlMs:4000});if(r.acquired)return;await sleep(300+rnd(500))}
   throw new Error("Quelqu’un d’autre modifie cet élément, réessayez dans un instant.");
 }
+/* Compteurs d'activité (titres) : s.stats */
+function bump(s,k,n=1){s.stats[k]=(s.stats[k]||0)+n}
+function touchDay(s){const k=dayKey();if(s.stats.lastDay!==k){s.stats.lastDay=k;bump(s,"days")}} // jours de jeu différents
 async function mutateMe(fn){
-  if(mode==="local"){const s=clone(S);if(fn(s)===false)return false;stamp(s);S=s;try{localStorage.setItem("les1025",JSON.stringify(S))}catch(e){}renderAll();return true}
+  if(mode==="local"){const s=clone(S);if(fn(s)===false)return false;touchDay(s);stamp(s);S=s;try{localStorage.setItem("les1025",JSON.stringify(S))}catch(e){}renderAll();return true}
   const ref=db.doc("players/"+ME);await lease(ref);
   const snap=await ref.get();const s=norm(snap.exists?clone(snap.data()):null);
-  if(fn(s)===false)return false;stamp(s);await ref.set(s);S=s;renderAll();return true;
+  if(fn(s)===false)return false;touchDay(s);stamp(s);await ref.set(s);S=s;renderAll();return true;
 }
 
 /* ---------- boosters ---------- */
@@ -999,7 +1004,9 @@ function openPack(k=1){
         const p=packInfo(s),now=Date.now();
         if(p.n>=1){if(p.n>=MAXP){s.packs=MAXP-1;s.packTs=now}else{s.packs=p.n-1;s.packTs=s.packTs+p.g*PER}}
         else s.bonus--;
-        for(let i=0;i<CARDS;i++){const r=rollRarity(),id=BYR[r][rnd(BYR[r].length)];drawn.push({id,isNew:!has(s,id),shown:false});add(s,id)}
+        let legend=0;
+        for(let i=0;i<CARDS;i++){const r=rollRarity(),id=BYR[r][rnd(BYR[r].length)];drawn.push({id,isNew:!has(s,id),shown:false});add(s,id);if(r===5)legend++}
+        bump(s,"packs");if(legend>=2)s.stats.luck=1; // titre Chanceux : 2 Légendaires dans un même booster
       }
     });
     if(!ok){toast(k>1?`Il vous faut ${k} boosters disponibles pour en ouvrir ${k} d’un coup.`:"Aucun booster disponible. Attendez le prochain ou passez par la boutique.");return}
@@ -1041,14 +1048,14 @@ function settle(){
           if(!tm){if(now-(l.t||0)>60000){add(s,l.c);delete s.listings[mid];ch=true}continue}
           const o=(tm.offers||{})[mid];
           if(!o){if(now-(l.t||0)>60000){add(s,l.c);delete s.listings[mid];ch=true}continue}
-          if(o.status==="accepted"){add(s,tm.card);items.push(tm.card);delete s.listings[mid];ch=true;post.push(["offer",l.m,mid])}
+          if(o.status==="accepted"){add(s,tm.card);items.push(tm.card);bump(s,"trades");delete s.listings[mid];ch=true;post.push(["offer",l.m,mid])}
           else if(o.status==="declined"||tm.status==="cancel"){add(s,l.c);delete s.listings[mid];ch=true;post.push(["offer",l.m,mid])}
           continue;
         }
         const m=MARKET[mid];
         if(!m){if(now-(l.t||0)>60000){add(s,l.c);delete s.listings[mid];ch=true}continue}
         if(m.kind==="a"&&now>=m.endsAt){
-          if(m.bidder){s.credits+=m.bid;gained+=m.bid}else{add(s,m.card);items.push(m.card)}
+          if(m.bidder){s.credits+=m.bid;gained+=m.bid;bump(s,"aucSold")}else{add(s,m.card);items.push(m.card)}
           delete s.listings[mid];ch=true;post.push(["seller",mid]);
         }else if(m.kind==="t"&&l.k==="t"&&(m.status==="cancel")){add(s,m.card);items.push(m.card);delete s.listings[mid];ch=true}
 
@@ -1057,7 +1064,7 @@ function settle(){
         const m=MARKET[mid];
         if(!m){if(now-(e.t||0)>60000){s.credits+=e.a;delete s.escrow[mid];ch=true}continue}
         if(m.bidder!==ME){s.credits+=e.a;delete s.escrow[mid];ch=true}
-        else if(now>=m.endsAt){add(s,m.card);items.push(m.card);delete s.escrow[mid];ch=true;post.push(["buyer",mid])}
+        else if(now>=m.endsAt){add(s,m.card);items.push(m.card);bump(s,"aucWon");delete s.escrow[mid];ch=true;post.push(["buyer",mid])}
       }
       return ch?undefined:false;
     });
@@ -1172,7 +1179,7 @@ function answerOffer(mid_,oid,accept){
       offers[oid]=Object.assign({},o,{status:"declined"});
       await ref.update({offers});toast("Proposition refusée, la carte retourne à son propriétaire.");return;
     }
-    const ok=await mutateMe(s=>{const l=s.listings[mid_];if(!l)return false;add(s,o.card);delete s.listings[mid_]});
+    const ok=await mutateMe(s=>{const l=s.listings[mid_];if(!l)return false;add(s,o.card);delete s.listings[mid_];bump(s,"trades")});
     if(!ok){toast("Cette annonce n’est plus active.");return}
     offers[oid]=Object.assign({},o,{status:"accepted"});
     for(const [k,v] of Object.entries(offers))if(k!==oid&&v.status==="pending")offers[k]=Object.assign({},v,{status:"declined"});
@@ -1220,7 +1227,7 @@ function discard(sel){
   for(const id of Object.keys(sel))if(S.fav&&S.fav[id])delete sel[id];
   const n=Object.values(sel).reduce((a,b)=>a+b,0),v=selValue(sel);if(!n)return;
   return run(async()=>{
-    const ok=await mutateMe(s=>{for(const [id,q] of Object.entries(sel)){if((s.coll[id]||0)<q)return false}for(const [id,q] of Object.entries(sel))add(s,id,-q);s.credits+=v});
+    const ok=await mutateMe(s=>{for(const [id,q] of Object.entries(sel)){if((s.coll[id]||0)<q)return false}for(const [id,q] of Object.entries(sel))add(s,id,-q);s.credits+=v;bump(s,"discards",n)});
     if(!ok){toast("Certaines cartes ne sont plus dans votre collection.");return}
     discardSel=null;renderView();toast(`${n} carte${n>1?"s":""} défaussée${n>1?"s":""} : +${cr(v)}.`);
   });
@@ -1292,12 +1299,25 @@ const TITLES=[
     d:`A obtenu tous les Pokémon de la génération ${ROMAN[i+1]} (${reg})`,ids:POKE_IDS.filter(x=>DEX[x-1][2]===i+1)})),
   ...TYPES.slice(1).map(([tn,col],i)=>({k:"type"+(i+1),n:tn,ic:"●",g:"Types",cls:"tc",c:col,
     d:`Possède tous les Pokémon de type ${tn}`,ids:POKE_IDS.filter(x=>DEX[x-1][3].includes(i+1))})),
+  /* Activité : compteurs du profil (stats), sans rétroactivité */
+  ...[["packs",100,"Déballeur","A ouvert {n} boosters"],["packs",1000,"Ouvre-boosters","A ouvert {n} boosters"],["packs",5000,"Accro aux boosters","A ouvert {n} boosters"],
+    ["evos",50,"Éleveur","A réalisé {n} évolutions"],["evos",250,"Évolutionniste","A réalisé {n} évolutions"],
+    ["aucSold",10,"Commerçant","A vendu {n} cartes aux enchères"],["aucSold",50,"Marchand","A vendu {n} cartes aux enchères"],
+    ["aucWon",10,"Enchérisseur","A remporté {n} enchères"],["aucWon",50,"Collectionneur avisé","A remporté {n} enchères"],
+    ["trades",20,"Négociant","A conclu {n} échanges"],["trades",80,"Diplomate","A conclu {n} échanges"],["trades",200,"Charismatique","A conclu {n} échanges"],
+    ["discards",500,"Recycleur","A défaussé {n} cartes"],
+    ["maxCr",50000,"Fortuné","A possédé {n} crédits en même temps"],["maxCr",250000,"Magnat","A possédé {n} crédits en même temps"],
+    ["days",30,"Fidèle","A joué {n} jours différents"],["days",100,"Vétéran","A joué {n} jours différents"],
+    ["vbWins",50,"Joueur de casino","A gagné {n} manches de VoltoBataille"]]
+    .map(([stat,need,n,d])=>({k:stat+need,n,ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:d.replace("{n}",fmtN(need)),stat,need})),
+  {k:"luck",n:"Chanceux",ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:"A obtenu 2 Légendaires dans un même booster",test:p=>!!(p.stats&&p.stats.luck)},
+  {k:"vbL8",n:"Démineur",ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:"A gagné une manche de VoltoBataille au niveau 8",test:p=>!!(p.stats&&p.stats.vbL8)},
 ];
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
 const TITLE_MAX=3,TITLE_DEFAULT=["alpha","beta","maitre"];
 const profOf=id=>id===ME?S:PLAYERS[id];
 const ownCount=(ids,coll)=>ids.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
-function titleProgress(t,p){const need=t.need||(t.ids?t.ids.length:1);return [t.ids?ownCount(t.ids,p.coll||{}):titleEarned(t,p)?1:0,need]}
+function titleProgress(t,p){if(t.stat)return [Math.min(((p.stats||{})[t.stat])||0,t.need),t.need];const need=t.need||(t.ids?t.ids.length:1);return [t.ids?ownCount(t.ids,p.coll||{}):titleEarned(t,p)?1:0,need]}
 function titleEarned(t,p){if(!p)return false;if(t.test)return t.test(p);const [n,need]=titleProgress(t,p);return n>=need}
 /* Titres choisis par le joueur (3 au plus), sinon ceux par défaut. Alpha puis Bêta passent devant. */
 function titleSel(p){return Array.isArray(p.titles)?p.titles:TITLE_DEFAULT}
@@ -1331,7 +1351,7 @@ function titlesPanelHTML(){
     return `<div class="title-group"><h4>${g} <span class="muted">${got} / ${items.length}</span></h4><div class="title-grid">${items.map(({t,ok})=>{
       if(ok)return `<button class="title-pick" data-act="title-toggle" data-k="${t.k}" aria-pressed="${shown.includes(t.k)}">${titleTag(t)}<span class="tp-d">${esc(t.d)}</span></button>`;
       const [n,need]=titleProgress(t,S);
-      return `<div class="title-pick locked">${titleTag(t)}<span class="tp-d">${esc(t.d)}</span>${t.ids?`<span class="tp-bar"><b style="width:${Math.min(100,n*100/need)}%"></b></span><span class="tp-d">${fmtN(n)} / ${fmtN(need)}</span>`:""}</div>`;
+      return `<div class="title-pick locked">${titleTag(t)}<span class="tp-d">${esc(t.d)}</span>${t.ids||t.stat?`<span class="tp-bar"><b style="width:${Math.min(100,n*100/need)}%"></b></span><span class="tp-d">${fmtN(n)} / ${fmtN(need)}</span>`:""}</div>`;
     }).join("")}</div></div>`;
   }).join("");
   return `<p class="muted" style="margin:4px 0 0">Choisissez jusqu’à ${TITLE_MAX} titres parmi ceux obtenus : ils s’affichent à côté de votre nom, au profil, au classement et sur vos annonces. Alpha testeur et Bêta testeur passent toujours en premier. <b>${shown.length} / ${TITLE_MAX} affichés</b>${shown.length?` : ${titlesOf(ME).map(t=>titleTag(t,true)).join("")}`:""}</p>${groups}`;
@@ -1829,7 +1849,7 @@ function quickEvo(){
       for(const [from,to] of plan){
         if((s.coll[String(from)]||0)<EVO_COST+1)continue;
         if(has(s,to))continue;
-        add(s,from,-EVO_COST);add(s,to,1);done.push(to);
+        add(s,from,-EVO_COST);add(s,to,1);done.push(to);bump(s,"evos");
       }
       if(!done.length)return false;
     });
@@ -1856,7 +1876,7 @@ function evolveDlg(from,to){
 function evolve(from,to){
   run(async()=>{
     let wasNew=false;
-    const ok=await mutateMe(s=>{if((s.coll[String(from)]||0)<EVO_COST||!evoTargets(from).includes(to))return false;wasNew=!has(s,to);add(s,from,-EVO_COST);add(s,to,1)});
+    const ok=await mutateMe(s=>{if((s.coll[String(from)]||0)<EVO_COST||!evoTargets(from).includes(to))return false;wasNew=!has(s,to);add(s,from,-EVO_COST);add(s,to,1);bump(s,"evos")});
     if(!ok){closeDlg();toast(`Il vous faut ${EVO_COST} exemplaires de ${nm(from)}.`);return}
     const r=rar(to);SFX.flip(r);
     openDlg(`<div class="evo-result"><p class="muted" style="margin:0">${esc(nm(from))} évolue en…</p>
@@ -1972,6 +1992,7 @@ function vbFinish(kind){
       const g=vbGained(s);s.volto.day=dayKey();s.volto.gained=g;
       if(kind!=="lost"&&score>0){added=Math.min(score,Math.max(0,VB_CAP-g));s.credits+=added;s.volto.gained=g+added}
       s.volto.level=nl;
+      if(kind==="won"){bump(s,"vbWins");if(lvl===8)s.stats.vbL8=1}
     });
     const partial=added&&added<score?" (plafond du jour atteint)":"",none="le plafond du jour est déjà atteint, aucun crédit gagné.";
     if(kind==="won"){round.cls="win";round.msg=`Bravo ! ${added?`+${cr(added)}${partial}.`:`Manche gagnée, mais ${none}`} ${nl>lvl?`Niveau ${nl} débloqué !`:"Niveau maximum !"}`;SFX.flip(3)}
@@ -2715,7 +2736,7 @@ document.addEventListener("click",e=>{
         <p class="muted">${names}</p><p>Vous recevrez <b>${cr(selValue(discardSel))}</b>. Les cartes défaussées disparaissent définitivement.</p>
         <div class="actions"><button class="btn primary" data-act="discard-confirm">Défausser</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break}
     case"discard-confirm":closeDlg();discard(discardSel);break;
-    case"do-discard":if(S.fav&&S.fav[id]){toast(`${nm(id)} est dans vos favoris.`);break}run(async()=>{const ok=await mutateMe(s=>{if(s.fav&&s.fav[String(id)])return false;if(!has(s,id))return false;add(s,id,-1);s.credits+=dVal(id)});if(ok){toast(`${nm(id)} défaussée : +${cr(dVal(id))}.`);S.coll[id]?detail(id):closeDlg()}});break;
+    case"do-discard":if(S.fav&&S.fav[id]){toast(`${nm(id)} est dans vos favoris.`);break}run(async()=>{const ok=await mutateMe(s=>{if(s.fav&&s.fav[String(id)])return false;if(!has(s,id))return false;add(s,id,-1);s.credits+=dVal(id);bump(s,"discards")});if(ok){toast(`${nm(id)} défaussée : +${cr(dVal(id))}.`);S.coll[id]?detail(id):closeDlg()}});break;
     case"do-auction":{const st=Math.floor(+$("#a-start").value);if(!(st>=1)){toast("Le prix de départ doit être d’au moins 1 crédit.");break}createAuction(id,st,+$("#a-dur").value);break}
     case"do-trade":{const v=$("#t-want").value;createTrade(id,v==="missing"?"missing":(+v||null));break}
     case"cancel":closeDlg();cancelListing(mid);break;
