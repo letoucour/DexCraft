@@ -123,9 +123,10 @@ h3{font-size:1.1rem}
   scroll-snap-type:x mandatory;padding:30px calc(50% - var(--cw)/2) 44px;scrollbar-width:none;cursor:grab;overscroll-behavior-x:contain;-webkit-user-select:none;user-select:none;touch-action:pan-x}
 .hand::-webkit-scrollbar{display:none}
 .hand.dragging{cursor:grabbing;scroll-snap-type:none}
-.hand .flip{flex:0 0 var(--cw);width:var(--cw);height:var(--ch);margin:0 calc(var(--cw)*-.1);scroll-snap-align:center;transform-origin:50% 120%;transition:transform .18s ease-out;will-change:transform}
+.hand .flip{flex:0 0 var(--cw);width:var(--cw);height:var(--ch);margin:0 calc(var(--cw)*-.1);scroll-snap-align:center;transform-origin:50% 120%;transition:transform .18s ease-out}
 .hand .flip .card{font-size:clamp(14px,calc(var(--cw)/15),18px)}
 .hand .flip.current{filter:drop-shadow(0 14px 22px rgba(0,0,0,.35))}
+html.revealing,html.revealing body{overscroll-behavior-y:none}
 .hand-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:150;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:1.3rem;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.25)}
 .hand-nav:disabled{opacity:.3}
 .hand-nav.prev{left:max(12px,calc(50% - 640px))}.hand-nav.next{right:max(12px,calc(50% - 640px))}
@@ -149,11 +150,18 @@ h3{font-size:1.1rem}
 .reveal.multi .stats{font-size:.56rem;gap:1px 3px}
 @media (max-width:560px){.reveal.multi .flip{width:44vw}}
 .reveal{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-top:24px}
-.flip{width:min(210px,44vw);aspect-ratio:5/7;perspective:1000px;border:0;padding:0;background:none}
-.flip-in{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,1.4,.5,1)}
-.flip.shown .flip-in{transform:rotateY(180deg)}
-.flip .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.flip .front{transform:rotateY(180deg)}
+/* Retournement : la 3D n'est active que pendant l'animation (.flipping). Au repos, une carte
+   cachée n'affiche que son dos et une carte retournée s'affiche à plat. Sinon, avec 50 cartes
+   en main (10 boosters), la mémoire graphique des téléphones sature et la page se recharge. */
+.flip{width:min(210px,44vw);aspect-ratio:5/7;border:0;padding:0;background:none}
+.flip-in{position:relative;width:100%;height:100%}
+.flip .face{position:absolute;inset:0}
+.flip:not(.shown):not(.flipping) .front,.flip.shown:not(.flipping) .back{display:none}
+.flip.flipping{perspective:1000px}
+.flip.flipping .flip-in{transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,1.4,.5,1)}
+.flip.flipping.shown .flip-in{transform:rotateY(180deg)}
+.flip.flipping .face{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip.flipping .front{transform:rotateY(180deg)}
 .back{border-radius:14px;background:
   radial-gradient(circle at 50% 44%,rgba(255,207,63,.18),transparent 45%),
   repeating-linear-gradient(45deg,#2a3170 0 10px,#232964 10px 20px);
@@ -176,7 +184,7 @@ h3{font-size:1.1rem}
 .fx-layer.mega .fx-ring{border-color:#7ef3ea;box-shadow:0 0 20px #2fd4c9,inset 0 0 20px #2fd4c9}
 .fx-layer.mega .fx-spark{background:#d8fffb;filter:drop-shadow(0 0 4px #2fd4c9)}
 .fx-layer.mega .fx-glint{--gc:rgba(210,255,250,.95)!important;--gb:#2fd4c9!important}
-.fx-rays{position:fixed;width:900px;height:900px;margin:-450px 0 0 -450px;border-radius:50%;pointer-events:none;
+.fx-rays{position:fixed;width:min(900px,130vmin);height:min(900px,130vmin);margin:calc(min(900px,130vmin)/-2) 0 0 calc(min(900px,130vmin)/-2);border-radius:50%;pointer-events:none;
   background:repeating-conic-gradient(from 0deg,rgba(200,150,255,.55) 0 5deg,transparent 5deg 20deg);
   -webkit-mask:radial-gradient(circle,#000 0,transparent 60%);mask:radial-gradient(circle,#000 0,transparent 60%);animation:rays 1.3s ease-out forwards}
 @keyframes rays{0%{transform:scale(.2) rotate(0);opacity:0}25%{opacity:1}100%{transform:scale(1.1) rotate(40deg);opacity:0}}
@@ -1371,6 +1379,7 @@ function renderView(){
   if(!S)return;const app=$("#app");
   keepInputs(()=>{app.innerHTML=({booster:vBooster,collection:vCollection,auctions:vAuctions,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto})[view]()});
   lastPackN=packInfo(S).n;
+  document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal); // pas de « tirer pour actualiser » pendant une ouverture
   if(view==="booster"&&reveal)setupHand();
 }
 const HIT_MIN=3; // Épique et au-dessus
@@ -2231,7 +2240,9 @@ function tradeDlg(mid_){
 /* ---------- effets de rareté ---------- */
 const RM=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 let pendingRender=false;
-function markShown(b,c){c.shown=true;b.classList.add("shown");const fr=b.querySelector(".front");if(c.isNew&&fr&&!fr.querySelector(".new-tag"))fr.insertAdjacentHTML("afterbegin",`<span class="new-tag">Nouvelle</span>`)}
+function markShown(b,c){c.shown=true;
+  if(RM())b.classList.add("shown");
+  else{b.classList.add("flipping");void b.offsetWidth;b.classList.add("shown");clearTimeout(b._flipT);b._flipT=setTimeout(()=>b.classList.remove("flipping"),650)}const fr=b.querySelector(".front");if(c.isNew&&fr&&!fr.querySelector(".new-tag"))fr.insertAdjacentHTML("afterbegin",`<span class="new-tag">Nouvelle</span>`)}
 function flipOne(b,c){
   if(c.fx)return;c.fx=true;            // sécurité : une seule animation par carte
   markShown(b,c);const r=rar(c.id);SFX.flip(r);
