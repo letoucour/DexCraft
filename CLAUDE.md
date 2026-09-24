@@ -64,6 +64,8 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 - Ouverture de booster : main de cartes en éventail, défilement horizontal, carte centrale mise en avant.
 - Animations par rareté, de plus en plus fortes : rien en Commune, reflet vert en Peu commune, bleu en Rare, gerbe violette en Épique, turquoise en Méga, scène plein écran en Légendaire, fanfare et feux d'artifice en Mythique, scène argentée la plus longue en Transcendante.
 - Dos de carte : bleu par défaut, rouge en Mythique, métallisé gris en Transcendante.
+- Reflets des cartes : Rare, bande de reflet bleue ; Épique, halo violet dans le fond de carte et reflet violet ; Légendaire, fond doré avec des lignes holographiques aux couleurs du ou des types (`--c1`, `--c2`) et reflet brillant.
+- Échanges : les annonces des autres joueurs d'abord, en tuiles compactes (6 par ligne, 4 puis 3 sur petit écran) ; un clic ouvre la fiche complète (`tradeOpen`). « Mes annonces » est repliée derrière la case « Voir mes annonces », qui signale les propositions à traiter.
 - Sons synthétisés dans le navigateur, aucun fichier audio. Bouton de coupure dans l'en-tête.
 - Classement : trié par cartes différentes, Pokémon et mégas confondus. Entre Maîtres, le premier à avoir obtenu le titre reste devant (`masterTs`, posé par `stamp`, effacé si le titre est perdu), puis le nombre total de cartes. Barre segmentée par rareté, sur 1 118 cartes. Mythiques et transcendantes affichées en pastilles ✦ et ❖, hors classement. Le détail par rareté porte une version (`BYR_V`) : l'incrémenter à chaque changement d'ordre des raretés.
 - Favoris : protégés de la défausse, retirés automatiquement si la carte quitte la collection.

@@ -339,11 +339,23 @@ h3{font-size:1.1rem}
 .stats i b{display:block;height:100%;background:linear-gradient(90deg,var(--c1),var(--c2))}
 .stats em{font-style:normal;font-weight:700;text-align:right}
 .card-foot{display:flex;justify-content:space-between;font-size:.64rem;color:#5b6088;margin-top:5px;font-weight:700}
-.card.r5::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:8px;mix-blend-mode:overlay;
-  background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.75) 38%,rgba(255,120,220,.5) 46%,rgba(90,220,255,.5) 54%,transparent 72%);
-  background-size:250% 100%;animation:holo 3.2s linear infinite}
+/* Rare : reflet bleu bien visible */
+.card.r2::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:8px;
+  background:linear-gradient(115deg,transparent 30%,rgba(111,176,255,.35) 42%,rgba(255,255,255,.75) 50%,rgba(111,176,255,.35) 58%,transparent 70%);
+  background-size:250% 100%;animation:holo 3.8s linear infinite}
+/* Épique : halo violet dans le fond de carte et reflet violet marqué */
+.card.r3{background:radial-gradient(ellipse 85% 70% at 50% 45%,rgba(168,110,240,.38),rgba(168,110,240,.12) 55%,transparent 80%),#fbfaf6}
 .card.r3::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:8px;
-  background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);background-size:250% 100%;animation:holo 4.5s linear infinite}
+  background:linear-gradient(115deg,transparent 26%,rgba(195,139,255,.45) 40%,rgba(255,255,255,.85) 50%,rgba(195,139,255,.45) 60%,transparent 74%);
+  background-size:250% 100%;animation:holo 3.2s linear infinite}
+/* Légendaire : fond doré, lignes holographiques aux couleurs du ou des types du Pokémon */
+.card.r5{background:repeating-linear-gradient(115deg,transparent 0 16px,color-mix(in srgb,var(--c1) 42%,transparent) 16px 19px,transparent 19px 34px,color-mix(in srgb,var(--c2) 42%,transparent) 34px 37px),
+  linear-gradient(160deg,#fff6cf,#ffe27a 35%,#f3c440 62%,#fff0b3)}
+.card.r5 .card-top,.card.r5 .genus,.card.r5 .card-foot,.card.r5 .stats span{color:#5a4410}
+.card.r5 .stats i{background:rgba(255,255,255,.55)}
+.card.r5::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:8px;
+  background:linear-gradient(115deg,transparent 28%,rgba(255,255,255,.75) 46%,rgba(255,250,220,.9) 50%,rgba(255,255,255,.75) 54%,transparent 72%);
+  background-size:250% 100%;animation:holo 3s linear infinite}
 @keyframes holo{from{background-position:120% 0}to{background-position:-120% 0}}
 .card.lg{font-size:17px}
 .card.lg .stats{grid-template-columns:auto 1fr auto;font-size:.68rem;gap:0 8px;padding-top:4px}
@@ -606,9 +618,28 @@ dialog::backdrop{background:rgba(10,12,30,.72)}
 .pick-tag{align-self:flex-start;font-size:.68rem;font-weight:700;border-radius:999px;padding:1px 8px}
 .pick-tag.ok{background:var(--surface);color:var(--ink-soft)}
 .pick-tag.missing{background:var(--gold);color:var(--gold-ink)}
-.market.trades{grid-template-columns:repeat(auto-fill,minmax(430px,1fr))}
-.market.trades .offer{grid-template-columns:110px 1fr}
-.market.trades .thumb{width:110px}
+.trade-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+@media (max-width:900px){.trade-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:600px){.trade-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}
+.trade-tile{--rc:#b9bccb;position:relative;display:flex;flex-direction:column;align-items:stretch;padding:0;text-align:left;background:var(--surface);border:2px solid var(--rc);border-radius:12px;overflow:hidden;min-width:0;transition:transform .15s}
+.trade-tile:hover{transform:translateY(-2px)}
+.trade-tile.r1{--rc:#5fbf83}.trade-tile.r2{--rc:#5a9df0}.trade-tile.r3{--rc:#a86ef0}.trade-tile.r4{--rc:#2fd4c9}.trade-tile.r5{--rc:#f1b72a}.trade-tile.r6{--rc:#ff4fd8}.trade-tile.r7{--rc:#c9d2e0}
+.tt-art{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  background:repeating-radial-gradient(circle at 78% 30%,rgba(255,255,255,.22) 0 2px,transparent 2px 10px),linear-gradient(135deg,var(--c1),var(--c2))}
+.tt-art img{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain;z-index:1}
+.tt-art b{font-family:var(--display);font-size:2.4rem;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.tt-art img+b{visibility:hidden}
+.tt-n{font-family:var(--display);font-weight:700;font-size:.9rem;padding:5px 7px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-g{font-size:.7rem;color:var(--rc);padding:0 7px 6px;letter-spacing:1px}
+.trade-tile.r0 .tt-g{color:var(--r0)}
+.tt-tag{position:absolute;top:6px;left:6px;z-index:2;font-size:.66rem;font-weight:700;border-radius:999px;padding:1px 7px;background:rgba(0,0,0,.6);color:#fff}
+.tt-tag.gold{background:var(--gold);color:var(--gold-ink)}
+.my-trades{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;margin-top:4px;padding:12px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-weight:700;text-align:left}
+.my-trades.alert{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.mt-pend{background:var(--gold);color:var(--gold-ink);border-radius:999px;padding:1px 10px;font-size:.85rem}
+.mt-arrow{margin-left:auto;color:var(--ink-soft)}
+.trade-info{display:flex;flex-direction:column;gap:8px}
+.trade-info>.tag,.trade-info>.tag-row{align-self:flex-start}
 .tag-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .offers-in{display:flex;flex-direction:column;gap:8px;margin:6px 0}
 .offer-in{display:grid;grid-template-columns:78px minmax(0,1fr);gap:10px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:8px}
@@ -1492,11 +1523,37 @@ function vTrades(){
   if(mode!=="online")return `<h1>Échanges</h1><div style="margin-top:14px">${offlineNote()}</div>`;
   const open=Object.entries(MARKET).filter(([,m])=>m.kind==="t"&&m.status==="open").sort((a,b)=>b[1].created-a[1].created);
   const mine=open.filter(([,m])=>m.owner===ME).filter(([,m])=>cardMatches(m.card,trdQ)),others=open.filter(([,m])=>m.owner!==ME).filter(([,m])=>cardMatches(m.card,trdQ));
-  const card=([id,m])=>{
+  const pendMine=mine.reduce((n,[,m])=>n+offersOf(m).length,0);
+  const grid=(list,empty)=>list.length?`<div class="trade-grid">${list.map(([id,m])=>tradeTile(id,m)).join("")}</div>`:`<div class="empty">${empty}</div>`;
+  return `<h1>Échanges</h1><p class="muted">Un échange se fait toujours entre deux cartes de même rareté. Touchez une annonce pour voir la demande et proposer une carte : c’est le propriétaire qui accepte ou refuse.</p>
+  ${searchBar("trd",trdQ,"Rechercher un Pokémon, un numéro ou une rareté")}
+  <button class="my-trades${pendMine?" alert":""}" data-act="my-trades" aria-expanded="${showMyTrades}">
+    <span>${showMyTrades?"Masquer":"Voir"} mes annonces <b>(${mine.length})</b></span>
+    ${pendMine?`<span class="mt-pend">${pendMine} proposition${pendMine>1?"s":""} à traiter</span>`:""}<span class="mt-arrow" aria-hidden="true">${showMyTrades?"▲":"▼"}</span></button>
+  ${showMyTrades?`<div style="margin-top:10px">${grid(mine,"Ouvrez une carte de votre collection pour la proposer à l’échange.")}</div>`:""}
+  <section class="section"><h2>Annonces des autres joueurs <span class="muted" style="font-size:1rem">(${others.length})</span></h2>${grid(others,"Aucune annonce pour l’instant.")}</section>`;
+}
+let showMyTrades=false;
+/* Tuile compacte d'une annonce d'échange : la carte seulement, les infos s'ouvrent au clic */
+function tradeTile(id,m){
+  const [n,,,ty,,,,r,ex]=D(m.card),mine=m.owner===ME,have=has(S,m.card),pend=offersOf(m).length,mo=!mine&&myOffer(id,m);
+  const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1),src=imgFor(m.card);
+  const tag=mine?(pend?`<span class="tt-tag gold">${pend} proposition${pend>1?"s":""}</span>`:"")
+    :mo?`<span class="tt-tag">Proposée</span>`:!have?`<span class="tt-tag gold">Manquante</span>`:"";
+  return `<button class="trade-tile r${r}" data-act="trade-open" data-mid="${id}" style="--c1:${c1};--c2:${c2}" aria-label="${esc(n)}, ${RAR[r]}">
+    <span class="tt-art">${src?`<img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()">`:""}<b aria-hidden="true">${esc(n[0])}</b></span>
+    <span class="tt-n">${esc(n)}</span><span class="tt-g">${gems(r)}</span>${tag}</button>`;
+}
+/* Fiche complète d'une annonce d'échange, dans une fenêtre */
+function tradeOpen(id){
+  const m=MARKET[id];if(!m||m.kind!=="t"){toast("Cet échange n’est plus disponible.");return}
+  openDlg(`<div class="card-holder">${cardHTML(m.card,true)}</div><div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>${tradeInfoHTML(id,m)}</div>`);
+}
+function tradeInfoHTML(id,m){
     const isMine=m.owner===ME,mo=myOffer(id,m),pend=offersOf(m);
     const canGive=Object.keys(S.coll).map(Number).filter(c=>canOffer(m,c)).length;
-    return `<div class="offer"><div class="thumb">${cardHTML(m.card)}</div><div class="info">
-      <h3>${esc(nm(m.card))}</h3><span class="tag" style="color:var(--r${rar(m.card)})">${RAR[rar(m.card)]}</span>
+    return `<div class="info trade-info">
+      <h2>${esc(nm(m.card))}</h2><span class="tag" style="color:var(--r${rar(m.card)})">${RAR[rar(m.card)]}</span>
       ${isMine?"":`<div class="tag-row">${haveTag(m.card)}</div><div class="by">${avatarHTML(avatarOf(m.owner),20)} Proposée par ${esc(who(m.owner))}${badgeTag(m.owner,true)}</div>`}
       <div class="by">Demande : ${tradeWants(m)}</div>
       ${isMine?(pend.length?`<div class="offers-in">${pend.map(([oid,o])=>{const have=S.coll[o.card]||0;
@@ -1512,13 +1569,7 @@ function vTrades(){
       <div class="row">${isMine?`<button class="btn small danger" data-act="cancel" data-mid="${id}">Retirer l’annonce</button>`
         :mo?`<button class="btn small danger" data-act="offer-cancel" data-mid="${id}" data-oid="${mo[0]}">Retirer ma proposition</button>`
         :`<button class="btn small primary" data-act="trade" data-mid="${id}" ${canGive?"":"disabled"}>${canGive?"Proposer une carte":"Aucune carte à proposer"}</button>`}</div>
-    </div></div>`};
-  const sec=(t,list,empty)=>`<section class="section"><h2>${t}</h2>${list.length?`<div class="market trades">${list.map(card).join("")}</div>`:`<div class="empty">${empty}</div>`}</section>`;
-  const pendMine=mine.reduce((n,[,m])=>n+offersOf(m).length,0);
-  return `<h1>Échanges</h1><p class="muted">Un échange se fait toujours entre deux cartes de même rareté. Vous proposez une carte, et c’est le propriétaire de l’annonce qui accepte ou refuse.</p>
-  ${searchBar("trd",trdQ,"Rechercher un Pokémon, un numéro ou une rareté")}
-  ${sec(`Mes annonces${pendMine?` (${pendMine} proposition${pendMine>1?"s":""} à traiter)`:""}`,mine,"Ouvrez une carte de votre collection pour la proposer à l’échange.")}
-  ${sec("Annonces des autres joueurs",others,"Aucune annonce pour l’instant.")}`;
+    </div>`;
 }
 const BYR_V=2; // change quand l'ordre des raretés change
 const LB_TOTAL=1025+93; // Pokémon + méga-évolutions
@@ -2478,15 +2529,17 @@ document.addEventListener("click",e=>{
     case"do-discard":if(S.fav&&S.fav[id]){toast(`${nm(id)} est dans vos favoris.`);break}run(async()=>{const ok=await mutateMe(s=>{if(s.fav&&s.fav[String(id)])return false;if(!has(s,id))return false;add(s,id,-1);s.credits+=dVal(id)});if(ok){toast(`${nm(id)} défaussée : +${cr(dVal(id))}.`);S.coll[id]?detail(id):closeDlg()}});break;
     case"do-auction":{const st=Math.floor(+$("#a-start").value);if(!(st>=1)){toast("Le prix de départ doit être d’au moins 1 crédit.");break}createAuction(id,st,+$("#a-dur").value);break}
     case"do-trade":{const v=$("#t-want").value;createTrade(id,v==="missing"?"missing":(+v||null));break}
-    case"cancel":cancelListing(mid);break;
+    case"cancel":closeDlg();cancelListing(mid);break;
     case"bid":{const inp=document.querySelector(`[data-keep="bid-${mid}"]`);placeBid(mid,+inp.value);break}
     case"trade":tradeDlg(mid);break;
     case"auc-filter":aucMissing=b.dataset.v==="1";renderView();break;
     case"give":tradeGive=id;document.querySelectorAll("#picker .pick").forEach(x=>x.classList.toggle("choice",+x.dataset.id===id));{const g=$("#give-go");g.disabled=false;g.textContent=`Proposer ${nm(id)}`}break;
     case"give-go":if(tradeGive)proposeTrade(mid,tradeGive);break;
-    case"offer-yes":answerOffer(mid,b.dataset.oid,true);break;
-    case"offer-no":answerOffer(mid,b.dataset.oid,false);break;
-    case"offer-cancel":withdrawOffer(mid,b.dataset.oid);break;
+    case"offer-yes":closeDlg();answerOffer(mid,b.dataset.oid,true);break;
+    case"offer-no":closeDlg();answerOffer(mid,b.dataset.oid,false);break;
+    case"offer-cancel":closeDlg();withdrawOffer(mid,b.dataset.oid);break;
+    case"trade-open":tradeOpen(mid);break;
+    case"my-trades":showMyTrades=!showMyTrades;renderView();break;
     case"none":break;
   }
 });
