@@ -8,6 +8,7 @@
 --    2. dexcraft-config.sql    (données du jeu, généré par outils\generer-config.ps1)
 --    3. dexcraft-serveur.sql   (fonctions du jeu, partie 1 : le serveur est l'arbitre)
 --    4. dexcraft-serveur-2.sql (fonctions du jeu, partie 2 : marché, VoltoBataille, administration)
+--    5. dexcraft-serveur-3.sql (partie 3 : codes cadeaux, suppression des comptes)
 --  Depuis la 0.4.0, les joueurs ne peuvent QUE LIRE la table docs : toute
 --  modification passe par les fonctions dc_* de dexcraft-serveur.sql.
 -- ============================================================

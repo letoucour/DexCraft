@@ -971,7 +971,9 @@ async function rpc(name,args,{render=true}={}){
   let res;
   try{res=await SB.rpc(name,args||{})}catch(e){throw new Error("Connexion au serveur impossible, réessayez.")}
   const {data,error}=res;
-  if(error)throw new Error(/fetch|network/i.test(error.message)?"Connexion au serveur impossible, réessayez.":error.message);
+  if(error)throw new Error(/fetch|network/i.test(error.message)?"Connexion au serveur impossible, réessayez."
+    :/schema cache|could not find the function|permission denied/i.test(error.message)?"Cette action n’est pas encore disponible sur le serveur. Rechargez la page, et si cela persiste, prévenez le créateur du jeu."
+    :error.message);
   if(data&&data.profile){S=norm(data.profile);if(render)renderAll();else renderHeader()}
   return data||{};
 }
@@ -1588,6 +1590,15 @@ function vProfile(){
     ${seen.length?`<div class="toolbar"><input type="search" data-keep="avaq" data-avaq placeholder="Rechercher parmi vos Pokémon" value="${esc(avaQ)}" aria-label="Rechercher"></div>
     <div class="ava-grid">${list.map(id=>`<button class="ava-pick" data-act="set-avatar" data-id="${id}" aria-pressed="${S.avatar===id}">${avatarHTML(id,56)}<span class="n">${esc(nm(id))}</span></button>`).join("")||`<div class="empty">Aucun Pokémon obtenu ne correspond.</div>`}</div>`
     :`<div class="empty">Ouvrez votre premier booster pour débloquer des images de profil.</div>`}
+  </section>
+
+  <section class="section panel">
+    <h3>Entrer un code</h3>
+    <p class="muted" style="margin:4px 0 0">Vous avez reçu un code cadeau ? Entrez-le ici. Chaque code ne peut être utilisé qu’une fois par joueur.</p>
+    <div class="actions" style="margin-top:10px;align-items:end">
+      <label class="field" style="flex:1;min-width:200px">Code<input id="promo-code" data-keep="promo-code" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Votre code"></label>
+      <button class="btn primary" data-act="redeem-code">Valider</button>
+    </div>
   </section>
 
   ${OWNER?`<section class="section panel dev-panel">
@@ -2491,6 +2502,10 @@ document.addEventListener("click",e=>{
         <div class="actions"><button class="btn danger" data-act="reset-all-go">Tout réinitialiser</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break}
     case"title-toggle":toggleTitle(b.dataset.k);break;
     case"title-info":titleInfo(b.dataset.k);break;
+    case"redeem-code":{const inp=$("#promo-code"),v=(inp&&inp.value||"").trim();if(!v){toast("Entrez un code.");break}
+      run(async()=>{const r=await rpc("dc_redeem_code",{p_code:v});const i2=$("#promo-code");if(i2)i2.value="";
+        const parts=[];if(r.credits)parts.push(`+${cr(r.credits)}`);if(r.packs)parts.push(`+${r.packs} booster${r.packs>1?"s":""}`);
+        toast(`Code ${r.code} validé : ${parts.join(" et ")||"merci !"}`)});break}
     case"vb-flip":vbFlip(+b.dataset.i);break;
     case"vb-memo":if(VB){VB.memo=!VB.memo;renderView()}break;
     case"vb-mark":if(VB){VB.mark=+b.dataset.m;renderView()}break;
