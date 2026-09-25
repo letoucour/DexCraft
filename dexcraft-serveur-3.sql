@@ -59,6 +59,27 @@ grant select on public.trade_log to authenticated;
 drop policy if exists trade_log_read on public.trade_log;
 create policy trade_log_read on public.trade_log for select to authenticated using (auth.uid() = owner or auth.uid() = taker);
 
+-- ---------- plusieurs annonces d'échange en un seul appel (0.6.4) ----------
+-- Depuis la collection (« Mettre à l'échange ») : une annonce par carte, un exemplaire chacune, tout dans
+-- une seule transaction (rapide, et impossible de lancer deux fois la même liste en parallèle : le profil est verrouillé).
+-- Les cartes que le joueur ne possède plus sont ignorées et renvoyées dans « skipped ».
+create or replace function public.dc_trade_create_many(p_cards int[], p_mode text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); c int; n int := 0; skipped int[] := '{}';
+begin
+  if coalesce(array_length(p_cards, 1), 0) = 0 then raise exception 'Aucune carte choisie.'; end if;
+  if array_length(p_cards, 1) > 500 then raise exception 'Trop de cartes d’un coup : 500 au maximum.'; end if;
+  for c in select distinct x from unnest(p_cards) x where x is not null loop
+    if public.dc__rar(cfg, c) is null or public.dc__count(d, c) < 1 then skipped := skipped || c; continue; end if;
+    d := public.dc__add(d, c, -1);
+    insert into public.docs (path, coll, data) values ('market/' || public.dc__mid(), 'market', jsonb_build_object(
+      'kind', 't', 'owner', u, 'card', c, 'rarity', public.dc__rar(cfg, c), 'want', null,
+      'wantMode', case when p_mode = 'missing' then 'missing' end,
+      'status', 'open', 'offers', '{}'::jsonb, 'created', public.dc__now()));
+    n := n + 1;
+  end loop;
+  return jsonb_build_object('profile', public.dc__save(u, d), 'n', n, 'skipped', to_jsonb(skipped));
+end $$;
+
 -- ---------- récompense de connexion quotidienne (0.6.0) ----------
 -- Une fois par jour (heure de Paris). Série de 7 jours (daily.streak), qui repart à 1 si un jour est manqué
 -- et recommence après le 7e. Les récompenses sont dans la configuration (cfg.daily).
@@ -145,6 +166,8 @@ revoke all on function public.dc_admin_give_card(uuid,integer,integer) from publ
 grant execute on function public.dc_admin_give_card(uuid,integer,integer) to authenticated;
 revoke all on function public.dc_daily_claim() from public, anon;
 grant execute on function public.dc_daily_claim() to authenticated;
+revoke all on function public.dc_trade_create_many(integer[],text) from public, anon;
+grant execute on function public.dc_trade_create_many(integer[],text) to authenticated;
 revoke all on function public.dc__purge_player(uuid) from public, anon, authenticated;
 revoke all on function public.dc__on_user_deleted() from public, anon, authenticated;
 
