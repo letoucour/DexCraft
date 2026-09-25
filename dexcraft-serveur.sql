@@ -1,6 +1,6 @@
 -- ============================================================
 --  DexCraft 0.4.0 — le serveur devient l'arbitre (anti-triche)
---  PARTIE 1 / 2. À coller dans Supabase > SQL Editor > Run, APRÈS dexcraft-supabase.sql et dexcraft-config.sql,
+--  PARTIE 1 / 3. À coller dans Supabase > SQL Editor > Run, APRÈS dexcraft-supabase.sql et dexcraft-config.sql,
 --  puis lancer dexcraft-serveur-2.sql.
 --  Relançable sans risque. Les profils ne sont jamais effacés.
 --
@@ -92,7 +92,7 @@ $$ select (cfg -> 'rar' ->> id::text)::int $$;
 create or replace function public.dc__norm(d jsonb) returns jsonb language plpgsql volatile as $$
 declare cfg jsonb := public.dc__cfg();
 begin
-  d := jsonb_build_object('coll', '{}'::jsonb, 'listings', '{}'::jsonb, 'escrow', '{}'::jsonb, 'bought', '{}'::jsonb,
+  d := jsonb_build_object('coll', '{}'::jsonb, 'bought', '{}'::jsonb,
          'fav', '{}'::jsonb, 'stats', '{}'::jsonb, 'volto', jsonb_build_object('day', '', 'gained', 0, 'level', 1),
          'credits', cfg -> 'startCredits', 'packs', cfg -> 'maxp', 'packTs', public.dc__now(), 'bonus', 0,
          'avatar', null, 'pseudo', '', 'dev', false, 'alpha', false, 'created', public.dc__now())
@@ -108,9 +108,11 @@ declare
   cfg jsonb := public.dc__cfg(); r record; n int; rr int;
   newcoll jsonb := '{}'; byr int[] := array[0,0,0,0,0,0,0,0];
   uniq int := 0; myth int := 0; trans int := 0; tot bigint := 0; nmaster int := 0;
-  now_ms bigint := public.dc__now(); tk jsonb;
+  now_ms bigint := public.dc__now(); tk jsonb; id int; t int;
+  gencnt int[] := array_fill(0, array[9]); typecnt int[] := array_fill(0, array[18]);
+  pgen text := cfg ->> 'pgen'; ptype text := cfg ->> 'ptype'; def jsonb; ok boolean; shown jsonb := '[]';
 begin
-  d := public.dc__norm(d);
+  d := public.dc__norm(d) - 'listings' - 'escrow';
   for r in select key, value from jsonb_each(d -> 'coll') loop
     if jsonb_typeof(r.value) <> 'number' then continue; end if;
     n := floor((r.value #>> '{}')::numeric)::int;
@@ -118,12 +120,20 @@ begin
     if n <= 0 or rr is null then continue; end if;
     newcoll := newcoll || jsonb_build_object(r.key, n);
     byr[rr + 1] := byr[rr + 1] + 1; tot := tot + n;
-    if r.key::int <= 1025 then uniq := uniq + 1; end if;
+    id := r.key::int;
+    if id <= 1025 then
+      uniq := uniq + 1;
+      if pgen is not null then       -- compteurs par génération et par type, pour les titres Régions et Types
+        t := substr(pgen, id, 1)::int; gencnt[t] := gencnt[t] + 1;
+        t := ascii(substr(ptype, 2 * id - 1, 1)) - 96; if t between 1 and 18 then typecnt[t] := typecnt[t] + 1; end if;
+        t := ascii(substr(ptype, 2 * id, 1)) - 96; if t between 1 and 18 then typecnt[t] := typecnt[t] + 1; end if;
+      end if;
+    end if;
     if rr = 6 then myth := myth + 1; elsif rr = 7 then trans := trans + 1; end if;
     if rr <= 5 then nmaster := nmaster + 1; end if;
   end loop;
   d := d || jsonb_build_object('coll', newcoll, 'unique', uniq, 'myth', myth, 'trans', trans,
-         'byr', to_jsonb(byr), 'byrV', cfg -> 'byrV', 'total', tot, 'listings', '{}'::jsonb, 'escrow', '{}'::jsonb);
+         'byr', to_jsonb(byr), 'byrV', cfg -> 'byrV', 'total', tot);
   if d ->> 'avatar' is not null and not (newcoll ? (d ->> 'avatar')) then d := jsonb_set(d, '{avatar}', 'null'); end if;
   d := jsonb_set(d, '{fav}', coalesce((select jsonb_object_agg(key, value) from jsonb_each(d -> 'fav') where newcoll ? key), '{}'));
   if (cfg ->> 'betaOpen')::boolean then d := jsonb_set(d, '{beta}', 'true'); end if;
@@ -142,18 +152,41 @@ begin
     d := jsonb_set(d, '{stats,lastDay}', to_jsonb(public.dc__day()));
     d := public.dc__bump(d, 'days');
   end if;
+  -- titres affichés à côté du nom (shown) : les titres choisis, ou ceux par défaut, réellement obtenus.
+  -- Calculés ici pour que les autres joueurs n'aient pas à télécharger toute la collection.
+  for r in select value #>> '{}' as k, ordinality as i
+           from jsonb_array_elements(case when jsonb_typeof(d -> 'titles') = 'array' then d -> 'titles' else cfg -> 'titleDefault' end) with ordinality loop
+    def := cfg -> 'titleDefs' -> r.k;
+    if def is null then continue; end if;
+    ok := case def ->> 'c'
+      when 'flag' then coalesce(d ->> (def ->> 'f'), '') = 'true'
+      when 'beta' then (cfg ->> 'betaOpen')::boolean or coalesce(d ->> 'beta', '') = 'true'
+      when 'secret' then myth + trans > 0
+      when 'sflag' then coalesce(d -> 'stats' ->> (def ->> 's'), '') not in ('', '0', 'false', 'null')
+      when 'stat' then coalesce((d -> 'stats' ->> (def ->> 's'))::numeric, 0) >= (def ->> 'n')::numeric
+      when 'dex' then nmaster >= (def ->> 'n')::int
+      when 'rar' then byr[(def ->> 'r')::int + 1] >= (def ->> 'n')::int
+      when 'gen' then gencnt[(def ->> 'g')::int] >= (def ->> 'n')::int
+      when 'type' then typecnt[(def ->> 't')::int] >= (def ->> 'n')::int
+      when 'ids' then (select count(*) from jsonb_array_elements_text(def -> 'ids') x where newcoll ? x) >= (def ->> 'n')::int
+      else false end;
+    if ok then shown := shown || jsonb_build_array(jsonb_build_object('k', r.k, 'o', case r.k when 'alpha' then 0 when 'beta' then 1 else 2 end, 'i', r.i)); end if;
+  end loop;
+  select coalesce(jsonb_agg(x -> 'k' order by (x ->> 'o')::int, (x ->> 'i')::int), '[]') into shown
+    from (select x from jsonb_array_elements(shown) x order by (x ->> 'o')::int, (x ->> 'i')::int limit (cfg ->> 'titleMax')::int) s;
+  d := jsonb_set(d, '{shown}', shown);
   return jsonb_set(d, '{updated}', to_jsonb(now_ms));
 end $$;
 
 -- verrouille un profil (le crée si besoin pour le joueur lui-même)
 create or replace function public.dc__lock(u uuid, create_it boolean default false) returns jsonb language plpgsql volatile as $$
-declare d jsonb; em text;
+declare d jsonb;
 begin
   select data into d from public.docs where path = 'players/' || u for update;
   if found then return public.dc__norm(d); end if;
   if not create_it then raise exception 'Joueur introuvable.'; end if;
-  select email into em from auth.users where id = u;
-  d := public.dc__norm(jsonb_build_object('pseudo', left(split_part(coalesce(em, ''), '@', 1), 20)));
+  -- pseudo provisoire neutre (jamais tiré de l'adresse e-mail) : le joueur choisit le sien à la première connexion
+  d := public.dc__norm(jsonb_build_object('pseudo', 'Dresseur ' || lpad(public.dc__rnd(10000)::text, 4, '0'), 'pseudoSet', false));
   insert into public.docs (path, coll, data) values ('players/' || u, 'players', public.dc__stamp(d, false))
     on conflict (path) do nothing;
   select data into d from public.docs where path = 'players/' || u for update;
@@ -202,13 +235,44 @@ begin
   return jsonb_build_object('profile', d, 'admin', public.dc__is_admin(u));
 end $$;
 
-create or replace function public.dc_set_pseudo(p_v text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); v text := left(btrim(regexp_replace(coalesce(p_v, ''), '\s+', ' ', 'g')), 20);
-  nx bigint := public.dc__int(d, 'pseudoTs') + (public.dc__cfg() ->> 'pseudoWait')::bigint;
+-- clé de comparaison d'un pseudo : minuscules, sans accents, sans espaces ni ponctuation
+create or replace function public.dc__pseudo_key(v text) returns text language sql immutable as
+$$ select regexp_replace(translate(lower(coalesce(v, '')), 'àâäáãåçéèêëíìîïñóòôöõúùûüýÿœæ', 'aaaaaaceeeeiiiinooooouuuuyyoa'), '[^a-z0-9]', '', 'g') $$;
+
+-- pseudo valide et libre (3 à 20 caractères, unique, ni réservé ni injurieux) ; renvoie le pseudo nettoyé
+create or replace function public.dc__pseudo_check(p_v text, u uuid, admin boolean default false) returns text language plpgsql volatile as $$
+declare v text := btrim(regexp_replace(coalesce(p_v, ''), '\s+', ' ', 'g')); k text; w text;
 begin
-  if v = coalesce(d ->> 'pseudo', '') then raise exception 'C’est déjà votre pseudo.'; end if;
-  if public.dc__int(d, 'pseudoTs') > 0 and nx > public.dc__now() then raise exception 'Vous ne pouvez pas encore changer de pseudo.'; end if;
-  d := d || jsonb_build_object('pseudo', v, 'pseudoTs', public.dc__now());
+  if char_length(v) < 3 or char_length(v) > 20 then raise exception 'Le pseudo doit faire entre 3 et 20 caractères.'; end if;
+  if v !~ '^[A-Za-z0-9À-ÖØ-öø-ÿŒœ _.''-]+$' then raise exception 'Le pseudo ne peut contenir que des lettres, des chiffres, des espaces et les signes . _ -'; end if;
+  k := public.dc__pseudo_key(v);
+  if char_length(k) < 3 then raise exception 'Le pseudo doit contenir au moins 3 lettres ou chiffres.'; end if;
+  foreach w in array array['pute','salope','connard','connasse','encule','batard','nazi','hitler','negre','negro','nique','pedophil','pedo',
+    'fdp','ntm','tamere','tagueule','couille','bite','zizi','penis','chatte','merde','fuck','shit','bitch','whore','nigg','cunt','porn',
+    'sexe','terroris','daech'] loop
+    if position(w in k) > 0 then raise exception 'Ce pseudo n’est pas autorisé.'; end if;
+  end loop;
+  if not admin and (k in ('admin', 'modo', 'staff', 'support', 'officiel', 'systeme')
+     or k like '%theotoucour%' or k like '%dexcraft%' or k like '%administrat%' or k like '%moderat%') then
+    raise exception 'Ce pseudo est réservé.';
+  end if;
+  perform pg_advisory_xact_lock(hashtext('pseudo:' || k));   -- deux joueurs ne prennent pas le même au même instant
+  if exists (select 1 from public.docs where coll = 'players' and path <> 'players/' || u and public.dc__pseudo_key(data ->> 'pseudo') = k) then
+    raise exception 'Ce pseudo est déjà pris.';
+  end if;
+  return v;
+end $$;
+
+-- pseudo choisi par le joueur : obligatoire à la première connexion (pseudoSet), puis un changement tous les 7 jours
+create or replace function public.dc_set_pseudo(p_v text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); v text;
+  nx bigint := public.dc__int(d, 'pseudoTs') + (public.dc__cfg() ->> 'pseudoWait')::bigint; is_first boolean;
+begin
+  is_first := not coalesce((d ->> 'pseudoSet')::boolean, false);
+  v := public.dc__pseudo_check(p_v, u);
+  if v = coalesce(d ->> 'pseudo', '') and not is_first then raise exception 'C’est déjà votre pseudo.'; end if;
+  if not is_first and public.dc__int(d, 'pseudoTs') > 0 and nx > public.dc__now() then raise exception 'Vous ne pouvez pas encore changer de pseudo.'; end if;
+  d := d || jsonb_build_object('pseudo', v, 'pseudoTs', public.dc__now(), 'pseudoSet', true);
   return jsonb_build_object('profile', public.dc__save(u, d));
 end $$;
 
@@ -382,6 +446,8 @@ revoke all on function public.dc__rnd(integer) from public, anon, authenticated;
 revoke all on function public.dc__save(uuid,jsonb,boolean) from public, anon, authenticated;
 revoke all on function public.dc__stamp(jsonb,boolean) from public, anon, authenticated;
 revoke all on function public.dc__uid() from public, anon, authenticated;
+revoke all on function public.dc__pseudo_key(text) from public, anon, authenticated;
+revoke all on function public.dc__pseudo_check(text,uuid,boolean) from public, anon, authenticated;
 revoke all on function public.dc_buy_once(text) from public, anon;
 grant execute on function public.dc_buy_once(text) to authenticated;
 revoke all on function public.dc_buy_packs(integer) from public, anon;

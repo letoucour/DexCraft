@@ -1,5 +1,5 @@
 -- ============================================================
---  DexCraft — serveur, PARTIE 3 / 3 : codes cadeaux, don de cartes (administrateur) et suppression des comptes
+--  DexCraft — serveur, PARTIE 3 / 3 : codes cadeaux, historique des échanges, récompense quotidienne, don de cartes, suppression des comptes
 --  À coller dans Supabase > SQL Editor > Run, APRÈS dexcraft-serveur.sql et dexcraft-serveur-2.sql.
 --  Relançable sans risque.
 -- ============================================================
@@ -39,6 +39,41 @@ begin
   update public.promo_codes set uses = uses + 1 where code = k;
   d := d || jsonb_build_object('credits', public.dc__int(d, 'credits') + c.credits, 'bonus', public.dc__int(d, 'bonus') + c.packs);
   return jsonb_build_object('profile', public.dc__save(u, d), 'code', k, 'credits', c.credits, 'packs', c.packs);
+end $$;
+
+-- ---------- historique des échanges (0.6.0) ----------
+-- Une ligne par échange conclu, écrite par dc_trade_answer. Chaque joueur ne lit que ses propres échanges.
+create table if not exists public.trade_log (
+  id         bigserial primary key,
+  at         timestamptz not null default now(),
+  owner      uuid not null,      -- propriétaire de l'annonce
+  owner_card int not null,       -- carte qu'il a donnée
+  taker      uuid not null,      -- joueur dont la proposition a été acceptée
+  taker_card int not null        -- carte qu'il a donnée
+);
+create index if not exists trade_log_owner_idx on public.trade_log (owner, at desc);
+create index if not exists trade_log_taker_idx on public.trade_log (taker, at desc);
+alter table public.trade_log enable row level security;
+revoke all on public.trade_log from anon, authenticated;
+grant select on public.trade_log to authenticated;
+drop policy if exists trade_log_read on public.trade_log;
+create policy trade_log_read on public.trade_log for select to authenticated using (auth.uid() = owner or auth.uid() = taker);
+
+-- ---------- récompense de connexion quotidienne (0.6.0) ----------
+-- Une fois par jour (heure de Paris). Série de 7 jours (daily.streak), qui repart à 1 si un jour est manqué
+-- et recommence après le 7e. Les récompenses sont dans la configuration (cfg.daily).
+create or replace function public.dc_daily_claim() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg();
+  today text := public.dc__day(); yest text := to_char((now() at time zone 'Europe/Paris')::date - 1, 'YYYY-MM-DD');
+  last text := coalesce(d -> 'daily' ->> 'day', ''); st int := coalesce((d -> 'daily' ->> 'streak')::int, 0); rw jsonb;
+begin
+  if last = today then raise exception 'Récompense du jour déjà récupérée. Revenez demain !'; end if;
+  st := case when last = yest then st % jsonb_array_length(cfg -> 'daily') + 1 else 1 end;
+  rw := cfg -> 'daily' -> (st - 1);
+  d := d || jsonb_build_object('daily', jsonb_build_object('day', today, 'streak', st),
+    'credits', public.dc__int(d, 'credits') + coalesce((rw ->> 'credits')::bigint, 0),
+    'bonus', public.dc__int(d, 'bonus') + coalesce((rw ->> 'packs')::int, 0));
+  return jsonb_build_object('profile', public.dc__save(u, d), 'streak', st, 'credits', coalesce((rw ->> 'credits')::bigint, 0), 'packs', coalesce((rw ->> 'packs')::int, 0));
 end $$;
 
 -- ---------- administrateur : donner (ou retirer) n'importe quelle carte à un joueur ----------
@@ -108,6 +143,8 @@ revoke all on function public.dc_redeem_code(text) from public, anon;
 grant execute on function public.dc_redeem_code(text) to authenticated;
 revoke all on function public.dc_admin_give_card(uuid,integer,integer) from public, anon;
 grant execute on function public.dc_admin_give_card(uuid,integer,integer) to authenticated;
+revoke all on function public.dc_daily_claim() from public, anon;
+grant execute on function public.dc_daily_claim() to authenticated;
 revoke all on function public.dc__purge_player(uuid) from public, anon, authenticated;
 revoke all on function public.dc__on_user_deleted() from public, anon, authenticated;
 

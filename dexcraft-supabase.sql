@@ -18,8 +18,6 @@ create table if not exists public.docs (
   path         text primary key,          -- "players/<uuid>" ou "market/<id>"
   coll         text not null,             -- "players" ou "market"
   data         jsonb not null default '{}'::jsonb,
-  lease_holder text,
-  lease_until  timestamptz,
   updated_at   timestamptz not null default now()
 );
 

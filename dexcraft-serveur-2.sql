@@ -92,6 +92,8 @@ begin
   d := public.dc__lock(u, true);
   d := public.dc__bump(public.dc__add(d, public.dc__int(o, 'card')::int, 1), 'trades');
   delete from public.docs where path = 'market/' || p_mid;
+  -- historique : le propriétaire a donné m.card et reçu o.card
+  insert into public.trade_log (owner, owner_card, taker, taker_card) values (u, public.dc__int(m, 'card')::int, by_, public.dc__int(o, 'card')::int);
   return jsonb_build_object('profile', public.dc__save(u, d), 'accepted', true, 'card', o -> 'card');
 end $$;
 
@@ -248,7 +250,12 @@ end $$;
 create or replace function public.dc_admin_pseudo(p_uid uuid, p_v text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare a uuid := public.dc__admin(); d jsonb := public.dc__lock(p_uid, p_uid = a);
 begin
-  d := public.dc__save(p_uid, jsonb_set(d, '{pseudo}', to_jsonb(left(btrim(regexp_replace(coalesce(p_v, ''), '\s+', ' ', 'g')), 20))), p_uid = a);
+  if btrim(coalesce(p_v, '')) = '' then   -- pseudo effacé : pseudo provisoire, le joueur devra en choisir un à sa prochaine connexion
+    d := d || jsonb_build_object('pseudo', 'Dresseur ' || lpad(public.dc__rnd(10000)::text, 4, '0'), 'pseudoSet', false);
+  else                                    -- mêmes règles que pour les joueurs (unique, pas d'insulte), noms réservés permis
+    d := d || jsonb_build_object('pseudo', public.dc__pseudo_check(p_v, p_uid, true), 'pseudoSet', true);
+  end if;
+  d := public.dc__save(p_uid, d, p_uid = a);
   return jsonb_build_object('profile', case when p_uid = a then d end);
 end $$;
 
@@ -264,7 +271,7 @@ begin
     delete from public.docs where path = m.path;
   end loop;
   keep := jsonb_build_object('dev', d -> 'dev', 'alpha', d -> 'alpha', 'beta', d -> 'beta');
-  if not p_full then keep := keep || jsonb_build_object('pseudo', d -> 'pseudo', 'pseudoTs', d -> 'pseudoTs'); end if;
+  if not p_full then keep := keep || jsonb_build_object('pseudo', d -> 'pseudo', 'pseudoTs', d -> 'pseudoTs', 'pseudoSet', d -> 'pseudoSet'); end if;
   delete from public.vb_rounds where uid = a;
   d := public.dc__norm(keep);
   update public.docs set data = d where path = 'players/' || a;
@@ -307,7 +314,7 @@ begin
   delete from public.vb_rounds;
   for p in select path, data from public.docs where coll = 'players' for update loop
     update public.docs set data = public.dc__stamp(public.dc__norm(jsonb_build_object('pseudo', p.data -> 'pseudo', 'pseudoTs', p.data -> 'pseudoTs',
-      'alpha', p.data -> 'alpha', 'beta', p.data -> 'beta', 'dev', p.data -> 'dev')), false), updated_at = now() where path = p.path;
+      'pseudoSet', p.data -> 'pseudoSet', 'alpha', p.data -> 'alpha', 'beta', p.data -> 'beta', 'dev', p.data -> 'dev')), false), updated_at = now() where path = p.path;
     n := n + 1;
   end loop;
   return jsonb_build_object('profile', (select data from public.docs where path = 'players/' || a), 'n', n);
