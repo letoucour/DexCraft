@@ -4,7 +4,7 @@ Ce fichier remplace l'historique des conversations. Toute session Claude Code do
 
 ## 1. Le projet en deux phrases
 
-DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de wiki-masters.com : on ouvre des boosters, on complète une collection, on échange et on vend aux enchères entre joueurs. Il tourne actuellement en bêta ouverte (version affichée en bas à gauche), sans limite de joueurs.
+DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de wiki-masters.com : on ouvre des boosters, on complète une collection et on échange entre joueurs (les enchères ont été retirées en 0.5.0). Il tourne actuellement en bêta ouverte (version affichée en bas à gauche), sans limite de joueurs.
 
 **Propriétaire du projet :** Theo (theo.lostria@gmail.com), administrateur du jeu.
 
@@ -13,7 +13,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 - **`index.html`** : tout le jeu, environ 2 500 lignes, souvent très longues (les données `DEX` et `EVO` tiennent chacune sur une seule ligne). HTML, CSS et JavaScript dans un seul fichier, sans dépendance à part `supabase-js` chargé depuis un CDN.
 - **Hébergement** : GitHub Pages, branche `main`, racine du dépôt. Chaque commit redéploie le site.
 - **Base de données** : Supabase (production `hxrbzhmzjeuhmaioqhdd`, test `thgyzfjozfhwefrztjfh`). Comptes e-mail et mot de passe. Table `docs` (`path`, `coll`, `data` jsonb, `updated_at`), table `admins`, table `game_config` (données du jeu pour le serveur), table `vb_rounds` (plateaux cachés de la VoltoBataille).
-- **Scripts SQL, dans l'ordre** : `dexcraft-supabase.sql` (tables et droits), `dexcraft-config.sql` (généré par `outils/generer-config.ps1` depuis `index.html?export-config` : à régénérer et relancer après tout changement de cartes, raretés, boutique ou VoltoBataille), `dexcraft-serveur.sql` puis `dexcraft-serveur-2.sql` puis `dexcraft-serveur-3.sql` (fonctions du jeu, en trois parties : l'éditeur SQL de Supabase a tronqué le fichier unique d'environ 48 000 caractères ; garder chaque script sous 40 000 caractères, et chaque partie révoque elle-même les droits de ses fonctions). `migration-0.4.0.sql` : une seule fois, lors du passage à la 0.4.0.
+- **Scripts SQL, dans l'ordre** : `dexcraft-supabase.sql` (tables et droits), `dexcraft-config.sql` (généré par `outils/generer-config.ps1` depuis `index.html?export-config` : à régénérer et relancer après tout changement de cartes, raretés, boutique ou VoltoBataille), `dexcraft-serveur.sql` puis `dexcraft-serveur-2.sql` puis `dexcraft-serveur-3.sql` (fonctions du jeu, en trois parties : l'éditeur SQL de Supabase a tronqué le fichier unique d'environ 48 000 caractères ; garder chaque script sous 40 000 caractères, et chaque partie révoque elle-même les droits de ses fonctions). `migration-0.4.0.sql` : une seule fois, lors du passage à la 0.4.0. `migration-0.5.0.sql` : une seule fois, lors du passage à la 0.5.0 (annule les enchères en cours, rend cartes et mises, supprime les fonctions d’enchère).
 - **Chemins de données** : `players/<uuid>` pour un profil, `market/<id>` pour une annonce.
 - **Le serveur est l'arbitre (depuis la 0.4.0)** : les joueurs ne peuvent QUE LIRE `docs`. Toute modification passe par une fonction SQL `dc_*` (`security definer`), appelée via `rpc(name, args)` dans `index.html`, qui renvoie le profil à jour. Hasard tiré côté serveur (`dc__rnd`, `gen_random_bytes`). Champs calculés par `dc__stamp` : `unique`, `byr`, `total`, `myth`, `trans`, `masterTs`, `beta`, `stats.maxCr`, `stats.days`. Les fonctions `dc__*` sont internes (non exécutables par les joueurs). Pour une nouvelle action : écrire une fonction `dc_*` qui vérifie tout, la tester sur PostgreSQL local, jamais d'écriture directe depuis le navigateur.
 - **Tests** : sur ce PC (`localhost`, `127.0.0.1` ou fichier ouvert), `index.html` se branche automatiquement sur le projet Supabase de **test** (« BASE DE TEST » en bas à gauche). `outils/serveur-local.ps1` sert le jeu sur http://localhost:8123 et http://127.0.0.1:8123 (deux sessions, deux comptes). Comptes de test : `theo.lostria+test1@gmail.com` (admin) et `+test2`. PostgreSQL 17 est installé sur le PC pour tester le SQL hors ligne.
@@ -25,16 +25,16 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 
 ### Raretés, dans l'ordre des indices 0 à 7
 
-| Indice | Rareté | Taux par carte | Défausse | Prix de départ conseillé |
-|---|---|---|---|---|
-| 0 | Commune | 53,7634 % (le reste) | 2 | 20 |
-| 1 | Peu commune | 26,6 % | 5 | 40 |
-| 2 | Rare | 11,7 % | 10 | 100 |
-| 3 | Épique | 4,9 % | 15 | 300 |
-| 4 | Méga-évolution | 2 % | 18 | 600 |
-| 5 | Légendaire | 1 % | 20 | 1 000 |
-| 6 | Mythique | 1 sur 4 096 | 50 | 5 000 |
-| 7 | Transcendante | 1 sur 8 192 | 100 | 15 000 |
+| Indice | Rareté | Taux par carte | Défausse |
+|---|---|---|---|
+| 0 | Commune | 53,7634 % (le reste) | 2 |
+| 1 | Peu commune | 26,6 % | 5 |
+| 2 | Rare | 11,7 % | 10 |
+| 3 | Épique | 4,9 % | 15 |
+| 4 | Méga-évolution | 2 % | 18 |
+| 5 | Légendaire | 1 % | 20 |
+| 6 | Mythique | 1 sur 4 096 | 50 |
+| 7 | Transcendante | 1 sur 8 192 | 100 |
 
 - Le tirage se fait sur `SCALE = 8 192 000` pour que 1/4096 et 1/8192 tombent juste. Le total doit toujours faire exactement `SCALE`.
 - Les 2 % des Mégas ont été pris sur les quatre premières raretés : 1,2 point aux Communes, 0,4 aux Peu communes, 0,3 aux Rares, 0,1 aux Épiques.
@@ -45,7 +45,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 
 - 1 à 1025 : les Pokémon, données dans `DEX` (nom, catégorie, génération, types, taille, poids, statistiques, rareté).
 - 4001 à 4093 : les 93 méga-évolutions officielles, dans `MEGA`. Champ `base` = numéro du Pokémon d'origine. **Visibles** dans la collection, affichées en « ??? » tant qu'on ne les a pas, rangées juste après leur Pokémon d'origine (`DEX_ORDER`).
-- 2001 à 2005 : mythiques. 3001 à 3004 : transcendantes. **Invisibles** tant qu'on ne les a pas : ni en « ??? », ni dans les filtres, ni dans les tableaux de taux. Ne jamais les révéler dans un texte d'interface.
+- 2001 à 2005 : mythiques. 3001 à 3005 : transcendantes (3005 = « Drocafeu », faute voulue). **Invisibles** tant qu'on ne les a pas : ni en « ??? », ni dans les filtres, ni dans les tableaux de taux. Ne jamais les révéler dans un texte d'interface.
 - La progression des raretés est strictement croissante le long des lignées d'évolution. Toute modification de rareté doit préserver cette règle.
 
 ### Économie et rythme
@@ -55,14 +55,13 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 - Ouverture par 1, 5 ou 10 boosters maximum (`OPEN_OPTS`). Les ouvertures par 20, 50 et 100 ont été retirées.
 - Pseudo : un changement tous les 7 jours à partir de la validation (`pseudoTs` dans le profil), après une boîte de confirmation. L'outil administrateur n'est pas soumis au délai.
 - Évolution : 3 exemplaires d'un Pokémon donnent 1 carte de son évolution, ou d'une de ses méga-évolutions. « Évolution rapide » traite d'un coup tous les Pokémon possédés à 4 exemplaires ou plus dont l'évolution manque.
-- Maximum 10 enchères simultanées par joueur.
 - Boutique : `ALPHA_FREE = false`. Le Pack fondateur reste gratuit (`free:true`). Le Pack de démarrage (5 €) et le Pack Wailord (20 €) sont payants, mais les paiements en euros sont désactivés : note « Paiement indisponible pendant la bêta » et boîte « Paiement indisponible » au clic, comme pour les crédits. Un encadré vert rappelle que le jeu se joue entièrement gratuitement et qu'on n'achète que si on peut se le permettre : à garder.
 
 ### Marché
 
-- **Enchères** : la carte est mise de côté chez le vendeur, les crédits de l'enchérisseur sont bloqués et rendus dès qu'il est dépassé.
 - **Échanges** : le proposant met sa carte de côté, et c'est le propriétaire de l'annonce qui accepte ou refuse. Trois types de demande : n'importe quelle carte de la rareté, n'importe laquelle **qui lui manque** (valeur par défaut), ou un Pokémon précis.
-- **Règle d'or du marché** : tout se règle côté serveur, de façon atomique (verrous de lignes). Enchère : `dc_bid` débite l'enchérisseur et rembourse aussitôt celui qui est dépassé ; `dc_auction_settle` clôture une enchère terminée (déclenchée par `settle()` chez le vendeur ou l'acheteur, ou chez n'importe quel joueur une minute après). Échange : `dc_trade_propose` met la carte de côté, `dc_trade_answer` échange les cartes et rend celles des autres propositions, `dc_trade_cancel` rend tout. Le profil n'a plus de `listings` ni d'`escrow` : annonces et crédits engagés se lisent sur le marché (`myAuctionCount`, `myEscrow`).
+- **Enchères : retirées en 0.5.0**, onglet, fenêtre de mise en vente, titres et textes compris. Ne pas les réintroduire sans demande de Theo.
+- **Règle d'or du marché** : tout se règle côté serveur, de façon atomique (verrous de lignes). `dc_trade_propose` met la carte de côté, `dc_trade_answer` échange les cartes et rend celles des autres propositions, `dc_trade_cancel` rend tout. Le profil n'a plus de `listings` ni d'`escrow` : les annonces se lisent sur le marché.
 
 ## 4. Interface, décisions prises
 
@@ -72,7 +71,8 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 - Animations par rareté, de plus en plus fortes : rien en Commune, reflet vert en Peu commune, bleu en Rare, gerbe violette en Épique, turquoise en Méga, scène plein écran en Légendaire, fanfare et feux d'artifice en Mythique, scène argentée la plus longue en Transcendante.
 - Dos de carte : bleu par défaut, rouge en Mythique, métallisé gris en Transcendante.
 - Reflets des cartes : Rare, bande de reflet bleue ; Épique, halo violet dans le fond de carte et reflet violet ; Légendaire, fond doré avec des lignes holographiques aux couleurs du ou des types (`--c1`, `--c2`) et reflet brillant.
-- Échanges : les annonces des autres joueurs d'abord, en tuiles compactes (6 par ligne, 4 puis 3 sur petit écran) ; un clic ouvre la fiche complète (`tradeOpen`). « Mes annonces » est repliée derrière la case « Voir mes annonces », qui signale les propositions à traiter.
+- Échanges : les annonces des autres joueurs d'abord, en tuiles compactes (6 par ligne, 4 puis 3 sur petit écran) ; un clic ouvre la fiche complète (`tradeOpen`). « Mes annonces » est repliée derrière la case « Voir mes annonces », qui signale les propositions à traiter. Filtre « Toutes les cartes » / « Seulement celles qui me manquent » (`trdMissing`). Bulle rouge sur l'onglet Échanges avec le nombre de propositions reçues en attente (`pendingOffers`, mise à jour par `renderHeader` à chaque changement du marché). Dans la fenêtre « Proposer une carte », les doubles d'abord, puis les exemplaires uniques.
+- Effets de rareté (`smallFx`, `epicFx`) : le reflet est posé dans la face de la carte (`fxGlint`), anneaux, rayons et éclair suivent la carte à chaque image (`fxFollow`). Ne pas revenir à des positions figées : sur téléphone, la main défile encore quand l'effet démarre.
 - Sons synthétisés dans le navigateur, aucun fichier audio. Bouton de coupure dans l'en-tête.
 - Classement : trié par cartes différentes, Pokémon et mégas confondus. Entre Maîtres, le premier à avoir obtenu le titre reste devant (`masterTs`, posé par `stamp`, effacé si le titre est perdu), puis le nombre total de cartes. Barre segmentée par rareté, sur 1 118 cartes. Mythiques et transcendantes affichées en pastilles ✦ et ❖, hors classement. Le détail par rareté porte une version (`BYR_V`) : l'incrémenter à chaque changement d'ordre des raretés.
 - Favoris : protégés de la défausse, retirés automatiquement si la carte quitte la collection.
@@ -83,7 +83,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
   - Collections : « Starters » (les 27 starters de base, `STARTER_IDS`), et Commun, Peu commun, Rare, Épique, Méga, Légendaire (toutes les cartes de la rareté ; Méga = les 93 méga-évolutions).
   - Régions : « Maître de Kanto » à « Maître de Paldea », tous les Pokémon d'une génération. Types : un titre par type (« Psy », « Feu »…), tous les Pokémon du type. Mégas exclues des régions et des types.
   - Mythiques et transcendantes ne comptent que pour Secret, Mythique et Transcendant.
-  - Activité (20 titres) : compteurs `stats` du profil, sans rétroactivité (`bump`). Boosters ouverts (Déballeur 100, Ouvre-boosters 1 000, Accro aux boosters 5 000), évolutions (Éleveur 50, Évolutionniste 250), enchères vendues (Commerçant 10, Marchand 50), enchères remportées (Enchérisseur 10, Collectionneur avisé 50), échanges conclus (Négociant 20, Diplomate 80, Charismatique 200), cartes défaussées (Recycleur 500), crédits détenus d'un coup (Fortuné 50 000, Magnat 250 000, `maxCr` posé par `stamp`), jours de jeu (Fidèle 30, Vétéran 100, `touchDay` dans `mutateMe`), manches de VoltoBataille gagnées (Joueur de casino 50), Chanceux (2 Légendaires dans un booster), Démineur (manche gagnée au niveau 8).
+  - Activité (16 titres, les 4 titres d’enchères ont été retirés en 0.5.0) : compteurs `stats` du profil, sans rétroactivité (`bump`). Boosters ouverts (Déballeur 100, Ouvre-boosters 1 000, Accro aux boosters 5 000), évolutions (Éleveur 50, Évolutionniste 250), échanges conclus (Négociant 20, Diplomate 80, Charismatique 200), cartes défaussées (Recycleur 500), crédits détenus d'un coup (Fortuné 50 000, Magnat 250 000, `maxCr` posé par `stamp`), jours de jeu (Fidèle 30, Vétéran 100, `touchDay` dans `mutateMe`), manches de VoltoBataille gagnées (Joueur de casino 50), Chanceux (2 Légendaires dans un booster), Démineur (manche gagnée au niveau 8).
   - Un clic sur un titre affiché à côté d'un nom ouvre « Comment l’obtenir ? » (`titleInfo`). Pour Secret, Mythique et Transcendant, la condition (fenêtre et infobulle) est remplacée par « ??? », sauf si le joueur qui regarde a lui-même ce titre (`titleHow`).
 
 ## 5. Contraintes permanentes
@@ -97,15 +97,15 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 ## 6. Chantiers ouverts
 
 1. Découper `index.html` en modules : données, cartes, marché, animations, interface.
-2. Images des 9 mythiques et transcendantes, à fournir par Theo dans `images-perso/` (nommées par numéro), puis à convertir et à autoriser dans `imgFor`. Procédure et outils : `dexcraft-guide-images.md`, `outils/telecharger-images.ps1`, `outils/planche-images.ps1` (planche de contrôle), `outils/serveur-local.ps1` (test sur http://localhost:8123). Conversion : `magick in.png -trim +repage -resize 240x240 -background none -gravity center -extent 256x256 -quality 80 images/<id>.webp`.
-3. **Version 0.4.0 : anti-triche, en test.** Serveur arbitre en place (voir Architecture). Passage en production : lancer sur le vrai Supabase `dexcraft-supabase.sql`, `dexcraft-config.sql`, `dexcraft-serveur.sql`, `dexcraft-serveur-2.sql` puis `migration-0.4.0.sql`, et pousser aussitôt.
+2. Images des 10 mythiques et transcendantes (2001 à 2005, 3001 à 3005), à fournir par Theo dans `images-perso/` (nommées par numéro), puis à convertir et à autoriser dans `imgFor`. Procédure et outils : `dexcraft-guide-images.md`, `outils/telecharger-images.ps1`, `outils/planche-images.ps1` (planche de contrôle), `outils/serveur-local.ps1` (test sur http://localhost:8123). Conversion : `magick in.png -trim +repage -resize 240x240 -background none -gravity center -extent 256x256 -quality 80 images/<id>.webp`.
+3. **Version 0.5.0 (enchères retirées, Drocafeu).** Passage en production : lancer sur le vrai Supabase `migration-0.5.0.sql`, `dexcraft-config.sql` puis `dexcraft-serveur-2.sql`, et pousser aussitôt. Même chose sur le projet de test.
 4. Domaine personnalisé (prévu) : GitHub Pages, Settings, Pages, Custom domain, plus DNS chez le registraire, et ajouter l'adresse dans Supabase (Authentication, URL Configuration). L'ancienne adresse redirige ; les joueurs se reconnectent une fois.
 5. Brancher un paiement réel (Stripe) pour le Pack de démarrage, le Pack Wailord et les crédits, après la 0.4.0 : Stripe Checkout ou Payment Link, puis webhook vers une fonction Supabase qui crédite le compte côté serveur.
 
 ## 7. Comment travailler sur ce dépôt
 
 - Modifier `index.html` directement, en gardant le style du code existant : fonctions courtes, chaînes en français, pas de dépendance nouvelle.
-- Après chaque modification, vérifier au minimum : ouverture d'un booster, collection, évolutions, enchères, échanges, profil.
+- Après chaque modification, vérifier au minimum : ouverture d’un booster, collection, évolutions, échanges, profil.
 - Commit en français, une phrase claire décrivant le changement. Le push sur `main` déclenche le déploiement GitHub Pages.
 - **Version** : `APP_VERSION` dans `index.html`, affichée en bas à gauche. À **chaque push**, monter le dernier chiffre (0.2.1 → 0.2.2 → 0.2.3…), sauf si Theo dit explicitement qu'un ajout mineur ne change pas la version (alors ni version ni patchnote). Mise à jour majeure de la bêta : 0.3.0, puis nouveau cycle. Sortie publique : 1.0.0. Citer la version dans le message de commit.
 - Ne pousser que sur signal explicite de Theo (« push »).

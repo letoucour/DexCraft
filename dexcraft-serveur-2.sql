@@ -4,76 +4,12 @@
 --  Marché, VoltoBataille, outils administrateur, droits d'exécution. Relançable sans risque.
 -- ============================================================
 -- ============================================================
---  Enchères
+--  Enchères : retirées du jeu en 0.5.0 (les ventes en cours sont réglées par migration-0.5.0.sql)
 -- ============================================================
-create or replace function public.dc_auction_create(p_card int, p_start bigint, p_hours numeric) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); mid text := public.dc__mid(); now_ms bigint := public.dc__now(); n int;
-begin
-  if not (cfg -> 'aucHours' @> to_jsonb(p_hours)) then raise exception 'Durée invalide.'; end if;
-  if p_start is null or p_start < 1 or p_start > 1000000000 then raise exception 'Le prix de départ doit être d’au moins 1 crédit.'; end if;
-  select count(*) into n from public.docs where coll = 'market' and data ->> 'kind' = 'a' and data ->> 'seller' = u::text;
-  if n >= (cfg ->> 'maxAuctions')::int then raise exception 'Vous avez déjà % cartes aux enchères.', cfg ->> 'maxAuctions'; end if;
-  if public.dc__count(d, p_card) < 1 then raise exception 'Vous ne possédez plus cette carte.'; end if;
-  d := public.dc__add(d, p_card, -1);
-  insert into public.docs (path, coll, data) values ('market/' || mid, 'market', jsonb_build_object(
-    'kind', 'a', 'seller', u, 'card', p_card, 'rarity', public.dc__rar(cfg, p_card), 'start', p_start, 'bid', 0, 'bidder', null,
-    'created', now_ms, 'endsAt', now_ms + round(p_hours * 3600000)::bigint));
-  return jsonb_build_object('profile', public.dc__save(u, d), 'mid', mid);
-end $$;
-
-create or replace function public.dc_bid(p_mid text, p_amount bigint) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); m jsonb := public.dc__market(p_mid); d jsonb; o jsonb; prev uuid; mn bigint; need bigint;
-begin
-  if m is null or m ->> 'kind' <> 'a' then raise exception 'Cette enchère est terminée.'; end if;
-  if m ->> 'seller' = u::text then raise exception 'Vous ne pouvez pas enchérir sur votre propre carte.'; end if;
-  if public.dc__now() >= public.dc__int(m, 'endsAt') then raise exception 'Cette enchère est terminée.'; end if;
-  prev := nullif(m ->> 'bidder', '')::uuid;
-  mn := case when prev is null then public.dc__int(m, 'start') else public.dc__int(m, 'bid') + 1 end;
-  if p_amount is null or p_amount < mn then raise exception 'L’offre minimale est de % crédits.', mn; end if;
-  perform public.dc__lock_many(array_remove(array[u, prev], null));
-  d := public.dc__lock(u, true);
-  need := case when prev = u then p_amount - public.dc__int(m, 'bid') else p_amount end;
-  if public.dc__int(d, 'credits') < need then raise exception 'Vous n’avez pas assez de crédits.'; end if;
-  d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') - need));
-  if prev is not null and prev <> u then   -- l'enchérisseur dépassé est remboursé tout de suite
-    o := public.dc__lock(prev);
-    perform public.dc__save(prev, jsonb_set(o, '{credits}', to_jsonb(public.dc__int(o, 'credits') + public.dc__int(m, 'bid'))), false);
-  end if;
-  update public.docs set data = m || jsonb_build_object('bid', p_amount, 'bidder', u, 'lastBid', public.dc__now()), updated_at = now() where path = 'market/' || p_mid;
-  return jsonb_build_object('profile', public.dc__save(u, d));
-end $$;
-
-create or replace function public.dc_auction_cancel(p_mid text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); m jsonb := public.dc__market(p_mid); d jsonb;
-begin
-  if m is null then raise exception 'Cette annonce n’existe plus.'; end if;
-  if m ->> 'seller' <> u::text then raise exception 'Cette annonce n’est pas la vôtre.'; end if;
-  if m ->> 'bidder' is not null or public.dc__now() >= public.dc__int(m, 'endsAt') then raise exception 'Impossible d’annuler : l’enchère a déjà reçu une offre.'; end if;
-  d := public.dc__lock(u, true);
-  delete from public.docs where path = 'market/' || p_mid;
-  return jsonb_build_object('profile', public.dc__save(u, public.dc__add(d, public.dc__int(m, 'card')::int, 1)));
-end $$;
-
--- clôture d'une enchère terminée : n'importe quel joueur peut la déclencher, une seule fois
-create or replace function public.dc_auction_settle(p_mid text) returns boolean language plpgsql security definer set search_path = public, extensions as $$
-declare m jsonb := public.dc__market(p_mid); s uuid; b uuid; ds jsonb; db_ jsonb;
-begin
-  perform public.dc__uid();
-  if m is null or m ->> 'kind' <> 'a' or public.dc__now() < public.dc__int(m, 'endsAt') then return false; end if;
-  s := (m ->> 'seller')::uuid; b := nullif(m ->> 'bidder', '')::uuid;
-  perform public.dc__lock_many(array_remove(array[s, b], null));
-  ds := public.dc__lock(s);
-  if b is null then
-    perform public.dc__save(s, public.dc__add(ds, public.dc__int(m, 'card')::int, 1), false);
-  else
-    db_ := public.dc__lock(b);
-    ds := public.dc__bump(jsonb_set(ds, '{credits}', to_jsonb(public.dc__int(ds, 'credits') + public.dc__int(m, 'bid'))), 'aucSold');
-    perform public.dc__save(s, ds, false);
-    perform public.dc__save(b, public.dc__bump(public.dc__add(db_, public.dc__int(m, 'card')::int, 1), 'aucWon'), false);
-  end if;
-  delete from public.docs where path = 'market/' || p_mid;
-  return true;
-end $$;
+drop function if exists public.dc_auction_create(integer, bigint, numeric);
+drop function if exists public.dc_bid(text, bigint);
+drop function if exists public.dc_auction_cancel(text);
+drop function if exists public.dc_auction_settle(text);
 
 -- ============================================================
 --  Échanges
@@ -442,14 +378,6 @@ revoke all on function public.dc_admin_reset_once() from public, anon;
 grant execute on function public.dc_admin_reset_once() to authenticated;
 revoke all on function public.dc_admin_toggle_dev() from public, anon;
 grant execute on function public.dc_admin_toggle_dev() to authenticated;
-revoke all on function public.dc_auction_cancel(text) from public, anon;
-grant execute on function public.dc_auction_cancel(text) to authenticated;
-revoke all on function public.dc_auction_create(integer,bigint,numeric) from public, anon;
-grant execute on function public.dc_auction_create(integer,bigint,numeric) to authenticated;
-revoke all on function public.dc_auction_settle(text) from public, anon;
-grant execute on function public.dc_auction_settle(text) to authenticated;
-revoke all on function public.dc_bid(text,bigint) from public, anon;
-grant execute on function public.dc_bid(text,bigint) to authenticated;
 revoke all on function public.dc_buy_once(text) from public, anon;
 grant execute on function public.dc_buy_once(text) to authenticated;
 revoke all on function public.dc_buy_packs(integer) from public, anon;
