@@ -79,7 +79,7 @@ Dis-moi « lance le téléchargement des images ». Je lancerai le script et je 
 | `2005.png` | Sachanobi | Carte mythique propre à DexCraft |
 | `3001.png` | Dresseur Red | Carte transcendante |
 | `3002.png` | Dresseuse Cynthia | Carte transcendante |
-| `3003.png` | Neos en Peignoir | Carte transcendante |
+| `3003.png` | Homo Peignoirus | Carte transcendante |
 | `3004.png` | Créateur TheoToucour | Carte transcendante |
 
 Pour chacune : une image carrée, de préférence 512 × 512 pixels ou plus, fond transparent si possible, enregistrée en PNG sous le nom exact de la colonne « Fichier », dans le dossier `images`.
