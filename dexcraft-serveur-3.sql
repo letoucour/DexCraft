@@ -1,5 +1,5 @@
 -- ============================================================
---  DexCraft — serveur, PARTIE 3 / 3 : codes cadeaux et suppression des comptes
+--  DexCraft — serveur, PARTIE 3 / 3 : codes cadeaux, don de cartes (administrateur) et suppression des comptes
 --  À coller dans Supabase > SQL Editor > Run, APRÈS dexcraft-serveur.sql et dexcraft-serveur-2.sql.
 --  Relançable sans risque.
 -- ============================================================
@@ -39,6 +39,19 @@ begin
   update public.promo_codes set uses = uses + 1 where code = k;
   d := d || jsonb_build_object('credits', public.dc__int(d, 'credits') + c.credits, 'bonus', public.dc__int(d, 'bonus') + c.packs);
   return jsonb_build_object('profile', public.dc__save(u, d), 'code', k, 'credits', c.credits, 'packs', c.packs);
+end $$;
+
+-- ---------- administrateur : donner (ou retirer) n'importe quelle carte à un joueur ----------
+create or replace function public.dc_admin_give_card(p_uid uuid, p_card int, p_n int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare a uuid := public.dc__admin(); d jsonb; n int;
+begin
+  if p_card is null or not (public.dc__cfg() -> 'rar' ? p_card::text) then raise exception 'Cette carte n’existe pas.'; end if;
+  if p_n is null or p_n = 0 or abs(p_n) > 1000 then raise exception 'Indiquez un nombre d’exemplaires entre 1 et 1 000 (négatif pour en retirer).'; end if;
+  d := public.dc__lock(p_uid, p_uid = a);
+  n := greatest(p_n, -public.dc__count(d, p_card));        -- on ne retire jamais plus qu'il n'en possède
+  if n = 0 then raise exception 'Ce joueur ne possède pas cette carte.'; end if;
+  d := public.dc__save(p_uid, public.dc__add(d, p_card, n), p_uid = a);
+  return jsonb_build_object('profile', case when p_uid = a then d end, 'n', n);
 end $$;
 
 -- ---------- suppression d'un joueur ----------
@@ -93,6 +106,8 @@ end $$;
 -- ---------- droits d'exécution ----------
 revoke all on function public.dc_redeem_code(text) from public, anon;
 grant execute on function public.dc_redeem_code(text) to authenticated;
+revoke all on function public.dc_admin_give_card(uuid,integer,integer) from public, anon;
+grant execute on function public.dc_admin_give_card(uuid,integer,integer) to authenticated;
 revoke all on function public.dc__purge_player(uuid) from public, anon, authenticated;
 revoke all on function public.dc__on_user_deleted() from public, anon, authenticated;
 
