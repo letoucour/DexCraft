@@ -48,7 +48,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 
 - 1 à 1025 : les Pokémon, données dans `DEX` (nom, catégorie, génération, types, taille, poids, statistiques, rareté).
 - 4001 à 4093 : les 93 méga-évolutions officielles, dans `MEGA`. Champ `base` = numéro du Pokémon d'origine. **Visibles** dans la collection, affichées en « ??? » tant qu'on ne les a pas, rangées juste après leur Pokémon d'origine (`DEX_ORDER`).
-- 2001 à 2005 : mythiques. 3001 à 3005 : transcendantes (3005 = « Drocafeu », faute voulue). **Invisibles** tant qu'on ne les a pas : ni en « ??? », ni dans les filtres, ni dans les tableaux de taux. Ne jamais les révéler dans un texte d'interface.
+- 2001 à 2005 : mythiques. 3001 à 3006 : transcendantes (3005 = « Drocafeu », faute voulue ; 3006 = « Le Nez Dehios »). **Invisibles** tant qu'on ne les a pas : ni en « ??? », ni dans les filtres, ni dans les tableaux de taux. Ne jamais les révéler dans un texte d'interface.
 - La progression des raretés est strictement croissante le long des lignées d'évolution. Toute modification de rareté doit préserver cette règle.
 
 ### Économie et rythme
@@ -104,7 +104,7 @@ DexCraft est un jeu de collection de cartes Pokémon en français, inspiré de w
 ## 6. Chantiers ouverts
 
 1. Découper `index.html` en modules : données, cartes, marché, animations, interface. Reporté (pas sans risque : un fichier JS en cache avec une page plus récente casse le jeu) ; à faire au lancement 1.0.0 avec la nouvelle adresse, avec des liens versionnés (`app.js?v=…`).
-2. Images des mythiques et transcendantes : en place depuis la 0.5.1 (`images/2001.webp` à `images/3005.webp`, converties depuis `images-perso/`). Pour une nouvelle carte spéciale, même procédure : fichier dans `images-perso/` nommé par numéro, puis `magick in.png -trim +repage -resize 240x240 -background none -gravity center -extent 256x256 -quality 80 images/<id>.webp`.
+2. Images des mythiques et transcendantes : en place depuis la 0.5.1 (`images/2001.webp` à `images/3006.webp`, converties depuis `images-perso/`). Pour une nouvelle carte spéciale, même procédure : fichier dans `images-perso/` nommé par numéro, puis `magick in.png -trim +repage -resize 240x240 -background none -gravity center -extent 256x256 -quality 80 images/<id>.webp`.
 3. **Version 0.6.0.** Passage en production : lancer sur le vrai Supabase `dexcraft-supabase.sql`, `dexcraft-config.sql`, `dexcraft-serveur.sql`, `dexcraft-serveur-2.sql`, `dexcraft-serveur-3.sql` puis `migration-0.6.0.sql`, et pousser aussitôt.
 4. Domaine personnalisé (prévu) : GitHub Pages, Settings, Pages, Custom domain, plus DNS chez le registraire, et ajouter l'adresse dans Supabase (Authentication, URL Configuration). L'ancienne adresse redirige ; les joueurs se reconnectent une fois.
 5. Brancher un paiement réel (Stripe) pour le Pack de démarrage, le Pack Wailord et les crédits, après la 0.4.0 : Stripe Checkout ou Payment Link, puis webhook vers une fonction Supabase qui crédite le compte côté serveur.
