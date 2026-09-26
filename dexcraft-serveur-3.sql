@@ -266,6 +266,14 @@ grant execute on function public.dc_trade_create_many(integer[],text,boolean) to
 revoke all on function public.dc__purge_player(uuid) from public, anon, authenticated;
 revoke all on function public.dc__on_user_deleted() from public, anon, authenticated;
 
+-- fonctions internes : chemin de recherche fixé (avertissement « Function Search Path Mutable » de Supabase)
+do $$ declare f regprocedure; begin
+  for f in select p.oid::regprocedure from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname like 'dc\_%' and p.proconfig is null loop
+    execute format('alter function %s set search_path = public, extensions', f);
+  end loop;
+end $$;
+
 select 'serveur DexCraft partie 3 OK' as verif,
   (select count(*) from public.docs where coll = 'players') as joueurs,
   (select count(*) from public.promo_codes) as codes;

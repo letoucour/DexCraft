@@ -454,4 +454,12 @@ grant execute on function public.dc_vb_quit() to authenticated;
 revoke all on function public.dc_vb_state() from public, anon;
 grant execute on function public.dc_vb_state() to authenticated;
 
+-- fonctions internes : chemin de recherche fixé (avertissement « Function Search Path Mutable » de Supabase)
+do $$ declare f regprocedure; begin
+  for f in select p.oid::regprocedure from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname like 'dc\_%' and p.proconfig is null loop
+    execute format('alter function %s set search_path = public, extensions', f);
+  end loop;
+end $$;
+
 select 'serveur DexCraft 0.4.0 OK' as verif, count(*) as fonctions from pg_proc where proname like 'dc\_%';
