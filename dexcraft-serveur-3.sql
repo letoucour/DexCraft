@@ -80,6 +80,40 @@ begin
   return jsonb_build_object('profile', public.dc__save(u, d), 'n', n, 'skipped', to_jsonb(skipped));
 end $$;
 
+-- ---------- gestion groupée de ses annonces d'échange (0.6.9) ----------
+-- p_action = 'cancel' : retire les annonces (cartes rendues au propriétaire, propositions rendues à leurs auteurs) ;
+-- p_action = 'mode'   : change la demande (p_mode 'missing' = carte qui me manque, sinon n'importe quelle carte de même rareté).
+-- Seules les annonces du joueur sont touchées ; les autres identifiants sont ignorés.
+create or replace function public.dc_trade_bulk(p_mids text[], p_action text, p_mode text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb; m record; us uuid[]; n int := 0;
+begin
+  if coalesce(array_length(p_mids, 1), 0) = 0 then raise exception 'Aucune annonce choisie.'; end if;
+  if array_length(p_mids, 1) > 500 then raise exception 'Trop d’annonces d’un coup : 500 au maximum.'; end if;
+  if p_action not in ('cancel', 'mode') then raise exception 'Action inconnue.'; end if;
+  if p_action = 'cancel' then
+    -- verrouille d'abord tous les joueurs concernés, toujours dans le même ordre
+    select array_agg(distinct (o.value ->> 'by')::uuid) into us
+      from public.docs x, jsonb_each(x.data -> 'offers') o
+      where x.path = any (select 'market/' || y from unnest(p_mids) y) and x.data ->> 'owner' = u::text and o.value ->> 'status' = 'pending';
+    perform public.dc__lock_many(coalesce(us, '{}') || u);
+  end if;
+  d := public.dc__lock(u, true);
+  for m in select path, data from public.docs
+           where path = any (select 'market/' || y from unnest(p_mids) y) and coll = 'market'
+             and data ->> 'kind' = 't' and data ->> 'owner' = u::text for update loop
+    if p_action = 'cancel' then
+      perform public.dc__return_offers(m.data, null);
+      d := public.dc__add(d, public.dc__int(m.data, 'card')::int, 1);
+      delete from public.docs where path = m.path;
+    else
+      update public.docs set data = m.data || jsonb_build_object('want', null, 'wantMode', case when p_mode = 'missing' then 'missing' end), updated_at = now()
+        where path = m.path;
+    end if;
+    n := n + 1;
+  end loop;
+  return jsonb_build_object('profile', public.dc__save(u, d), 'n', n);
+end $$;
+
 -- ---------- récompense de connexion quotidienne (0.6.0) ----------
 -- Une fois par jour (heure de Paris). Série de 7 jours (daily.streak), qui repart à 1 si un jour est manqué
 -- et recommence après le 7e. Les récompenses sont dans la configuration (cfg.daily).
@@ -119,15 +153,19 @@ begin
 end $$;
 
 -- ---------- boîte cadeau (0.6.8) ----------
--- Le joueur ouvre ses cadeaux : les cartes passent dans sa collection et sont renvoyées pour être retournées
+-- Le joueur ouvre ses cadeaux : crédits et boosters versés ; les cartes passent dans sa collection et sont renvoyées pour être retournées
 -- une à une comme un booster (50 cartes affichées au plus, les suivantes sont ajoutées sans animation).
 create or replace function public.dc_gift_open() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); g record; k int; shown jsonb := '[]'; nshown int := 0; total int := 0;
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); g record; k int;
+  shown jsonb := '[]'; nshown int := 0; total int := 0; cr bigint := 0; pk int := 0;
 begin
   if coalesce(jsonb_typeof(d -> 'gifts'), '') <> 'array' or jsonb_array_length(d -> 'gifts') = 0 then raise exception 'Aucun cadeau à ouvrir.'; end if;
-  for g in select (x ->> 'c')::int as c, greatest(coalesce((x ->> 'n')::int, 1), 1) as n from jsonb_array_elements(d -> 'gifts') x loop
-    if public.dc__rar(cfg, g.c) is null then continue; end if;
-    for k in 1 .. g.n loop
+  for g in select (x ->> 'c')::int as c, greatest(coalesce((x ->> 'n')::int, 1), 1) as n,
+                  greatest(coalesce((x ->> 'cr')::bigint, 0), 0) as cr, greatest(coalesce((x ->> 'pk')::int, 0), 0) as pk
+           from jsonb_array_elements(d -> 'gifts') x loop
+    cr := cr + g.cr; pk := pk + g.pk;                              -- crédits et boosters offerts
+    if g.c is null or public.dc__rar(cfg, g.c) is null then continue; end if;
+    for k in 1 .. g.n loop                                         -- cartes offertes
       if nshown < 50 then
         shown := shown || jsonb_build_array(jsonb_build_object('id', g.c, 'isNew', public.dc__count(d, g.c) = 0));
         nshown := nshown + 1;
@@ -135,8 +173,8 @@ begin
       d := public.dc__add(d, g.c, 1); total := total + 1;
     end loop;
   end loop;
-  d := d - 'gifts';
-  return jsonb_build_object('profile', public.dc__save(u, d), 'drawn', shown, 'total', total);
+  d := (d - 'gifts') || jsonb_build_object('credits', public.dc__int(d, 'credits') + cr, 'bonus', public.dc__int(d, 'bonus') + pk);
+  return jsonb_build_object('profile', public.dc__save(u, d), 'drawn', shown, 'total', total, 'credits', cr, 'packs', pk);
 end $$;
 
 -- ---------- suppression d'un joueur ----------
@@ -195,6 +233,8 @@ revoke all on function public.dc_admin_give_card(uuid,integer,integer) from publ
 grant execute on function public.dc_admin_give_card(uuid,integer,integer) to authenticated;
 revoke all on function public.dc_gift_open() from public, anon;
 grant execute on function public.dc_gift_open() to authenticated;
+revoke all on function public.dc_trade_bulk(text[],text,text) from public, anon;
+grant execute on function public.dc_trade_bulk(text[],text,text) to authenticated;
 revoke all on function public.dc_daily_claim() from public, anon;
 grant execute on function public.dc_daily_claim() to authenticated;
 revoke all on function public.dc_trade_create_many(integer[],text) from public, anon;

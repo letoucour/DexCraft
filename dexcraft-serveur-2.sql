@@ -36,7 +36,11 @@ begin
   if m ->> 'want' is not null and public.dc__int(m, 'want') <> p_card then raise exception 'Cette carte ne correspond pas à la demande.'; end if;
   if m ->> 'wantMode' = 'missing' then
     select data into ow from public.docs where path = 'players/' || (m ->> 'owner');
-    if public.dc__count(ow, p_card) > 0 then raise exception 'Le propriétaire possède déjà cette carte.'; end if;
+    -- « carte qui me manque » : si le propriétaire a déjà toutes les cartes de la rareté, n'importe laquelle est acceptée
+    if public.dc__count(ow, p_card) > 0
+       and coalesce((ow -> 'byr' ->> public.dc__rar(cfg, p_card))::int, 0) < jsonb_array_length(cfg -> 'byr' -> public.dc__rar(cfg, p_card)) then
+      raise exception 'Le propriétaire possède déjà cette carte.';
+    end if;
   end if;
   if exists (select 1 from jsonb_each(m -> 'offers') where value ->> 'by' = u::text and value ->> 'status' = 'pending') then
     raise exception 'Vous avez déjà une proposition en attente sur cet échange.';
@@ -232,11 +236,17 @@ begin
 end $$;
 
 create or replace function public.dc_admin_grant(p_uid uuid, p_cr bigint, p_pk int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare a uuid := public.dc__admin(); d jsonb := public.dc__lock(p_uid, p_uid = a);
+declare a uuid := public.dc__admin(); d jsonb := public.dc__lock(p_uid, p_uid = a); g jsonb; cr bigint := coalesce(p_cr, 0); pk int := coalesce(p_pk, 0);
 begin
-  d := d || jsonb_build_object('credits', greatest(0, public.dc__int(d, 'credits') + coalesce(p_cr, 0)), 'bonus', greatest(0, public.dc__int(d, 'bonus') + coalesce(p_pk, 0)));
+  -- dons (valeurs positives) : dans la boîte cadeau du joueur, qu'il ouvre depuis l'écran des boosters (dc_gift_open, partie 3)
+  g := case when jsonb_typeof(d -> 'gifts') = 'array' then d -> 'gifts' else '[]' end;
+  if cr > 0 then g := g || jsonb_build_array(jsonb_build_object('cr', cr)); end if;
+  if pk > 0 then g := g || jsonb_build_array(jsonb_build_object('pk', pk)); end if;
+  if cr > 0 or pk > 0 then d := jsonb_set(d, '{gifts}', g); end if;
+  -- retraits (valeurs négatives) : directement, sans descendre sous zéro
+  d := d || jsonb_build_object('credits', greatest(0, public.dc__int(d, 'credits') + least(cr, 0)), 'bonus', greatest(0, public.dc__int(d, 'bonus') + least(pk, 0)));
   d := public.dc__save(p_uid, d, p_uid = a);
-  return jsonb_build_object('profile', case when p_uid = a then d end);
+  return jsonb_build_object('profile', case when p_uid = a then d end, 'gift', cr > 0 or pk > 0);
 end $$;
 
 create or replace function public.dc_admin_badge(p_uid uuid, p_on boolean) returns jsonb language plpgsql security definer set search_path = public, extensions as $$

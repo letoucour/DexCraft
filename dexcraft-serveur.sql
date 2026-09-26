@@ -277,10 +277,18 @@ begin
 end $$;
 
 create or replace function public.dc_set_avatar(p_id int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true);
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); h jsonb;
 begin
   if public.dc__count(d, p_id) < 1 then raise exception 'Ce Pokémon n’est plus dans votre collection.'; end if;
-  return jsonb_build_object('profile', public.dc__save(u, jsonb_set(d, '{avatar}', to_jsonb(p_id))));
+  -- historique des 5 dernières images (avaHist), de la plus récente à la plus ancienne, gardé dans le profil (0.6.9)
+  h := case when jsonb_typeof(d -> 'avaHist') = 'array' then d -> 'avaHist' else '[]' end;
+  if jsonb_array_length(h) = 0 and d ->> 'avatar' is not null and d -> 'avatar' <> 'null' then h := jsonb_build_array(d -> 'avatar'); end if;
+  select coalesce(jsonb_agg(v order by o), '[]') into h from (
+    select v, o from (select to_jsonb(p_id) as v, 0 as o
+                      union all
+                      select v, o from jsonb_array_elements(h) with ordinality as x(v, o) where v <> to_jsonb(p_id)) s
+    order by o limit 5) t;
+  return jsonb_build_object('profile', public.dc__save(u, d || jsonb_build_object('avatar', p_id, 'avaHist', h)));
 end $$;
 
 create or replace function public.dc_toggle_fav(p_id int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
