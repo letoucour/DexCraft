@@ -114,6 +114,16 @@ begin
   return jsonb_build_object('profile', public.dc__save(u, d), 'n', n);
 end $$;
 
+-- ---------- bulles d'aide des nouveaux joueurs (0.7.0) ----------
+-- Une bulle fermée, ou dont l'action a été faite, ne revient jamais (tips dans le profil, sur tous les appareils).
+create or replace function public.dc_tip_done(p_key text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true);
+begin
+  if p_key not in ('booster', 'daily', 'collection', 'trades') then raise exception 'Bulle d’aide inconnue.'; end if;
+  d := jsonb_set(d, '{tips}', (case when jsonb_typeof(d -> 'tips') = 'object' then d -> 'tips' else '{}' end) || jsonb_build_object(p_key, true));
+  return jsonb_build_object('profile', public.dc__save(u, d));
+end $$;
+
 -- ---------- récompense de connexion quotidienne (0.6.0) ----------
 -- Une fois par jour (heure de Paris). Série de 7 jours (daily.streak), qui repart à 1 si un jour est manqué
 -- et recommence après le 7e. Les récompenses sont dans la configuration (cfg.daily).
@@ -233,6 +243,8 @@ revoke all on function public.dc_admin_give_card(uuid,integer,integer) from publ
 grant execute on function public.dc_admin_give_card(uuid,integer,integer) to authenticated;
 revoke all on function public.dc_gift_open() from public, anon;
 grant execute on function public.dc_gift_open() to authenticated;
+revoke all on function public.dc_tip_done(text) from public, anon;
+grant execute on function public.dc_tip_done(text) to authenticated;
 revoke all on function public.dc_trade_bulk(text[],text,text) from public, anon;
 grant execute on function public.dc_trade_bulk(text[],text,text) to authenticated;
 revoke all on function public.dc_daily_claim() from public, anon;
