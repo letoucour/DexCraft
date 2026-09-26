@@ -99,15 +99,44 @@ end $$;
 
 -- ---------- administrateur : donner (ou retirer) n'importe quelle carte à un joueur ----------
 create or replace function public.dc_admin_give_card(p_uid uuid, p_card int, p_n int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare a uuid := public.dc__admin(); d jsonb; n int;
+declare a uuid := public.dc__admin(); d jsonb; n int; g jsonb;
 begin
   if p_card is null or not (public.dc__cfg() -> 'rar' ? p_card::text) then raise exception 'Cette carte n’existe pas.'; end if;
   if p_n is null or p_n = 0 or abs(p_n) > 1000 then raise exception 'Indiquez un nombre d’exemplaires entre 1 et 1 000 (négatif pour en retirer).'; end if;
   d := public.dc__lock(p_uid, p_uid = a);
-  n := greatest(p_n, -public.dc__count(d, p_card));        -- on ne retire jamais plus qu'il n'en possède
-  if n = 0 then raise exception 'Ce joueur ne possède pas cette carte.'; end if;
-  d := public.dc__save(p_uid, public.dc__add(d, p_card, n), p_uid = a);
-  return jsonb_build_object('profile', case when p_uid = a then d end, 'n', n);
+  if p_n > 0 then
+    -- don : la carte attend dans la boîte cadeau du joueur (gifts), il la découvre en l'ouvrant (dc_gift_open)
+    g := case when jsonb_typeof(d -> 'gifts') = 'array' then d -> 'gifts' else '[]' end;
+    d := jsonb_set(d, '{gifts}', g || jsonb_build_array(jsonb_build_object('c', p_card, 'n', p_n)));
+    n := p_n;
+  else
+    n := greatest(p_n, -public.dc__count(d, p_card));        -- on ne retire jamais plus qu'il n'en possède
+    if n = 0 then raise exception 'Ce joueur ne possède pas cette carte.'; end if;
+    d := public.dc__add(d, p_card, n);
+  end if;
+  d := public.dc__save(p_uid, d, p_uid = a);
+  return jsonb_build_object('profile', case when p_uid = a then d end, 'n', n, 'gift', p_n > 0);
+end $$;
+
+-- ---------- boîte cadeau (0.6.8) ----------
+-- Le joueur ouvre ses cadeaux : les cartes passent dans sa collection et sont renvoyées pour être retournées
+-- une à une comme un booster (50 cartes affichées au plus, les suivantes sont ajoutées sans animation).
+create or replace function public.dc_gift_open() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); g record; k int; shown jsonb := '[]'; nshown int := 0; total int := 0;
+begin
+  if coalesce(jsonb_typeof(d -> 'gifts'), '') <> 'array' or jsonb_array_length(d -> 'gifts') = 0 then raise exception 'Aucun cadeau à ouvrir.'; end if;
+  for g in select (x ->> 'c')::int as c, greatest(coalesce((x ->> 'n')::int, 1), 1) as n from jsonb_array_elements(d -> 'gifts') x loop
+    if public.dc__rar(cfg, g.c) is null then continue; end if;
+    for k in 1 .. g.n loop
+      if nshown < 50 then
+        shown := shown || jsonb_build_array(jsonb_build_object('id', g.c, 'isNew', public.dc__count(d, g.c) = 0));
+        nshown := nshown + 1;
+      end if;
+      d := public.dc__add(d, g.c, 1); total := total + 1;
+    end loop;
+  end loop;
+  d := d - 'gifts';
+  return jsonb_build_object('profile', public.dc__save(u, d), 'drawn', shown, 'total', total);
 end $$;
 
 -- ---------- suppression d'un joueur ----------
@@ -164,6 +193,8 @@ revoke all on function public.dc_redeem_code(text) from public, anon;
 grant execute on function public.dc_redeem_code(text) to authenticated;
 revoke all on function public.dc_admin_give_card(uuid,integer,integer) from public, anon;
 grant execute on function public.dc_admin_give_card(uuid,integer,integer) to authenticated;
+revoke all on function public.dc_gift_open() from public, anon;
+grant execute on function public.dc_gift_open() to authenticated;
 revoke all on function public.dc_daily_claim() from public, anon;
 grant execute on function public.dc_daily_claim() to authenticated;
 revoke all on function public.dc_trade_create_many(integer[],text) from public, anon;
