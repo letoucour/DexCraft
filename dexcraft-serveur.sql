@@ -347,6 +347,8 @@ begin
     d := public.dc__bump(d, 'packs');
     if legend >= 2 then d := jsonb_set(d, '{stats,luck}', '1'); end if;
   end loop;
+  -- dernier tirage gardé dans le profil : si la réponse se perd (réseau mobile coupé), le jeu le relit et l'affiche quand même
+  d := d || jsonb_build_object('lastOpen', jsonb_build_object('t', now_ms, 'drawn', drawn));
   return jsonb_build_object('profile', public.dc__save(u, d), 'drawn', drawn);
 end $$;
 
