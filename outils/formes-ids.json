@@ -1,0 +1,362 @@
+﻿[
+    {
+        "nom":  "rattata-alola",
+        "id":  5001
+    },
+    {
+        "nom":  "raticate-alola",
+        "id":  5002
+    },
+    {
+        "nom":  "raichu-alola",
+        "id":  5003
+    },
+    {
+        "nom":  "sandshrew-alola",
+        "id":  5004
+    },
+    {
+        "nom":  "sandslash-alola",
+        "id":  5005
+    },
+    {
+        "nom":  "vulpix-alola",
+        "id":  5006
+    },
+    {
+        "nom":  "ninetales-alola",
+        "id":  5007
+    },
+    {
+        "nom":  "diglett-alola",
+        "id":  5008
+    },
+    {
+        "nom":  "dugtrio-alola",
+        "id":  5009
+    },
+    {
+        "nom":  "meowth-alola",
+        "id":  5010
+    },
+    {
+        "nom":  "persian-alola",
+        "id":  5011
+    },
+    {
+        "nom":  "geodude-alola",
+        "id":  5012
+    },
+    {
+        "nom":  "graveler-alola",
+        "id":  5013
+    },
+    {
+        "nom":  "golem-alola",
+        "id":  5014
+    },
+    {
+        "nom":  "grimer-alola",
+        "id":  5015
+    },
+    {
+        "nom":  "muk-alola",
+        "id":  5016
+    },
+    {
+        "nom":  "exeggutor-alola",
+        "id":  5017
+    },
+    {
+        "nom":  "marowak-alola",
+        "id":  5018
+    },
+    {
+        "nom":  "meowth-galar",
+        "id":  5019
+    },
+    {
+        "nom":  "ponyta-galar",
+        "id":  5020
+    },
+    {
+        "nom":  "rapidash-galar",
+        "id":  5021
+    },
+    {
+        "nom":  "slowpoke-galar",
+        "id":  5022
+    },
+    {
+        "nom":  "slowbro-galar",
+        "id":  5023
+    },
+    {
+        "nom":  "farfetchd-galar",
+        "id":  5024
+    },
+    {
+        "nom":  "weezing-galar",
+        "id":  5025
+    },
+    {
+        "nom":  "mr-mime-galar",
+        "id":  5026
+    },
+    {
+        "nom":  "articuno-galar",
+        "id":  5027
+    },
+    {
+        "nom":  "zapdos-galar",
+        "id":  5028
+    },
+    {
+        "nom":  "moltres-galar",
+        "id":  5029
+    },
+    {
+        "nom":  "slowking-galar",
+        "id":  5030
+    },
+    {
+        "nom":  "corsola-galar",
+        "id":  5031
+    },
+    {
+        "nom":  "zigzagoon-galar",
+        "id":  5032
+    },
+    {
+        "nom":  "linoone-galar",
+        "id":  5033
+    },
+    {
+        "nom":  "darumaka-galar",
+        "id":  5034
+    },
+    {
+        "nom":  "darmanitan-galar-standard",
+        "id":  5035
+    },
+    {
+        "nom":  "yamask-galar",
+        "id":  5036
+    },
+    {
+        "nom":  "stunfisk-galar",
+        "id":  5037
+    },
+    {
+        "nom":  "growlithe-hisui",
+        "id":  5038
+    },
+    {
+        "nom":  "arcanine-hisui",
+        "id":  5039
+    },
+    {
+        "nom":  "voltorb-hisui",
+        "id":  5040
+    },
+    {
+        "nom":  "electrode-hisui",
+        "id":  5041
+    },
+    {
+        "nom":  "typhlosion-hisui",
+        "id":  5042
+    },
+    {
+        "nom":  "qwilfish-hisui",
+        "id":  5043
+    },
+    {
+        "nom":  "sneasel-hisui",
+        "id":  5044
+    },
+    {
+        "nom":  "samurott-hisui",
+        "id":  5045
+    },
+    {
+        "nom":  "lilligant-hisui",
+        "id":  5046
+    },
+    {
+        "nom":  "zorua-hisui",
+        "id":  5047
+    },
+    {
+        "nom":  "zoroark-hisui",
+        "id":  5048
+    },
+    {
+        "nom":  "braviary-hisui",
+        "id":  5049
+    },
+    {
+        "nom":  "sliggoo-hisui",
+        "id":  5050
+    },
+    {
+        "nom":  "goodra-hisui",
+        "id":  5051
+    },
+    {
+        "nom":  "avalugg-hisui",
+        "id":  5052
+    },
+    {
+        "nom":  "decidueye-hisui",
+        "id":  5053
+    },
+    {
+        "nom":  "wooper-paldea",
+        "id":  5054
+    },
+    {
+        "nom":  "tauros-paldea-combat-breed",
+        "id":  5055
+    },
+    {
+        "nom":  "tauros-paldea-blaze-breed",
+        "id":  5056
+    },
+    {
+        "nom":  "tauros-paldea-aqua-breed",
+        "id":  5057
+    },
+    {
+        "nom":  "venusaur-gmax",
+        "id":  6001
+    },
+    {
+        "nom":  "charizard-gmax",
+        "id":  6002
+    },
+    {
+        "nom":  "blastoise-gmax",
+        "id":  6003
+    },
+    {
+        "nom":  "butterfree-gmax",
+        "id":  6004
+    },
+    {
+        "nom":  "pikachu-gmax",
+        "id":  6005
+    },
+    {
+        "nom":  "meowth-gmax",
+        "id":  6006
+    },
+    {
+        "nom":  "machamp-gmax",
+        "id":  6007
+    },
+    {
+        "nom":  "gengar-gmax",
+        "id":  6008
+    },
+    {
+        "nom":  "kingler-gmax",
+        "id":  6009
+    },
+    {
+        "nom":  "lapras-gmax",
+        "id":  6010
+    },
+    {
+        "nom":  "eevee-gmax",
+        "id":  6011
+    },
+    {
+        "nom":  "snorlax-gmax",
+        "id":  6012
+    },
+    {
+        "nom":  "garbodor-gmax",
+        "id":  6013
+    },
+    {
+        "nom":  "melmetal-gmax",
+        "id":  6014
+    },
+    {
+        "nom":  "rillaboom-gmax",
+        "id":  6015
+    },
+    {
+        "nom":  "cinderace-gmax",
+        "id":  6016
+    },
+    {
+        "nom":  "inteleon-gmax",
+        "id":  6017
+    },
+    {
+        "nom":  "corviknight-gmax",
+        "id":  6018
+    },
+    {
+        "nom":  "orbeetle-gmax",
+        "id":  6019
+    },
+    {
+        "nom":  "drednaw-gmax",
+        "id":  6020
+    },
+    {
+        "nom":  "coalossal-gmax",
+        "id":  6021
+    },
+    {
+        "nom":  "flapple-gmax",
+        "id":  6022
+    },
+    {
+        "nom":  "appletun-gmax",
+        "id":  6023
+    },
+    {
+        "nom":  "sandaconda-gmax",
+        "id":  6024
+    },
+    {
+        "nom":  "toxtricity-amped-gmax",
+        "id":  6025
+    },
+    {
+        "nom":  "centiskorch-gmax",
+        "id":  6026
+    },
+    {
+        "nom":  "hatterene-gmax",
+        "id":  6027
+    },
+    {
+        "nom":  "grimmsnarl-gmax",
+        "id":  6028
+    },
+    {
+        "nom":  "alcremie-gmax",
+        "id":  6029
+    },
+    {
+        "nom":  "copperajah-gmax",
+        "id":  6030
+    },
+    {
+        "nom":  "duraludon-gmax",
+        "id":  6031
+    },
+    {
+        "nom":  "urshifu-single-strike-gmax",
+        "id":  6032
+    },
+    {
+        "nom":  "urshifu-rapid-strike-gmax",
+        "id":  6033
+    }
+]

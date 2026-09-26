@@ -25,6 +25,8 @@ revoke all on public.promo_codes, public.promo_redemptions from anon, authentica
 
 -- code MONEY : 1 000 crédits, une fois par joueur
 insert into public.promo_codes (code, credits) values ('MONEY', 1000) on conflict (code) do nothing;
+-- code ALOLA (0.8.0) : 10 boosters, une fois par joueur
+insert into public.promo_codes (code, credits, packs) values ('ALOLA', 0, 10) on conflict (code) do nothing;
 
 create or replace function public.dc_redeem_code(p_code text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); c public.promo_codes; d jsonb; k text := upper(btrim(coalesce(p_code, '')));

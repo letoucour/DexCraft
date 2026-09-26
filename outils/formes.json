@@ -1,0 +1,1956 @@
+﻿[
+    {
+        "nom":  "rattata-alola",
+        "genre":  "alola",
+        "base":  19,
+        "nomFr":  "Rattata d’Alola",
+        "categorie":  "Pokémon Souris",
+        "types":  [
+                      17,
+                      1
+                  ],
+        "taille":  3,
+        "poids":  38,
+        "stats":  [
+                      30,
+                      56,
+                      35,
+                      25,
+                      35,
+                      72
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10091.png"
+    },
+    {
+        "nom":  "raticate-alola",
+        "genre":  "alola",
+        "base":  20,
+        "nomFr":  "Rattatac d’Alola",
+        "categorie":  "Pokémon Souris",
+        "types":  [
+                      17,
+                      1
+                  ],
+        "taille":  7,
+        "poids":  255,
+        "stats":  [
+                      75,
+                      71,
+                      70,
+                      40,
+                      80,
+                      77
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10092.png"
+    },
+    {
+        "nom":  "raichu-alola",
+        "genre":  "alola",
+        "base":  26,
+        "nomFr":  "Raichu d’Alola",
+        "categorie":  "Pokémon Souris",
+        "types":  [
+                      13,
+                      14
+                  ],
+        "taille":  7,
+        "poids":  210,
+        "stats":  [
+                      60,
+                      85,
+                      50,
+                      95,
+                      85,
+                      110
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10100.png"
+    },
+    {
+        "nom":  "sandshrew-alola",
+        "genre":  "alola",
+        "base":  27,
+        "nomFr":  "Sabelette d’Alola",
+        "categorie":  "Pokémon Souris",
+        "types":  [
+                      15,
+                      9
+                  ],
+        "taille":  7,
+        "poids":  400,
+        "stats":  [
+                      50,
+                      75,
+                      90,
+                      10,
+                      35,
+                      40
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10101.png"
+    },
+    {
+        "nom":  "sandslash-alola",
+        "genre":  "alola",
+        "base":  28,
+        "nomFr":  "Sablaireau d’Alola",
+        "categorie":  "Pokémon Souris",
+        "types":  [
+                      15,
+                      9
+                  ],
+        "taille":  12,
+        "poids":  550,
+        "stats":  [
+                      75,
+                      100,
+                      120,
+                      25,
+                      65,
+                      65
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10102.png"
+    },
+    {
+        "nom":  "vulpix-alola",
+        "genre":  "alola",
+        "base":  37,
+        "nomFr":  "Goupix d’Alola",
+        "categorie":  "Pokémon Renard",
+        "types":  [
+                      15
+                  ],
+        "taille":  6,
+        "poids":  99,
+        "stats":  [
+                      38,
+                      41,
+                      40,
+                      50,
+                      65,
+                      65
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10103.png"
+    },
+    {
+        "nom":  "ninetales-alola",
+        "genre":  "alola",
+        "base":  38,
+        "nomFr":  "Feunard d’Alola",
+        "categorie":  "Pokémon Renard",
+        "types":  [
+                      15,
+                      18
+                  ],
+        "taille":  11,
+        "poids":  199,
+        "stats":  [
+                      73,
+                      67,
+                      75,
+                      81,
+                      100,
+                      109
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10104.png"
+    },
+    {
+        "nom":  "diglett-alola",
+        "genre":  "alola",
+        "base":  50,
+        "nomFr":  "Taupiqueur d’Alola",
+        "categorie":  "Pokémon Taupe",
+        "types":  [
+                      5,
+                      9
+                  ],
+        "taille":  2,
+        "poids":  10,
+        "stats":  [
+                      10,
+                      55,
+                      30,
+                      35,
+                      45,
+                      90
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10105.png"
+    },
+    {
+        "nom":  "dugtrio-alola",
+        "genre":  "alola",
+        "base":  51,
+        "nomFr":  "Triopikeur d’Alola",
+        "categorie":  "Pokémon Taupe",
+        "types":  [
+                      5,
+                      9
+                  ],
+        "taille":  7,
+        "poids":  666,
+        "stats":  [
+                      35,
+                      100,
+                      60,
+                      50,
+                      70,
+                      110
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10106.png"
+    },
+    {
+        "nom":  "meowth-alola",
+        "genre":  "alola",
+        "base":  52,
+        "nomFr":  "Miaouss d’Alola",
+        "categorie":  "Pokémon Chadégout",
+        "types":  [
+                      17
+                  ],
+        "taille":  4,
+        "poids":  42,
+        "stats":  [
+                      40,
+                      35,
+                      35,
+                      50,
+                      40,
+                      90
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10107.png"
+    },
+    {
+        "nom":  "persian-alola",
+        "genre":  "alola",
+        "base":  53,
+        "nomFr":  "Persian d’Alola",
+        "categorie":  "Pokémon Chadeville",
+        "types":  [
+                      17
+                  ],
+        "taille":  11,
+        "poids":  330,
+        "stats":  [
+                      65,
+                      60,
+                      60,
+                      75,
+                      65,
+                      115
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10108.png"
+    },
+    {
+        "nom":  "geodude-alola",
+        "genre":  "alola",
+        "base":  74,
+        "nomFr":  "Racaillou d’Alola",
+        "categorie":  "Pokémon Roche",
+        "types":  [
+                      6,
+                      13
+                  ],
+        "taille":  4,
+        "poids":  203,
+        "stats":  [
+                      40,
+                      80,
+                      100,
+                      30,
+                      30,
+                      20
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10109.png"
+    },
+    {
+        "nom":  "graveler-alola",
+        "genre":  "alola",
+        "base":  75,
+        "nomFr":  "Gravalanch d’Alola",
+        "categorie":  "Pokémon Roche",
+        "types":  [
+                      6,
+                      13
+                  ],
+        "taille":  10,
+        "poids":  1100,
+        "stats":  [
+                      55,
+                      95,
+                      115,
+                      45,
+                      45,
+                      35
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10110.png"
+    },
+    {
+        "nom":  "golem-alola",
+        "genre":  "alola",
+        "base":  76,
+        "nomFr":  "Grolem d’Alola",
+        "categorie":  "Pokémon Titanesque",
+        "types":  [
+                      6,
+                      13
+                  ],
+        "taille":  17,
+        "poids":  3160,
+        "stats":  [
+                      80,
+                      120,
+                      130,
+                      55,
+                      65,
+                      45
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10111.png"
+    },
+    {
+        "nom":  "grimer-alola",
+        "genre":  "alola",
+        "base":  88,
+        "nomFr":  "Tadmorv d’Alola",
+        "categorie":  "Pokémon Dégueu",
+        "types":  [
+                      4,
+                      17
+                  ],
+        "taille":  7,
+        "poids":  420,
+        "stats":  [
+                      80,
+                      80,
+                      50,
+                      40,
+                      50,
+                      25
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10112.png"
+    },
+    {
+        "nom":  "muk-alola",
+        "genre":  "alola",
+        "base":  89,
+        "nomFr":  "Grotadmorv d’Alola",
+        "categorie":  "Pokémon Dégueu",
+        "types":  [
+                      4,
+                      17
+                  ],
+        "taille":  10,
+        "poids":  520,
+        "stats":  [
+                      105,
+                      105,
+                      75,
+                      65,
+                      100,
+                      50
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10113.png"
+    },
+    {
+        "nom":  "exeggutor-alola",
+        "genre":  "alola",
+        "base":  103,
+        "nomFr":  "Noadkoko d’Alola",
+        "categorie":  "Pokémon Fruitpalme",
+        "types":  [
+                      12,
+                      16
+                  ],
+        "taille":  109,
+        "poids":  4156,
+        "stats":  [
+                      95,
+                      105,
+                      85,
+                      125,
+                      75,
+                      45
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10114.png"
+    },
+    {
+        "nom":  "marowak-alola",
+        "genre":  "alola",
+        "base":  105,
+        "nomFr":  "Ossatueur d’Alola",
+        "categorie":  "Pokémon Gard’Os",
+        "types":  [
+                      10,
+                      8
+                  ],
+        "taille":  10,
+        "poids":  340,
+        "stats":  [
+                      60,
+                      80,
+                      110,
+                      50,
+                      80,
+                      45
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10115.png"
+    },
+    {
+        "nom":  "meowth-galar",
+        "genre":  "galar",
+        "base":  52,
+        "nomFr":  "Miaouss de Galar",
+        "categorie":  "Pokémon Chadégout",
+        "types":  [
+                      9
+                  ],
+        "taille":  4,
+        "poids":  75,
+        "stats":  [
+                      50,
+                      65,
+                      55,
+                      40,
+                      40,
+                      40
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10161.png"
+    },
+    {
+        "nom":  "ponyta-galar",
+        "genre":  "galar",
+        "base":  77,
+        "nomFr":  "Ponyta de Galar",
+        "categorie":  "Pokémon Cheval Feu",
+        "types":  [
+                      14
+                  ],
+        "taille":  8,
+        "poids":  240,
+        "stats":  [
+                      50,
+                      85,
+                      55,
+                      65,
+                      65,
+                      90
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10162.png"
+    },
+    {
+        "nom":  "rapidash-galar",
+        "genre":  "galar",
+        "base":  78,
+        "nomFr":  "Galopa de Galar",
+        "categorie":  "Pokémon Cheval Feu",
+        "types":  [
+                      14,
+                      18
+                  ],
+        "taille":  17,
+        "poids":  800,
+        "stats":  [
+                      65,
+                      100,
+                      70,
+                      80,
+                      80,
+                      105
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10163.png"
+    },
+    {
+        "nom":  "slowpoke-galar",
+        "genre":  "galar",
+        "base":  79,
+        "nomFr":  "Ramoloss de Galar",
+        "categorie":  "Pokémon Crétin",
+        "types":  [
+                      14
+                  ],
+        "taille":  12,
+        "poids":  360,
+        "stats":  [
+                      90,
+                      65,
+                      65,
+                      40,
+                      40,
+                      15
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10164.png"
+    },
+    {
+        "nom":  "slowbro-galar",
+        "genre":  "galar",
+        "base":  80,
+        "nomFr":  "Flagadoss de Galar",
+        "categorie":  "Pokémon Symbiose",
+        "types":  [
+                      4,
+                      14
+                  ],
+        "taille":  16,
+        "poids":  705,
+        "stats":  [
+                      95,
+                      100,
+                      95,
+                      100,
+                      70,
+                      30
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10165.png"
+    },
+    {
+        "nom":  "farfetchd-galar",
+        "genre":  "galar",
+        "base":  83,
+        "nomFr":  "Canarticho de Galar",
+        "categorie":  "Pokémon Canard Fou",
+        "types":  [
+                      2
+                  ],
+        "taille":  8,
+        "poids":  420,
+        "stats":  [
+                      52,
+                      95,
+                      55,
+                      58,
+                      62,
+                      55
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10166.png"
+    },
+    {
+        "nom":  "weezing-galar",
+        "genre":  "galar",
+        "base":  110,
+        "nomFr":  "Smogogo de Galar",
+        "categorie":  "Pokémon Gaz Mortel",
+        "types":  [
+                      4,
+                      18
+                  ],
+        "taille":  30,
+        "poids":  160,
+        "stats":  [
+                      65,
+                      90,
+                      120,
+                      85,
+                      70,
+                      60
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10167.png"
+    },
+    {
+        "nom":  "mr-mime-galar",
+        "genre":  "galar",
+        "base":  122,
+        "nomFr":  "M. Mime de Galar",
+        "categorie":  "Pokémon Bloqueur",
+        "types":  [
+                      15,
+                      14
+                  ],
+        "taille":  14,
+        "poids":  568,
+        "stats":  [
+                      50,
+                      65,
+                      65,
+                      90,
+                      90,
+                      100
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10168.png"
+    },
+    {
+        "nom":  "articuno-galar",
+        "genre":  "galar",
+        "base":  144,
+        "nomFr":  "Artikodin de Galar",
+        "categorie":  "Pokémon Glaciaire",
+        "types":  [
+                      14,
+                      3
+                  ],
+        "taille":  17,
+        "poids":  509,
+        "stats":  [
+                      90,
+                      85,
+                      85,
+                      125,
+                      100,
+                      95
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10169.png"
+    },
+    {
+        "nom":  "zapdos-galar",
+        "genre":  "galar",
+        "base":  145,
+        "nomFr":  "Électhor de Galar",
+        "categorie":  "Pokémon Électrique",
+        "types":  [
+                      2,
+                      3
+                  ],
+        "taille":  16,
+        "poids":  582,
+        "stats":  [
+                      90,
+                      125,
+                      90,
+                      85,
+                      90,
+                      100
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10170.png"
+    },
+    {
+        "nom":  "moltres-galar",
+        "genre":  "galar",
+        "base":  146,
+        "nomFr":  "Sulfura de Galar",
+        "categorie":  "Pokémon Flamme",
+        "types":  [
+                      17,
+                      3
+                  ],
+        "taille":  20,
+        "poids":  660,
+        "stats":  [
+                      90,
+                      85,
+                      90,
+                      100,
+                      125,
+                      90
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10171.png"
+    },
+    {
+        "nom":  "slowking-galar",
+        "genre":  "galar",
+        "base":  199,
+        "nomFr":  "Roigada de Galar",
+        "categorie":  "Pokémon Royal",
+        "types":  [
+                      4,
+                      14
+                  ],
+        "taille":  18,
+        "poids":  795,
+        "stats":  [
+                      95,
+                      65,
+                      80,
+                      110,
+                      110,
+                      30
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10172.png"
+    },
+    {
+        "nom":  "corsola-galar",
+        "genre":  "galar",
+        "base":  222,
+        "nomFr":  "Corayon de Galar",
+        "categorie":  "Pokémon Corail",
+        "types":  [
+                      8
+                  ],
+        "taille":  6,
+        "poids":  5,
+        "stats":  [
+                      60,
+                      55,
+                      100,
+                      65,
+                      100,
+                      30
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10173.png"
+    },
+    {
+        "nom":  "zigzagoon-galar",
+        "genre":  "galar",
+        "base":  263,
+        "nomFr":  "Zigzaton de Galar",
+        "categorie":  "Pokémon Petit Raton",
+        "types":  [
+                      17,
+                      1
+                  ],
+        "taille":  4,
+        "poids":  175,
+        "stats":  [
+                      38,
+                      30,
+                      41,
+                      30,
+                      41,
+                      60
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10174.png"
+    },
+    {
+        "nom":  "linoone-galar",
+        "genre":  "galar",
+        "base":  264,
+        "nomFr":  "Linéon de Galar",
+        "categorie":  "Pokémon Fonceur",
+        "types":  [
+                      17,
+                      1
+                  ],
+        "taille":  5,
+        "poids":  325,
+        "stats":  [
+                      78,
+                      70,
+                      61,
+                      50,
+                      61,
+                      100
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10175.png"
+    },
+    {
+        "nom":  "darumaka-galar",
+        "genre":  "galar",
+        "base":  554,
+        "nomFr":  "Darumarond de Galar",
+        "categorie":  "Pokémon Daruma",
+        "types":  [
+                      15
+                  ],
+        "taille":  7,
+        "poids":  400,
+        "stats":  [
+                      70,
+                      90,
+                      45,
+                      15,
+                      45,
+                      50
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10176.png"
+    },
+    {
+        "nom":  "darmanitan-galar-standard",
+        "genre":  "galar",
+        "base":  555,
+        "nomFr":  "Darumacho de Galar",
+        "categorie":  "Pokémon Enflammé",
+        "types":  [
+                      15
+                  ],
+        "taille":  17,
+        "poids":  1200,
+        "stats":  [
+                      105,
+                      140,
+                      55,
+                      30,
+                      55,
+                      95
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10177.png"
+    },
+    {
+        "nom":  "yamask-galar",
+        "genre":  "galar",
+        "base":  562,
+        "nomFr":  "Tutafeh de Galar",
+        "categorie":  "Pokémon Âme",
+        "types":  [
+                      5,
+                      8
+                  ],
+        "taille":  5,
+        "poids":  15,
+        "stats":  [
+                      38,
+                      55,
+                      85,
+                      30,
+                      65,
+                      30
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10179.png"
+    },
+    {
+        "nom":  "stunfisk-galar",
+        "genre":  "galar",
+        "base":  618,
+        "nomFr":  "Limonde de Galar",
+        "categorie":  "Pokémon Piège",
+        "types":  [
+                      5,
+                      9
+                  ],
+        "taille":  7,
+        "poids":  205,
+        "stats":  [
+                      109,
+                      81,
+                      99,
+                      66,
+                      84,
+                      32
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10180.png"
+    },
+    {
+        "nom":  "growlithe-hisui",
+        "genre":  "hisui",
+        "base":  58,
+        "nomFr":  "Caninos de Hisui",
+        "categorie":  "Pokémon Chiot",
+        "types":  [
+                      10,
+                      6
+                  ],
+        "taille":  8,
+        "poids":  227,
+        "stats":  [
+                      60,
+                      75,
+                      45,
+                      65,
+                      50,
+                      55
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10229.png"
+    },
+    {
+        "nom":  "arcanine-hisui",
+        "genre":  "hisui",
+        "base":  59,
+        "nomFr":  "Arcanin de Hisui",
+        "categorie":  "Pokémon Légendaire",
+        "types":  [
+                      10,
+                      6
+                  ],
+        "taille":  20,
+        "poids":  1680,
+        "stats":  [
+                      95,
+                      115,
+                      80,
+                      95,
+                      80,
+                      90
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10230.png"
+    },
+    {
+        "nom":  "voltorb-hisui",
+        "genre":  "hisui",
+        "base":  100,
+        "nomFr":  "Voltorbe de Hisui",
+        "categorie":  "Pokémon Balle",
+        "types":  [
+                      13,
+                      12
+                  ],
+        "taille":  5,
+        "poids":  130,
+        "stats":  [
+                      40,
+                      30,
+                      50,
+                      55,
+                      55,
+                      100
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10231.png"
+    },
+    {
+        "nom":  "electrode-hisui",
+        "genre":  "hisui",
+        "base":  101,
+        "nomFr":  "Électrode de Hisui",
+        "categorie":  "Pokémon Balle",
+        "types":  [
+                      13,
+                      12
+                  ],
+        "taille":  12,
+        "poids":  710,
+        "stats":  [
+                      60,
+                      50,
+                      70,
+                      80,
+                      80,
+                      150
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10232.png"
+    },
+    {
+        "nom":  "typhlosion-hisui",
+        "genre":  "hisui",
+        "base":  157,
+        "nomFr":  "Typhlosion de Hisui",
+        "categorie":  "Pokémon Volcan",
+        "types":  [
+                      10,
+                      8
+                  ],
+        "taille":  16,
+        "poids":  698,
+        "stats":  [
+                      73,
+                      84,
+                      78,
+                      119,
+                      85,
+                      95
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10233.png"
+    },
+    {
+        "nom":  "qwilfish-hisui",
+        "genre":  "hisui",
+        "base":  211,
+        "nomFr":  "Qwilfish de Hisui",
+        "categorie":  "Pokémon Bouboule",
+        "types":  [
+                      17,
+                      4
+                  ],
+        "taille":  5,
+        "poids":  39,
+        "stats":  [
+                      65,
+                      95,
+                      85,
+                      55,
+                      55,
+                      85
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10234.png"
+    },
+    {
+        "nom":  "sneasel-hisui",
+        "genre":  "hisui",
+        "base":  215,
+        "nomFr":  "Farfuret de Hisui",
+        "categorie":  "Pokémon Grifacérée",
+        "types":  [
+                      2,
+                      4
+                  ],
+        "taille":  9,
+        "poids":  270,
+        "stats":  [
+                      55,
+                      95,
+                      55,
+                      35,
+                      75,
+                      115
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10235.png"
+    },
+    {
+        "nom":  "samurott-hisui",
+        "genre":  "hisui",
+        "base":  503,
+        "nomFr":  "Clamiral de Hisui",
+        "categorie":  "Pokémon Dignitaire",
+        "types":  [
+                      11,
+                      17
+                  ],
+        "taille":  15,
+        "poids":  582,
+        "stats":  [
+                      90,
+                      108,
+                      80,
+                      100,
+                      65,
+                      85
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10236.png"
+    },
+    {
+        "nom":  "lilligant-hisui",
+        "genre":  "hisui",
+        "base":  549,
+        "nomFr":  "Fragilady de Hisui",
+        "categorie":  "Pokémon Chef-Fleur",
+        "types":  [
+                      12,
+                      2
+                  ],
+        "taille":  12,
+        "poids":  192,
+        "stats":  [
+                      70,
+                      105,
+                      75,
+                      50,
+                      75,
+                      105
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10237.png"
+    },
+    {
+        "nom":  "zorua-hisui",
+        "genre":  "hisui",
+        "base":  570,
+        "nomFr":  "Zorua de Hisui",
+        "categorie":  "Pokémon Sombrenard",
+        "types":  [
+                      1,
+                      8
+                  ],
+        "taille":  7,
+        "poids":  125,
+        "stats":  [
+                      35,
+                      60,
+                      40,
+                      85,
+                      40,
+                      70
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10238.png"
+    },
+    {
+        "nom":  "zoroark-hisui",
+        "genre":  "hisui",
+        "base":  571,
+        "nomFr":  "Zoroark de Hisui",
+        "categorie":  "Pokémon Polymorfox",
+        "types":  [
+                      1,
+                      8
+                  ],
+        "taille":  16,
+        "poids":  730,
+        "stats":  [
+                      55,
+                      100,
+                      60,
+                      125,
+                      60,
+                      110
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10239.png"
+    },
+    {
+        "nom":  "braviary-hisui",
+        "genre":  "hisui",
+        "base":  628,
+        "nomFr":  "Gueriaigle de Hisui",
+        "categorie":  "Pokémon Vaillant",
+        "types":  [
+                      14,
+                      3
+                  ],
+        "taille":  17,
+        "poids":  434,
+        "stats":  [
+                      110,
+                      83,
+                      70,
+                      112,
+                      70,
+                      65
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10240.png"
+    },
+    {
+        "nom":  "sliggoo-hisui",
+        "genre":  "hisui",
+        "base":  705,
+        "nomFr":  "Colimucus de Hisui",
+        "categorie":  "Pokémon Mollusque",
+        "types":  [
+                      9,
+                      16
+                  ],
+        "taille":  7,
+        "poids":  685,
+        "stats":  [
+                      58,
+                      75,
+                      83,
+                      83,
+                      113,
+                      40
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10241.png"
+    },
+    {
+        "nom":  "goodra-hisui",
+        "genre":  "hisui",
+        "base":  706,
+        "nomFr":  "Muplodocus de Hisui",
+        "categorie":  "Pokémon Dragon",
+        "types":  [
+                      9,
+                      16
+                  ],
+        "taille":  17,
+        "poids":  3341,
+        "stats":  [
+                      80,
+                      100,
+                      100,
+                      110,
+                      150,
+                      60
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10242.png"
+    },
+    {
+        "nom":  "avalugg-hisui",
+        "genre":  "hisui",
+        "base":  713,
+        "nomFr":  "Séracrawl de Hisui",
+        "categorie":  "Pokémon Iceberg",
+        "types":  [
+                      15,
+                      6
+                  ],
+        "taille":  14,
+        "poids":  2624,
+        "stats":  [
+                      95,
+                      127,
+                      184,
+                      34,
+                      36,
+                      38
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10243.png"
+    },
+    {
+        "nom":  "decidueye-hisui",
+        "genre":  "hisui",
+        "base":  724,
+        "nomFr":  "Archéduc de Hisui",
+        "categorie":  "Pokémon Plumeflèche",
+        "types":  [
+                      12,
+                      2
+                  ],
+        "taille":  16,
+        "poids":  370,
+        "stats":  [
+                      88,
+                      112,
+                      80,
+                      95,
+                      95,
+                      60
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10244.png"
+    },
+    {
+        "nom":  "wooper-paldea",
+        "genre":  "paldea",
+        "base":  194,
+        "nomFr":  "Axoloto de Paldea",
+        "categorie":  "Pokémon Poisson",
+        "types":  [
+                      4,
+                      5
+                  ],
+        "taille":  4,
+        "poids":  110,
+        "stats":  [
+                      55,
+                      45,
+                      45,
+                      25,
+                      25,
+                      15
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10253.png"
+    },
+    {
+        "nom":  "tauros-paldea-combat-breed",
+        "genre":  "paldea",
+        "base":  128,
+        "nomFr":  "Tauros de Paldea (Race Combative)",
+        "categorie":  "Pokémon Buffle",
+        "types":  [
+                      2
+                  ],
+        "taille":  14,
+        "poids":  1150,
+        "stats":  [
+                      75,
+                      110,
+                      105,
+                      30,
+                      70,
+                      100
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10250.png"
+    },
+    {
+        "nom":  "tauros-paldea-blaze-breed",
+        "genre":  "paldea",
+        "base":  128,
+        "nomFr":  "Tauros de Paldea (Race Flamboyante)",
+        "categorie":  "Pokémon Buffle",
+        "types":  [
+                      2,
+                      10
+                  ],
+        "taille":  14,
+        "poids":  850,
+        "stats":  [
+                      75,
+                      110,
+                      105,
+                      30,
+                      70,
+                      100
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10251.png"
+    },
+    {
+        "nom":  "tauros-paldea-aqua-breed",
+        "genre":  "paldea",
+        "base":  128,
+        "nomFr":  "Tauros de Paldea (Race Aquatique)",
+        "categorie":  "Pokémon Buffle",
+        "types":  [
+                      2,
+                      11
+                  ],
+        "taille":  14,
+        "poids":  1100,
+        "stats":  [
+                      75,
+                      110,
+                      105,
+                      30,
+                      70,
+                      100
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10252.png"
+    },
+    {
+        "nom":  "venusaur-gmax",
+        "genre":  "gmax",
+        "base":  3,
+        "nomFr":  "Florizarre Gigamax",
+        "categorie":  "Pokémon Graine",
+        "types":  [
+                      12,
+                      4
+                  ],
+        "taille":  240,
+        "poids":  10000,
+        "stats":  [
+                      80,
+                      82,
+                      83,
+                      100,
+                      100,
+                      80
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10195.png"
+    },
+    {
+        "nom":  "charizard-gmax",
+        "genre":  "gmax",
+        "base":  6,
+        "nomFr":  "Dracaufeu Gigamax",
+        "categorie":  "Pokémon Flamme",
+        "types":  [
+                      10,
+                      3
+                  ],
+        "taille":  280,
+        "poids":  10000,
+        "stats":  [
+                      78,
+                      84,
+                      78,
+                      109,
+                      85,
+                      100
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10196.png"
+    },
+    {
+        "nom":  "blastoise-gmax",
+        "genre":  "gmax",
+        "base":  9,
+        "nomFr":  "Tortank Gigamax",
+        "categorie":  "Pokémon Carapace",
+        "types":  [
+                      11
+                  ],
+        "taille":  250,
+        "poids":  10000,
+        "stats":  [
+                      79,
+                      83,
+                      100,
+                      85,
+                      105,
+                      78
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10197.png"
+    },
+    {
+        "nom":  "butterfree-gmax",
+        "genre":  "gmax",
+        "base":  12,
+        "nomFr":  "Papilusion Gigamax",
+        "categorie":  "Pokémon Papillon",
+        "types":  [
+                      7,
+                      3
+                  ],
+        "taille":  170,
+        "poids":  10000,
+        "stats":  [
+                      60,
+                      45,
+                      50,
+                      90,
+                      80,
+                      70
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10198.png"
+    },
+    {
+        "nom":  "pikachu-gmax",
+        "genre":  "gmax",
+        "base":  25,
+        "nomFr":  "Pikachu Gigamax",
+        "categorie":  "Pokémon Souris",
+        "types":  [
+                      13
+                  ],
+        "taille":  210,
+        "poids":  10000,
+        "stats":  [
+                      35,
+                      55,
+                      40,
+                      50,
+                      50,
+                      90
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10199.png"
+    },
+    {
+        "nom":  "meowth-gmax",
+        "genre":  "gmax",
+        "base":  52,
+        "nomFr":  "Miaouss Gigamax",
+        "categorie":  "Pokémon Chadégout",
+        "types":  [
+                      1
+                  ],
+        "taille":  330,
+        "poids":  10000,
+        "stats":  [
+                      40,
+                      45,
+                      35,
+                      40,
+                      40,
+                      90
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10200.png"
+    },
+    {
+        "nom":  "machamp-gmax",
+        "genre":  "gmax",
+        "base":  68,
+        "nomFr":  "Mackogneur Gigamax",
+        "categorie":  "Pokémon Colosse",
+        "types":  [
+                      2
+                  ],
+        "taille":  250,
+        "poids":  10000,
+        "stats":  [
+                      90,
+                      130,
+                      80,
+                      65,
+                      85,
+                      55
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10201.png"
+    },
+    {
+        "nom":  "gengar-gmax",
+        "genre":  "gmax",
+        "base":  94,
+        "nomFr":  "Ectoplasma Gigamax",
+        "categorie":  "Pokémon Ombre",
+        "types":  [
+                      8,
+                      4
+                  ],
+        "taille":  200,
+        "poids":  10000,
+        "stats":  [
+                      60,
+                      65,
+                      60,
+                      130,
+                      75,
+                      110
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10202.png"
+    },
+    {
+        "nom":  "kingler-gmax",
+        "genre":  "gmax",
+        "base":  99,
+        "nomFr":  "Krabboss Gigamax",
+        "categorie":  "Pokémon Pince",
+        "types":  [
+                      11
+                  ],
+        "taille":  190,
+        "poids":  10000,
+        "stats":  [
+                      55,
+                      130,
+                      115,
+                      50,
+                      50,
+                      75
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10203.png"
+    },
+    {
+        "nom":  "lapras-gmax",
+        "genre":  "gmax",
+        "base":  131,
+        "nomFr":  "Lokhlass Gigamax",
+        "categorie":  "Pokémon Transport",
+        "types":  [
+                      11,
+                      15
+                  ],
+        "taille":  240,
+        "poids":  10000,
+        "stats":  [
+                      130,
+                      85,
+                      80,
+                      85,
+                      95,
+                      60
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10204.png"
+    },
+    {
+        "nom":  "eevee-gmax",
+        "genre":  "gmax",
+        "base":  133,
+        "nomFr":  "Évoli Gigamax",
+        "categorie":  "Pokémon Évolutif",
+        "types":  [
+                      1
+                  ],
+        "taille":  180,
+        "poids":  10000,
+        "stats":  [
+                      55,
+                      55,
+                      50,
+                      45,
+                      65,
+                      55
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10205.png"
+    },
+    {
+        "nom":  "snorlax-gmax",
+        "genre":  "gmax",
+        "base":  143,
+        "nomFr":  "Ronflex Gigamax",
+        "categorie":  "Pokémon Pionceur",
+        "types":  [
+                      1
+                  ],
+        "taille":  350,
+        "poids":  10000,
+        "stats":  [
+                      160,
+                      110,
+                      65,
+                      65,
+                      110,
+                      30
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10206.png"
+    },
+    {
+        "nom":  "garbodor-gmax",
+        "genre":  "gmax",
+        "base":  569,
+        "nomFr":  "Miasmax Gigamax",
+        "categorie":  "Pokémon Dépotoir",
+        "types":  [
+                      4
+                  ],
+        "taille":  210,
+        "poids":  10000,
+        "stats":  [
+                      80,
+                      95,
+                      82,
+                      60,
+                      82,
+                      75
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10207.png"
+    },
+    {
+        "nom":  "melmetal-gmax",
+        "genre":  "gmax",
+        "base":  809,
+        "nomFr":  "Melmetal Gigamax",
+        "categorie":  "Pokémon Écrou",
+        "types":  [
+                      9
+                  ],
+        "taille":  250,
+        "poids":  10000,
+        "stats":  [
+                      135,
+                      143,
+                      143,
+                      80,
+                      65,
+                      34
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10208.png"
+    },
+    {
+        "nom":  "rillaboom-gmax",
+        "genre":  "gmax",
+        "base":  812,
+        "nomFr":  "Gorythmic Gigamax",
+        "categorie":  "Pokémon Batteur",
+        "types":  [
+                      12
+                  ],
+        "taille":  280,
+        "poids":  10000,
+        "stats":  [
+                      100,
+                      125,
+                      90,
+                      60,
+                      70,
+                      85
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10209.png"
+    },
+    {
+        "nom":  "cinderace-gmax",
+        "genre":  "gmax",
+        "base":  815,
+        "nomFr":  "Pyrobut Gigamax",
+        "categorie":  "Pokémon Buteur",
+        "types":  [
+                      10
+                  ],
+        "taille":  270,
+        "poids":  10000,
+        "stats":  [
+                      80,
+                      116,
+                      75,
+                      65,
+                      75,
+                      119
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10210.png"
+    },
+    {
+        "nom":  "inteleon-gmax",
+        "genre":  "gmax",
+        "base":  818,
+        "nomFr":  "Lézargus Gigamax",
+        "categorie":  "Pokémon Agent Secret",
+        "types":  [
+                      11
+                  ],
+        "taille":  400,
+        "poids":  10000,
+        "stats":  [
+                      70,
+                      85,
+                      65,
+                      125,
+                      65,
+                      120
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10211.png"
+    },
+    {
+        "nom":  "corviknight-gmax",
+        "genre":  "gmax",
+        "base":  823,
+        "nomFr":  "Corvaillus Gigamax",
+        "categorie":  "Pokémon Corbeau",
+        "types":  [
+                      3,
+                      9
+                  ],
+        "taille":  140,
+        "poids":  10000,
+        "stats":  [
+                      98,
+                      87,
+                      105,
+                      53,
+                      85,
+                      67
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10212.png"
+    },
+    {
+        "nom":  "orbeetle-gmax",
+        "genre":  "gmax",
+        "base":  826,
+        "nomFr":  "Astronelle Gigamax",
+        "categorie":  "Pokémon Sept Points",
+        "types":  [
+                      7,
+                      14
+                  ],
+        "taille":  140,
+        "poids":  10000,
+        "stats":  [
+                      60,
+                      45,
+                      110,
+                      80,
+                      120,
+                      90
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10213.png"
+    },
+    {
+        "nom":  "drednaw-gmax",
+        "genre":  "gmax",
+        "base":  834,
+        "nomFr":  "Torgamord Gigamax",
+        "categorie":  "Pokémon Morsure",
+        "types":  [
+                      11,
+                      6
+                  ],
+        "taille":  240,
+        "poids":  10000,
+        "stats":  [
+                      90,
+                      115,
+                      90,
+                      48,
+                      68,
+                      74
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10214.png"
+    },
+    {
+        "nom":  "coalossal-gmax",
+        "genre":  "gmax",
+        "base":  839,
+        "nomFr":  "Monthracite Gigamax",
+        "categorie":  "Pokémon Charbon",
+        "types":  [
+                      6,
+                      10
+                  ],
+        "taille":  420,
+        "poids":  10000,
+        "stats":  [
+                      110,
+                      80,
+                      120,
+                      80,
+                      90,
+                      30
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10215.png"
+    },
+    {
+        "nom":  "flapple-gmax",
+        "genre":  "gmax",
+        "base":  841,
+        "nomFr":  "Pomdrapi Gigamax",
+        "categorie":  "Pokémon Ailes Pomme",
+        "types":  [
+                      12,
+                      16
+                  ],
+        "taille":  240,
+        "poids":  10000,
+        "stats":  [
+                      70,
+                      110,
+                      80,
+                      95,
+                      60,
+                      70
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10216.png"
+    },
+    {
+        "nom":  "appletun-gmax",
+        "genre":  "gmax",
+        "base":  842,
+        "nomFr":  "Dratatin Gigamax",
+        "categorie":  "Pokémon Jus Pomme",
+        "types":  [
+                      12,
+                      16
+                  ],
+        "taille":  240,
+        "poids":  10000,
+        "stats":  [
+                      110,
+                      85,
+                      80,
+                      100,
+                      80,
+                      30
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10217.png"
+    },
+    {
+        "nom":  "sandaconda-gmax",
+        "genre":  "gmax",
+        "base":  844,
+        "nomFr":  "Dunaconda Gigamax",
+        "categorie":  "Pokémon Serpensable",
+        "types":  [
+                      5
+                  ],
+        "taille":  220,
+        "poids":  10000,
+        "stats":  [
+                      72,
+                      107,
+                      125,
+                      65,
+                      70,
+                      71
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10218.png"
+    },
+    {
+        "nom":  "toxtricity-amped-gmax",
+        "genre":  "gmax",
+        "base":  849,
+        "nomFr":  "Salarsen Gigamax",
+        "categorie":  "Pokémon Punk",
+        "types":  [
+                      13,
+                      4
+                  ],
+        "taille":  240,
+        "poids":  10000,
+        "stats":  [
+                      75,
+                      98,
+                      70,
+                      114,
+                      70,
+                      75
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10219.png"
+    },
+    {
+        "nom":  "centiskorch-gmax",
+        "genre":  "gmax",
+        "base":  851,
+        "nomFr":  "Scolocendre Gigamax",
+        "categorie":  "Pokémon Calorifère",
+        "types":  [
+                      10,
+                      7
+                  ],
+        "taille":  750,
+        "poids":  10000,
+        "stats":  [
+                      100,
+                      115,
+                      65,
+                      90,
+                      90,
+                      65
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10220.png"
+    },
+    {
+        "nom":  "hatterene-gmax",
+        "genre":  "gmax",
+        "base":  858,
+        "nomFr":  "Sorcilence Gigamax",
+        "categorie":  "Pokémon Silencieux",
+        "types":  [
+                      14,
+                      18
+                  ],
+        "taille":  260,
+        "poids":  10000,
+        "stats":  [
+                      57,
+                      90,
+                      95,
+                      136,
+                      103,
+                      29
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10221.png"
+    },
+    {
+        "nom":  "grimmsnarl-gmax",
+        "genre":  "gmax",
+        "base":  861,
+        "nomFr":  "Angoliath Gigamax",
+        "categorie":  "Pokémon Gonflette",
+        "types":  [
+                      17,
+                      18
+                  ],
+        "taille":  320,
+        "poids":  10000,
+        "stats":  [
+                      95,
+                      120,
+                      65,
+                      95,
+                      75,
+                      60
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10222.png"
+    },
+    {
+        "nom":  "alcremie-gmax",
+        "genre":  "gmax",
+        "base":  869,
+        "nomFr":  "Charmilly Gigamax",
+        "categorie":  "Pokémon Crème",
+        "types":  [
+                      18
+                  ],
+        "taille":  300,
+        "poids":  10000,
+        "stats":  [
+                      65,
+                      60,
+                      75,
+                      110,
+                      121,
+                      64
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10223.png"
+    },
+    {
+        "nom":  "copperajah-gmax",
+        "genre":  "gmax",
+        "base":  879,
+        "nomFr":  "Pachyradjah Gigamax",
+        "categorie":  "Pokémon Pachycuivre",
+        "types":  [
+                      9
+                  ],
+        "taille":  230,
+        "poids":  10000,
+        "stats":  [
+                      122,
+                      130,
+                      69,
+                      80,
+                      69,
+                      30
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10224.png"
+    },
+    {
+        "nom":  "duraludon-gmax",
+        "genre":  "gmax",
+        "base":  884,
+        "nomFr":  "Duralugon Gigamax",
+        "categorie":  "Pokémon Alliage",
+        "types":  [
+                      9,
+                      16
+                  ],
+        "taille":  430,
+        "poids":  10000,
+        "stats":  [
+                      70,
+                      95,
+                      115,
+                      120,
+                      50,
+                      85
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10225.png"
+    },
+    {
+        "nom":  "urshifu-single-strike-gmax",
+        "genre":  "gmax",
+        "base":  892,
+        "nomFr":  "Shifours Gigamax (Poing Final)",
+        "categorie":  "Pokémon Kung-fu",
+        "types":  [
+                      2,
+                      17
+                  ],
+        "taille":  290,
+        "poids":  10000,
+        "stats":  [
+                      100,
+                      130,
+                      100,
+                      63,
+                      60,
+                      97
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10226.png"
+    },
+    {
+        "nom":  "urshifu-rapid-strike-gmax",
+        "genre":  "gmax",
+        "base":  892,
+        "nomFr":  "Shifours Gigamax (Mille Poings)",
+        "categorie":  "Pokémon Kung-fu",
+        "types":  [
+                      2,
+                      11
+                  ],
+        "taille":  260,
+        "poids":  10000,
+        "stats":  [
+                      100,
+                      130,
+                      100,
+                      63,
+                      60,
+                      97
+                  ],
+        "image":  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10227.png"
+    }
+]
