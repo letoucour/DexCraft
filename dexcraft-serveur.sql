@@ -136,6 +136,10 @@ begin
          'byr', to_jsonb(byr), 'byrV', cfg -> 'byrV', 'total', tot);
   if d ->> 'avatar' is not null and not (newcoll ? (d ->> 'avatar')) then d := jsonb_set(d, '{avatar}', 'null'); end if;
   d := jsonb_set(d, '{fav}', coalesce((select jsonb_object_agg(key, value) from jsonb_each(d -> 'fav') where newcoll ? key), '{}'));
+  -- cartes recherchées (cloche) : retirées dès qu'elles entrent dans la collection
+  if jsonb_typeof(d -> 'wish') = 'object' then
+    d := jsonb_set(d, '{wish}', coalesce((select jsonb_object_agg(key, value) from jsonb_each(d -> 'wish') where not newcoll ? key), '{}'));
+  elsif d ? 'wish' then d := d - 'wish'; end if;
   if (cfg ->> 'betaOpen')::boolean then d := jsonb_set(d, '{beta}', 'true'); end if;
   if public.dc__int(d, 'credits') > coalesce((d -> 'stats' ->> 'maxCr')::bigint, 0) then
     d := jsonb_set(d, '{stats,maxCr}', to_jsonb(public.dc__int(d, 'credits')));
