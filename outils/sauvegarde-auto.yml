@@ -1,0 +1,53 @@
+# ============================================================
+#  DexCraft — sauvegarde AUTOMATIQUE de la base de production, chaque nuit, par GitHub Actions.
+#
+#  À mettre dans un dépôt GitHub PRIVÉ séparé (jamais dans le dépôt du jeu, qui est public : les sauvegardes
+#  contiennent les e-mails des joueurs), sous le chemin .github/workflows/sauvegarde.yml.
+#
+#  Mise en place (une seule fois, 10 minutes) :
+#  1. GitHub, « + » en haut à droite, New repository : nom « dexcraft-sauvegardes », cocher PRIVATE, Create.
+#  2. Dans ce dépôt : Add file, Create new file, nom « .github/workflows/sauvegarde.yml », coller ce fichier, Commit.
+#  3. Settings, Secrets and variables, Actions, New repository secret, DEUX secrets :
+#     - SUPABASE_DB_URL : l'adresse « Session pooler » de Supabase (bouton Connect), collée TELLE QUELLE,
+#       avec [YOUR-PASSWORD] dedans (le script l'enlève) ;
+#     - SUPABASE_DB_PASSWORD : le mot de passe de la BASE DE DONNÉES (pas celui du compte Supabase),
+#       tel quel, caractères spéciaux compris.
+#  4. Onglet Actions, « Sauvegarde DexCraft », Run workflow : vérifier que la première sauvegarde passe au vert.
+#
+#  Ensuite : une sauvegarde chaque nuit, gardée 30 jours (onglet Actions, cliquer une exécution, « Artifacts »).
+#  GitHub envoie un e-mail si une sauvegarde échoue. Gratuit (quelques minutes par mois sur les 2 000 offertes).
+#  Restauration : voir outils/sauvegarde.ps1 (même format de fichiers).
+# ============================================================
+name: Sauvegarde DexCraft
+on:
+  schedule:
+    - cron: "30 2 * * *"   # chaque nuit à 2 h 30 UTC (4 h 30 à Paris l'été)
+  workflow_dispatch: {}      # bouton « Run workflow » pour une sauvegarde à la demande
+jobs:
+  sauvegarde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Outils PostgreSQL 17
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
+      - name: Sauvegarde du jeu et des comptes
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -e
+          DB_URL=$(printf '%s' "$DB_URL" | sed 's/:\[YOUR-PASSWORD\]//')   # mot de passe fourni à part (PGPASSWORD) : aucun encodage à faire
+          d=$(date -u +%Y-%m-%d)
+          mkdir -p out
+          /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" --schema=public --no-owner --no-privileges --format=custom --file="out/dexcraft-jeu-$d.dump"
+          /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" --table=auth.users --table=auth.identities --data-only --no-owner --no-privileges --format=custom --file="out/dexcraft-comptes-$d.dump"
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sauvegarde-${{ github.run_number }}
+          path: out/
+          retention-days: 30

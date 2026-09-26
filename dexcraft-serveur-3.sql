@@ -6,7 +6,7 @@
 
 -- ---------- codes cadeaux ----------
 create table if not exists public.promo_codes (
-  code     text primary key,               -- en majuscules, ex. MONEY
+  code     text primary key,               -- en majuscules
   credits  bigint not null default 0,
   packs    int not null default 0,         -- boosters ajoutés à la réserve achetée (bonus)
   active   boolean not null default true,
@@ -21,19 +21,28 @@ create table if not exists public.promo_redemptions (   -- un code ne sert qu'un
 );
 alter table public.promo_codes enable row level security;
 alter table public.promo_redemptions enable row level security;
-revoke all on public.promo_codes, public.promo_redemptions from anon, authenticated;
+-- essais de codes (0.8.7) : 10 codes inconnus par heure et par joueur au plus, pour qu'un script ne puisse pas deviner les codes
+create table if not exists public.promo_tries (uid uuid primary key, hour bigint not null, n int not null default 0);
+alter table public.promo_tries enable row level security;
+revoke all on public.promo_codes, public.promo_redemptions, public.promo_tries from anon, authenticated;
 
--- code MONEY : 1 000 crédits, une fois par joueur
-insert into public.promo_codes (code, credits) values ('MONEY', 1000) on conflict (code) do nothing;
--- code ALOLA (0.8.0) : 10 boosters, une fois par joueur
-insert into public.promo_codes (code, credits, packs) values ('ALOLA', 0, 10) on conflict (code) do nothing;
+-- Les codes se créent directement dans l'éditeur SQL de Supabase, JAMAIS dans un fichier du dépôt :
+-- le dépôt GitHub est public, un code écrit ici serait lisible par tous avant son annonce.
 
 create or replace function public.dc_redeem_code(p_code text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); c public.promo_codes; d jsonb; k text := upper(btrim(coalesce(p_code, '')));
+  h bigint := floor(extract(epoch from now()) / 3600); t int;
 begin
   if k = '' then raise exception 'Entrez un code.'; end if;
+  select case when hour = h then n else 0 end into t from public.promo_tries where uid = u;
+  if coalesce(t, 0) >= 10 then raise exception 'Trop de codes essayés : réessayez dans une heure.'; end if;
   select * into c from public.promo_codes where code = k for update;
-  if not found or not c.active then raise exception 'Ce code n’existe pas ou n’est plus valable.'; end if;
+  if not found or not c.active then
+    -- l'essai raté est compté puis enregistré : pas d'exception ici, elle annulerait le compteur
+    insert into public.promo_tries (uid, hour, n) values (u, h, 1) on conflict (uid) do update
+      set n = case when promo_tries.hour = h then promo_tries.n + 1 else 1 end, hour = h;
+    return jsonb_build_object('error', 'Ce code n’existe pas ou n’est plus valable.');
+  end if;
   if c.max_uses is not null and c.uses >= c.max_uses then raise exception 'Ce code a déjà été utilisé.'; end if;
   if exists (select 1 from public.promo_redemptions where code = k and uid = u) then raise exception 'Vous avez déjà utilisé ce code.'; end if;
   d := public.dc__lock(u, true);
@@ -41,6 +50,45 @@ begin
   update public.promo_codes set uses = uses + 1 where code = k;
   d := d || jsonb_build_object('credits', public.dc__int(d, 'credits') + c.credits, 'bonus', public.dc__int(d, 'bonus') + c.packs);
   return jsonb_build_object('profile', public.dc__save(u, d), 'code', k, 'credits', c.credits, 'packs', c.packs);
+end $$;
+
+-- ---------- cartes secrètes (0.8.7) ----------
+-- Les données des mythiques et transcendantes ne sont plus dans index.html (lisible par tous) : table secret_cards,
+-- remplie par secret/cartes-secretes.sql (généré sur le PC de Theo, jamais publié). Les joueurs n'y ont pas accès ;
+-- dc_secret_cards leur envoie la liste des numéros (titres, tableaux par rareté) et les données des seules cartes
+-- qu'ils ont le droit de voir : possédées, dans leur boîte cadeau, image de profil d'un joueur, sur le marché
+-- (annonce ou proposition), dans leur historique d'échanges. L'administrateur reçoit tout.
+create table if not exists public.secret_cards (id int primary key, data jsonb not null);
+alter table public.secret_cards enable row level security;
+revoke all on public.secret_cards from anon, authenticated;
+create index if not exists docs_player_avatar_idx on public.docs ((data ->> 'avatar')) where coll = 'players';
+create index if not exists docs_market_card_idx on public.docs ((data ->> 'card')) where coll = 'market';
+
+create or replace function public.dc_secret_cards(p_ids int[]) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb; ok int[] := '{}'; i int; k text;
+begin
+  if u is null then raise exception 'Connectez-vous pour jouer.'; end if;
+  if public.dc__is_admin(u) then ok := array(select id from public.secret_cards);
+  else
+    select data into d from public.docs where path = 'players/' || u;
+    foreach i in array coalesce(p_ids[1:100], '{}') loop
+      k := i::text;
+      if not exists (select 1 from public.secret_cards where id = i) then continue; end if;
+      if public.dc__count(coalesce(d, '{}'), i) > 0
+        or exists (select 1 from jsonb_array_elements(case when jsonb_typeof(d -> 'gifts') = 'array' then d -> 'gifts' else '[]' end) g where g ->> 'c' = k)
+        or exists (select 1 from public.docs where coll = 'players' and data ->> 'avatar' = k)
+        or exists (select 1 from public.docs where coll = 'market' and data ->> 'card' = k)
+        or exists (select 1 from public.docs m, jsonb_each(case when jsonb_typeof(m.data -> 'offers') = 'object' then m.data -> 'offers' else '{}' end) o
+                   where m.coll = 'market' and o.value ->> 'card' = k)
+        or exists (select 1 from public.trade_log where (owner = u or taker = u) and (owner_card = i or taker_card = i))
+      then ok := ok || i; end if;
+    end loop;
+  end if;
+  return jsonb_build_object(
+    'ids', jsonb_build_object(
+      '6', coalesce((select jsonb_agg(id order by id) from public.secret_cards where (data ->> 7)::int = 6), '[]'),
+      '7', coalesce((select jsonb_agg(id order by id) from public.secret_cards where (data ->> 7)::int = 7), '[]')),
+    'cards', coalesce((select jsonb_object_agg(id::text, data) from public.secret_cards where id = any(ok)), '{}'));
 end $$;
 
 -- ---------- historique des échanges (0.6.0) ----------
@@ -68,11 +116,14 @@ create policy trade_log_read on public.trade_log for select to authenticated usi
 drop function if exists public.dc_trade_create_many(integer[], text);   -- remplacée par la version avec p_auto (0.7.1)
 create or replace function public.dc_trade_create_many(p_cards int[], p_mode text, p_auto boolean default false) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); c int; n int := 0; skipped int[] := '{}';
+  room int := public.dc__listing_cap() - public.dc__open_listings(u); capped int := 0;
 begin
   if coalesce(array_length(p_cards, 1), 0) = 0 then raise exception 'Aucune carte choisie.'; end if;
   if array_length(p_cards, 1) > 500 then raise exception 'Trop de cartes d’un coup : 500 au maximum.'; end if;
+  if room <= 0 then raise exception 'Vous avez déjà % annonces d’échange : c’est le maximum. Retirez-en avant d’en publier d’autres.', public.dc__listing_cap(); end if;
   for c in select distinct x from unnest(p_cards) x where x is not null loop
     if public.dc__rar(cfg, c) is null or public.dc__count(d, c) < 1 then skipped := skipped || c; continue; end if;
+    if n >= room then capped := capped + 1; continue; end if;  -- plafond d'annonces atteint
     d := public.dc__add(d, c, -1);
     insert into public.docs (path, coll, data) values ('market/' || public.dc__mid(), 'market', jsonb_build_object(
       'kind', 't', 'owner', u, 'card', c, 'rarity', public.dc__rar(cfg, c), 'want', null,
@@ -80,7 +131,7 @@ begin
       'status', 'open', 'offers', '{}'::jsonb, 'created', public.dc__now(), 'auto', coalesce(p_auto, false)));
     n := n + 1;
   end loop;
-  return jsonb_build_object('profile', public.dc__save(u, d), 'n', n, 'skipped', to_jsonb(skipped));
+  return jsonb_build_object('profile', public.dc__save(u, d), 'n', n, 'skipped', to_jsonb(skipped), 'capped', capped);
 end $$;
 
 -- ---------- gestion groupée de ses annonces d'échange (0.6.9) ----------
@@ -267,6 +318,8 @@ begin
 end $$;
 
 -- ---------- droits d'exécution ----------
+revoke all on function public.dc_secret_cards(integer[]) from public, anon;
+grant execute on function public.dc_secret_cards(integer[]) to authenticated;
 revoke all on function public.dc_redeem_code(text) from public, anon;
 grant execute on function public.dc_redeem_code(text) to authenticated;
 revoke all on function public.dc_admin_give_card(uuid,integer,integer) from public, anon;

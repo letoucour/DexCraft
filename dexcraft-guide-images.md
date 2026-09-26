@@ -21,7 +21,7 @@ La suite du guide fonctionne de la même façon quelle que soit la source des im
 ## 1. Ce que le jeu attend
 
 - Un dossier **`images`** à la racine du dépôt, à côté de `index.html`.
-- Un fichier par carte, nommé **par le numéro de la carte** : `1.png` pour Bulbizarre, `4002.png` pour Méga-Dracaufeu X, `2001.png` pour Mewtwo en Armure, etc.
+- Un fichier par carte, nommé **par le numéro de la carte** : `1.png` pour Bulbizarre, `4002.png` pour Méga-Dracaufeu X, etc. (cartes secrètes : voir CLAUDE.local.md, jamais dans ce dépôt public).
 - La liste complète des 1 127 fichiers, avec le nom de chaque carte, est dans **`dexcraft-images.json`** :
   - 1 025 Pokémon : `1.png` à `1025.png`
   - 93 méga-évolutions : `4001.png` à `4093.png`
@@ -67,20 +67,11 @@ Dis-moi « lance le téléchargement des images ». Je lancerai le script et je 
 
 ---
 
-## 3. Les 10 images à fournir à la main
+## 3. Les images à fournir à la main
 
 | Fichier | Carte | Pourquoi |
 |---|---|---|
 | `4092.png` | Méga-Nigirigon | Existe dans PokeAPI, mais sans illustration pour l'instant |
-| `2001.png` | Mewtwo en Armure | Carte mythique propre à DexCraft |
-| `2002.png` | Pikachu Surfeur | Carte mythique propre à DexCraft |
-| `2003.png` | Pikachu Volant | Carte mythique propre à DexCraft |
-| `2004.png` | Dracolosse Postier | Carte mythique propre à DexCraft |
-| `2005.png` | Sachanobi | Carte mythique propre à DexCraft |
-| `3001.png` | Dresseur Red | Carte transcendante |
-| `3002.png` | Dresseuse Cynthia | Carte transcendante |
-| `3003.png` | Homo Peignoirus | Carte transcendante |
-| `3004.png` | Créateur TheoToucour | Carte transcendante |
 
 Pour chacune : une image carrée, de préférence 512 × 512 pixels ou plus, fond transparent si possible, enregistrée en PNG sous le nom exact de la colonne « Fichier », dans le dossier `images`.
 

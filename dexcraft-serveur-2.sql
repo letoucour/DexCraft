@@ -14,10 +14,18 @@ drop function if exists public.dc_auction_settle(text);
 -- ============================================================
 --  Échanges
 -- ============================================================
+-- Plafond d'annonces ouvertes par joueur (0.8.7) : un seul compte ne peut pas encombrer le marché de tout le monde
+create index if not exists docs_market_owner_idx on public.docs ((data ->> 'owner')) where coll = 'market';
+create or replace function public.dc__open_listings(u uuid) returns int language sql stable as
+$$ select count(*)::int from public.docs where coll = 'market' and data ->> 'owner' = u::text and data ->> 'status' = 'open' $$;
+create or replace function public.dc__listing_cap() returns int language sql immutable as $$ select 1000 $$;
+
 create or replace function public.dc_trade_create(p_card int, p_want int, p_mode text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); mid text := public.dc__mid();
 begin
   if public.dc__count(d, p_card) < 1 then raise exception 'Vous ne possédez plus cette carte.'; end if;
+  if public.dc__open_listings(u) >= public.dc__listing_cap() then
+    raise exception 'Vous avez déjà % annonces d’échange : c’est le maximum. Retirez-en avant d’en publier d’autres.', public.dc__listing_cap(); end if;
   if p_want is not null and public.dc__rar(cfg, p_want) is distinct from public.dc__rar(cfg, p_card) then raise exception 'La carte demandée doit être de la même rareté.'; end if;
   d := public.dc__add(d, p_card, -1);
   insert into public.docs (path, coll, data) values ('market/' || mid, 'market', jsonb_build_object(
@@ -370,6 +378,8 @@ end $$;
 -- ============================================================
 revoke all on function public.dc__add(jsonb,integer,integer) from public, anon, authenticated;
 revoke all on function public.dc__admin() from public, anon, authenticated;
+revoke all on function public.dc__open_listings(uuid) from public, anon, authenticated;
+revoke all on function public.dc__listing_cap() from public, anon, authenticated;
 revoke all on function public.dc__bump(jsonb,text,bigint) from public, anon, authenticated;
 revoke all on function public.dc__cfg() from public, anon, authenticated;
 revoke all on function public.dc__count(jsonb,integer) from public, anon, authenticated;

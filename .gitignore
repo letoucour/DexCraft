@@ -2,3 +2,9 @@ outils/images-manquantes.csv
 outils/planche-images.html
 images-png/
 images-perso/
+
+# données secrètes (0.8.7) : cartes mythiques et transcendantes, sauvegardes de la base, notes privées
+secret/
+sauvegardes/
+CLAUDE.local.md
+index-export.tmp.html
