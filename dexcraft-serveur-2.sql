@@ -51,7 +51,12 @@ begin
   update public.docs set data = jsonb_set(m, '{offers}', (m -> 'offers') || jsonb_build_object(oid,
       jsonb_build_object('by', u, 'card', p_card, 'at', public.dc__now(), 'status', 'pending'))), updated_at = now()
     where path = 'market/' || p_mid;
-  return jsonb_build_object('profile', public.dc__save(u, d));
+  d := public.dc__save(u, d);
+  if coalesce(m ->> 'auto', '') = 'true' then     -- acceptation automatique : l'échange se conclut tout de suite (0.7.1)
+    perform public.dc__trade_accept(p_mid, oid);
+    return jsonb_build_object('profile', (select data from public.docs where path = 'players/' || u), 'accepted', true, 'card', m -> 'card');
+  end if;
+  return jsonb_build_object('profile', d);
 end $$;
 
 create or replace function public.dc_trade_withdraw(p_mid text, p_oid text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
@@ -88,17 +93,29 @@ begin
     update public.docs set data = jsonb_set(m, '{offers}', (m -> 'offers') - p_oid), updated_at = now() where path = 'market/' || p_mid;
     return jsonb_build_object('profile', public.dc__save(u, public.dc__lock(u, true), false), 'accepted', false);
   end if;
+  perform public.dc__trade_accept(p_mid, p_oid);
+  return jsonb_build_object('profile', public.dc__save(u, public.dc__lock(u, true)), 'accepted', true, 'card', o -> 'card');
+end $$;
+
+-- conclut un échange (proposition p_oid de l'annonce p_mid) : cartes échangées, autres propositions rendues,
+-- annonce supprimée, historique. Utilisée par dc_trade_answer et par l'acceptation automatique (0.7.1).
+create or replace function public.dc__trade_accept(p_mid text, p_oid text) returns void language plpgsql volatile as $$
+declare m jsonb; o jsonb; by_ uuid; own uuid; us uuid[]; p jsonb; d jsonb;
+begin
+  select data into m from public.docs where path = 'market/' || p_mid for update;
+  o := m -> 'offers' -> p_oid;
+  if m is null or o is null or o ->> 'status' <> 'pending' then raise exception 'Cette proposition n’est plus en attente.'; end if;
+  by_ := (o ->> 'by')::uuid; own := (m ->> 'owner')::uuid;
   select array_agg(distinct (value ->> 'by')::uuid) into us from jsonb_each(m -> 'offers') where value ->> 'status' = 'pending';
-  perform public.dc__lock_many(us || u);
+  perform public.dc__lock_many(coalesce(us, '{}') || own);
   perform public.dc__return_offers(m, p_oid);
   p := public.dc__lock(by_);
   perform public.dc__save(by_, public.dc__bump(public.dc__add(p, public.dc__int(m, 'card')::int, 1), 'trades'), false);
-  d := public.dc__lock(u, true);
-  d := public.dc__bump(public.dc__add(d, public.dc__int(o, 'card')::int, 1), 'trades');
+  d := public.dc__lock(own);
+  perform public.dc__save(own, public.dc__bump(public.dc__add(d, public.dc__int(o, 'card')::int, 1), 'trades'), false);
   delete from public.docs where path = 'market/' || p_mid;
   -- historique : le propriétaire a donné m.card et reçu o.card
-  insert into public.trade_log (owner, owner_card, taker, taker_card) values (u, public.dc__int(m, 'card')::int, by_, public.dc__int(o, 'card')::int);
-  return jsonb_build_object('profile', public.dc__save(u, d), 'accepted', true, 'card', o -> 'card');
+  insert into public.trade_log (owner, owner_card, taker, taker_card) values (own, public.dc__int(m, 'card')::int, by_, public.dc__int(o, 'card')::int);
 end $$;
 
 create or replace function public.dc_trade_cancel(p_mid text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
@@ -368,6 +385,7 @@ revoke all on function public.dc__now() from public, anon, authenticated;
 revoke all on function public.dc__packinfo(jsonb,bigint) from public, anon, authenticated;
 revoke all on function public.dc__rar(jsonb,integer) from public, anon, authenticated;
 revoke all on function public.dc__return_offers(jsonb,text) from public, anon, authenticated;
+revoke all on function public.dc__trade_accept(text,text) from public, anon, authenticated;
 revoke all on function public.dc__rnd(integer) from public, anon, authenticated;
 revoke all on function public.dc__save(uuid,jsonb,boolean) from public, anon, authenticated;
 revoke all on function public.dc__stamp(jsonb,boolean) from public, anon, authenticated;
