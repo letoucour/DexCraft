@@ -726,6 +726,14 @@ dialog::backdrop{background:rgba(10,12,30,.72)}
 .pick .pick-n{font-size:.74rem;font-weight:700;color:var(--ink-soft)}
 .pick-head{grid-column:1/-1;font-weight:800;font-size:.85rem;color:var(--ink-soft);margin-top:4px}
 .pick[hidden]{display:none}
+/* choix de plusieurs cartes demandées (1.0.3) */
+.pick.wp{align-items:center;text-align:center}
+.pick.wp .pick-tag{position:absolute;top:6px;left:6px;z-index:1}
+.wp-img{width:72px;height:72px;display:flex;align-items:center;justify-content:center;margin-top:10px}
+.wp-img img{max-width:100%;max-height:100%}
+.wp-img.unk img{filter:brightness(0);opacity:.55} /* carte pas encore obtenue : silhouette, comme dans la collection */
+.wp-tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.wp-n{font-weight:700;font-size:.85rem;line-height:1.15}
 .pick-search{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:9px 12px}
 .pick-tag{align-self:flex-start;font-size:.68rem;font-weight:700;border-radius:999px;padding:1px 8px}
 .pick-tag.ok{background:var(--surface);color:var(--ink-soft)}
@@ -1132,7 +1140,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.2";
+const APP_VERSION="1.0.3";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1460,7 +1468,7 @@ function playerName(id,suffix){
 }
 /* Récompense de connexion quotidienne : série de 7 jours (heure de Paris), qui repart à zéro si un jour est manqué.
    Versée par le serveur (dc_daily_claim) : boosters dans la réserve achetée, crédits sur le compte. */
-const DAILY=[{packs:1},{credits:200},{packs:2},{credits:300},{packs:3},{credits:500},{packs:5,credits:1000}];
+const DAILY=[{packs:1,credits:300},{packs:1,credits:450},{packs:2,credits:650},{packs:3,credits:950},{packs:5,credits:1400},{packs:7,credits:2000},{packs:10,credits:3000}]; // 1.0.3 : progression exponentielle (×1,47 par jour)
 let OWNER=false;
 const devOn=()=>OWNER&&!!(S&&S.dev);
 const fmtN=n=>Number(n).toLocaleString("fr-FR");
@@ -1569,15 +1577,15 @@ async function recoverOpen(before,k){
 /* Propositions reçues sur mes annonces d'échange, en attente de ma réponse (bulle de l'onglet Échanges) */
 const pendingOffers=()=>mode!=="online"||!ME?0:Object.values(MARKET).filter(m=>m.kind==="t"&&m.status==="open"&&m.owner===ME).reduce((n,m)=>n+offersOf(m).length,0);
 /* Plusieurs annonces d'un coup depuis la collection : une par carte, créées l'une après l'autre par le serveur */
-function tradeMany(ids,mode,auto){
+function tradeMany(ids,mode,auto,wants){
   if(tradeManyBusy){toast("Publication déjà en cours, patientez.");return}
   if(!ids.length)return;
   const names=ids.map(id=>esc(nm(id))).join(", ");
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <h2>Proposer ${ids.length} carte${ids.length>1?"s":""} à l’échange ?</h2><p class="muted">${names}</p>
-    <p>Demande : ${mode==="missing"?"n’importe quelle carte de même rareté qui vous manque":"n’importe quelle carte de même rareté"}.${auto?" <b>⚡ Acceptation automatique</b> : la première proposition valide sera acceptée d’office.":""} Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
+    <p>Demande : ${mode==="list"?`${wants.length>1?`une des ${wants.length} cartes choisies`:"la carte choisie"}, de même rareté (une carte sans carte choisie de sa rareté n’est pas publiée)`:mode==="missing"?"n’importe quelle carte de même rareté qui vous manque":"n’importe quelle carte de même rareté"}.${auto?" <b>⚡ Acceptation automatique</b> : la première proposition valide sera acceptée d’office.":""} Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
     <div class="actions"><button class="btn primary" data-act="tsel-confirm">Proposer</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
-  tradeMany.pending={ids,mode,auto:!!auto};
+  tradeMany.pending={ids,mode,auto:!!auto,wants:mode==="list"?wants:null};
 }
 /* Publication en un seul appel au serveur (dc_trade_create_many). Pendant ce temps, une fenêtre bloque
    le jeu : impossible de relancer la même liste (0.6.3 : un second clic avait tout publié deux fois). */
@@ -1590,17 +1598,17 @@ function tradeManyGo(){
   dlgLocked=true;
   run(async()=>{
     try{
-      const r=await rpc("dc_trade_create_many",{p_cards:p.ids,p_mode:p.mode==="missing"?"missing":null,p_auto:p.auto},{render:false});
+      const r=await rpc("dc_trade_create_many",{p_cards:p.ids,p_mode:p.mode==="missing"?"missing":null,p_auto:p.auto,p_wants:p.wants},{render:false});
       const n=r.n||0,sk=(r.skipped||[]).map(id=>nm(id));
       dlgLocked=false;closeDlg();renderAll();
-      const cap=r.capped||0;
-      toast(n?`${n} annonce${n>1?"s":""} d’échange publiée${n>1?"s":""}.${cap?` ${cap} non publiée${cap>1?"s":""} : 1 000 annonces au maximum.`:""}${sk.length?` Plus en votre possession : ${sk.slice(0,5).join(", ")}${sk.length>5?"…":""}.`:""}`:"Aucune annonce publiée : vous ne possédez plus ces cartes.");
+      const cap=r.capped||0,nl=(r.nolist||[]).length;
+      toast(n?`${n} annonce${n>1?"s":""} d’échange publiée${n>1?"s":""}.${cap?` ${cap} non publiée${cap>1?"s":""} : 1 000 annonces au maximum.`:""}${nl?` ${nl} non publiée${nl>1?"s":""} : aucune carte demandée de leur rareté.`:""}${sk.length?` Plus en votre possession : ${sk.slice(0,5).join(", ")}${sk.length>5?"…":""}.`:""}`:nl?"Aucune annonce publiée : aucune des cartes demandées n’a la même rareté que les cartes proposées.":"Aucune annonce publiée : vous ne possédez plus ces cartes.");
     }finally{tradeManyBusy=false;dlgLocked=false;closeDlg();renderAll()}
   });
 }
 function createTrade(card,want){
   return run(async()=>{
-    await rpc("dc_trade_create",{p_card:card,p_want:typeof want==="number"?want:null,p_mode:want==="missing"?"missing":null});
+    await rpc("dc_trade_create",{p_card:card,p_want:typeof want==="number"?want:null,p_mode:want==="missing"?"missing":null,p_wants:Array.isArray(want)?want:null});
     closeDlg();toast(`${nm(card)} est proposée à l’échange. Vous validerez vous-même les offres reçues.`);
   });
 }
@@ -1618,15 +1626,54 @@ function haveTag(id){
 function ownerHasAll(uid,r){const p=profOf(uid);return !!(p&&p.byrV===BYR_V&&Array.isArray(p.byr)&&p.byr[r]>=BYR[r].length)}
 function tradeWants(m){
   const r=rar(m.card);
+  if(Array.isArray(m.wantList)&&m.wantList.length){const l=m.wantList;
+    return `une de ces cartes : ${l.slice(0,8).map(x=>`<b>${esc(nm(x))}</b>`).join(", ")}${l.length>8?` et ${l.length-8} autre${l.length-8>1?"s":""}`:""}`}
   if(m.want)return `<b>${esc(nm(m.want))}</b>`;
   if(m.wantMode==="missing"&&!ownerHasAll(m.owner,r))return `n’importe quelle carte ${RAR[r].toLowerCase()} manquante`;
   return `n’importe quelle carte ${RAR[r].toLowerCase()}`;
 }
 function canOffer(m,c){
   if(rar(c)!==rar(m.card))return false;
+  if(Array.isArray(m.wantList)&&m.wantList.length)return m.wantList.includes(c); // liste de cartes demandées (1.0.3)
   if(m.want)return m.want===c;
   if(m.wantMode==="missing"&&!ownerHasAll(m.owner,rar(c)))return !ownerHas(m.owner,c);
   return true;
+}
+/* ---------- choisir plusieurs cartes demandées (1.0.3) ----------
+   L'annonce n'accepte qu'une carte de la liste (wantList). Plusieurs raretés possibles (mise à l'échange groupée, « Mes annonces ») :
+   le serveur garde pour chaque annonce les cartes de sa rareté. WANT_MAX cartes au plus. */
+const WANT_MAX=50;
+let wantPick=null;
+function wantPickOpen(rars,intro,done){wantPick={rars:[...new Set(rars)],sel:new Set(),miss:true,intro,done};wantPickRender()}
+const wantGoTxt=()=>wantPick&&wantPick.sel.size?`Valider (${wantPick.sel.size} carte${wantPick.sel.size>1?"s":""})`:"Choisissez des cartes";
+const wantPool=()=>DEX_ORDER.filter(x=>wantPick.rars.includes(rar(x))&&(!wantPick.miss||!has(S,x)||wantPick.sel.has(x)));
+function wantTile(x){
+  const on=wantPick.sel.has(x),r=rar(x),src=imgFor(x);
+  return `<button class="pick wp${on?" choice":""}" data-act="wp-toggle" data-id="${x}" aria-pressed="${on}" data-n="${esc(norm2(nm(x))+" "+x)}">
+    ${wished(x)?`<span class="pick-tag missing">🔔 Recherchée</span>`:has(S,x)?`<span class="pick-tag ok">Vous l’avez</span>`:""}
+    <span class="wp-img${has(S,x)?"":" unk"}">${src?`<img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span>
+    <span class="wp-n">${esc(nm(x))}</span><span class="pick-n"><span style="color:var(--r${r})">${gems(r)}</span> ${RAR[r]}</span></button>`;
+}
+function wantPickRender(){
+  const w=wantPick;if(!w)return;
+  const pool=wantPool(),wishN=pool.filter(x=>wished(x)).length;
+  openDlg(`<div class="side pick-dlg" style="gap:12px"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
+    <div><h2>Cartes demandées</h2><p class="muted">${w.intro} Touchez les cartes que vous acceptez en échange (${WANT_MAX} au plus).</p></div>
+    <div class="wp-tools"><label class="pref"><input type="checkbox" data-act="wp-miss"${w.miss?" checked":""}> Seulement celles qui me manquent</label>
+      ${wishN?`<button class="btn small" data-act="wp-wish">🔔 Ajouter mes cartes recherchées (${wishN})</button>`:""}
+      <button class="btn small" data-act="wp-none">Tout décocher</button></div>
+    <input type="search" class="pick-search" data-pick-search placeholder="Rechercher une carte" aria-label="Rechercher une carte">
+    <div class="picker" id="picker">${pool.map(wantTile).join("")||`<div class="empty" style="grid-column:1/-1">Aucune carte : vous les avez déjà toutes.</div>`}</div>
+    <div class="actions"><button class="btn primary" id="wp-go" data-act="wp-go">${wantGoTxt()}</button></div></div>`,true);
+}
+function wantPickAct(a,b){
+  const w=wantPick;if(!w)return;
+  if(a==="wp-toggle"){const id=+b.dataset.id;if(w.sel.has(id))w.sel.delete(id);else{if(w.sel.size>=WANT_MAX){toast(`${WANT_MAX} cartes au maximum.`);return}w.sel.add(id)}
+    b.classList.toggle("choice",w.sel.has(id));b.setAttribute("aria-pressed",w.sel.has(id));const g=$("#wp-go");if(g)g.textContent=wantGoTxt();return}
+  if(a==="wp-miss"){w.miss=b.checked;return wantPickRender()}
+  if(a==="wp-wish"){for(const x of wantPool().filter(wished)){if(w.sel.size>=WANT_MAX)break;w.sel.add(x)}return wantPickRender()}
+  if(a==="wp-none"){w.sel.clear();return wantPickRender()}
+  if(a==="wp-go"){if(!w.sel.size){toast("Choisissez au moins une carte.");return}wantPick=null;w.done([...w.sel])}
 }
 /* --- proposer une carte sur une annonce --- */
 function proposeTrade(mid_,give){
@@ -2189,7 +2236,7 @@ function vCollection(){
   ${ids.length?`<div class="grid">${ids.map(id=>{const c=S.coll[id]||0;return miniHTML(id,{count:c,missing:!c,sel:discardSel?discardSel[id]||0:0,choice:!!(tradeSel&&tradeSel.has(id)),act:discardSel?"pick":tradeSel?"tpick":"detail"})}).join("")}</div>`:`<div class="empty">Aucune carte ne correspond à ces filtres.</div>`}
   ${tradeSel?`<div class="discard-bar trade-bar${tradeSel.size?"":" empty"}">
     <div class="sum"><b>${tradeSel.size} carte${tradeSel.size>1?"s":""} sélectionnée${tradeSel.size>1?"s":""}</b><span>${tradeSel.size?"une annonce par carte":"touchez les cartes à proposer"}</span></div>
-    <label class="field tb-want">Demande<select id="ts-want" data-keep="ts-want"><option value="missing">N’importe quelle carte de même rareté qui me manque</option><option value="any">N’importe quelle carte de même rareté</option></select></label>
+    <label class="field tb-want">Demande<select id="ts-want" data-keep="ts-want"><option value="missing">N’importe quelle carte de même rareté qui me manque</option><option value="any">N’importe quelle carte de même rareté</option><option value="list">Plusieurs cartes précises…</option></select></label>
     <label class="pref tb-auto" title="La première proposition valide est acceptée d’office, sans que vous ayez à répondre"><input type="checkbox" id="ts-auto"${tradeAuto?" checked":""}> ⚡ Accepter automatiquement</label>
     <button class="btn primary go" data-act="tsel-go" ${tradeSel.size?"":"disabled"}>Proposer ${tradeSel.size||""} annonce${tradeSel.size>1?"s":""}</button></div>`:""}
   ${discardSel?`<div class="discard-bar${selN?"":" empty"}">
@@ -2256,21 +2303,25 @@ function myTradesBar(){
   return `<div class="discard-bar trade-bar${n?"":" empty"}"><div class="sum"><b>${n} annonce${n>1?"s":""} sélectionnée${n>1?"s":""}</b><span>${n?"que voulez-vous en faire ?":"touchez vos annonces"}</span></div>
     <div class="actions mt-bar-acts"><button class="btn small" data-act="my-bulk" data-a="missing" ${n?"":"disabled"}>Demander : carte qui me manque</button>
       <button class="btn small" data-act="my-bulk" data-a="any" ${n?"":"disabled"}>Demander : n’importe laquelle</button>
+      <button class="btn small" data-act="my-bulk" data-a="list" ${n?"":"disabled"}>Demander : une liste de cartes…</button>
       <button class="btn small" data-act="my-bulk" data-a="auto-on" ${n?"":"disabled"} title="La première proposition valide est acceptée d’office ; une proposition déjà en attente est acceptée tout de suite">⚡ Accepter automatiquement</button>
       <button class="btn small" data-act="my-bulk" data-a="auto-off" ${n?"":"disabled"}>Désactiver l’automatique</button>
       <button class="btn small danger" data-act="my-bulk" data-a="cancel" ${n?"":"disabled"}>Retirer</button></div></div>`;
 }
-function myBulk(action){
+function myBulk(action,wants){
   const ids=[...mySel];if(!ids.length)return;
+  if(action==="list"&&!wants){ // liste de cartes demandées (1.0.3) : choisies d’abord
+    wantPickOpen(ids.map(id=>MARKET[id]?rar(MARKET[id].card):-1).filter(r=>r>=0),"Chaque annonce n’acceptera que les cartes choisies de sa rareté ; une annonce sans carte choisie de sa rareté ne change pas.",ws=>myBulk("list",ws));return}
   const auto=action==="auto-on"||action==="auto-off";
   const go=()=>run(async()=>{
     if(action==="cancel")ids.forEach(id=>selfCancel.add(id)); // pas de message « échange automatique » pour mes propres retraits
-    const r=await rpc("dc_trade_bulk",{p_mids:ids,p_action:action==="cancel"?"cancel":auto?"auto":"mode",p_mode:action==="missing"?"missing":action==="auto-on"?"on":action==="auto-off"?"off":null});
+    const r=await rpc("dc_trade_bulk",{p_mids:ids,p_action:action==="cancel"?"cancel":auto?"auto":"mode",p_mode:action==="missing"?"missing":action==="list"?"list":action==="auto-on"?"on":action==="auto-off"?"off":null,p_wants:action==="list"?wants:null});
     mySel=new Set();closeDlg();renderView();
     const s=r.n>1?"s":"";
     toast(action==="cancel"?`${r.n} annonce${s} retirée${s} : les cartes sont revenues dans votre collection.`
       :action==="auto-on"?`⚡ Acceptation automatique activée sur ${r.n} annonce${s}.${r.accepted?` ${r.accepted} proposition${r.accepted>1?"s":""} en attente ${r.accepted>1?"ont été acceptées":"a été acceptée"} tout de suite.`:""}`
       :action==="auto-off"?`Acceptation automatique désactivée sur ${r.n} annonce${s} : vous choisirez de nouveau vous-même.`
+      :action==="list"?`Demande modifiée sur ${r.n} annonce${s} : une des cartes choisies.${ids.length>r.n?` ${ids.length-r.n} inchangée${ids.length-r.n>1?"s":""} : aucune carte choisie de leur rareté.`:""}`
       :`Demande modifiée sur ${r.n} annonce${s} : ${action==="missing"?"une carte de même rareté qui vous manque":"n’importe quelle carte de même rareté"}.`);
   });
   if(action!=="cancel")return go();
@@ -3062,7 +3113,7 @@ function detail(id){
       <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button>${r>=6?"":`<button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>`}</div></div>
     ${online?`<div class="panel"><h3>Proposer à l’échange</h3>
       <div class="actions" style="margin-top:10px;align-items:end">
-      <label class="field" style="flex:1;min-width:min(220px,100%)">Carte souhaitée<select id="t-want"><option value="missing" selected>N’importe quelle carte ${RAR[r].toLowerCase()} manquante (que je n’ai pas)</option><option value="">N’importe quelle carte ${RAR[r].toLowerCase()}</option>${same.map(x=>`<option value="${x}">${esc(nm(x))}${S.coll[x]?"":" (manquante)"}</option>`).join("")}</select></label>
+      <label class="field" style="flex:1;min-width:min(220px,100%)">Carte souhaitée<select id="t-want"><option value="missing" selected>N’importe quelle carte ${RAR[r].toLowerCase()} manquante (que je n’ai pas)</option><option value="">N’importe quelle carte ${RAR[r].toLowerCase()}</option><option value="list">Plusieurs cartes précises…</option>${same.map(x=>`<option value="${x}">${esc(nm(x))}${S.coll[x]?"":" (manquante)"}</option>`).join("")}</select></label>
       <button class="btn primary" data-act="do-trade" data-id="${id}">Proposer</button></div></div>`
     :`<div class="notice">Échanges disponibles dans la version publiée.</div>`}
     ${evoTargets(id).length?`<div class="panel"><h3>Évolution</h3><p class="muted" style="margin:4px 0 10px">${c>=EVO_COST?`Vous pouvez échanger ${EVO_COST} exemplaires contre ${evoTargets(id).length>1?"une de ses "+evoTargets(id).length+" évolutions":"son évolution"}.`:`Il vous faut ${EVO_COST} exemplaires pour le faire évoluer (${c}/${EVO_COST}).`}</p>
@@ -3729,7 +3780,9 @@ document.addEventListener("click",e=>{
     case"tsel-clear":tradeSel=new Set();renderView();break;
     case"tsel-dups":tradeSel=new Set(Object.keys(S.coll).filter(k=>S.coll[k]>1).map(Number));if(!tradeSel.size)toast("Vous n’avez aucun double pour l’instant.");renderView();break;
     case"tpick":{if(!(S.coll[id]>0))break;tradeSel.has(id)?tradeSel.delete(id):tradeSel.add(id);const y=window.scrollY;renderView();window.scrollTo(0,y);break}
-    case"tsel-go":tradeMany([...tradeSel],$("#ts-want").value,$("#ts-auto").checked);break;
+    case"tsel-go":{const ids=[...tradeSel],v=$("#ts-want").value,au=$("#ts-auto").checked;
+      if(v==="list")wantPickOpen(ids.map(rar),"Chaque annonce n’acceptera que les cartes choisies de sa rareté.",ws=>tradeMany(ids,"list",au,ws));else tradeMany(ids,v,au);break}
+    case"wp-toggle":case"wp-miss":case"wp-wish":case"wp-none":case"wp-go":wantPickAct(a,b);break;
     case"tsel-confirm":tradeManyGo();break;
     case"discard-cancel":discardSel=null;renderView();break;
     case"sel-clear":discardSel={};renderView();break;
@@ -3755,7 +3808,9 @@ document.addEventListener("click",e=>{
         <div class="actions"><button class="btn primary" data-act="discard-confirm">Défausser</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break}
     case"discard-confirm":closeDlg();discard(discardSel);break;
     case"do-discard":if(S.fav&&S.fav[id]){toast(`${nm(id)} est dans vos favoris.`);break}run(async()=>{await rpc("dc_discard",{p_sel:{[id]:1}});toast(`${nm(id)} défaussée : +${cr(dVal(id))}.`);S.coll[id]?detail(id):closeDlg()});break;
-    case"do-trade":{const v=$("#t-want").value;createTrade(id,v==="missing"?"missing":(+v||null));break}
+    case"do-trade":{const v=$("#t-want").value;
+      if(v==="list"){wantPickOpen([rar(id)],`Votre carte ${esc(nm(id))} ne s’échangera que contre une des cartes choisies ici.`,ws=>createTrade(id,ws));break}
+      createTrade(id,v==="missing"?"missing":(+v||null));break}
     case"cancel":closeDlg();cancelListing(mid);break;
     case"trade":tradeDlg(mid);break;
     case"trd-filter":trdMissing=b.dataset.v==="1";renderView();break;

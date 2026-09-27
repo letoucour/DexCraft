@@ -20,17 +20,30 @@ create or replace function public.dc__open_listings(u uuid) returns int language
 $$ select count(*)::int from public.docs where coll = 'market' and data ->> 'owner' = u::text and data ->> 'status' = 'open' $$;
 create or replace function public.dc__listing_cap() returns int language sql immutable as $$ select 1000 $$;
 
-create or replace function public.dc_trade_create(p_card int, p_want int, p_mode text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); mid text := public.dc__mid();
+-- Liste de cartes demandées (1.0.3) : l'annonce accepte seulement une de ces cartes. Gardées : cartes du Pokédex
+-- (jamais une mythique ou une transcendante) de la rareté r, sans doublon, 50 au plus. Tableau vide si aucune ne convient.
+create or replace function public.dc__want_list(cfg jsonb, p_wants int[], r int) returns jsonb language sql stable as $$
+  select coalesce(jsonb_agg(x order by x), '[]'::jsonb) from (
+    select distinct x from unnest(coalesce(p_wants, '{}'::int[])) x
+    where x is not null and public.dc__rar(cfg, x) = r and cfg -> 'dexOrder' @> to_jsonb(x) limit 50) s $$;
+
+drop function if exists public.dc_trade_create(int, int, text);   -- remplacée par la version avec p_wants (1.0.3)
+create or replace function public.dc_trade_create(p_card int, p_want int, p_mode text, p_wants int[] default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); mid text := public.dc__mid(); wl jsonb;
 begin
   if public.dc__count(d, p_card) < 1 then raise exception 'Vous ne possédez plus cette carte.'; end if;
   if public.dc__open_listings(u) >= public.dc__listing_cap() then
     raise exception 'Vous avez déjà % annonces d’échange : c’est le maximum. Retirez-en avant d’en publier d’autres.', public.dc__listing_cap(); end if;
+  if p_wants is not null then
+    wl := public.dc__want_list(cfg, p_wants, public.dc__rar(cfg, p_card));
+    if jsonb_array_length(wl) = 0 then raise exception 'Choisissez au moins une carte de même rareté.'; end if;
+    if jsonb_array_length(wl) = 1 then p_want := (wl ->> 0)::int; wl := null; else p_want := null; end if;
+  end if;
   if p_want is not null and public.dc__rar(cfg, p_want) is distinct from public.dc__rar(cfg, p_card) then raise exception 'La carte demandée doit être de la même rareté.'; end if;
   d := public.dc__add(d, p_card, -1);
   insert into public.docs (path, coll, data) values ('market/' || mid, 'market', jsonb_build_object(
     'kind', 't', 'owner', u, 'card', p_card, 'rarity', public.dc__rar(cfg, p_card), 'want', p_want,
-    'wantMode', case when p_want is null and p_mode = 'missing' then 'missing' end,
+    'wantMode', case when p_want is null and wl is null and p_mode = 'missing' then 'missing' end, 'wantList', wl,
     'status', 'open', 'offers', '{}'::jsonb, 'created', public.dc__now()));
   return jsonb_build_object('profile', public.dc__save(u, d), 'mid', mid);
 end $$;
@@ -42,6 +55,7 @@ begin
   if m ->> 'owner' = u::text then raise exception 'C’est votre propre annonce.'; end if;
   if public.dc__rar(cfg, p_card) is distinct from public.dc__rar(cfg, public.dc__int(m, 'card')::int) then raise exception 'Cette carte ne correspond pas à la demande.'; end if;
   if m ->> 'want' is not null and public.dc__int(m, 'want') <> p_card then raise exception 'Cette carte ne correspond pas à la demande.'; end if;
+  if jsonb_typeof(m -> 'wantList') = 'array' and not (m -> 'wantList') @> to_jsonb(p_card) then raise exception 'Cette carte ne correspond pas à la demande.'; end if;
   if m ->> 'wantMode' = 'missing' then
     select data into ow from public.docs where path = 'players/' || (m ->> 'owner');
     -- « carte qui me manque » : si le propriétaire a déjà toutes les cartes de la rareté, n'importe laquelle est acceptée
@@ -449,8 +463,9 @@ revoke all on function public.dc_trade_answer(text,text,boolean) from public, an
 grant execute on function public.dc_trade_answer(text,text,boolean) to authenticated;
 revoke all on function public.dc_trade_cancel(text) from public, anon;
 grant execute on function public.dc_trade_cancel(text) to authenticated;
-revoke all on function public.dc_trade_create(integer,integer,text) from public, anon;
-grant execute on function public.dc_trade_create(integer,integer,text) to authenticated;
+revoke all on function public.dc_trade_create(integer,integer,text,integer[]) from public, anon;
+grant execute on function public.dc_trade_create(integer,integer,text,integer[]) to authenticated;
+revoke all on function public.dc__want_list(jsonb,integer[],integer) from public, anon, authenticated;
 revoke all on function public.dc_trade_propose(text,integer) from public, anon;
 grant execute on function public.dc_trade_propose(text,integer) to authenticated;
 revoke all on function public.dc_trade_withdraw(text,text) from public, anon;
