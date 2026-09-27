@@ -80,6 +80,8 @@ h3{font-size:1.1rem}
 /* Booster screen */
 .booster{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding-top:4px}
 .booster p{margin:0}
+.booster .launch-news{align-self:center;margin:6px auto 0;padding:8px 18px;border-radius:999px;background:color-mix(in srgb,var(--ok) 16%,var(--surface));border:1px solid var(--ok);font-size:.95rem;color:var(--ink)} /* annonce du lancement (1.0.0) */
+.booster .launch-news.look-news{background:color-mix(in srgb,var(--gold) 12%,var(--surface));border-color:var(--gold)}
 .booster details{max-width:560px;text-align:left}
 .booster summary{cursor:pointer;color:var(--gold);font-weight:700;text-align:center;list-style:none}
 .booster summary::-webkit-details-marker{display:none}
@@ -102,7 +104,7 @@ h3{font-size:1.1rem}
   .booster.home details{align-self:center}
   .booster.home .pack-hit{--w:clamp(130px,30vh,230px)}
 }
-@media (min-width:1000px) and (max-height:760px){.booster.home .pack-hit{--w:clamp(100px,19vh,160px)}.booster.home .stock .big{font-size:1.6rem}}
+@media (min-width:1000px) and (max-height:760px){.booster.home .pack-hit{--w:clamp(90px,15vh,150px)}.booster.home .stock .big{font-size:1.6rem}}
 /* Discord : bouton dans l'en-tête et sur l'écran des boosters */
 .dc-logo{width:1.25em;height:1.25em;flex:0 0 auto;fill:currentColor}
 .discord-chip{background:#5865f2;border-color:#5865f2;color:#fff;text-decoration:none;cursor:pointer}
@@ -758,12 +760,6 @@ dialog::backdrop{background:rgba(10,12,30,.72)}
 .my-trades.alert{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
 .mt-pend{background:var(--gold);color:var(--gold-ink);border-radius:999px;padding:1px 10px;font-size:.85rem}
 .mt-arrow{margin-left:auto;color:var(--ink-soft)}
-.profile-hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(26px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;align-items:center;gap:4px;
-  width:min(620px,calc(100% - 24px));background:var(--surface);border:1px solid var(--gold);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:4px 4px 4px 14px}
-.ph-go{flex:1;background:none;border:0;padding:6px 0;text-align:left;font-size:.85rem;font-weight:700;color:var(--ink);line-height:1.3}
-.ph-go::before{content:"◆ ";color:var(--gold)}
-.ph-x{flex:0 0 auto;width:32px;height:32px;border:0;border-radius:10px;background:none;color:var(--ink-soft);font-size:1.2rem;line-height:1}
-.ph-x:hover{background:var(--surface-2)}
 /* VoltoBataille */
 .vb{max-width:600px;margin:0 auto}
 .vb-day{margin:12px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
@@ -889,7 +885,6 @@ nav.tabs .ti{display:none}
   .to-top{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
   #version{bottom:calc(64px + env(safe-area-inset-bottom,0px));font-size:.62rem}
   #cgu-link{bottom:calc(62px + env(safe-area-inset-bottom,0px));font-size:.62rem}
-  .profile-hint{bottom:calc(74px + env(safe-area-inset-bottom,0px))!important}
   /* main de cartes un peu plus petite : les boutons sous la main restent visibles au-dessus de la barre d'onglets */
   .hand{--ch:clamp(210px,calc(100dvh - 385px - env(safe-area-inset-bottom,0px)),400px);padding-top:20px}
 }
@@ -1041,6 +1036,11 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 .look-row{display:flex;flex-wrap:wrap;gap:10px}
 .look-opt{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;min-width:92px;min-height:104px;padding:10px 8px;border-radius:14px;border:2px solid transparent;background:var(--surface-2);color:var(--ink);font-weight:700;font-size:.82rem}
 .look-opt[aria-pressed="true"]{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,var(--surface-2))}
+.look-more{border:2px dashed var(--line);background:transparent;color:var(--gold)} /* vers la boutique (1.0.4) */
+#shop-packs{scroll-margin-top:72px}
+.look-more:hover{border-color:var(--gold)}
+.look-more .lm-ic{font-size:30px;line-height:1;margin-bottom:auto;margin-top:12px}
+.look-shop{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding:12px 14px;border-radius:14px;border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 10%,var(--surface))}
 .back.mini-back{width:46px;aspect-ratio:5/7;border-width:3px;border-radius:7px;box-shadow:0 3px 8px rgba(0,0,0,.25);gap:12%}
 .back.mini-back .bk-gem{border-width:2px;box-shadow:none}
 .back.mini-back .bk-name,.offer-visual .pv .back .bk-name{font-size:7.5px}
@@ -1140,7 +1140,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.3";
+const APP_VERSION="1.0.4";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2073,7 +2073,7 @@ function vBooster(){
   const p=packInfo(S);
   return `<div class="booster home">
     <div class="bh-head"><h1>Ouvrir un booster</h1>
-    <p class="muted">5 cartes au hasard. Attrapez-les tous !</p></div>
+    <p class="muted">5 cartes au hasard. Attrapez-les tous !</p>${launchNewsHTML()}</div>
     <div class="bh-left">${tipHTML()}${giftHTML()}${dailyHTML()}
     <details><summary>Comment ça marche ?</summary><div class="rules">
       <p>Vous recevez un booster toutes les 10 minutes, jusqu’à 10 boosters en réserve. Chaque carte a sa propre rareté :</p>
@@ -2089,8 +2089,7 @@ function vBooster(){
       <div class="stock-bar">${Array.from({length:MAXP},(_,i)=>`<i class="${i<p.n?"on":""}"></i>`).join("")}</div>
       <div class="muted">${p.next?`Prochain dans <b data-countdown="${p.next}">${fmtLeft(p.next-Date.now())}</b>`:"Réserve pleine"}</div>
       ${S.bonus?`<div class="bonus-line"><b>+ ${S.bonus}</b> booster${S.bonus>1?"s":""} acheté${S.bonus>1?"s":""}, ouvert${S.bonus>1?"s":""} une fois la réserve gratuite vide</div>`:""}</div></div>
-  </div>
-  ${hintHidden()?"":`<div style="height:64px" aria-hidden="true"></div><div class="profile-hint"><button class="ph-go" data-view="profile">Changez d’image de profil, de pseudo et voyez la progression de vos titres en cliquant sur votre pseudo pour aller dans votre profil.</button><button class="ph-x" data-act="hide-hint" aria-label="Masquer ce message">×</button></div>`}`;
+  </div>`;
 }
 /* ---------- bulles d'aide des nouveaux joueurs ----------
    Une seule à la fois, sur l'écran des boosters, et seulement pour les joueurs qui débutent (moins de 30 boosters ouverts).
@@ -2175,8 +2174,6 @@ function claimDaily(){
     SFX.flip&&SFX.flip(2);
   });
 }
-/* Bandeau d'aide de l'écran des boosters, masquable (préférence gardée sur l'appareil) */
-function hintHidden(){try{return localStorage.getItem("dc-hint-profil")==="1"}catch(e){return false}}
 function filtered(){
   const q=filt.q.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const out=[];
@@ -2454,16 +2451,19 @@ function lookPreview(s,i){
 function lookHTML(){
   const owned=Object.keys(S.cos||{});
   if(!owned.length)return `<p class="muted">Aucun cosmétique pour l’instant. Les packs de la boutique changent l’apparence de vos cartes, de votre sachet, de votre image de profil, de votre pseudo et de l’écran des boosters.</p>
-    <button class="btn primary" data-view="shop">Voir la boutique</button>`;
+    <button class="btn primary" data-act="goto-packs">Voir les packs de la boutique</button>`;
+  const left=OFFERS.filter(o=>!ownsOffer(S,o)&&o.items.some(i=>!i.startsWith("badge."))).length; // packs pas encore achetés (boutique, 1.0.4)
+  const more=left?`<button class="look-opt look-more" data-act="goto-packs"><span class="lm-ic" aria-hidden="true">🛒</span><span>Plus de styles</span></button>`:"";
   const rows=COS_SLOTS.map(([s,label])=>{
     const items=owned.filter(i=>i.startsWith(s+".")&&COS[i]).sort((a,b)=>OFFERS.findIndex(o=>o.k===COS_PACK[a])-OFFERS.findIndex(o=>o.k===COS_PACK[b]));
     if(!items.length)return "";const cur=myLook(s);
-    return `<h3 class="look-h">${label}</h3><div class="look-row">${[null,...items].map(i=>`<button class="look-opt" data-act="look" data-slot="${s}" data-item="${i||""}" aria-pressed="${(cur||null)===i}">${lookPreview(s,i)}<span>${i?esc(cosName(i)):"Classique"}</span></button>`).join("")}</div>`;
+    return `<h3 class="look-h">${label}</h3><div class="look-row">${[null,...items].map(i=>`<button class="look-opt" data-act="look" data-slot="${s}" data-item="${i||""}" aria-pressed="${(cur||null)===i}">${lookPreview(s,i)}<span>${i?esc(cosName(i)):"Classique"}</span></button>`).join("")}${more}</div>`;
   }).join("");
   const bd=owned.filter(i=>i.startsWith("badge.")),tl=owned.filter(i=>i.startsWith("titre."));
   return `<p class="muted">Vous pouvez mélanger les articles de vos différents packs. Le cadre, la couleur du pseudo et les badges sont visibles par tous les joueurs ; le reste, par vous seul.</p>${rows}
     ${bd.length?`<h3 class="look-h">Badges</h3><p class="muted" style="margin:0">${bd.map(b=>{const B=BADGES[cosCls(b)];return B?`<span class="bdg bdg-${cosCls(b)}">${B.ic}</span> ${esc(cosName(b).replace(/^\S+\s/,""))}`:""}).join(" · ")} : affichés à côté de votre pseudo.</p>`:""}
-    ${tl.length?`<p class="muted" style="margin:8px 0 0">Titre ${tl.map(t=>esc(cosName(t))).join(", ")} : à choisir dans la section Titres.</p>`:""}`;
+    ${tl.length?`<p class="muted" style="margin:8px 0 0">Titre ${tl.map(t=>esc(cosName(t))).join(", ")} : à choisir dans la section Titres.</p>`:""}
+    ${left?`<div class="look-shop"><span>Envie d’un autre style ? <b>${left} pack${left>1?"s":""}</b> vous attend${left>1?"ent":""} encore dans la boutique.</span><button class="btn small primary" data-act="goto-packs">Voir les packs</button></div>`:""}`;
 }
 function psec(key,ic,title,sum){
   return `<details class="psec" data-sec="${key}"${profOpen[key]?" open":""}><summary><span class="ps-ic" aria-hidden="true">${ic}</span>
@@ -2820,6 +2820,12 @@ let shopQty=1;
 /* Pack gratuit « Lancement de DexCraft » (1.0.0) : une fois par joueur (dc_buy_once, clé enregistrée dans bought).
    Contenu dans la configuration (cfg.once) : pour arrêter l'offre, mettre LAUNCH à null et régénérer la configuration. */
 const LAUNCH={k:"lancement",n:"Lancement de DexCraft",credits:1000,packs:10};
+/* Annonce du lancement (1.0.0) sur l'écran des boosters, tant que le joueur n'a pas récupéré le pack gratuit ;
+   ensuite (1.0.4), une invitation à personnaliser son profil depuis son pseudo */
+function launchNewsHTML(){
+  if(LAUNCH&&!(S.bought&&S.bought[LAUNCH.k]))return `<p class="launch-news">🎉 <b>DexCraft est officiellement lancé !</b> Un pack gratuit vous attend dans la <button class="linkish" data-view="shop">boutique</button>.</p>`;
+  return `<p class="launch-news look-news">✨ Personnalisez votre profil et votre environnement de jeu, et gérez vos titres, en cliquant sur <button class="linkish" data-view="profile">votre pseudo</button>.</p>`;
+}
 function launchHTML(){
   if(!LAUNCH)return "";
   const got=!!(S.bought&&S.bought[LAUNCH.k]);
@@ -2847,7 +2853,7 @@ function vShop(){
     ${offerHTML(OFFER_BY.soutien,dev)}
     ${launchHTML()}
   </div>
-  <h2 style="margin-top:26px">Packs cosmétiques</h2>
+  <h2 style="margin-top:26px" id="shop-packs">Packs cosmétiques</h2>
   <p class="muted" style="margin:0">Chaque pack s’achète une fois. Vous pourrez ensuite changer de look à volonté en mélangeant les articles dans votre profil.</p>${pay}
   <div class="shop cols3">${OFFERS.filter(o=>o.k!=="soutien").map(o=>offerHTML(o,dev)).join("")}</div>
   <p class="muted" style="margin-top:22px;font-size:.85rem">Vendu par Duellia. <button class="linkish" data-act="cgv">Conditions générales de vente</button></p>`;
@@ -3656,6 +3662,7 @@ document.addEventListener("click",e=>{
   switch(a){
     case"cgu":openCgu();break;
     case"cgv":openCgv();break;
+    case"goto-packs":view="shop";renderAll();window.scrollTo(0,0);setTimeout(()=>{const h=$("#shop-packs");if(h)h.scrollIntoView({block:"start"})});break; // « Mon look » → packs de la boutique (1.0.4)
     case"claim-launch":run(async()=>{await rpc("dc_buy_once",{p_key:LAUNCH.k});toast(`Pack de lancement récupéré : +${fmtN(LAUNCH.credits)} crédits et +${LAUNCH.packs} boosters !`)});break;
     case"badge-info":e.stopPropagation();{const B=BADGES[b.dataset.k];if(B)toast(`${B.ic} ${B.t}`)}break;
     case"discord-soon":e.preventDefault();toast("Le serveur Discord ouvre très bientôt !");break;
@@ -3736,7 +3743,6 @@ document.addEventListener("click",e=>{
     case"vb-mark":if(VB){VB.mark=+b.dataset.m;renderView()}break;
     case"vb-quit":vbQuit();break;
     case"vb-next":if(VB&&!VB.busy)vbLoad("dc_vb_next");break;
-    case"hide-hint":try{localStorage.setItem("dc-hint-profil","1")}catch(e){}{const h=$(".profile-hint");if(h)h.remove()}break;
     case"fill-packs":{if(!devOn()||mode!=="online")break;
       const n=new Set([...Object.keys(PLAYERS),ME]).size;
       openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Remplir la réserve de boosters ?</h2>
