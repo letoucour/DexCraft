@@ -1119,7 +1119,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.7";
+const APP_VERSION="1.0.8";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1923,7 +1923,26 @@ function keepInputs(fn){
   const f=document.activeElement&&document.activeElement.dataset?document.activeElement.dataset.keep:null;
   fn();
   document.querySelectorAll("#app [data-keep]").forEach(i=>{if(vals[i.dataset.keep]!==undefined)i.value=vals[i.dataset.keep]});
-  if(f){const el=document.querySelector(`#app [data-keep="${f}"]`);if(el){el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
+  if(f){const el=document.querySelector(`#app [data-keep="${f}"]`);if(el&&el!==document.activeElement){el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
+}
+/* Redessine #app sans jamais recréer le champ où le joueur écrit (1.0.8) : le reste de l'écran est remplacé autour de lui,
+   niveau par niveau. Avant, la barre de recherche était recréée à chaque mise à jour des résultats, et des lettres
+   tapées vite se perdaient (surtout avec les claviers de téléphone, qui composent les mots). */
+function fillApp(app,html){
+  const a=document.activeElement,k=a&&a.dataset&&a.dataset.keep;
+  if(!k||!/^(INPUT|TEXTAREA)$/.test(a.tagName)||!app.contains(a)){app.innerHTML=html;return}
+  const tmp=document.createElement("div");tmp.innerHTML=html;
+  const n=tmp.querySelector(`[data-keep="${k}"]`);
+  const cO=[],cN=[];for(let x=a;x!==app;x=x.parentNode)cO.unshift(x);if(n)for(let x=n;x!==tmp;x=x.parentNode)cN.unshift(x);
+  if(!n||cO.length!==cN.length||cO.some((x,i)=>x.tagName!==cN[i].tagName)){app.innerHTML=html;return}
+  let pO=app,pN=tmp;
+  cO.forEach((o,i)=>{const m=cN[i];
+    while(pO.firstChild!==o)pO.removeChild(pO.firstChild);
+    while(pN.firstChild!==m)pO.insertBefore(pN.firstChild,o);
+    while(o.nextSibling)pO.removeChild(o.nextSibling);
+    while(m.nextSibling)pO.appendChild(m.nextSibling);
+    if(o!==a){[...o.attributes].forEach(t=>{if(!m.hasAttribute(t.name))o.removeAttribute(t.name)});[...m.attributes].forEach(t=>{if(o.getAttribute(t.name)!==t.value)o.setAttribute(t.name,t.value)})}
+    pO=o;pN=m});
 }
 /* Écran en cours gardé dans l'onglet (0.8.14) : si la page se recharge (téléphone qui libère la mémoire d'un onglet
    en arrière-plan, connexion renouvelée…), le joueur retrouve son écran, ses filtres et sa position au lieu des boosters.
@@ -1939,7 +1958,7 @@ function restorePlace(){
 let placeT=0;addEventListener("scroll",()=>{clearTimeout(placeT);placeT=setTimeout(savePlace,300)},{passive:true});
 function renderView(){
   if(!S)return;const app=$("#app");
-  keepInputs(()=>{app.innerHTML=({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto})[view]()});
+  keepInputs(()=>{fillApp(app,({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto})[view]())});
   // fond de l’écran des boosters (boutique) : seulement sur cet écran
   {const f=view==="booster"?myLook("fond"):null;if(f)document.body.dataset.fond=cosCls(f);else delete document.body.dataset.fond}
   savePlace();
