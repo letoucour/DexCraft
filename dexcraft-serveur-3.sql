@@ -91,6 +91,104 @@ begin
     'cards', coalesce((select jsonb_object_agg(id::text, data) from public.secret_cards where id = any(ok)), '{}'));
 end $$;
 
+-- ---------- boutique cosmétique (0.9.0) ----------
+-- Uniquement de la décoration. Catalogue et prix (centimes) dans la configuration (cfg.shop, exporté depuis index.html).
+-- Paiement : la fonction Supabase dc-paiement crée la session Stripe et note le paiement (payments, « pending ») ;
+-- Stripe prévient la fonction dc-stripe-webhook, qui appelle dc_pay_grant (réservée au service Supabase) : c'est
+-- le SEUL chemin qui donne un pack payant. dc_pay_grant est idempotente (un paiement n'est livré qu'une fois).
+create table if not exists public.payments (
+  session_id     text primary key,          -- session Stripe Checkout
+  uid            uuid not null,
+  offer          text not null,
+  amount         int not null,              -- centimes
+  status         text not null default 'pending',   -- pending, paid, refunded
+  payment_intent text,
+  created_at     timestamptz not null default now(),
+  paid_at        timestamptz
+);
+create index if not exists payments_uid_idx on public.payments (uid, created_at desc);
+create index if not exists payments_pi_idx on public.payments (payment_intent);
+alter table public.payments enable row level security;
+revoke all on public.payments from anon, authenticated;
+-- rôle de service (fonctions de paiement) : sur les projets Supabase récents, aucun droit n'est donné d'office aux tables
+grant select on public.admins, public.game_config, public.docs to service_role;
+grant select, insert, update on public.payments to service_role;
+
+-- ajoute les articles d'une offre au profil (cos) et prépare l'annonce côté jeu (unlock)
+create or replace function public.dc__grant_offer(d jsonb, p_offer text) returns jsonb language plpgsql volatile as $$
+declare o jsonb := public.dc__cfg() -> 'shop' -> 'offers' -> p_offer; c jsonb; i text;
+begin
+  if o is null then raise exception 'Offre inconnue.'; end if;
+  c := case when jsonb_typeof(d -> 'cos') = 'object' then d -> 'cos' else '{}'::jsonb end;
+  for i in select jsonb_array_elements_text(o -> 'items') loop
+    if not c ? i then c := c || jsonb_build_object(i, public.dc__now()); end if;
+  end loop;
+  return d || jsonb_build_object('cos', c, 'unlock', jsonb_build_object('o', p_offer, 't', public.dc__now()));
+end $$;
+
+-- paiement confirmé par Stripe (appelée uniquement par la fonction dc-stripe-webhook, avec la clé de service)
+create or replace function public.dc_pay_grant(p_session text, p_uid uuid, p_offer text, p_amount int, p_pi text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare pay public.payments; o jsonb := public.dc__cfg() -> 'shop' -> 'offers' -> p_offer; d jsonb;
+begin
+  if o is null then raise exception 'Offre inconnue : %', p_offer; end if;
+  if p_amount is distinct from (o ->> 'eur')::int then raise exception 'Montant inattendu pour % : % au lieu de %', p_offer, p_amount, o ->> 'eur'; end if;
+  insert into public.payments (session_id, uid, offer, amount) values (p_session, p_uid, p_offer, p_amount) on conflict (session_id) do nothing;
+  select * into pay from public.payments where session_id = p_session for update;
+  if pay.uid <> p_uid or pay.offer <> p_offer then raise exception 'Paiement incohérent.'; end if;
+  if pay.status = 'paid' then return jsonb_build_object('ok', true, 'deja', true); end if;
+  select data into d from public.docs where path = 'players/' || p_uid for update;
+  if not found then raise exception 'Joueur introuvable.'; end if;
+  d := public.dc__grant_offer(public.dc__norm(d), p_offer);
+  update public.docs set data = public.dc__stamp(d, false), updated_at = now() where path = 'players/' || p_uid;
+  update public.payments set status = 'paid', paid_at = now(), payment_intent = p_pi where session_id = p_session;
+  return jsonb_build_object('ok', true);
+end $$;
+
+-- remboursement complet (Stripe) : le pack est retiré, sauf les articles qu'un autre paiement a aussi apportés
+create or replace function public.dc_pay_refund(p_pi text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare pay public.payments; d jsonb; i text; keep jsonb := '[]';
+begin
+  select * into pay from public.payments where payment_intent = p_pi and status = 'paid' for update;
+  if not found then return jsonb_build_object('ok', false); end if;
+  update public.payments set status = 'refunded' where session_id = pay.session_id;
+  select coalesce(jsonb_agg(x), '[]') into keep from public.payments p2, jsonb_array_elements_text(public.dc__cfg() -> 'shop' -> 'offers' -> p2.offer -> 'items') x
+    where p2.uid = pay.uid and p2.status = 'paid';
+  select data into d from public.docs where path = 'players/' || pay.uid for update;
+  if found then
+    for i in select jsonb_array_elements_text(public.dc__cfg() -> 'shop' -> 'offers' -> pay.offer -> 'items') loop
+      if not keep ? i then d := jsonb_set(d, '{cos}', coalesce(d -> 'cos', '{}') - i); end if;
+    end loop;
+    update public.docs set data = public.dc__stamp(d, false), updated_at = now() where path = 'players/' || pay.uid;
+  end if;
+  return jsonb_build_object('ok', true);
+end $$;
+
+-- porter un article possédé (p_item null : apparence de base)
+create or replace function public.dc_set_look(p_slot text, p_item text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); l jsonb;
+begin
+  if p_slot not in ('dos', 'sac', 'cadre', 'pseudo', 'fond') then raise exception 'Emplacement inconnu.'; end if;
+  l := case when jsonb_typeof(d -> 'look') = 'object' then d -> 'look' else '{}'::jsonb end;
+  if p_item is null or p_item = '' then l := l - p_slot;
+  else
+    if p_item not like p_slot || '.%' then raise exception 'Cet article ne va pas à cet emplacement.'; end if;
+    if not coalesce(d -> 'cos', '{}') ? p_item then raise exception 'Vous ne possédez pas cet article.'; end if;
+    l := l || jsonb_build_object(p_slot, p_item);
+  end if;
+  return jsonb_build_object('profile', public.dc__save(u, jsonb_set(d, '{look}', l)));
+end $$;
+
+-- outil administrateur : offrir un pack à un joueur (geste commercial, test, souci de paiement)
+create or replace function public.dc_admin_give_offer(p_uid uuid, p_offer text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare a uuid := public.dc__admin(); d jsonb;
+begin
+  d := public.dc__lock(p_uid, p_uid = a);
+  d := public.dc__grant_offer(d, p_offer);
+  if p_uid = a then return jsonb_build_object('profile', public.dc__save(a, d)); end if;
+  update public.docs set data = public.dc__stamp(d, false), updated_at = now() where path = 'players/' || p_uid;
+  return jsonb_build_object('ok', true);
+end $$;
+
 -- ---------- historique des échanges (0.6.0) ----------
 -- Une ligne par échange conclu, écrite par dc_trade_answer. Chaque joueur ne lit que ses propres échanges.
 create table if not exists public.trade_log (
@@ -318,6 +416,15 @@ begin
 end $$;
 
 -- ---------- droits d'exécution ----------
+revoke all on function public.dc__grant_offer(jsonb,text) from public, anon, authenticated;
+revoke all on function public.dc_pay_grant(text,uuid,text,integer,text) from public, anon, authenticated;
+grant execute on function public.dc_pay_grant(text,uuid,text,integer,text) to service_role;
+revoke all on function public.dc_pay_refund(text) from public, anon, authenticated;
+grant execute on function public.dc_pay_refund(text) to service_role;
+revoke all on function public.dc_set_look(text,text) from public, anon;
+grant execute on function public.dc_set_look(text,text) to authenticated;
+revoke all on function public.dc_admin_give_offer(uuid,text) from public, anon;
+grant execute on function public.dc_admin_give_offer(uuid,text) to authenticated;
 revoke all on function public.dc_secret_cards(integer[]) from public, anon;
 grant execute on function public.dc_secret_cards(integer[]) to authenticated;
 revoke all on function public.dc_redeem_code(text) from public, anon;

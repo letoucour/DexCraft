@@ -111,6 +111,7 @@ declare
   now_ms bigint := public.dc__now(); tk jsonb; id int; t int;
   gencnt int[] := array_fill(0, array[9]); typecnt int[] := array_fill(0, array[18]);
   pgen text := cfg ->> 'pgen'; ptype text := cfg ->> 'ptype'; def jsonb; ok boolean; shown jsonb := '[]';
+  vis jsonb;
 begin
   d := public.dc__norm(d) - 'listings' - 'escrow';
   for r in select key, value from jsonb_each(d -> 'coll') loop
@@ -140,6 +141,16 @@ begin
   if jsonb_typeof(d -> 'wish') = 'object' then
     d := jsonb_set(d, '{wish}', coalesce((select jsonb_object_agg(key, value) from jsonb_each(d -> 'wish') where not newcoll ? key), '{}'));
   elsif d ? 'wish' then d := d - 'wish'; end if;
+  -- cosmétiques (0.9.0) : articles possédés (cos) ; portés (look), seulement s'ils sont possédés ;
+  -- partie visible par les autres joueurs (vis : cadre, couleur du pseudo, badges), lue par le classement
+  if d ? 'cos' and jsonb_typeof(d -> 'cos') <> 'object' then d := d - 'cos'; end if;
+  if jsonb_typeof(d -> 'look') = 'object' then
+    d := jsonb_set(d, '{look}', coalesce((select jsonb_object_agg(key, value) from jsonb_each_text(d -> 'look')
+      where coalesce(d -> 'cos', '{}') ? value and value like key || '.%'), '{}'));
+  elsif d ? 'look' then d := d - 'look'; end if;
+  vis := jsonb_strip_nulls(jsonb_build_object('f', d -> 'look' ->> 'cadre', 'p', d -> 'look' ->> 'pseudo',
+    'b', (select jsonb_agg(k order by k) from jsonb_object_keys(coalesce(d -> 'cos', '{}')) k where k like 'badge.%')));
+  if vis = '{}' then d := d - 'vis'; else d := jsonb_set(d, '{vis}', vis); end if;
   if (cfg ->> 'betaOpen')::boolean then d := jsonb_set(d, '{beta}', 'true'); end if;
   if public.dc__int(d, 'credits') > coalesce((d -> 'stats' ->> 'maxCr')::bigint, 0) then
     d := jsonb_set(d, '{stats,maxCr}', to_jsonb(public.dc__int(d, 'credits')));
@@ -173,6 +184,7 @@ begin
       when 'gen' then gencnt[(def ->> 'g')::int] >= (def ->> 'n')::int
       when 'type' then typecnt[(def ->> 't')::int] >= (def ->> 'n')::int
       when 'ids' then (select count(*) from jsonb_array_elements_text(def -> 'ids') x where newcoll ? x) >= (def ->> 'n')::int
+      when 'cos' then coalesce(d -> 'cos', '{}') ? (def ->> 'i')
       else false end;
     if ok then shown := shown || jsonb_build_array(jsonb_build_object('k', r.k, 'o', case r.k when 'alpha' then 0 when 'beta' then 1 else 2 end, 'i', r.i)); end if;
   end loop;

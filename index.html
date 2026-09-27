@@ -83,6 +83,33 @@ h3{font-size:1.1rem}
 .booster details{max-width:560px;text-align:left}
 .booster summary{cursor:pointer;color:var(--gold);font-weight:700;text-align:center;list-style:none}
 .booster summary::-webkit-details-marker{display:none}
+/* Écran des boosters (1.0.0) : tout tient dans la fenêtre sans défiler, le booster toujours au milieu. Sur téléphone,
+   une colonne (les enveloppes .bh-* s'effacent, l'ordre vient de « order ») ; sur grand écran, trois colonnes :
+   récompense du jour et règles à gauche, booster au centre, VoltoBataille, boutique et Discord à droite. */
+.booster.home .bh-head,.booster.home .bh-left,.booster.home .bh-main,.booster.home .bh-right{display:contents}
+.booster.home .bh-left>*{order:1}
+.booster.home .bh-main>*{order:2}
+.booster.home .bh-right>*{order:3}
+@media (min-width:1000px){
+  .booster.home{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-areas:"head head head" "left main right";column-gap:32px;row-gap:6px;align-items:center;max-width:1280px;margin:0 auto}
+  .booster.home .bh-head{display:flex;flex-direction:column;gap:6px;grid-area:head}
+  .booster.home .bh-left{display:flex;flex-direction:column;align-items:stretch;gap:10px;grid-area:left}
+  .booster.home .bh-main{display:flex;flex-direction:column;align-items:center;gap:6px;grid-area:main;min-width:320px}
+  .booster.home .bh-right{display:flex;flex-direction:column;align-items:stretch;gap:12px;grid-area:right}
+  .booster.home .bh-right .btn{margin-top:0;justify-content:center;text-align:center}
+  .booster.home .daily{margin:0 auto;padding:12px 10px}
+  .booster.home .daily-steps{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .booster.home details{align-self:center}
+  .booster.home .pack-hit{--w:clamp(130px,30vh,230px)}
+}
+@media (min-width:1000px) and (max-height:760px){.booster.home .pack-hit{--w:clamp(100px,19vh,160px)}.booster.home .stock .big{font-size:1.6rem}}
+/* Discord : bouton dans l'en-tête et sur l'écran des boosters */
+.dc-logo{width:1.25em;height:1.25em;flex:0 0 auto;fill:currentColor}
+.discord-chip{background:#5865f2;border-color:#5865f2;color:#fff;text-decoration:none;cursor:pointer}
+.discord-chip:hover{background:#4752c4}
+@media (max-width:1300px){.dc-lbl{display:none}}
+.discord-cta{display:flex;align-items:center;gap:10px;background:#5865f2;color:#fff;text-decoration:none;margin-top:10px}
+.discord-cta:hover{background:#4752c4}
 .rules{margin-top:10px;font-size:.95rem}
 .rules table{border-collapse:collapse;width:100%;margin:8px 0}
 .rules td{padding:4px 8px;border-bottom:1px solid var(--line)}
@@ -274,6 +301,13 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .legend .lg-card{position:relative;width:min(280px,70vw);animation:cardIn 1.3s cubic-bezier(.2,.9,.3,1) both;filter:drop-shadow(0 0 30px rgba(255,207,63,.9))}
 @keyframes cardIn{0%{transform:perspective(900px) translateY(40vh) rotateY(900deg) scale(.2);opacity:0}70%{opacity:1}100%{transform:perspective(900px) translateY(0) rotateY(0) scale(1)}}
 .legend .lg-sub{position:relative;color:#fff4c2;font-weight:700;animation:lgIn .5s 1.4s both}
+.legend .lg-share{position:relative;z-index:1;background:#ffcf3f;color:#3a2a00;animation:lgIn .5s 1.2s both;box-shadow:0 4px 18px rgba(255,207,63,.45)}
+/* fenêtre « Partager » (1.0.0) */
+.share-dlg{gap:12px}
+.share-img{display:flex;justify-content:center;align-items:center;min-height:120px}
+.share-img canvas{width:min(260px,62vw);height:auto;border-radius:12px}
+@media (max-height:760px){.share-img canvas{width:min(200px,50vw)}}
+.share-dlg textarea{width:100%;resize:vertical;font:inherit;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 .shake{animation:shake .5s linear}
 @keyframes shake{0%,100%{transform:translate(0)}20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-5px)}60%{transform:translate(-5px,-3px)}80%{transform:translate(4px,5px)}}
 .new-tag{position:absolute;top:-10px;right:-8px;z-index:3;background:var(--gold);color:var(--gold-ink);font-weight:700;font-size:.8rem;padding:2px 10px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
@@ -580,7 +614,6 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .titles{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .badge-alpha.tc{color:#fff;background:var(--tc);text-shadow:0 1px 1px rgba(0,0,0,.35)}
 .badge-alpha.tier{color:#2a3050;background:linear-gradient(100deg,#eef1f8,#b9c2d2 50%,#eef1f8)}
-.badge-alpha.secret{color:#e5ccff;background:#1b1530;box-shadow:0 0 0 1px #b46cff}
 .badge-alpha.myth{color:#fff;background:linear-gradient(90deg,#ff4f4f,#ffcf3f,#5fd68f,#4fc3ff,#b46cff,#ff4fd8);text-shadow:0 1px 2px rgba(0,0,0,.5)}
 .badge-alpha.trans{color:#23283d;background:linear-gradient(100deg,#fff,#9aa3b5 30%,#f2f4f8 55%,#7d8496 80%,#e8ecf5)}
 .badge-alpha.tag-click{cursor:pointer}
@@ -681,7 +714,7 @@ dialog::backdrop{background:rgba(10,12,30,.72)}
 .field{display:flex;flex-direction:column;gap:4px;font-size:.9rem;font-weight:700}
 .field select,.field input{font-weight:400;min-width:0;max-width:100%}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
-.close-x{justify-self:end;background:none;border:0;font-size:1.5rem;line-height:1;color:var(--ink-soft)}
+.close-x{justify-self:end;align-self:flex-end;background:none;border:0;font-size:1.5rem;line-height:1;color:var(--ink-soft)}
 .picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:12px;max-height:52vh;overflow:auto;padding:4px}
 /* « Proposer une carte » : la fenêtre tient dans l’écran, seule la liste défile ; le bouton « Proposer » reste toujours visible
    (0.8.12 : avec un long nom de Pokémon, le titre sur deux lignes poussait le bouton hors de l’écran) */
@@ -769,6 +802,18 @@ dialog::backdrop{background:rgba(10,12,30,.72)}
 .vb-rules{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
 .vb-rules summary{cursor:pointer;font-weight:700;color:var(--gold)}
 .vb-rules li{margin:4px 0}
+/* VoltoBataille sur grand écran (1.0.0) : plateau à gauche, calé sur la hauteur de la fenêtre ; le reste à droite, sans défiler */
+@media (min-width:1000px){
+  .vb{max-width:1180px;display:grid;grid-template-columns:auto minmax(320px,440px);column-gap:32px;justify-content:center;align-content:start}
+  .vb>*{grid-column:2}
+  .vb>.vb-board{grid-column:1;grid-row:1 / span 20;align-self:start;width:min(720px,calc(100vh - 150px),calc(100dvh - 150px));min-width:360px}
+  .vb .vb-rules{max-height:max(140px,calc(100vh - 560px));overflow:auto;margin-top:10px}
+  .vb .vb-tile .front{font-size:clamp(1.3rem,4.5vh,2.4rem)}
+  .vb .vb-clue .pts{font-size:clamp(.95rem,3.2vh,1.6rem)}
+  .vb .vb-clue .vo{font-size:clamp(.85rem,2.8vh,1.4rem)}
+  .vb .vb-clue .vo .vb-volt{width:clamp(12px,2.6vh,22px)}
+  .vb .vb-marks i{font-size:clamp(.6rem,1.8vh,.95rem)}
+}
 .volto-cta{margin-top:14px;display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--gold) 14%,var(--surface));border:1px solid var(--gold);color:var(--ink)}
 .volto-cta .vb-volt{width:24px}
 .trade-info{display:flex;flex-direction:column;gap:8px}
@@ -893,6 +938,142 @@ nav.tabs .ti{display:none}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+/* ============ Cosmétiques (0.9.0) ============
+   Dos de carte : .back.bk-<nom> (dessins fixes, jamais d'animation : 50 cartes en main sur téléphone).
+   Sachet : .pack.sk-<nom>. Cadre : .avf.fr-<nom> autour de .ava. Pseudo : .ps-<nom>. Badges : .bdg.
+   Fond de l'écran des boosters : body[data-fond=<nom>]. Les dos mythique et transcendant gardent la priorité. */
+/* --- dos de carte --- */
+.back.bk-carton{color:#1f1f1f;border-color:#d9b98a;box-shadow:0 6px 12px rgba(0,0,0,.25);background:repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 2px,transparent 2px 7px),radial-gradient(circle at 70% 80%,rgba(120,80,30,.25),transparent 30%),linear-gradient(180deg,#c99d62,#b5854b)}
+.back.bk-carton .bk-gem{border-style:dashed;border-color:#3b2a14;background:none;box-shadow:none}
+.back.bk-carton .bk-name{font-family:"Segoe Print","Comic Sans MS",cursive;transform:rotate(-7deg);text-shadow:none}
+.back.bk-braise{color:#ffb84a;border-color:#3a1206;box-shadow:0 0 16px rgba(255,100,20,.35),0 8px 20px rgba(0,0,0,.3);background:radial-gradient(circle at 50% 44%,rgba(255,140,40,.45),transparent 50%),radial-gradient(2px 2px at 20% 80%,#ffcf5a,transparent),radial-gradient(1.5px 1.5px at 70% 70%,#ff8a2a,transparent),radial-gradient(1.5px 1.5px at 40% 20%,#ffcf5a,transparent),radial-gradient(2px 2px at 85% 30%,#ff6a1a,transparent),linear-gradient(180deg,#2a0b05,#5a1408 55%,#8a2a08)}
+.back.bk-braise .bk-gem{border-color:#ffb84a;box-shadow:0 0 0 4px rgba(255,140,40,.25)}
+.back.bk-ocean{color:#e6fbff;border-color:#bff0ff;background:radial-gradient(circle at 50% 44%,rgba(180,240,255,.25),transparent 45%),repeating-radial-gradient(circle at 50% 120%,rgba(255,255,255,.14) 0 3px,transparent 3px 16px),linear-gradient(180deg,#0c6ea8,#063a6b 60%,#021f3f)}
+.back.bk-ocean .bk-gem{border-color:#e6fbff;box-shadow:0 0 0 4px rgba(230,251,255,.25)}
+.back.bk-nuit{color:#fff3c4;border-color:#dfe4ff;background:radial-gradient(1.5px 1.5px at 20% 18%,#fff,transparent),radial-gradient(1px 1px at 72% 12%,#fff,transparent),radial-gradient(1.5px 1.5px at 84% 40%,#fff,transparent),radial-gradient(1px 1px at 12% 62%,#fff,transparent),radial-gradient(2px 2px at 60% 78%,#fff,transparent),radial-gradient(1px 1px at 35% 88%,#fff,transparent),radial-gradient(1.5px 1.5px at 90% 86%,#fff,transparent),radial-gradient(ellipse at 70% 20%,rgba(120,90,255,.45),transparent 55%),linear-gradient(180deg,#0b0f2e,#1b1450 60%,#2b1a5e)}
+.back.bk-nuit .bk-gem{border-color:#fff3c4;box-shadow:0 0 0 4px rgba(255,243,196,.25)}
+.back.bk-or{color:#4a2f00;border-color:#fff4c2;background:radial-gradient(circle at 50% 44%,rgba(255,255,255,.55),transparent 45%),repeating-linear-gradient(90deg,rgba(255,255,255,.12) 0 1px,transparent 1px 3px),linear-gradient(135deg,#fff1a8,#e2a91a 35%,#b87a06 55%,#ffd76a 75%,#a86a00)}
+.back.bk-or .bk-gem{border-color:#4a2f00;box-shadow:0 0 0 4px rgba(74,47,0,.2)}
+.back.bk-or .bk-name{text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.back.bk-diamant{color:#4a5a7a;border-color:#fff;box-shadow:0 0 0 3px #e6ecf7,0 0 22px rgba(255,255,255,.55),0 8px 20px rgba(0,0,0,.3);background:radial-gradient(2px 2px at 18% 22%,#fff,transparent),radial-gradient(2.5px 2.5px at 78% 16%,#fff,transparent),radial-gradient(2px 2px at 30% 82%,#fff,transparent),radial-gradient(2.5px 2.5px at 84% 74%,#fff,transparent),conic-gradient(from 45deg at 50% 45%,#f4f8ff,#cfd9ef,#fff,#b9c6e4,#f4f8ff,#dfe7f7,#fff,#c4cfe9,#f4f8ff)}
+.back.bk-diamant .bk-gem{border-color:#fff;color:#3a2a6a;background:conic-gradient(#ff9ad5,#9ad8ff,#b6ffb0,#fff59a,#ff9ad5);box-shadow:0 0 0 4px rgba(255,255,255,.4)}
+.back.bk-diamant .bk-name{text-shadow:0 1px 0 rgba(255,255,255,.7)}
+/* --- sachets --- */
+.pack.sk-plastique .pk-skin{background:linear-gradient(100deg,transparent,rgba(255,255,255,.55) 28%,transparent 42%,rgba(255,255,255,.4) 64%,transparent 80%),repeating-linear-gradient(172deg,rgba(0,0,0,.06) 0 2px,transparent 2px 13px),linear-gradient(180deg,#eef0f3,#cdd2d9)}
+.pack.sk-plastique .pack-emblem{color:#6b7280}.pack.sk-plastique .diamond{border-color:#9aa1ab;background:#fff;box-shadow:none}
+.pack.sk-plastique .pk-crimp{background:repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 2px,rgba(255,255,255,.4) 2px 5px)}
+.pack.sk-volcan .pk-skin{background:linear-gradient(115deg,transparent 40%,rgba(255,120,20,.9) 41%,transparent 43%),linear-gradient(60deg,transparent 58%,rgba(255,170,40,.8) 59%,transparent 61%),radial-gradient(ellipse at 50% 100%,rgba(255,90,20,.7),transparent 55%),linear-gradient(180deg,#2b2b2b,#1a0d0a 60%,#3a1206)}
+.pack.sk-volcan .pack-emblem{color:#ffb84a}.pack.sk-volcan .diamond{border-color:#ffb84a;background:#1a0d0a}
+.pack.sk-volcan .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,140,40,.35) 0 2px,rgba(0,0,0,.3) 2px 5px)}
+.pack.sk-plage .pk-skin{background:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 2px,transparent 2px 14px),linear-gradient(180deg,#5fd3f0 0%,#1fa3d6 38%,#9fe6e0 52%,#f5dfa0 60%,#e9c77a 100%)}
+.pack.sk-plage .pack-emblem{color:#0b3a55}.pack.sk-plage .diamond{border-color:#0b3a55;background:#fffaf0}
+.pack.sk-galaxie .pk-skin{background:radial-gradient(1.5px 1.5px at 20% 20%,#fff,transparent),radial-gradient(1px 1px at 70% 30%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 70%,#fff,transparent),radial-gradient(1px 1px at 85% 80%,#fff,transparent),radial-gradient(ellipse at 30% 40%,rgba(255,79,216,.55),transparent 50%),radial-gradient(ellipse at 75% 65%,rgba(80,160,255,.55),transparent 55%),linear-gradient(160deg,#120a3a,#2d0f5e 50%,#07051a)}
+.pack.sk-galaxie .pack-emblem{color:#fff}.pack.sk-galaxie .diamond{border-color:#fff;background:#1b1150;color:#fff}
+.pack.sk-galaxie .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 2px,rgba(0,0,0,.2) 2px 5px)}
+.pack.sk-noiror .pk-skin{background:repeating-linear-gradient(135deg,rgba(255,215,106,.10) 0 2px,transparent 2px 14px),linear-gradient(160deg,#2a2a2a,#0b0b0b 55%,#1c1407)}
+.pack.sk-noiror .pack-emblem{color:#ffd76a}.pack.sk-noiror .diamond{border-color:#ffd76a;background:#141414;box-shadow:0 0 0 3px rgba(255,215,106,.25),0 6px 14px rgba(0,0,0,.5)}
+.pack.sk-noiror .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,215,106,.35) 0 2px,rgba(0,0,0,.3) 2px 5px)}
+.pack.sk-noiror .pk-cut{border-color:rgba(255,215,106,.5)}
+.pack.sk-lingot .pk-skin{background:repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 1px,transparent 1px 4px),radial-gradient(2px 2px at 25% 30%,#fff,transparent),radial-gradient(2px 2px at 70% 60%,#fff,transparent),linear-gradient(135deg,#f7f9fc,#c9d2e3 30%,#eef2f8 50%,#aeb8cc 70%,#f7f9fc)}
+.pack.sk-lingot .pack-emblem{color:#2a2f45}.pack.sk-lingot .diamond{border-color:#c9d2e3;background:conic-gradient(#fff,#dbe6ff,#fff,#e8dcff,#fff);box-shadow:0 0 0 3px rgba(220,230,255,.6),0 0 16px #fff}
+.pack.sk-lingot .pk-crimp{background:repeating-linear-gradient(90deg,rgba(200,210,230,.7) 0 2px,rgba(255,255,255,.4) 2px 5px)}
+/* --- cadres d'image de profil : anneau autour de l'image (masque), l'image garde sa taille --- */
+.avf{position:relative;display:inline-flex;flex:0 0 auto;vertical-align:middle}
+.avf::before{content:"";position:absolute;inset:calc(var(--s)*-.12);border-radius:50%;z-index:2;pointer-events:none;
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - var(--s)*.1),#000 calc(100% - var(--s)*.1));mask:radial-gradient(farthest-side,transparent calc(100% - var(--s)*.1),#000 calc(100% - var(--s)*.1))}
+.avf.fr-scotch::before{background:repeating-conic-gradient(from 10deg,rgba(236,232,205,.95) 0 28deg,transparent 28deg 65deg);filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.avf.fr-flammes::before{background:conic-gradient(from 90deg,#ffdd55,#ff7a1a,#e0201a,#ff7a1a,#ffdd55,#ff7a1a,#e0201a,#ff7a1a,#ffdd55);filter:drop-shadow(0 0 4px rgba(255,120,30,.8))}
+.avf.fr-marine::before{background:repeating-conic-gradient(#0b2d5e 0 15deg,#fff 15deg 30deg)}
+.avf.fr-constellation::before{background:radial-gradient(circle,#fff 0 1.2px,transparent 1.6px) 0 0/8px 8px,conic-gradient(#1b1450,#3a2a8a,#1b1450,#3a2a8a,#1b1450);filter:drop-shadow(0 0 4px rgba(140,120,255,.8))}
+.avf.fr-dore::before{background:conic-gradient(#fff4c2,#e2a91a,#a86a00,#ffd76a,#fff4c2,#e2a91a,#a86a00,#ffd76a,#fff4c2)}
+.avf.fr-solitaire::before{background:conic-gradient(#fff,#d9dee8,#f6e9ff,#c9d2e3,#e6f7ff,#fff,#d9dee8,#fff4e0,#c9d2e3,#fff);filter:drop-shadow(0 0 5px rgba(220,230,255,.9))}
+.avf.fr-solitaire::after{content:"";position:absolute;left:50%;top:calc(var(--s)*-.42);width:calc(var(--s)*.46);height:calc(var(--s)*.38);transform:translateX(-50%);z-index:3;pointer-events:none;
+  clip-path:polygon(22% 0,78% 0,100% 30%,50% 100%,0 30%);
+  background:linear-gradient(115deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.95) 45%,rgba(255,255,255,0) 60%) 0 0/300% 100%,linear-gradient(90deg,transparent 49%,rgba(120,140,180,.35) 50%,transparent 51%),linear-gradient(180deg,transparent 29%,rgba(120,140,180,.4) 30%,transparent 31%),conic-gradient(from 200deg at 50% 30%,#fff,#cfe8ff,#ffd9f5,#fff7d6,#d6fff4,#fff);
+  filter:drop-shadow(0 0 4px rgba(255,255,255,.9)) drop-shadow(0 2px 3px rgba(40,50,90,.4));animation:pkHolo 3.5s ease-in-out infinite}
+/* --- pseudos en couleur --- */
+.ps-gris{color:#8a8f9c}
+.ps-magma,.ps-corail,.ps-nebuleuse,.ps-dore,.ps-platine{-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-magma{background-image:linear-gradient(90deg,#ffdd55,#ff7a1a 45%,#e0201a)}
+.ps-corail{background-image:linear-gradient(90deg,#ff7a6b,#ff9a7a 40%,#ffb38a 60%,#ff6b8a)}
+.ps-nebuleuse{background-image:linear-gradient(90deg,#b58aff,#ff6bd8 50%,#6bb8ff)}
+.ps-dore{background-image:linear-gradient(90deg,#fff1a8,#e2a91a 40%,#ffd76a 60%,#b87a06)}
+.ps-platine{background-image:linear-gradient(100deg,#b9c2d4 0%,#fff 25%,#ffd9f5 38%,#cfe8ff 50%,#fff 62%,#b9c2d4 100%);background-size:250% 100%;animation:psShine 3s linear infinite}
+@keyframes psShine{from{background-position:120% 0}to{background-position:-120% 0}}
+:root:not([data-theme="dark"]) .ps-platine{background-image:linear-gradient(100deg,#6f7a92 0%,#a9b3c8 30%,#c792b8 45%,#7fa6c9 58%,#6f7a92 100%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ps-platine{background-image:linear-gradient(100deg,#b9c2d4 0%,#fff 25%,#ffd9f5 38%,#cfe8ff 50%,#fff 62%,#b9c2d4 100%)}}
+/* --- badges (à côté du pseudo) --- */
+.bdg{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;width:1.35em;height:1.35em;border-radius:50%;font-size:.8em;vertical-align:.1em;flex:0 0 auto}
+.bdg-soutien{background:#ff4f7a;color:#fff;box-shadow:0 0 0 2px rgba(255,79,122,.3)}
+.bdg-flambeur{background:#1f7a3a;box-shadow:0 0 0 2px rgba(220,230,255,.8)}
+.badge-alpha.lord{color:#eaf8ff;background:linear-gradient(100deg,#0b4f8a,#2fa8e8 50%,#0b4f8a);box-shadow:0 0 0 1px #9fe0ff,0 1px 8px rgba(47,168,232,.6);text-shadow:0 1px 1px rgba(0,0,0,.35)}
+/* --- fonds de l'écran des boosters --- */
+body[data-fond="papierpeint"],.fsw-papierpeint{background:radial-gradient(circle at 25% 25%,#c3a868 0 5px,transparent 6px) 0 0/38px 38px,radial-gradient(circle at 75% 75%,#a88f55 0 5px,transparent 6px) 0 0/38px 38px,repeating-linear-gradient(90deg,rgba(0,0,0,.03) 0 19px,transparent 19px 38px),linear-gradient(180deg,#eadcae,#d6c28a) fixed}
+body[data-fond="volcan"],.fsw-volcan{background:radial-gradient(ellipse at 50% 115%,rgba(255,90,20,.75),transparent 55%) fixed,radial-gradient(1.5px 1.5px at 30% 60%,#ffb84a,transparent) fixed,radial-gradient(2px 2px at 70% 45%,#ff8a2a,transparent) fixed,linear-gradient(180deg,#120606,#2a0b05 60%,#4a1206) fixed}
+body[data-fond="abysses"],.fsw-abysses{background:radial-gradient(circle at 50% -10%,rgba(120,220,255,.35),transparent 50%) fixed,repeating-radial-gradient(circle at 50% 130%,rgba(255,255,255,.05) 0 2px,transparent 2px 22px) fixed,linear-gradient(180deg,#0a4b7a,#042544 55%,#010c1c) fixed}
+body[data-fond="cosmos"],.fsw-cosmos{background:radial-gradient(1.5px 1.5px at 15% 20%,#fff,transparent) fixed,radial-gradient(1px 1px at 80% 15%,#fff,transparent) fixed,radial-gradient(1.5px 1.5px at 60% 55%,#fff,transparent) fixed,radial-gradient(1px 1px at 25% 80%,#fff,transparent) fixed,radial-gradient(1px 1px at 90% 70%,#fff,transparent) fixed,radial-gradient(ellipse at 70% 35%,rgba(255,79,216,.35),transparent 50%) fixed,radial-gradient(ellipse at 25% 60%,rgba(80,160,255,.3),transparent 55%) fixed,linear-gradient(180deg,#05040f,#140b33) fixed}
+body[data-fond="tresor"],.fsw-tresor{background:radial-gradient(circle at 50% 110%,rgba(255,215,106,.55),transparent 50%) fixed,radial-gradient(2px 2px at 20% 30%,#fff4c2,transparent) fixed,radial-gradient(1.5px 1.5px at 75% 20%,#ffd76a,transparent) fixed,radial-gradient(2px 2px at 60% 60%,#fff4c2,transparent) fixed,linear-gradient(180deg,#1a1206,#3a2708 60%,#6a4a0c) fixed}
+body[data-fond="palais"],.fsw-palais{background:linear-gradient(45deg,transparent 46%,rgba(255,255,255,.55) 49%,rgba(200,215,240,.5) 50%,rgba(255,255,255,.55) 51%,transparent 54%) 0 0/46px 46px,linear-gradient(-45deg,transparent 46%,rgba(255,255,255,.55) 49%,rgba(200,215,240,.5) 50%,rgba(255,255,255,.55) 51%,transparent 54%) 0 0/46px 46px,linear-gradient(115deg,transparent 30%,rgba(120,120,140,.18) 31%,transparent 33%,transparent 60%,rgba(120,120,140,.14) 61%,transparent 62.5%) fixed,radial-gradient(ellipse at 30% 20%,#fff,transparent 60%) fixed,linear-gradient(180deg,#f3f1ec,#dcd8cf 60%,#c9c3b6) fixed}
+body[data-fond="palais"]::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;mix-blend-mode:overlay;background:linear-gradient(115deg,transparent 25%,rgba(255,150,230,.55) 40%,rgba(150,230,255,.55) 50%,rgba(255,245,150,.5) 60%,transparent 75%);background-size:300% 100%;animation:pkHolo 7s ease-in-out infinite}
+html.revealing body[data-fond="palais"]::after{animation:none;opacity:.5}
+/* voile derrière la colonne des boosters, teinté selon le fond ; les couleurs du jeu restent celles du thème du joueur */
+body[data-fond="papierpeint"]{--veil-d:rgba(58,42,18,.8);--veil-l:rgba(250,243,222,.86)}
+body[data-fond="volcan"]{--veil-d:rgba(42,11,5,.74);--veil-l:rgba(255,236,226,.86)}
+body[data-fond="abysses"]{--veil-d:rgba(4,37,68,.72);--veil-l:rgba(226,243,255,.86)}
+body[data-fond="cosmos"]{--veil-d:rgba(20,11,51,.72);--veil-l:rgba(240,235,255,.86)}
+body[data-fond="tresor"]{--veil-d:rgba(40,28,6,.76);--veil-l:rgba(255,246,222,.86)}
+body[data-fond="palais"]{--veil-d:rgba(38,38,50,.74);--veil-l:rgba(255,255,255,.8)}
+body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-l);border-radius:24px;padding:14px 12px 18px}
+:root[data-theme="dark"] body[data-fond] main .booster{background:var(--veil-d)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-fond] main .booster{background:var(--veil-d)}}
+/* --- Mon look (profil) --- */
+.look-h{margin:16px 0 8px;font-size:1rem}
+.look-row{display:flex;flex-wrap:wrap;gap:10px}
+.look-opt{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;min-width:92px;min-height:104px;padding:10px 8px;border-radius:14px;border:2px solid transparent;background:var(--surface-2);color:var(--ink);font-weight:700;font-size:.82rem}
+.look-opt[aria-pressed="true"]{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,var(--surface-2))}
+.back.mini-back{width:46px;aspect-ratio:5/7;border-width:3px;border-radius:7px;box-shadow:0 3px 8px rgba(0,0,0,.25);gap:12%}
+.back.mini-back .bk-gem{border-width:2px;box-shadow:none}
+.back.mini-back .bk-name,.offer-visual .pv .back .bk-name{font-size:7.5px}
+.back.mini-back .bk-gem b{font-size:9px}
+.offer-visual .pv .back .bk-name{font-size:10px}
+.offer-visual .pv .back .bk-gem b{font-size:12px}
+.mini-pk{display:block;pointer-events:none}
+.look-ps{font-family:var(--display);font-size:1.05rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fsw{display:block;width:60px;height:42px;border-radius:9px;border:1px solid var(--line);background-attachment:scroll!important}
+.fsw-base{background:var(--bg)}
+/* --- boutique cosmétique --- */
+.pay-once{font-size:.85rem;color:var(--ink-soft);margin:4px 0 0}
+.legal-id{font-size:.78rem;color:var(--ink-soft);opacity:.8} /* identité du vendeur (CGU, CGV) : en petit */
+.linkish{background:none;border:0;padding:0;color:var(--gold);text-decoration:underline;font:inherit;cursor:pointer}
+.offer-visual .pv{display:flex;align-items:center;justify-content:center;gap:14px;position:relative;z-index:1}
+.offer-visual .pv .back{width:62px;aspect-ratio:5/7;border-width:4px;border-radius:9px;gap:12%}
+.offer-visual .pv .back .bk-gem{border-width:3px}
+.offer-visual[class*="fsw-"]{background-attachment:scroll!important}
+.offer-visual.fsw-palais::after{content:"";position:absolute;inset:0;mix-blend-mode:overlay;background:linear-gradient(115deg,transparent 25%,rgba(255,150,230,.55) 40%,rgba(150,230,255,.55) 50%,rgba(255,245,150,.5) 60%,transparent 75%);background-size:300% 100%;animation:pkHolo 7s ease-in-out infinite}
+.offer-visual.soutien{background:radial-gradient(circle at 50% 120%,rgba(255,79,122,.5),transparent 60%),var(--surface-2)}
+.offer-visual .heart{font-size:64px;color:#ff4f7a;text-shadow:0 0 18px rgba(255,79,122,.7);animation:heartBeat 1.2s ease-in-out infinite}
+@keyframes heartBeat{0%,100%{transform:scale(1)}15%{transform:scale(1.18)}30%{transform:scale(1)}45%{transform:scale(1.1)}}
+.offer-big .ribbon{align-self:flex-start;font-size:.75rem;font-weight:800;border-radius:999px;padding:2px 10px;background:var(--gold);color:#2b1f00}
+.offer-big .ribbon.rb-soutien{background:#ff4f7a;color:#fff}.offer-big .ribbon.rb-euro{background:#9aa1ab;color:#1f2333}
+.offer-big .ribbon.rb-launch{background:var(--ok);color:#03210f}
+.offer-visual.launch{position:relative;background:radial-gradient(circle at 50% 120%,rgba(95,214,143,.45),transparent 60%),var(--surface-2)}
+.launch-gift{position:absolute;top:10px;right:14px;font-size:30px}
+.shop-launch.owned{opacity:.8}
+.offer-big.shop-soutien{border-color:#ff4f7a;background:linear-gradient(160deg,color-mix(in srgb,#ff4f7a 14%,var(--surface)),var(--surface) 60%)}
+.offer-big.shop-euro{border-style:dashed;border-color:#9aa1ab}
+.shop.cols3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:900px){.shop.cols3{grid-template-columns:minmax(0,1fr)}}
+.offer-big.shop-baleine{border:2px solid #e6ecf7;box-shadow:0 0 26px rgba(230,236,247,.25)}
+.offer-big.owned{opacity:.85}
+.offer-big .owned-txt{color:#5fd68f}
+.baleine-note{font-size:.85rem;color:#ffd76a;margin:0}
+.contents{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.contents li{background:var(--surface-2);border-radius:999px;padding:2px 10px;font-size:.8rem;color:var(--ink-soft)}
+.contents li b{color:var(--ink)}
+.buy-dlg{gap:12px}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:.92rem;line-height:1.4}
+.chk input{width:20px;height:20px;flex:0 0 auto;margin-top:1px;accent-color:var(--gold)}
+.unlock-ic{font-size:64px;line-height:1;animation:heartBeat 1.4s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -911,6 +1092,7 @@ nav.tabs .ti{display:none}
     <button class="chip me-chip" data-view="profile" id="h-me" aria-label="Mon profil"><span class="ava ava-none" style="--s:28px">◆</span><span>Profil</span></button>
     <div class="chip" title="Crédits"><span class="gold">◆</span><b id="h-credits">…</b> crédits</div>
     <button class="chip" data-act="packs-info" title="Mes boosters" aria-label="Mes boosters : détail"><span aria-hidden="true">📦</span><b id="h-packs">…</b>/10<span id="h-bonus"></span></button>
+    <a class="chip discord-chip" id="h-discord" href="#" data-act="discord-soon" aria-label="Rejoindre le Discord de DexCraft" title="Rejoindre le Discord de DexCraft"></a>
     <button class="chip snd-chip" id="h-snd" data-act="toggle-sound" aria-label="Couper le son" title="Couper le son">🔊</button>
     <div class="chip dev-chip" id="h-dev" hidden>Mode dév.</div>
   </div>
@@ -923,7 +1105,7 @@ nav.tabs .ti{display:none}
 <button id="cgu-link" type="button" data-act="cgu" aria-label="Conditions générales d’utilisation">CGU</button>
 <div id="gate" class="gate"><div class="gate-box">
   <div class="brand" style="justify-content:center;font-size:1.6rem"><span class="gem">◆</span>DexCraft</div>
-  <p class="muted" id="gate-sub">Bêta test publique.</p>
+  <p class="muted" id="gate-sub">Ouvrez des boosters, complétez votre collection et échangez avec les autres joueurs.</p>
   <form id="gate-form" autocomplete="on">
     <label class="field">Adresse e-mail<input type="email" id="gate-mail" required autocomplete="email" placeholder="vous@exemple.com"></label>
     <label class="field">Mot de passe<input type="password" id="gate-pass" required minlength="6" autocomplete="current-password" placeholder="Votre mot de passe"></label>
@@ -948,7 +1130,14 @@ nav.tabs .ti{display:none}
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="0.8.14";
+const APP_VERSION="1.0.0";
+/* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
+   Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
+const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
+const DC_LOGO=`<svg class="dc-logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.211.375-.445.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.042-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.331c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.332-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.332-.946 2.418-2.157 2.418z"/></svg>`;
+const discordAttrs=()=>DISCORD_URL?`href="${esc(DISCORD_URL)}" target="_blank" rel="noopener"`:`href="#" data-act="discord-soon"`;
+function discordHTML(){return `<a class="btn discord-cta" ${discordAttrs()}>${DC_LOGO}Rejoindre le Discord de DexCraft</a>`}
+{const h=document.getElementById("h-discord");if(h){h.innerHTML=DC_LOGO+`<span class="dc-lbl">Discord</span>`;if(DISCORD_URL){h.href=DISCORD_URL;h.target="_blank";h.rel="noopener";h.removeAttribute("data-act")}}}
 document.getElementById("version").textContent="version "+APP_VERSION+(location.protocol==="file:"||/^(localhost|127\.0\.0\.1)$/.test(location.hostname)?" · BASE DE TEST":"");
 const DEX=[["Bulbizarre","Pokémon Graine",1,[12,4],7,69,[45,49,49,65,65,45],1],["Herbizarre","Pokémon Graine",1,[12,4],10,130,[60,62,63,80,80,60],2],["Florizarre","Pokémon Graine",1,[12,4],20,1000,[80,82,83,100,100,80],3],["Salamèche","Pokémon Lézard",1,[10],6,85,[39,52,43,60,50,65],1],["Reptincel","Pokémon Flamme",1,[10],11,190,[58,64,58,80,65,80],2],["Dracaufeu","Pokémon Flamme",1,[10,3],17,905,[78,84,78,109,85,100],3],["Carapuce","Pokémon Minitortue",1,[11],5,90,[44,48,65,50,64,43],1],["Carabaffe","Pokémon Tortue",1,[11],10,225,[59,63,80,65,80,58],2],["Tortank","Pokémon Carapace",1,[11],16,855,[79,83,100,85,105,78],3],["Chenipan","Pokémon Ver",1,[7],3,29,[45,30,35,20,20,45],0],["Chrysacier","Pokémon Cocon",1,[7],7,99,[50,20,55,25,25,30],1],["Papilusion","Pokémon Papillon",1,[7,3],11,320,[60,45,50,90,80,70],2],["Aspicot","Pokémon Insectopic",1,[7,4],3,32,[40,35,30,20,20,50],0],["Coconfort","Pokémon Cocon",1,[7,4],6,100,[45,25,50,25,25,35],1],["Dardargnan","Pokémon Guêpoison",1,[7,4],10,295,[65,90,40,45,80,75],2],["Roucool","Pokémon Minoiseau",1,[1,3],3,18,[40,45,40,35,35,56],0],["Roucoups","Pokémon Oiseau",1,[1,3],11,300,[63,60,55,50,50,71],1],["Roucarnage","Pokémon Oiseau",1,[1,3],15,395,[83,80,75,70,70,101],2],["Rattata","Pokémon Souris",1,[1],3,35,[30,56,35,25,35,72],0],["Rattatac","Pokémon Souris",1,[1],7,185,[55,81,60,50,70,97],1],["Piafabec","Pokémon Minoiseau",1,[1,3],3,20,[40,60,30,31,31,70],0],["Rapasdepic","Pokémon Bec-Oiseau",1,[1,3],12,380,[65,90,65,61,61,100],1],["Abo","Pokémon Serpent",1,[4],20,69,[35,60,44,40,54,55],0],["Arbok","Pokémon Cobra",1,[4],35,650,[60,95,69,65,79,80],1],["Pikachu","Pokémon Souris",1,[13],4,60,[35,55,40,50,50,90],1],["Raichu","Pokémon Souris",1,[13],8,300,[60,90,55,90,80,110],2],["Sabelette","Pokémon Souris",1,[5],6,120,[50,75,85,20,30,40],0],["Sablaireau","Pokémon Souris",1,[5],10,295,[75,100,110,45,55,65],1],["Nidoran♀","Pokémon Vénépic",1,[4],4,70,[55,47,52,40,40,41],0],["Nidorina","Pokémon Vénépic",1,[4],8,200,[70,62,67,55,55,56],1],["Nidoqueen","Pokémon Perceur",1,[4,5],13,600,[90,92,87,75,85,76],2],["Nidoran♂","Pokémon Vénépic",1,[4],5,90,[46,57,40,40,40,50],0],["Nidorino","Pokémon Vénépic",1,[4],9,195,[61,72,57,55,55,65],1],["Nidoking","Pokémon Perceur",1,[4,5],14,620,[81,102,77,85,75,85],2],["Mélofée","Pokémon Fée",1,[18],6,75,[70,45,48,60,65,35],1],["Mélodelfe","Pokémon Fée",1,[18],13,400,[95,70,73,95,90,60],2],["Goupix","Pokémon Renard",1,[10],6,99,[38,41,40,50,65,65],0],["Feunard","Pokémon Renard",1,[10],11,199,[73,76,75,81,100,100],2],["Rondoudou","Pokémon Bouboule",1,[1,18],5,55,[115,45,20,45,25,20],1],["Grodoudou","Pokémon Bouboule",1,[1,18],10,120,[140,70,45,85,50,45],2],["Nosferapti","Pokémon Chovsouris",1,[4,3],8,75,[40,45,35,30,40,55],0],["Nosferalto","Pokémon Chovsouris",1,[4,3],16,550,[75,80,70,65,75,90],1],["Mystherbe","Pokémon Racine",1,[12,4],5,54,[45,50,55,75,65,30],0],["Ortide","Pokémon Racine",1,[12,4],8,86,[60,65,70,85,75,40],1],["Rafflesia","Pokémon Fleur",1,[12,4],12,186,[75,80,85,110,90,50],2],["Paras","Pokémon Champignon",1,[7,12],3,54,[35,70,55,45,55,25],0],["Parasect","Pokémon Champignon",1,[7,12],10,295,[60,95,80,60,80,30],1],["Mimitoss","Pokémon Vermine",1,[7,4],10,300,[60,55,50,40,55,45],0],["Aéromite","Pokémon Papipoison",1,[7,4],15,125,[70,65,60,90,75,90],1],["Taupiqueur","Pokémon Taupe",1,[5],2,8,[10,55,25,35,45,95],0],["Triopikeur","Pokémon Taupe",1,[5],7,333,[35,100,50,50,70,120],1],["Miaouss","Pokémon Chadégout",1,[1],4,42,[40,45,35,40,40,90],0],["Persian","Pokémon Chadeville",1,[1],10,320,[65,70,60,65,65,115],1],["Psykokwak","Pokémon Canard",1,[11],8,196,[50,52,48,65,50,55],0],["Akwakwak","Pokémon Canard",1,[11],17,766,[80,82,78,95,80,85],2],["Férosinge","Pokémon Porsinge",1,[2],5,280,[40,80,35,35,45,70],0],["Colossinge","Pokémon Porsinge",1,[2],10,320,[65,105,60,60,70,95],1],["Caninos","Pokémon Chiot",1,[10],7,190,[55,70,45,70,50,60],0],["Arcanin","Pokémon Légendaire",1,[10],19,1550,[90,110,80,100,80,95],3],["Ptitard","Pokémon Têtard",1,[11],6,124,[40,50,40,40,40,90],0],["Têtarte","Pokémon Têtard",1,[11],10,200,[65,65,65,50,50,90],1],["Tartard","Pokémon Têtard",1,[11,2],13,540,[90,95,95,70,90,70],2],["Abra","Pokémon Psy",1,[14],9,195,[25,20,15,105,55,90],0],["Kadabra","Pokémon Psy",1,[14],13,565,[40,35,30,120,70,105],1],["Alakazam","Pokémon Psy",1,[14],15,480,[55,50,45,135,95,120],2],["Machoc","Pokémon Colosse",1,[2],8,195,[70,80,50,35,35,35],0],["Machopeur","Pokémon Colosse",1,[2],15,705,[80,100,70,50,60,45],1],["Mackogneur","Pokémon Colosse",1,[2],16,1300,[90,130,80,65,85,55],2],["Chétiflor","Pokémon Fleur",1,[12,4],7,40,[50,75,35,70,30,40],0],["Boustiflor","Pokémon Carnivore",1,[12,4],10,64,[65,90,50,85,45,55],1],["Empiflor","Pokémon Carnivore",1,[12,4],17,155,[80,105,65,100,70,70],2],["Tentacool","Pokémon Mollusque",1,[11,4],9,455,[40,40,35,50,100,70],0],["Tentacruel","Pokémon Mollusque",1,[11,4],16,550,[80,70,65,80,120,100],2],["Racaillou","Pokémon Roche",1,[6,5],4,200,[40,80,100,30,30,20],0],["Gravalanch","Pokémon Roche",1,[6,5],10,1050,[55,95,115,45,45,35],1],["Grolem","Pokémon Titanesque",1,[6,5],14,3000,[80,120,130,55,65,45],2],["Ponyta","Pokémon Cheval Feu",1,[10],10,300,[50,85,55,65,65,90],1],["Galopa","Pokémon Cheval Feu",1,[10],17,950,[65,100,70,80,80,105],2],["Ramoloss","Pokémon Crétin",1,[11,14],12,360,[90,65,65,40,40,15],0],["Flagadoss","Pokémon Symbiose",1,[11,14],16,785,[95,75,110,100,80,30],2],["Magnéti","Pokémon Magnétique",1,[13,9],3,60,[25,35,70,95,55,45],0],["Magnéton","Pokémon Magnétique",1,[13,9],10,600,[50,60,95,120,70,70],1],["Canarticho","Pokémon Canard Fou",1,[1,3],8,150,[52,90,55,58,62,60],0],["Doduo","Pokémon Duoiseau",1,[1,3],14,392,[35,85,45,35,35,75],0],["Dodrio","Pokémon Trioiseau",1,[1,3],18,852,[60,110,70,60,60,110],1],["Otaria","Pokémon Otarie",1,[11],11,900,[65,45,55,45,70,45],0],["Lamantine","Pokémon Otarie",1,[11,15],17,1200,[90,70,80,70,95,70],1],["Tadmorv","Pokémon Dégueu",1,[4],9,300,[80,80,50,40,50,25],0],["Grotadmorv","Pokémon Dégueu",1,[4],12,300,[105,105,75,65,100,50],2],["Kokiyas","Pokémon Bivalve",1,[11],3,40,[30,65,100,45,25,40],0],["Crustabri","Pokémon Bivalve",1,[11,15],15,1325,[50,95,180,85,45,70],2],["Fantominus","Pokémon Gaz",1,[8,4],13,1,[30,35,30,100,35,80],0],["Spectrum","Pokémon Gaz",1,[8,4],16,1,[45,50,45,115,55,95],1],["Ectoplasma","Pokémon Ombre",1,[8,4],15,405,[60,65,60,130,75,110],2],["Onix","Pokémon Serpenroc",1,[6,5],88,2100,[35,45,160,30,45,70],0],["Soporifik","Pokémon Hypnose",1,[14],10,324,[60,48,45,43,90,42],0],["Hypnomade","Pokémon Hypnose",1,[14],16,756,[85,73,70,73,115,67],1],["Krabby","Pokémon Doux Crabe",1,[11],4,65,[30,105,90,25,25,50],0],["Krabboss","Pokémon Pince",1,[11],13,600,[55,130,115,50,50,75],1],["Voltorbe","Pokémon Balle",1,[13],5,104,[40,30,50,55,55,100],0],["Électrode","Pokémon Balle",1,[13],12,666,[60,50,70,80,80,150],2],["Noeunoeuf","Pokémon Œuf",1,[12,14],4,25,[60,40,80,60,45,40],0],["Noadkoko","Pokémon Fruitpalme",1,[12,14],20,1200,[95,95,85,125,75,55],2],["Osselait","Pokémon Solitaire",1,[5],4,65,[50,50,95,40,50,35],0],["Ossatueur","Pokémon Gard’Os",1,[5],10,450,[60,80,110,50,80,45],1],["Kicklee","Pokémon Latteur",1,[2],15,498,[50,120,53,35,110,87],1],["Tygnon","Pokémon Puncheur",1,[2],14,502,[50,105,79,35,110,76],1],["Excelangue","Pokémon Lécheur",1,[1],12,655,[90,55,75,60,75,30],0],["Smogo","Pokémon Gaz Mortel",1,[4],6,10,[40,65,95,60,45,35],0],["Smogogo","Pokémon Gaz Mortel",1,[4],12,95,[65,90,120,85,70,60],2],["Rhinocorne","Pokémon Piquant",1,[5,6],10,1150,[80,85,95,30,30,25],0],["Rhinoféros","Pokémon Perceur",1,[5,6],19,1200,[105,130,120,45,45,40],1],["Leveinard","Pokémon Œuf",1,[1],11,346,[250,5,5,35,105,50],1],["Saquedeneu","Pokémon Vigne",1,[12],10,350,[65,55,115,100,40,60],1],["Kangourex","Pokémon Maternel",1,[1],22,800,[105,95,80,40,80,90],2],["Hypotrempe","Pokémon Dragon",1,[11],4,80,[30,40,70,70,25,60],0],["Hypocéan","Pokémon Dragon",1,[11],12,250,[55,65,95,95,45,85],1],["Poissirène","Pokémon Poisson",1,[11],6,150,[45,67,60,35,50,63],0],["Poissoroy","Pokémon Poisson",1,[11],13,390,[80,92,65,65,80,68],1],["Stari","Pokémon Étoile",1,[11],8,345,[30,45,55,70,55,85],0],["Staross","Pokémon Mystérieux",1,[11,14],11,800,[60,75,85,100,85,115],2],["M. Mime","Pokémon Bloqueur",1,[14,18],13,545,[40,45,65,100,120,90],1],["Insécateur","Pokémon Mante",1,[7,3],15,560,[70,110,80,55,80,105],2],["Lippoutou","Pokémon Humanoïde",1,[15,14],14,406,[65,50,35,115,95,95],1],["Élektek","Pokémon Électrique",1,[13],11,300,[65,83,57,95,85,105],2],["Magmar","Pokémon Crache-Feu",1,[10],13,445,[65,95,57,100,85,93],2],["Scarabrute","Pokémon Scarabée",1,[7],15,550,[65,125,100,55,70,85],2],["Tauros","Pokémon Buffle",1,[1],14,884,[75,100,95,40,70,110],2],["Magicarpe","Pokémon Poisson",1,[11],9,100,[20,10,55,15,20,80],0],["Léviator","Pokémon Terrifiant",1,[11,3],65,2350,[95,125,79,60,100,81],3],["Lokhlass","Pokémon Transport",1,[11,15],25,2200,[130,85,80,85,95,60],3],["Métamorph","Pokémon Morphing",1,[1],3,40,[48,48,48,48,48,48],0],["Évoli","Pokémon Évolutif",1,[1],3,65,[55,55,50,45,65,55],0],["Aquali","Pokémon Bulleur",1,[11],10,290,[130,65,60,110,95,65],2],["Voltali","Pokémon Orage",1,[13],8,245,[65,65,60,110,95,130],2],["Pyroli","Pokémon Flamme",1,[10],9,250,[65,130,60,95,110,65],2],["Porygon","Pokémon Virtuel",1,[1],8,365,[65,60,70,85,75,40],1],["Amonita","Pokémon Spirale",1,[6,11],4,75,[35,40,100,90,55,35],0],["Amonistar","Pokémon Spirale",1,[6,11],10,350,[70,60,125,115,70,55],2],["Kabuto","Pokémon Carapace",1,[6,11],5,115,[30,80,90,55,45,55],0],["Kabutops","Pokémon Carapace",1,[6,11],13,405,[60,115,105,65,70,80],2],["Ptéra","Pokémon Fossile",1,[6,3],18,590,[80,105,65,60,75,130],2],["Ronflex","Pokémon Pionceur",1,[1],21,4600,[160,110,65,65,110,30],3],["Artikodin","Pokémon Glaciaire",1,[15,3],17,554,[90,85,100,95,125,85],5],["Électhor","Pokémon Électrique",1,[13,3],16,526,[90,90,85,125,90,100],5],["Sulfura","Pokémon Flamme",1,[10,3],20,600,[90,100,90,125,85,90],5],["Minidraco","Pokémon Dragon",1,[16],18,33,[41,64,45,50,50,50],0],["Draco","Pokémon Dragon",1,[16],40,165,[61,84,65,70,70,70],1],["Dracolosse","Pokémon Dragon",1,[16,3],22,2100,[91,134,95,100,100,80],3],["Mewtwo","Pokémon Génétique",1,[14],20,1220,[106,110,90,154,90,130],5],["Mew","Pokémon Nouveau",1,[14],4,40,[100,100,100,100,100,100],5],["Germignon","Pokémon Feuille",2,[12],9,64,[45,49,65,49,65,45],1],["Macronium","Pokémon Feuille",2,[12],12,158,[60,62,80,63,80,60],2],["Méganium","Pokémon Herbe",2,[12],18,1005,[80,82,100,83,100,80],3],["Héricendre","Pokémon Souris Feu",2,[10],5,79,[39,52,43,60,50,65],1],["Feurisson","Pokémon Volcan",2,[10],9,190,[58,64,58,80,65,80],2],["Typhlosion","Pokémon Volcan",2,[10],17,795,[78,84,78,109,85,100],3],["Kaiminus","Pokémon Mâchoire",2,[11],6,95,[50,65,64,44,48,43],1],["Crocrodil","Pokémon Mâchoire",2,[11],11,250,[65,80,80,59,63,58],2],["Aligatueur","Pokémon Mâchoire",2,[11],23,888,[85,105,100,79,83,78],3],["Fouinette","Pokémon Espion",2,[1],8,60,[35,46,34,35,45,20],0],["Fouinar","Pokémon Allongé",2,[1],18,325,[85,76,64,45,55,90],1],["Hoothoot","Pokémon Hibou",2,[1,3],7,212,[60,30,30,36,56,50],0],["Noarfang","Pokémon Hibou",2,[1,3],16,408,[100,50,50,86,96,70],1],["Coxy","Pokémon 5 Étoiles",2,[7,3],10,108,[40,20,30,40,80,55],0],["Coxyclaque","Pokémon 5 Étoiles",2,[7,3],14,356,[55,35,50,55,110,85],1],["Mimigal","Pokémon Crache Fil",2,[7,4],5,85,[40,60,40,40,40,30],0],["Migalos","Pokémon Long-Patte",2,[7,4],11,335,[70,90,70,60,70,40],1],["Nostenfer","Pokémon Chovsouris",2,[4,3],18,750,[85,90,80,70,80,130],3],["Loupio","Pokémon Poisson",2,[11,13],5,120,[75,38,38,56,56,67],0],["Lanturn","Pokémon Lumière",2,[11,13],12,225,[125,58,58,76,76,67],1],["Pichu","Pokémon Minisouris",2,[13],3,20,[20,40,15,35,35,60],0],["Mélo","Pokémon Étoile",2,[18],3,30,[50,25,28,45,55,15],0],["Toudoudou","Pokémon Bouboule",2,[1,18],3,10,[90,30,15,40,20,15],0],["Togepi","Pokémon Balle Pic",2,[18],3,15,[35,20,65,40,65,20],0],["Togetic","Pokémon Bonheur",2,[18,3],6,32,[55,40,85,80,105,40],1],["Natu","Pokémon Minoiseau",2,[14,3],2,20,[40,50,45,70,45,70],0],["Xatu","Pokémon Mystique",2,[14,3],15,150,[65,75,70,95,70,95],1],["Wattouat","Pokémon Laine",2,[13],6,78,[55,40,40,65,45,35],0],["Lainergie","Pokémon Laine",2,[13],8,133,[70,55,55,80,60,45],1],["Pharamp","Pokémon Lumière",2,[13],14,615,[90,75,85,115,90,55],2],["Joliflor","Pokémon Fleur",2,[12],4,58,[75,80,95,90,100,50],2],["Marill","Pokémon Aquasouris",2,[11,18],4,85,[70,20,50,20,50,40],1],["Azumarill","Pokémon Aqualapin",2,[11,18],8,285,[100,50,80,60,80,50],2],["Simularbre","Pokémon Imitation",2,[6],12,380,[70,100,115,30,65,30],1],["Tarpaud","Pokémon Grenouille",2,[11],11,339,[90,75,75,90,100,70],2],["Granivol","Pokémon Pissenlit",2,[12,3],4,5,[35,35,40,35,55,50],0],["Floravol","Pokémon Pissenlit",2,[12,3],6,10,[55,45,50,45,65,80],1],["Cotovol","Pokémon Pissenlit",2,[12,3],8,30,[75,55,70,55,95,110],2],["Capumain","Pokémon Longqueue",2,[1],8,115,[55,70,55,40,55,85],0],["Tournegrin","Pokémon Graine",2,[12],3,18,[30,30,30,30,30,30],0],["Héliatronc","Pokémon Soleil",2,[12],8,85,[75,75,55,105,85,30],1],["Yanma","Pokémon Translaile",2,[7,3],12,380,[65,65,45,75,45,95],1],["Axoloto","Pokémon Poisson",2,[11,5],4,85,[55,45,45,25,25,15],0],["Maraiste","Pokémon Poisson",2,[11,5],14,750,[95,85,85,65,65,35],1],["Mentali","Pokémon Soleil",2,[14],9,265,[65,65,60,130,95,110],2],["Noctali","Pokémon Lune",2,[17],10,270,[95,65,110,60,130,65],2],["Cornèbre","Pokémon Obscurité",2,[17,3],5,21,[60,85,42,85,42,91],1],["Roigada","Pokémon Royal",2,[11,14],20,795,[95,75,80,100,110,30],2],["Feuforêve","Pokémon Strident",2,[8],7,10,[60,60,60,85,85,85],1],["Zarbi","Pokémon Symbolique",2,[14],5,50,[48,72,48,72,48,48],0],["Qulbutoké","Pokémon Patient",2,[14],13,285,[190,33,58,33,58,33],1],["Girafarig","Pokémon Long-Cou",2,[1,14],15,415,[70,80,65,90,65,85],1],["Pomdepik","Pokémon Ver Caché",2,[7],6,72,[50,65,90,35,35,15],0],["Foretress","Pokémon Ver Caché",2,[7,9],12,1258,[75,90,140,60,60,40],1],["Insolourdo","Pokémon Serpent",2,[1],15,140,[100,70,70,65,65,45],1],["Scorplane","Pokémon Scorpivol",2,[5,3],11,648,[65,75,105,35,65,85],1],["Steelix","Pokémon Serpenfer",2,[9,5],92,4000,[75,85,200,55,65,30],2],["Snubbull","Pokémon Fée",2,[18],6,78,[60,80,50,40,40,30],0],["Granbull","Pokémon Fée",2,[18],14,487,[90,120,75,60,60,45],1],["Qwilfish","Pokémon Bouboule",2,[11,4],5,39,[65,95,85,55,55,85],1],["Cizayox","Pokémon Pince",2,[7,9],18,1180,[70,130,100,55,80,65],3],["Caratroc","Pokémon Pourri",2,[7,6],6,205,[20,10,230,10,230,5],2],["Scarhino","Pokémon Unicorne",2,[7,2],15,540,[80,125,75,40,95,85],2],["Farfuret","Pokémon Grifacérée",2,[17,15],9,280,[55,95,55,35,75,115],1],["Teddiursa","Pokémon Mini Ours",2,[1],6,88,[60,80,50,50,50,40],0],["Ursaring","Pokémon Hibernant",2,[1],18,1258,[90,130,75,75,75,55],2],["Limagma","Pokémon Lave",2,[10],7,350,[40,40,40,70,40,20],0],["Volcaropod","Pokémon Lave",2,[10,6],8,550,[60,50,120,90,80,30],1],["Marcacrin","Pokémon Cochon",2,[15,5],4,65,[50,50,40,30,30,50],0],["Cochignon","Pokémon Porc",2,[15,5],11,558,[100,100,80,60,60,50],1],["Corayon","Pokémon Corail",2,[11,6],6,50,[65,55,95,65,95,35],1],["Rémoraid","Pokémon Jet",2,[11],6,120,[35,65,35,65,35,65],0],["Octillery","Pokémon Jet",2,[11],9,285,[75,105,75,105,75,45],1],["Cadoizo","Pokémon Livraison",2,[15,3],9,160,[45,55,45,65,45,75],0],["Démanta","Pokémon Cervolant",2,[11,3],21,2200,[85,40,70,80,140,70],1],["Airmure","Pokémon Armoiseau",2,[9,3],17,505,[65,80,140,40,70,70],1],["Malosse","Pokémon Sombre",2,[17,10],6,108,[45,60,30,80,50,65],0],["Démolosse","Pokémon Sombre",2,[17,10],14,350,[75,90,50,110,80,95],2],["Hyporoi","Pokémon Dragon",2,[11,16],18,1520,[75,95,95,95,95,85],3],["Phanpy","Pokémon Long-Nez",2,[5],5,335,[90,60,60,40,40,40],0],["Donphan","Pokémon Armure",2,[5],11,1200,[90,120,120,60,60,50],2],["Porygon2","Pokémon Virtuel",2,[1],6,325,[85,80,90,105,95,60],2],["Cerfrousse","Pokémon Maxi Corne",2,[1],14,712,[73,95,62,85,65,85],1],["Queulorior","Pokémon Peintre",2,[1],12,580,[55,20,35,20,45,75],0],["Debugant","Pokémon Bagarreur",2,[2],7,210,[35,35,35,35,35,35],0],["Kapoera","Pokémon Poirier",2,[2],14,480,[50,95,95,35,110,70],1],["Lippouti","Pokémon Bisou",2,[15,14],4,60,[45,30,15,85,65,65],0],["Élekid","Pokémon Électrique",2,[13],6,235,[45,63,37,65,55,95],0],["Magby","Pokémon Charbon",2,[10],7,214,[45,75,37,70,55,83],0],["Écrémeuh","Pokémon Vachalait",2,[1],12,755,[95,80,105,40,70,100],2],["Leuphorie","Pokémon Bonheur",2,[1],15,468,[255,10,10,75,135,55],3],["Raikou","Pokémon Foudre",2,[13],19,1780,[90,85,75,115,100,115],5],["Entei","Pokémon Volcan",2,[10],21,1980,[115,115,85,90,75,100],5],["Suicune","Pokémon Aurore",2,[11],20,1870,[100,75,115,90,115,85],5],["Embrylex","Pokémon Peaupierre",2,[6,5],6,720,[50,64,50,45,50,41],0],["Ymphect","Pokémon Carapadure",2,[6,5],12,1520,[70,84,70,65,70,51],1],["Tyranocif","Pokémon Armure",2,[6,17],20,2020,[100,134,110,95,100,61],3],["Lugia","Pokémon Plongeon",2,[14,3],52,2160,[106,90,130,90,154,110],5],["Ho-Oh","Pokémon Arcenciel",2,[10,3],38,1990,[106,130,90,110,154,90],5],["Celebi","Pokémon Temporel",2,[14,12],6,50,[100,100,100,100,100,100],5],["Arcko","Pokémon Bois Gecko",3,[12],5,50,[40,45,35,65,55,70],1],["Massko","Pokémon Bois Gecko",3,[12],9,216,[50,65,45,85,65,95],2],["Jungko","Pokémon Forêt",3,[12],17,522,[70,85,65,105,85,120],3],["Poussifeu","Pokémon Poussin",3,[10],4,25,[45,60,40,70,50,45],1],["Galifeu","Pokémon Poulet",3,[10,2],9,195,[60,85,60,85,60,55],2],["Braségali","Pokémon Ardent",3,[10,2],19,520,[80,120,70,110,70,80],3],["Gobou","Pokémon Poissonboue",3,[11],4,76,[50,70,50,50,50,40],1],["Flobio","Pokémon Poissonboue",3,[11,5],7,280,[70,85,70,60,70,50],2],["Laggron","Pokémon Poissonboue",3,[11,5],15,819,[100,110,90,85,90,60],3],["Medhyèna","Pokémon Morsure",3,[17],5,136,[35,55,35,30,30,35],0],["Grahyèna","Pokémon Morsure",3,[17],10,370,[70,90,70,60,60,70],1],["Zigzaton","Pokémon Petit Raton",3,[1],4,175,[38,30,41,30,41,60],0],["Linéon","Pokémon Fonceur",3,[1],5,325,[78,70,61,50,61,100],1],["Chenipotte","Pokémon Ver",3,[7],3,36,[45,45,35,20,30,20],0],["Armulys","Pokémon Cocon",3,[7],6,100,[50,35,55,25,25,15],1],["Charmillon","Pokémon Papillon",3,[7,3],10,284,[60,70,50,100,50,65],2],["Blindalys","Pokémon Cocon",3,[7],7,115,[50,35,55,25,25,15],1],["Papinox","Pokémon Papipoison",3,[7,4],12,316,[60,50,70,50,90,65],2],["Nénupiot","Pokémon Aquaplante",3,[11,12],5,26,[40,30,30,40,50,30],0],["Lombre","Pokémon Jovial",3,[11,12],12,325,[60,50,50,60,70,50],1],["Ludicolo","Pokémon Insouciant",3,[11,12],15,550,[80,70,70,90,100,70],2],["Grainipiot","Pokémon Gland",3,[12],5,40,[40,40,50,30,30,30],0],["Pifeuil","Pokémon Malin",3,[12,17],10,280,[70,70,40,60,40,60],1],["Tengalice","Pokémon Malveillant",3,[12,17],13,596,[90,100,60,90,60,80],2],["Nirondelle","Pokémon Minirondel",3,[1,3],3,23,[40,55,30,30,30,85],0],["Hélédelle","Pokémon Hirondelle",3,[1,3],7,198,[60,85,60,75,50,125],1],["Goélise","Pokémon Mouette",3,[11,3],6,95,[40,30,30,55,30,85],0],["Bekipan","Pokémon Oiseaudo",3,[11,3],12,280,[60,50,100,95,70,65],1],["Tarsal","Pokémon Sentiment",3,[14,18],4,66,[28,25,25,45,35,40],0],["Kirlia","Pokémon Émotion",3,[14,18],8,202,[38,35,35,65,55,50],1],["Gardevoir","Pokémon Étreinte",3,[14,18],16,484,[68,65,65,125,115,80],2],["Arakdo","Pokémon Maresurfeur",3,[7,11],5,17,[40,30,32,50,52,65],0],["Maskadra","Pokémon Boule Œil",3,[7,3],8,36,[70,60,62,100,82,80],1],["Balignon","Pokémon Champignon",3,[12],4,45,[60,40,60,40,60,35],0],["Chapignon","Pokémon Champignon",3,[12,2],12,392,[60,130,80,60,60,70],1],["Parecool","Pokémon Flâneur",3,[1],8,240,[60,60,60,35,35,30],0],["Vigoroth","Pokémon Turbusinge",3,[1],14,465,[80,80,80,55,55,90],1],["Monaflèmit","Pokémon Fainéant",3,[1],20,1305,[150,160,100,95,65,100],3],["Ningale","Pokémon Apprenti",3,[7,5],5,55,[31,45,90,30,30,40],0],["Ninjask","Pokémon Ninja",3,[7,3],8,120,[61,90,45,50,50,160],1],["Munja","Pokémon Exuvie",3,[7,8],8,12,[1,90,45,30,30,40],1],["Chuchmur","Pokémon Chuchoteur",3,[1],6,163,[64,51,23,51,23,28],0],["Ramboum","Pokémon Grosse Voix",3,[1],10,405,[84,71,43,71,43,48],1],["Brouhabam","Pokémon Bruit Sourd",3,[1],15,840,[104,91,63,91,73,68],2],["Makuhita","Pokémon Tenace",3,[2],10,864,[72,60,30,20,30,25],0],["Hariyama","Pokémon Cogneur",3,[2],23,2538,[144,120,60,40,60,50],1],["Azurill","Pokémon Point Polka",3,[1,18],2,20,[50,20,40,20,40,20],0],["Tarinor","Pokémon Boussole",3,[6],10,970,[30,45,135,45,90,30],0],["Skitty","Pokémon Chaton",3,[1],6,110,[50,45,45,35,35,50],0],["Delcatty","Pokémon Guindé",3,[1],11,326,[70,65,65,55,55,90],1],["Ténéfix","Pokémon Obscurité",3,[17,8],5,110,[50,75,75,65,65,50],0],["Mysdibule","Pokémon Trompeur",3,[9,18],6,115,[50,85,85,55,55,50],0],["Galekid","Pokémon Armurfer",3,[9,6],4,600,[50,70,100,40,40,30],0],["Galegon","Pokémon Armurfer",3,[9,6],9,1200,[60,90,140,50,50,40],1],["Galeking","Pokémon Armurfer",3,[9,6],21,3600,[70,110,180,60,60,50],2],["Méditikka","Pokémon Méditation",3,[2,14],6,112,[30,40,55,40,55,60],0],["Charmina","Pokémon Méditation",3,[2,14],13,315,[60,60,75,60,75,80],1],["Dynavolt","Pokémon Orage",3,[13],6,152,[40,45,40,65,40,65],0],["Élecsprint","Pokémon Décharge",3,[13],15,402,[70,75,60,105,60,105],1],["Posipi","Pokémon Acclameur",3,[13],4,42,[60,50,40,85,75,95],1],["Négapi","Pokémon Acclameur",3,[13],4,42,[60,40,50,75,85,95],1],["Muciole","Pokémon Luciole",3,[7],7,177,[65,73,75,47,85,85],1],["Lumivole","Pokémon Luciole",3,[7],6,177,[65,47,75,73,85,85],1],["Rosélia","Pokémon Épine",3,[12,4],3,20,[50,60,45,100,80,65],1],["Gloupti","Pokémon Estomac",3,[4],4,103,[70,43,53,43,53,40],0],["Avaltout","Pokémon Sac Poison",3,[4],17,800,[100,73,83,73,83,55],1],["Carvanha","Pokémon Féroce",3,[11,17],8,208,[45,90,20,65,20,65],0],["Sharpedo","Pokémon Brutal",3,[11,17],18,888,[70,120,40,95,40,95],1],["Wailmer","Pokémon Baleinboule",3,[11],20,1300,[130,70,35,70,35,60],1],["Wailord","Pokémon Cachabouée",3,[11],145,3980,[170,90,45,90,45,60],2],["Chamallot","Pokémon Engourdi",3,[10,5],7,240,[60,60,40,65,45,35],0],["Camérupt","Pokémon Éruption",3,[10,5],19,2200,[70,100,70,105,75,40],1],["Chartor","Pokémon Charbon",3,[10],5,804,[70,85,140,85,70,20],1],["Spoink","Pokémon Rebond",3,[14],7,306,[60,25,35,70,80,60],0],["Groret","Pokémon Magouilleur",3,[14],9,715,[80,45,65,90,110,80],1],["Spinda","Pokémon Panda Tache",3,[1],11,50,[60,60,60,60,60,60],0],["Kraknoix","Pokémon Piégeur",3,[5],7,150,[45,100,45,45,45,10],0],["Vibraninf","Pokémon Vibration",3,[5,16],11,153,[50,70,50,50,50,70],1],["Libégon","Pokémon Mystique",3,[5,16],20,820,[80,100,80,80,80,100],2],["Cacnea","Pokémon Cactus",3,[12],4,513,[50,85,40,85,40,35],0],["Cacturne","Pokémon Épouvantail",3,[12,17],13,774,[70,115,60,115,60,55],1],["Tylton","Pokémon Oiseaucoton",3,[1,3],4,12,[45,40,60,40,75,50],0],["Altaria","Pokémon Virevolteur",3,[16,3],11,206,[75,70,90,70,105,80],2],["Mangriff","Pokémon Chat Furet",3,[1],13,403,[73,115,60,60,60,90],1],["Séviper","Pokémon Serpacroc",3,[4],27,525,[73,100,60,100,60,65],1],["Séléroc","Pokémon Météorite",3,[6,14],10,1680,[90,55,65,95,85,70],1],["Solaroc","Pokémon Météorite",3,[6,14],12,1540,[90,95,85,55,65,70],1],["Barloche","Pokémon Barbillon",3,[11,5],4,19,[50,48,43,46,41,60],0],["Barbicha","Pokémon Barbillon",3,[11,5],9,236,[110,78,73,76,71,60],1],["Écrapince","Pokémon Brute",3,[11],6,115,[43,80,65,50,35,35],0],["Colhomard","Pokémon Crapule",3,[11,17],11,328,[63,120,85,90,55,55],1],["Balbuto","Pokémon Poupargile",3,[5,14],5,215,[40,40,55,40,70,55],0],["Kaorine","Pokémon Poupargile",3,[5,14],15,1080,[60,70,105,70,120,75],2],["Lilia","Pokémon Lis d’Eau",3,[6,12],10,238,[66,41,77,61,87,23],0],["Vacilys","Pokémon Bernacle",3,[6,12],15,604,[86,81,97,81,107,43],2],["Anorith","Pokémon Crustage",3,[6,7],7,125,[45,95,50,40,50,75],0],["Armaldo","Pokémon Blindage",3,[6,7],15,682,[75,125,100,70,80,45],2],["Barpau","Pokémon Poisson",3,[11],6,74,[20,15,20,10,55,80],0],["Milobellus","Pokémon Tendre",3,[11],62,1620,[95,60,79,100,125,81],3],["Morphéo","Pokémon Climat",3,[1],3,8,[70,70,70,70,70,70],1],["Kecleon","Pokémon Multicolor",3,[1],10,220,[60,90,70,60,120,40],1],["Polichombr","Pokémon Poupée",3,[8],6,23,[44,75,35,63,33,45],0],["Branette","Pokémon Marionnette",3,[8],11,125,[64,115,65,83,63,65],1],["Skelénox","Pokémon Requiem",3,[8],8,150,[20,40,90,30,90,25],0],["Téraclope","Pokémon Appel",3,[8],16,306,[40,70,130,60,130,25],1],["Tropius","Pokémon Fruit",3,[12,3],20,1000,[99,68,83,72,87,51],1],["Éoko","Pokémon Carillon",3,[14],6,10,[75,50,80,95,90,65],1],["Absol","Pokémon Désastre",3,[17],12,470,[65,130,60,75,60,75],1],["Okéoké","Pokémon Ravi",3,[14],6,140,[95,23,48,23,48,23],0],["Stalgamin","Pokémon Capuche",3,[15],7,168,[50,50,50,50,50,50],0],["Oniglali","Pokémon Face",3,[15],15,2565,[80,80,80,80,80,80],1],["Obalie","Pokémon Clap Clap",3,[15,11],8,395,[70,40,50,55,50,25],0],["Phogleur","Pokémon Roule Boule",3,[15,11],11,876,[90,60,70,75,70,45],1],["Kaimorse","Pokémon Brise Glace",3,[15,11],14,1506,[110,80,90,95,90,65],2],["Coquiperl","Pokémon Bivalve",3,[11],4,525,[35,64,85,74,55,32],0],["Serpang","Pokémon Abysse",3,[11],17,270,[55,104,105,94,75,52],1],["Rosabyss","Pokémon Mer du Sud",3,[11],18,226,[55,84,105,114,75,52],1],["Relicanth","Pokémon Longévité",3,[11,6],10,234,[100,90,130,45,65,55],1],["Lovdisc","Pokémon Rendezvous",3,[11],6,87,[43,30,55,40,65,97],0],["Draby","Pokémon Tête de Roc",3,[16],6,421,[45,75,60,40,30,50],0],["Drackhaus","Pokémon Endurant",3,[16],11,1105,[65,95,100,60,50,50],1],["Drattak","Pokémon Dragon",3,[16,3],15,1026,[95,135,80,110,80,100],3],["Terhal","Pokémon Boulefer",3,[9,14],6,952,[40,55,80,35,60,30],0],["Métang","Pokémon Pincefer",3,[9,14],12,2025,[60,75,100,55,80,50],1],["Métalosse","Pokémon Pattefer",3,[9,14],16,5500,[80,135,130,95,90,70],3],["Regirock","Pokémon Pic Rocheux",3,[6],17,2300,[80,100,200,50,100,50],5],["Regice","Pokémon Iceberg",3,[15],18,1750,[80,50,100,100,200,50],5],["Registeel","Pokémon Fer",3,[9],19,2050,[80,75,150,75,150,50],5],["Latias","Pokémon Éon",3,[16,14],14,400,[80,80,90,110,130,110],5],["Latios","Pokémon Éon",3,[16,14],20,600,[80,90,80,130,110,110],5],["Kyogre","Pokémon Bassinmarin",3,[11],45,3520,[100,100,90,150,140,90],5],["Groudon","Pokémon Continent",3,[5],35,9500,[100,150,140,100,90,90],5],["Rayquaza","Pokémon Cieux",3,[16,3],70,2065,[105,150,90,150,90,95],5],["Jirachi","Pokémon Souhait",3,[9,14],3,11,[100,100,100,100,100,100],5],["Deoxys","Pokémon ADN",3,[14],17,608,[50,150,50,150,50,150],5],["Tortipouss","Pokémon Minifeuille",4,[12],4,102,[55,68,64,45,55,31],1],["Boskara","Pokémon Bosquet",4,[12],11,970,[75,89,85,55,65,36],2],["Torterra","Pokémon Continent",4,[12,5],22,3100,[95,109,105,75,85,56],3],["Ouisticram","Pokémon Chimpanzé",4,[10],5,62,[44,58,44,58,44,61],1],["Chimpenfeu","Pokémon Garnement",4,[10,2],9,220,[64,78,52,78,52,81],2],["Simiabraz","Pokémon Flamme",4,[10,2],12,550,[76,104,71,104,71,108],3],["Tiplouf","Pokémon Pingouin",4,[11],4,52,[53,51,53,61,56,40],1],["Prinplouf","Pokémon Pingouin",4,[11],8,230,[64,66,68,81,76,50],2],["Pingoléon","Pokémon Empereur",4,[11,9],17,845,[84,86,88,111,101,60],3],["Étourmi","Pokémon Étourneau",4,[1,3],3,20,[40,55,30,30,30,60],0],["Étourvol","Pokémon Étourneau",4,[1,3],6,155,[55,75,50,40,40,80],1],["Étouraptor","Pokémon Rapace",4,[1,3],12,249,[85,120,70,50,60,100],2],["Keunotor","Pokémon Souridodue",4,[1],5,200,[59,45,40,35,40,31],0],["Castorno","Pokémon Castor",4,[1,11],10,315,[79,85,60,55,60,71],1],["Crikzik","Pokémon Criquet",4,[7],3,22,[37,25,41,25,41,25],0],["Mélokrik","Pokémon Criquet",4,[7],10,255,[77,85,51,55,51,65],1],["Lixy","Pokémon Flash",4,[13],5,95,[45,65,34,40,34,45],0],["Luxio","Pokémon Étincelle",4,[13],9,305,[60,85,49,60,49,60],1],["Luxray","Pokémon Brillœil",4,[13],14,420,[80,120,79,95,79,70],2],["Rozbouton","Pokémon Bourgeon",4,[12,4],2,12,[40,30,35,50,70,55],0],["Roserade","Pokémon Bouquet",4,[12,4],9,145,[60,70,65,125,105,90],2],["Kranidos","Pokémon Coud’Boule",4,[6],9,315,[67,125,40,30,30,58],0],["Charkos","Pokémon Coud’Boule",4,[6],16,1025,[97,165,60,65,50,58],2],["Dinoclier","Pokémon Bouclier",4,[6,9],5,570,[30,42,118,42,88,30],0],["Bastiodon","Pokémon Bouclier",4,[6,9],13,1495,[60,52,168,47,138,30],2],["Cheniti","Pokémon Ver Caché",4,[7],2,34,[40,29,45,29,45,36],0],["Cheniselle","Pokémon Ver Caché",4,[7,12],5,65,[60,59,85,79,105,36],1],["Papilord","Pokémon Phalène",4,[7,3],9,233,[70,94,50,94,50,66],1],["Apitrini","Pokémon Miniabeille",4,[7,3],3,55,[30,30,42,30,42,70],0],["Apireine","Pokémon Ruche",4,[7,3],12,385,[70,80,102,80,102,40],1],["Pachirisu","Pokémon Écurélec",4,[13],4,39,[60,45,70,45,90,95],1],["Mustébouée","Pokémon Aquabelette",4,[11],7,295,[55,65,35,60,30,85],0],["Mustéflott","Pokémon Aquabelette",4,[11],11,335,[85,105,55,85,50,115],2],["Ceribou","Pokémon Cerise",4,[12],4,33,[45,35,45,62,53,35],0],["Ceriflor","Pokémon Floraison",4,[12],5,93,[70,60,70,87,78,85],1],["Sancoki","Pokémon Aqualimace",4,[11],3,63,[76,48,48,57,62,34],0],["Tritosor","Pokémon Aqualimace",4,[11,5],9,299,[111,83,68,92,82,39],1],["Capidextre","Pokémon Longqueue",4,[1],12,203,[75,100,66,60,66,115],1],["Baudrive","Pokémon Bouboule",4,[8,3],4,12,[90,50,34,60,44,70],0],["Grodrive","Pokémon Ballon",4,[8,3],12,150,[150,80,44,90,54,80],2],["Laporeille","Pokémon Lapin",4,[1],4,55,[55,66,44,44,56,85],0],["Lockpin","Pokémon Lapin",4,[1],12,333,[65,76,84,54,96,105],1],["Magirêve","Pokémon Magique",4,[8],9,44,[60,60,60,105,105,105],2],["Corboss","Pokémon Big Boss",4,[17,3],9,273,[100,125,52,105,52,71],2],["Chaglam","Pokémon Chafouin",4,[1],5,39,[49,55,42,42,37,85],0],["Chaffreux","Pokémon Chatigre",4,[1],10,438,[71,82,64,64,59,112],1],["Korillon","Pokémon Clochette",4,[14],2,6,[45,30,50,65,50,45],0],["Moufouette","Pokémon Moufette",4,[4,17],4,192,[63,63,47,41,41,74],0],["Moufflair","Pokémon Moufette",4,[4,17],10,380,[103,93,67,71,61,84],1],["Archéomire","Pokémon Bronze",4,[9,14],5,605,[57,24,86,24,86,23],0],["Archéodong","Pokémon Clochebronze",4,[9,14],13,1870,[67,89,116,79,116,33],2],["Manzaï","Pokémon Bonsaï",4,[6],5,150,[50,80,95,10,45,10],0],["Mime Jr.","Pokémon Mime",4,[14,18],6,130,[20,25,45,70,90,60],0],["Ptiravi","Pokémon Maisonjouet",4,[1],6,244,[100,5,5,15,65,30],0],["Pijako","Pokémon Note Musique",4,[1,3],5,19,[76,65,45,92,42,91],1],["Spiritomb","Pokémon Interdit",4,[8,17],10,1080,[50,92,108,92,108,35],1],["Griknot","Pokémon Terrequin",4,[16,5],7,205,[58,70,45,40,45,42],0],["Carmache","Pokémon Caverne",4,[16,5],14,560,[68,90,65,50,55,82],1],["Carchacrok","Pokémon Supersonic",4,[16,5],19,950,[108,130,95,80,85,102],3],["Goinfrex","Pokémon Goinfre",4,[1],6,1050,[135,85,40,40,85,5],1],["Riolu","Pokémon Émanation",4,[2],7,202,[40,70,40,35,40,60],0],["Lucario","Pokémon Aura",4,[2,9],12,540,[70,110,70,115,70,90],2],["Hippopotas","Pokémon Hippo",4,[5],8,495,[68,72,78,38,42,32],0],["Hippodocus","Pokémon Poids Lourd",4,[5],20,3000,[108,112,118,68,72,47],2],["Rapion","Pokémon Scorpion",4,[4,7],8,120,[40,50,90,30,55,65],0],["Drascore","Pokémon Scorpogre",4,[4,17],13,615,[70,90,110,60,75,95],2],["Cradopaud","Pokémon Toxique",4,[4,2],7,230,[48,61,40,61,40,50],0],["Coatox","Pokémon Toxique",4,[4,2],13,444,[83,106,65,86,65,85],2],["Vortente","Pokémon Chopinsecte",4,[12],14,270,[74,100,72,90,72,46],1],["Écayon","Pokémon Poisson Ailé",4,[11],4,70,[49,49,56,49,61,66],0],["Luminéon","Pokémon Néon",4,[11],12,240,[69,69,76,69,86,91],1],["Babimanta","Pokémon Cervolant",4,[11,3],10,650,[45,20,50,60,120,50],0],["Blizzi","Pokémon Arbregelé",4,[12,15],10,505,[60,62,50,62,60,40],0],["Blizzaroi","Pokémon Arbregelé",4,[12,15],22,1355,[90,92,75,92,85,60],2],["Dimoret","Pokémon Grifacérée",4,[17,15],11,340,[70,120,65,45,85,125],2],["Magnézone","Pokémon Aimant",4,[13,9],12,1800,[70,70,115,130,90,60],3],["Coudlangue","Pokémon Lécheur",4,[1],17,1400,[110,85,95,80,95,50],2],["Rhinastoc","Pokémon Perceur",4,[5,6],24,2828,[115,140,130,55,55,40],3],["Bouldeneu","Pokémon Vigne",4,[12],20,1286,[100,100,125,110,50,50],3],["Élekable","Pokémon Foudrélec",4,[13],18,1386,[75,123,67,95,85,95],3],["Maganon","Pokémon Explosion",4,[10],16,680,[75,95,67,125,95,83],3],["Togekiss","Pokémon Célébration",4,[18,3],15,380,[85,50,95,120,115,80],3],["Yanmega","Pokémon Libellogre",4,[7,3],19,515,[86,76,86,116,56,95],2],["Phyllali","Pokémon Verdoyant",4,[12],10,255,[65,110,130,60,65,95],2],["Givrali","Pokémon Poudreuse",4,[15],8,259,[65,60,110,130,95,65],2],["Scorvol","Pokémon Scorpicroc",4,[5,3],20,425,[75,95,125,45,75,95],2],["Mammochon","Pokémon Deudéfenses",4,[15,5],25,2910,[110,130,80,70,60,80],2],["Porygon-Z","Pokémon Virtuel",4,[1],9,340,[85,80,70,135,75,90],3],["Gallame","Pokémon Lame",4,[14,2],16,520,[68,125,65,65,115,80],2],["Tarinorme","Pokémon Boussole",4,[6,9],14,3400,[60,55,145,75,150,40],2],["Noctunoir","Pokémon Mainpince",4,[8],22,1066,[45,100,135,65,135,45],2],["Momartik","Pokémon Enneigement",4,[15,8],13,266,[70,80,70,80,70,110],1],["Motisma","Pokémon Plasma",4,[13,8],3,3,[50,50,77,95,77,91],1],["Créhelf","Pokémon Savoir",4,[14],3,3,[75,75,130,75,130,95],5],["Créfollet","Pokémon Émotion",4,[14],3,3,[80,105,105,105,105,80],5],["Créfadet","Pokémon Volonté",4,[14],3,3,[75,125,70,125,70,115],5],["Dialga","Pokémon Temps",4,[9,16],54,6830,[100,120,120,150,100,90],5],["Palkia","Pokémon Espace",4,[11,16],42,3360,[90,120,100,150,120,100],5],["Heatran","Pokémon Caldeira",4,[10,9],17,4300,[91,90,106,130,106,77],5],["Regigigas","Pokémon Prodigieux",4,[1],37,4200,[110,160,110,80,110,100],5],["Giratina","Pokémon Renégat",4,[8,16],45,7500,[150,100,120,100,120,90],5],["Cresselia","Pokémon Lunaire",4,[14],15,856,[120,70,110,75,120,85],5],["Phione","Pokémon Dérivenmer",4,[11],4,31,[80,80,80,80,80,80],5],["Manaphy","Pokémon Voyagenmer",4,[11],3,14,[100,100,100,100,100,100],5],["Darkrai","Pokémon Noirtotal",4,[17],15,505,[70,90,90,135,90,125],5],["Shaymin","Pokémon Gratitude",4,[12],2,21,[100,100,100,100,100,100],5],["Arceus","Pokémon Alpha",4,[1],32,3200,[120,120,120,120,120,120],5],["Victini","Pokémon Victoire",5,[14,10],4,40,[100,100,100,100,100,100],5],["Vipélierre","Pokémon Serpenterbe",5,[12],6,81,[45,45,55,45,55,63],1],["Lianaja","Pokémon Serpenterbe",5,[12],8,160,[60,60,75,60,75,83],2],["Majaspic","Pokémon Majestueux",5,[12],33,630,[75,75,95,75,95,113],3],["Gruikui","Pokémon Cochon Feu",5,[10],5,99,[65,63,45,45,45,45],1],["Grotichon","Pokémon Cochon Feu",5,[10,2],10,555,[90,93,55,70,55,55],2],["Roitiflam","Pokémon Grochon Feu",5,[10,2],16,1500,[110,123,65,100,65,65],3],["Moustillon","Pokémon Loutre",5,[11],5,59,[55,55,45,63,45,45],1],["Mateloutre","Pokémon Entraînement",5,[11],8,245,[75,75,60,83,60,60],2],["Clamiral","Pokémon Dignitaire",5,[11],15,946,[95,100,85,108,70,70],3],["Ratentif","Pokémon Espion",5,[1],5,116,[45,55,39,35,39,42],0],["Miradar","Pokémon Vigilant",5,[1],11,270,[60,85,69,60,69,77],1],["Ponchiot","Pokémon Chiot",5,[1],4,41,[45,60,45,25,45,55],0],["Ponchien","Pokémon Chien Fidèle",5,[1],9,147,[65,80,65,35,65,60],1],["Mastouffe","Pokémon Magnanime",5,[1],12,610,[85,110,90,45,90,80],2],["Chacripan","Pokémon Scélérat",5,[17],4,101,[41,50,37,50,37,66],0],["Léopardus","Pokémon Implacable",5,[17],11,375,[64,88,50,88,50,106],1],["Feuillajou","Pokémon Singe Herbe",5,[12],6,105,[50,53,48,53,48,64],0],["Feuiloutan","Pokémon Singépine",5,[12],11,305,[75,98,63,98,63,101],2],["Flamajou","Pokémon Brûlant",5,[10],6,110,[50,53,48,53,48,64],0],["Flamoutan","Pokémon Braise",5,[10],10,280,[75,98,63,98,63,101],2],["Flotajou","Pokémon Jet d’Eau",5,[11],6,135,[50,53,48,53,48,64],0],["Flotoutan","Pokémon Drainage",5,[11],10,290,[75,98,63,98,63,101],2],["Munna","Pokémon Mangerêve",5,[14],6,233,[76,25,45,67,55,24],0],["Mushana","Pokémon Rêveur",5,[14],11,605,[116,55,85,107,95,29],1],["Poichigeon","Pokémon Tipigeon",5,[1,3],3,21,[50,55,50,36,30,43],0],["Colombeau","Pokémon Sauvapigeon",5,[1,3],6,150,[62,77,62,50,42,65],1],["Déflaisan","Pokémon Fier",5,[1,3],12,290,[80,115,80,65,55,93],2],["Zébibron","Pokémon Étincélec",5,[13],8,298,[45,60,32,50,32,76],0],["Zéblitz","Pokémon Foudrélec",5,[13],16,795,[75,100,63,80,63,116],2],["Nodulithe","Pokémon Manteau",5,[6],4,180,[55,75,85,25,25,15],0],["Géolithe","Pokémon Minerai",5,[6],9,1020,[70,105,105,50,40,20],1],["Gigalithe","Pokémon Surpression",5,[6],17,2600,[85,135,130,60,80,25],2],["Chovsourir","Pokémon Chovsouris",5,[14,3],4,21,[65,45,43,55,43,72],0],["Rhinolove","Pokémon Cupidon",5,[14,3],9,105,[67,57,55,77,55,114],1],["Rototaupe","Pokémon Taupe",5,[5],3,85,[60,85,40,30,45,68],0],["Minotaupe","Pokémon Souterrain",5,[5,9],7,404,[110,135,60,50,65,88],2],["Nanméouïe","Pokémon Audition",5,[1],11,310,[103,60,86,60,86,50],1],["Charpenti","Pokémon Costaud",5,[2],6,125,[75,80,55,25,35,35],0],["Ouvrifier","Pokémon Costaud",5,[2],12,400,[85,105,85,40,50,40],1],["Bétochef","Pokémon Costaud",5,[2],14,870,[105,140,95,55,65,45],2],["Tritonde","Pokémon Têtard",5,[11],5,45,[50,50,40,50,40,64],0],["Batracné","Pokémon Vibration",5,[11,5],8,170,[75,65,55,65,55,69],1],["Crapustule","Pokémon Vibration",5,[11,5],15,620,[105,95,75,85,75,74],2],["Judokrak","Pokémon Judo",5,[2],13,555,[120,100,85,30,85,45],1],["Karaclée","Pokémon Karaté",5,[2],14,510,[75,125,75,30,75,85],1],["Larveyette","Pokémon Couture",5,[7,12],3,25,[45,53,70,40,60,42],0],["Couverdure","Pokémon Capefeuille",5,[7,12],5,73,[55,63,90,50,80,42],1],["Manternel","Pokémon Précepteur",5,[7,12],12,205,[75,103,80,70,80,92],2],["Venipatte","Pokémon Chilopode",5,[7,4],4,53,[30,45,59,30,39,57],0],["Scobolide","Pokémon Coconplopode",5,[7,4],12,585,[40,55,99,40,79,47],1],["Brutapode","Pokémon Mégaplopode",5,[7,4],25,2005,[60,100,89,55,69,112],2],["Doudouvet","Pokémon Boule Coton",5,[12,18],3,6,[40,27,60,37,50,66],0],["Farfaduvet","Pokémon Vole Vent",5,[12,18],7,66,[60,67,85,77,75,116],1],["Chlorobule","Pokémon Racine",5,[12],5,66,[45,35,50,70,50,30],0],["Fragilady","Pokémon Chef-Fleur",5,[12],11,163,[70,60,75,110,75,90],1],["Bargantua","Pokémon Violent",5,[11],10,180,[70,92,65,80,55,98],1],["Mascaïman","Pokémon Croco Sable",5,[5,17],7,152,[50,72,35,35,35,65],0],["Escroco","Pokémon Croco Sable",5,[5,17],10,334,[60,82,45,45,45,74],1],["Crocorible","Pokémon Intimidation",5,[5,17],15,963,[95,117,80,65,70,92],2],["Darumarond","Pokémon Daruma",5,[10],6,375,[70,90,45,15,45,50],0],["Darumacho","Pokémon Enflammé",5,[10],13,929,[105,140,55,30,55,95],1],["Maracachi","Pokémon Cactus",5,[12],10,280,[75,86,67,106,67,60],1],["Crabicoque","Pokémon Lithicole",5,[7,6],3,145,[50,65,85,35,35,55],0],["Crabaraque","Pokémon Lapidicole",5,[7,6],14,2000,[70,105,125,65,75,45],1],["Baggiguane","Pokémon Mue",5,[17,2],6,118,[50,75,70,35,70,48],0],["Baggaïd","Pokémon Gang",5,[17,2],11,300,[65,90,115,45,115,58],1],["Cryptéro","Pokémon Similoiseau",5,[14,3],14,140,[72,58,80,103,80,97],2],["Tutafeh","Pokémon Âme",5,[8],5,15,[38,30,85,55,65,30],0],["Tutankafer","Pokémon Cercueil",5,[8],17,765,[58,50,145,95,105,30],1],["Carapagos","Pokémon Tortantique",5,[11,6],7,165,[54,78,103,53,45,22],0],["Mégapagos","Pokémon Tortantique",5,[11,6],12,810,[74,108,133,83,65,32],2],["Arkéapti","Pokémon Oisancien",5,[6,3],5,95,[55,112,45,74,45,70],1],["Aéroptéryx","Pokémon Oisancien",5,[6,3],14,320,[75,140,65,112,65,110],3],["Miamiasme","Pokémon Sac Poubelle",5,[4],6,310,[50,50,62,40,62,65],0],["Miasmax","Pokémon Dépotoir",5,[4],19,1073,[80,95,82,60,82,75],1],["Zorua","Pokémon Sombrenard",5,[17],7,125,[40,65,40,80,40,65],0],["Zoroark","Pokémon Polymorfox",5,[17],16,811,[60,105,60,120,60,105],2],["Chinchidou","Pokémon Chinchilla",5,[1],4,58,[55,50,40,40,40,75],0],["Pashmilla","Pokémon Écharpe",5,[1],5,75,[75,95,60,65,60,115],1],["Scrutella","Pokémon Dévisageur",5,[14],4,58,[45,30,50,55,65,45],0],["Mesmérella","Pokémon Magouilleur",5,[14],7,180,[60,45,70,75,85,55],1],["Sidérella","Pokémon Cosmique",5,[14],15,440,[70,55,95,95,110,65],2],["Nucléos","Pokémon Cellule",5,[14],3,10,[45,30,40,105,50,20],0],["Méios","Pokémon Divisé",5,[14],6,80,[65,40,50,125,60,30],1],["Symbios","Pokémon Multiplié",5,[14],10,201,[110,65,75,125,85,30],2],["Couaneton","Pokémon Oiseaudo",5,[11,3],5,55,[62,44,50,44,50,55],0],["Lakmécygne","Pokémon Cygne",5,[11,3],13,242,[75,87,63,87,63,98],1],["Sorbébé","Pokémon Poudreuse",5,[15],4,57,[36,50,50,65,60,44],0],["Sorboul","Pokémon Grêle",5,[15],11,410,[51,65,65,80,75,59],1],["Sorbouboul","Pokémon Congère",5,[15],13,575,[71,95,85,110,95,79],3],["Vivaldaim","Pokémon Saison",5,[1,12],6,195,[60,60,50,40,50,75],0],["Haydaim","Pokémon Saison",5,[1,12],19,925,[80,100,70,60,70,95],1],["Emolga","Pokémon Pteromys",5,[13,3],4,50,[55,75,60,75,60,103],1],["Carabing","Pokémon Carabe",5,[7],5,59,[50,75,45,40,45,60],0],["Lançargot","Pokémon Chevalier",5,[7,9],10,330,[70,135,105,60,105,20],2],["Trompignon","Pokémon Champignon",5,[12,4],2,10,[69,55,45,55,55,15],0],["Gaulet","Pokémon Champignon",5,[12,4],6,105,[114,85,70,85,80,30],1],["Viskuse","Pokémon Flottaison",5,[11,8],12,330,[55,40,50,65,85,40],0],["Moyade","Pokémon Flottaison",5,[11,8],22,1350,[100,60,70,85,105,60],1],["Mamanbo","Pokémon Soigneur",5,[11],12,316,[165,75,80,40,45,65],1],["Statitik","Pokémon Crampon",5,[7,13],1,6,[50,47,50,57,50,65],0],["Mygavolt","Pokémon Araclectrik",5,[7,13],8,143,[70,77,60,97,60,108],1],["Grindur","Pokémon Graine Épine",5,[12,9],6,188,[44,50,91,24,86,10],0],["Noacier","Pokémon Boule Épine",5,[12,9],10,1100,[74,94,131,54,116,20],1],["Tic","Pokémon Engrenage",5,[9],3,210,[40,55,70,45,60,30],0],["Clic","Pokémon Engrenage",5,[9],6,510,[60,80,95,70,85,50],1],["Cliticlic","Pokémon Engrenage",5,[9],6,810,[60,100,115,70,85,90],2],["Anchwatt","Pokémon Électrophore",5,[13],2,3,[35,55,40,45,40,60],0],["Lampéroie","Pokémon Électrophore",5,[13],12,220,[65,85,70,75,70,40],1],["Ohmassacre","Pokémon Électrophore",5,[13],21,805,[85,115,80,105,80,50],2],["Lewsor","Pokémon Cerveau",5,[14],5,90,[55,55,55,85,55,30],0],["Neitram","Pokémon Cerveau",5,[14],10,345,[75,75,75,125,95,40],1],["Funécire","Pokémon Chandelle",5,[8,10],3,31,[50,30,55,65,55,20],0],["Mélancolux","Pokémon Lampe",5,[8,10],6,130,[60,40,60,95,60,55],1],["Lugulabre","Pokémon Invitation",5,[8,10],10,343,[60,55,90,145,90,80],2],["Coupenotte","Pokémon Crocs",5,[16],6,180,[46,87,60,30,40,57],0],["Incisache","Pokémon Hachomenton",5,[16],10,360,[66,117,70,40,50,67],1],["Tranchodon","Pokémon Hachomenton",5,[16],18,1055,[76,147,90,60,70,97],3],["Polarhume","Pokémon Gelé",5,[15],5,85,[55,70,40,60,40,40],0],["Polagriffe","Pokémon Congelé",5,[15],26,2600,[95,130,80,70,80,50],2],["Hexagel","Pokémon Cristal",5,[15],11,1480,[80,50,50,95,135,105],2],["Escargaume","Pokémon Escargot",5,[7],4,77,[50,40,85,40,65,25],0],["Limaspeed","Pokémon Exuviateur",5,[7],8,253,[80,70,40,100,60,145],2],["Limonde","Pokémon Piège",5,[5,13],7,110,[109,66,84,81,99,32],1],["Kungfouine","Pokémon Art Martial",5,[2],9,200,[45,85,50,55,50,65],0],["Shaofouine","Pokémon Art Martial",5,[2],14,355,[65,125,60,95,60,105],2],["Drakkarmin","Pokémon Caverne",5,[16],16,1390,[77,120,90,60,90,48],1],["Gringolem","Pokémon Golem Ancien",5,[5,8],10,920,[59,74,50,35,50,35],0],["Golemastoc","Pokémon Golem Ancien",5,[5,8],28,3300,[89,124,80,55,80,55],1],["Scalpion","Pokémon Coupant",5,[17,9],5,102,[45,85,70,40,40,60],0],["Scalproie","Pokémon Tranchant",5,[17,9],16,700,[65,125,100,60,70,70],2],["Frison","Pokémon Coup d’Bœuf",5,[1],16,946,[95,110,95,40,95,55],2],["Furaiglon","Pokémon Aiglon",5,[1,3],5,105,[70,83,50,37,50,60],0],["Gueriaigle","Pokémon Vaillant",5,[1,3],15,410,[100,123,75,57,75,80],2],["Vostourno","Pokémon Couche",5,[17,3],5,90,[70,55,75,45,65,60],0],["Vaututrice","Pokémon Vostour",5,[17,3],12,395,[110,65,105,55,95,80],2],["Aflamanoir","Pokémon Tamanoir",5,[10],14,580,[85,97,66,105,66,65],1],["Fermite","Pokémon Fourmi Dure",5,[7,9],3,330,[58,109,112,48,48,109],1],["Solochi","Pokémon Rude",5,[17,16],8,173,[52,65,50,45,50,38],0],["Diamat","Pokémon Violent",5,[17,16],14,500,[72,85,70,65,70,58],1],["Trioxhydre","Pokémon Brutal",5,[17,16],18,1600,[92,105,90,125,90,98],3],["Pyronille","Pokémon Torche",5,[7,10],11,288,[55,85,55,50,55,60],0],["Pyrax","Pokémon Soleil",5,[7,10],16,460,[85,60,65,135,105,100],3],["Cobaltium","Pokémon Cœur de Fer",5,[9,2],21,2500,[91,90,129,90,72,108],5],["Terrakium","Pokémon Grotte",5,[6,2],19,2600,[91,129,90,72,90,108],5],["Viridium","Pokémon Plaine Verte",5,[12,2],20,2000,[91,90,72,90,129,108],5],["Boréas","Pokémon Tornade",5,[3],15,630,[79,115,70,125,80,111],5],["Fulguris","Pokémon Foudroyeur",5,[13,3],15,610,[79,115,70,125,80,111],5],["Reshiram","Pokémon Blanc Réel",5,[16,10],32,3300,[100,120,100,150,120,90],5],["Zekrom","Pokémon Noir Idéal",5,[16,13],29,3450,[100,150,120,120,100,90],5],["Démétéros","Pokémon Fertilité",5,[5,3],15,680,[89,125,90,115,80,101],5],["Kyurem","Pokémon Frontière",5,[16,15],30,3250,[125,130,90,130,90,95],5],["Keldeo","Pokémon Poulain",5,[11,2],14,485,[91,72,90,129,90,108],5],["Meloetta","Pokémon Mélodie",5,[1,14],6,65,[100,77,77,128,128,90],5],["Genesect","Pokémon Paléozoïque",5,[7,9],15,825,[71,120,95,120,95,99],5],["Marisson","Pokémon Bogue",6,[12],4,90,[56,61,65,48,45,38],1],["Boguérisse","Pokémon Épinarmure",6,[12],7,290,[61,78,95,56,58,57],2],["Blindépique","Pokémon Épinarmure",6,[12,2],16,900,[88,107,122,74,75,64],3],["Feunnec","Pokémon Renard",6,[10],4,94,[40,45,40,62,60,60],1],["Roussil","Pokémon Renard",6,[10],10,145,[59,59,58,90,70,73],2],["Goupelin","Pokémon Renard",6,[10,14],15,390,[75,69,72,114,100,104],3],["Grenousse","Pokémon Crapobulle",6,[11],3,70,[41,56,40,62,44,71],1],["Croâporal","Pokémon Crapobulle",6,[11],6,109,[54,63,52,83,56,97],2],["Amphinobi","Pokémon Ninja",6,[11,17],15,400,[72,95,67,103,71,122],3],["Sapereau","Pokémon Fouisseur",6,[1],4,50,[38,36,38,32,36,57],0],["Excavarenne","Pokémon Fouisseur",6,[1,5],10,424,[85,56,77,50,77,78],1],["Passerouge","Pokémon Rougegorge",6,[1,3],3,17,[45,50,43,40,38,62],0],["Braisillon","Pokémon Braise",6,[10,3],7,160,[62,73,55,56,52,84],1],["Flambusard","Pokémon Fournaise",6,[10,3],12,245,[78,81,71,74,69,126],2],["Lépidonille","Pokémon Exhalécaille",6,[7],3,25,[38,35,40,27,25,35],0],["Pérégrain","Pokémon Exhalécaille",6,[7],3,84,[45,22,60,27,30,29],1],["Prismillon","Pokémon Lépidécaille",6,[7,3],12,170,[80,52,50,90,50,89],2],["Hélionceau","Pokémon Lionceau",6,[10,1],6,135,[62,50,58,73,54,72],0],["Némélios","Pokémon Royal",6,[10,1],15,815,[86,68,72,109,66,106],2],["Flabébé","Pokémon Uniflore",6,[18],1,1,[44,38,39,61,79,42],0],["Floette","Pokémon Uniflore",6,[18],2,9,[54,45,47,75,98,52],1],["Florges","Pokémon Jardin",6,[18],11,100,[78,65,68,112,154,75],3],["Cabriolaine","Pokémon Monture",6,[12],9,310,[66,65,48,62,57,52],0],["Chevroum","Pokémon Monture",6,[12],17,910,[123,100,62,97,81,68],2],["Pandespiègle","Pokémon Garnement",6,[2],6,80,[67,82,62,46,48,43],0],["Pandarbare","Pokémon Patibulaire",6,[2,17],21,1360,[95,124,78,69,71,58],2],["Couafarel","Pokémon Caniche",6,[1],12,280,[75,80,60,65,90,102],1],["Psystigri","Pokémon Retenue",6,[14],3,35,[62,48,54,63,60,68],0],["Mistigrix","Pokémon SelfContrôle",6,[14],6,85,[74,48,76,83,81,104],1],["Monorpale","Pokémon Glaive",6,[9,8],8,20,[45,80,100,35,37,28],0],["Dimoclès","Pokémon Glaive",6,[9,8],8,45,[59,110,150,45,49,35],1],["Exagide","Pokémon Noble Lame",6,[9,8],17,530,[60,50,140,50,140,60],2],["Fluvetin","Pokémon Fragrance",6,[18],2,5,[78,52,60,63,65,23],0],["Cocotine","Pokémon Parfum",6,[18],8,155,[101,72,72,99,89,29],1],["Sucroquin","Pokémon Confiserie",6,[18],4,35,[62,48,66,59,57,49],0],["Cupcanaille","Pokémon Mousseline",6,[18],8,50,[82,80,86,85,75,72],1],["Sepiatop","Pokémon Rotation",6,[17,14],4,35,[53,54,53,37,46,45],0],["Sepiatroce","Pokémon Révolution",6,[17,14],15,470,[86,92,88,68,75,73],1],["Opermine","Pokémon Bimane",6,[6,11],5,310,[42,52,67,39,56,50],0],["Golgopathe","Pokémon Assemblage",6,[6,11],13,960,[72,105,115,54,86,68],2],["Venalgue","Pokémon Simulalgue",6,[4,11],5,73,[50,60,60,60,60,30],0],["Kravarech","Pokémon Simulalgue",6,[4,16],18,815,[65,75,90,97,123,44],2],["Flingouste","Pokémon Lance à Eau",6,[11],5,83,[50,53,62,58,63,44],0],["Gamblast","Pokémon Blaster",6,[11],13,353,[71,73,88,120,89,59],2],["Galvaran","Pokémon Générateur",6,[13,1],5,60,[44,38,33,61,43,70],0],["Iguolta","Pokémon Générateur",6,[13,1],10,210,[62,55,52,109,94,109],1],["Ptyranidur","Pokémon Prince",6,[6,16],8,260,[58,89,77,45,45,48],0],["Rexillius","Pokémon Tyran",6,[6,16],25,2700,[82,121,119,69,59,71],2],["Amagara","Pokémon Toundra",6,[6,15],13,252,[77,59,50,67,63,46],0],["Dragmara","Pokémon Toundra",6,[6,15],27,2250,[123,77,72,99,92,58],2],["Nymphali","Pokémon Attachant",6,[18],10,235,[95,65,65,110,130,60],2],["Brutalibré","Pokémon Catcheur",6,[2,3],8,215,[78,92,75,74,63,118],2],["Dedenne","Pokémon Antenne",6,[13,18],2,22,[67,58,57,81,67,101],1],["Strassie","Pokémon Joyau",6,[6,18],3,57,[50,50,150,50,150,50],2],["Mucuscule","Pokémon Mollusque",6,[16],3,28,[45,50,35,55,75,40],0],["Colimucus","Pokémon Mollusque",6,[16],8,175,[68,75,53,83,113,60],1],["Muplodocus","Pokémon Dragon",6,[16],20,1505,[90,100,70,110,150,80],3],["Trousselin","Pokémon Trousseau",6,[9,18],2,30,[57,80,91,80,87,75],1],["Brocélôme","Pokémon Souche",6,[8,12],4,70,[43,70,48,50,60,38],0],["Desséliande","Pokémon Vieillarbre",6,[8,12],15,710,[85,110,76,65,82,56],1],["Pitrouille","Pokémon Citrouille",6,[8,12],4,50,[49,66,70,44,55,51],0],["Banshitrouye","Pokémon Citrouille",6,[8,12],9,125,[65,90,122,58,75,84],2],["Grelaçon","Pokémon Glaçon",6,[15],10,995,[55,69,85,32,35,28],0],["Séracrawl","Pokémon Iceberg",6,[15],20,5050,[95,117,184,44,46,28],2],["Sonistrelle","Pokémon Ondes",6,[3,16],5,80,[40,30,35,45,40,55],0],["Bruyverne","Pokémon Ondes",6,[3,16],15,850,[85,70,80,97,80,123],3],["Xerneas","Pokémon Existence",6,[18],30,2150,[126,131,95,131,98,99],5],["Yveltal","Pokémon Annihilation",6,[17,3],58,2030,[126,131,95,131,98,99],5],["Zygarde","Pokémon Équilibre",6,[16,5],50,3050,[108,100,121,81,95,95],5],["Diancie","Pokémon Joyau",6,[6,18],7,88,[50,100,150,100,150,50],5],["Hoopa","Pokémon Chenapan",6,[14,8],5,90,[80,110,60,150,130,70],5],["Volcanion","Pokémon Vapeur",6,[10,11],17,1950,[80,110,120,130,90,70],5],["Brindibou","Pokémon Plumefeuille",7,[12,3],3,15,[68,55,55,50,50,42],1],["Efflèche","Pokémon Plum’acérée",7,[12,3],7,160,[78,75,75,70,70,52],2],["Archéduc","Pokémon Plumeflèche",7,[12,8],16,366,[78,107,75,100,100,70],3],["Flamiaou","Pokémon Chat Feu",7,[10],4,43,[45,65,40,60,40,70],1],["Matoufeu","Pokémon Chat Feu",7,[10],7,250,[65,85,50,80,50,90],2],["Félinferno","Pokémon Vil Catcheur",7,[10,17],18,830,[95,115,90,80,90,60],3],["Otaquin","Pokémon Otarie",7,[11],4,75,[50,54,54,66,56,40],1],["Otarlette","Pokémon Starlette",7,[11],6,175,[60,69,69,91,81,50],2],["Oratoria","Pokémon Soliste",7,[11,18],18,440,[80,74,74,126,116,60],3],["Picassaut","Pokémon Pivert",7,[1,3],3,12,[35,75,30,30,30,65],0],["Piclairon","Pokémon Bec Clairon",7,[1,3],6,148,[55,85,50,40,50,75],1],["Bazoucan","Pokémon Canon",7,[1,3],11,260,[80,120,75,75,75,60],2],["Manglouton","Pokémon Patrouille",7,[1],4,60,[48,70,30,30,30,45],0],["Argouste","Pokémon Filature",7,[1],7,142,[88,110,60,55,60,45],1],["Larvibule","Pokémon Larve",7,[7],4,44,[47,62,45,55,45,46],0],["Chrysapile","Pokémon Batterie",7,[7,13],5,105,[57,82,95,55,75,36],1],["Lucanon","Pokémon Scarabée",7,[7,13],15,450,[77,70,90,145,75,43],2],["Crabagarre","Pokémon Boxeur",7,[2],6,70,[47,82,57,42,47,63],0],["Crabominable","Pokémon Crabe Velu",7,[2,15],17,1800,[97,132,77,62,67,43],1],["Plumeline","Pokémon Danse",7,[10,3],6,34,[75,70,70,98,70,93],1],["Bombydou","Pokémon Bombyle",7,[7,18],1,2,[40,45,40,55,40,84],0],["Rubombelle","Pokémon Bombyle",7,[7,18],2,5,[60,55,60,95,70,124],1],["Rocabot","Pokémon Chiot",7,[6],5,92,[45,65,40,30,40,60],0],["Lougaroc","Pokémon Loup",7,[6],8,250,[75,115,65,55,65,112],1],["Froussardine","Pokémon Minipoisson",7,[11],2,3,[45,20,20,25,25,40],0],["Vorastérie","Pokémon Cruel",7,[4,11],4,80,[50,53,62,43,52,45],0],["Prédastérie","Pokémon Cruel",7,[4,11],7,145,[50,63,152,53,142,35],2],["Tiboudet","Pokémon Âne",7,[5],10,1100,[70,100,70,45,55,45],0],["Bourrinos","Pokémon Cheval Trait",7,[5],25,9200,[100,125,100,55,85,35],2],["Araqua","Pokémon Aquabulle",7,[11,7],3,40,[38,40,52,40,72,27],0],["Tarenbulle","Pokémon Aquabulle",7,[11,7],18,820,[68,70,92,50,132,42],1],["Mimantis","Pokémon Fauch’Herbe",7,[12],3,15,[40,55,35,50,35,35],0],["Floramantis","Pokémon Fauch’Fleur",7,[12],9,185,[70,105,90,80,90,45],1],["Spododo","Pokémon Luminescent",7,[12,18],2,15,[40,35,55,65,75,15],0],["Lampignon","Pokémon Luminescent",7,[12,18],10,115,[60,45,80,90,100,30],1],["Tritox","Pokémon Toxilézard",7,[4,10],6,48,[48,44,40,71,40,77],0],["Malamandre","Pokémon Toxilézard",7,[4,10],12,222,[68,64,60,111,60,117],1],["Nounourson","Pokémon Gigoteur",7,[1,2],5,68,[70,75,50,45,50,50],0],["Chelours","Pokémon Biscoteaux",7,[1,2],21,1350,[120,125,80,55,60,60],2],["Croquine","Pokémon Fruit",7,[12],3,32,[42,30,38,30,38,32],0],["Candine","Pokémon Fruit",7,[12],7,82,[52,40,48,40,48,62],1],["Sucreine","Pokémon Fruit",7,[12],12,214,[72,120,98,50,98,72],2],["Guérilande","Pokémon Tressefleur",7,[18],1,3,[51,52,90,82,110,100],1],["Gouroutan","Pokémon Grand Sage",7,[1,14],15,760,[90,60,80,90,110,60],2],["Quartermac","Pokémon Coopération",7,[2],20,828,[100,120,90,40,60,80],2],["Sovkipou","Pokémon Cavaleur",7,[7,11],5,120,[25,35,40,20,30,80],0],["Sarmuraï","Pokémon Blindé",7,[7,11],20,1080,[75,125,140,60,90,40],2],["Bacabouh","Pokémon Pâtéd’Sable",7,[8,5],5,700,[55,55,80,70,45,15],0],["Trépassable","Pokémon Châtod’Sable",7,[8,5],13,2500,[85,75,110,100,75,35],1],["Concombaffe","Pokémon Holothurie",7,[11],3,12,[55,60,130,30,130,5],1],["Type:0","Pokémon Multigénome",7,[1],19,1205,[95,95,95,95,95,59],3],["Silvallié","Pokémon Multigénome",7,[1],23,1005,[95,95,95,95,95,95],5],["Météno","Pokémon Météore",7,[6,3],3,400,[60,60,100,60,100,60],1],["Dodoala","Pokémon Rêveur",7,[1],4,199,[65,115,65,75,95,65],1],["Boumata","Pokémon Tortue Boum",7,[10,16],20,2120,[60,78,135,91,85,36],1],["Togedemaru","Pokémon Roulenboule",7,[13,9],3,33,[65,98,63,40,73,96],1],["Mimiqui","Pokémon Fantômasque",7,[8,18],2,7,[55,90,80,50,105,96],1],["Denticrisse","Pokémon Grincedent",7,[11,14],9,190,[68,105,70,70,70,92],1],["Draïeul","Pokémon Nonchalant",7,[1,16],30,1850,[78,60,85,135,91,36],1],["Sinistrail","Pokémon Varech",7,[8,12],39,2100,[70,131,100,86,90,40],2],["Bébécaille","Pokémon Écailles",7,[16],6,297,[45,55,65,45,45,45],0],["Écaïd","Pokémon Écailles",7,[16,2],12,470,[55,75,90,65,70,65],1],["Ékaïser","Pokémon Écailles",7,[16,2],16,782,[75,110,125,100,105,85],3],["Tokorico","Pokémon Tutélaire",7,[13,18],18,205,[70,115,85,95,75,130],5],["Tokopiyon","Pokémon Tutélaire",7,[14,18],12,186,[70,85,75,130,115,95],5],["Tokotoro","Pokémon Tutélaire",7,[12,18],19,455,[70,130,115,85,95,75],5],["Tokopisco","Pokémon Tutélaire",7,[11,18],13,212,[70,75,115,95,130,85],5],["Cosmog","Pokémon Nébuleuse",7,[14],2,1,[43,29,31,29,31,37],2],["Cosmovum","Pokémon Proto-Étoile",7,[14],1,9999,[43,29,131,29,131,37],3],["Solgaleo","Pokémon Halo Solaire",7,[14,9],34,2300,[137,137,107,113,89,97],5],["Lunala","Pokémon Halo Lunaire",7,[14,8],40,1200,[137,113,89,137,107,97],5],["Zéroïd","Pokémon Parasite",7,[6,4],12,555,[109,53,47,127,131,103],3],["Mouscoto","Pokémon Enflé",7,[7,2],24,3336,[107,139,139,53,53,79],3],["Cancrelove","Pokémon Gracile",7,[7,2],18,250,[71,137,37,137,37,151],3],["Câblifère","Pokémon Luminaire",7,[13],38,1000,[83,89,71,173,71,83],3],["Bamboiselle","Pokémon Décollage",7,[9,3],92,9999,[97,101,103,107,101,61],3],["Katagami","Pokémon Battô",7,[12,9],3,1,[59,181,131,59,31,109],3],["Engloutyran","Pokémon Bizarrovore",7,[17,16],55,8880,[223,101,53,97,53,43],3],["Necrozma","Pokémon Prisme",7,[14],24,2300,[97,107,101,127,89,79],5],["Magearna","Pokémon Artificiel",7,[9,18],10,805,[80,95,115,130,115,65],5],["Marshadow","Pokémon Ombrefuge",7,[2,8],7,222,[90,125,80,90,90,125],5],["Vémini","Pokémon Vénépic",7,[4],6,18,[67,73,67,73,67,73],1],["Mandrillon","Pokémon Vénépic",7,[4,16],36,1500,[73,73,73,127,73,121],3],["Ama-Ama","Pokémon Muraille",7,[6,9],55,8200,[61,131,211,53,101,13],3],["Pierroteknik","Pokémon Artificier",7,[10,8],18,130,[53,127,53,151,79,107],3],["Zeraora","Pokémon Vif Éclair",7,[13],15,445,[88,112,75,102,80,143],5],["Meltan","Pokémon Écrou",7,[9],2,80,[46,65,65,55,35,34],3],["Melmetal","Pokémon Écrou",7,[9],25,8000,[135,143,143,80,65,34],5],["Ouistempo","Pokémon Chimpanzé",8,[12],3,50,[50,65,50,40,40,65],1],["Badabouin","Pokémon Percussions",8,[12],7,140,[70,85,70,55,60,80],2],["Gorythmic","Pokémon Batteur",8,[12],21,900,[100,125,90,60,70,85],3],["Flambino","Pokémon Lapin",8,[10],3,45,[50,71,40,40,40,69],1],["Lapyro","Pokémon Lapin",8,[10],6,90,[65,86,60,55,60,94],2],["Pyrobut","Pokémon Buteur",8,[10],14,330,[80,116,75,65,75,119],3],["Larméléon","Pokémon Lézard’Eau",8,[11],3,40,[50,40,40,70,40,70],1],["Arrozard","Pokémon Lézard’Eau",8,[11],7,115,[65,60,55,95,55,90],2],["Lézargus","Pokémon Agent Secret",8,[11],19,452,[70,85,65,125,65,120],3],["Rongourmand","Pokémon Joufflu",8,[1],3,25,[70,55,55,35,35,25],0],["Rongrigou","Pokémon Goulu",8,[1],6,60,[120,95,95,55,75,20],1],["Minisange","Pokémon Minoiseau",8,[3],2,18,[38,47,35,33,35,57],0],["Bleuseille","Pokémon Corbeau",8,[3],8,160,[68,67,55,43,55,77],1],["Corvaillus","Pokémon Corbeau",8,[3,9],22,750,[98,87,105,53,85,67],2],["Larvadar","Pokémon Larve",8,[7],4,80,[25,20,20,25,45,45],0],["Coléodôme","Pokémon Radôme",8,[7,14],4,195,[50,35,80,50,90,30],1],["Astronelle","Pokémon Sept Points",8,[7,14],4,408,[60,45,110,80,120,90],2],["Goupilou","Pokémon Renard",8,[17],6,89,[40,28,28,47,52,50],0],["Roublenard","Pokémon Renard",8,[17],12,199,[70,58,58,87,92,90],1],["Tournicoton","Pokémon Chef-Fleur",8,[12],4,22,[40,40,60,40,60,10],0],["Blancoton","Pokémon Chef-Coton",8,[12],5,25,[60,50,90,80,120,60],1],["Moumouton","Pokémon Mouton",8,[1],6,60,[42,40,55,40,45,48],0],["Moumouflon","Pokémon Mouton",8,[1],13,430,[72,80,100,60,90,88],2],["Khélocrok","Pokémon Mordillage",8,[11],3,85,[50,64,50,38,38,44],0],["Torgamord","Pokémon Morsure",8,[11,6],10,1155,[90,115,90,48,68,74],1],["Voltoutou","Pokémon Chiot",8,[13],3,135,[59,45,50,40,50,26],0],["Fulgudog","Pokémon Chien",8,[13],10,340,[69,90,60,90,60,121],2],["Charbi","Pokémon Charbon",8,[6],3,120,[30,40,50,40,50,30],0],["Wagomine","Pokémon Charbon",8,[6,10],11,780,[80,60,90,60,70,50],1],["Monthracite","Pokémon Charbon",8,[6,10],28,3105,[110,80,120,80,90,30],2],["Verpom","Pokémon Nid Pomme",8,[12,16],2,5,[40,40,80,40,40,20],0],["Pomdrapi","Pokémon Ailes Pomme",8,[12,16],3,10,[70,110,80,95,60,70],1],["Dratatin","Pokémon Jus Pomme",8,[12,16],4,130,[110,85,80,100,80,30],1],["Dunaja","Pokémon Serpensable",8,[5],22,76,[52,57,75,35,50,46],0],["Dunaconda","Pokémon Serpensable",8,[5],38,655,[72,107,125,65,70,71],2],["Nigosier","Pokémon Avaltouron",8,[3,11],8,180,[70,85,55,85,95,85],1],["Embrochet","Pokémon Fonceur",8,[11],5,10,[41,63,40,40,30,66],0],["Hastacuda","Pokémon Transperceur",8,[11],13,300,[61,123,60,60,50,136],2],["Toxizap","Pokémon Poupon",8,[13,4],4,110,[40,38,35,54,35,40],0],["Salarsen","Pokémon Punk",8,[13,4],16,400,[75,98,70,114,70,75],2],["Grillepattes","Pokémon Calorifère",8,[10,7],7,10,[50,65,45,50,50,45],0],["Scolocendre","Pokémon Calorifère",8,[10,7],30,1200,[100,115,65,90,90,65],2],["Poulpaf","Pokémon Caprice",8,[2],6,40,[50,68,60,50,50,32],0],["Krakos","Pokémon Jujitsu",8,[2],16,390,[80,118,90,70,80,42],1],["Théffroi","Pokémon Thé Noir",8,[8],1,2,[40,45,45,74,54,50],0],["Polthégeist","Pokémon Thé Noir",8,[8],2,4,[60,65,65,134,114,70],2],["Bibichut","Pokémon Calme",8,[14],4,34,[42,30,45,56,53,39],0],["Chapotus","Pokémon Serein",8,[14],6,48,[57,40,65,86,73,49],1],["Sorcilence","Pokémon Silencieux",8,[14,18],21,51,[57,90,95,136,103,29],2],["Grimalin","Pokémon Malin",8,[17,18],4,55,[45,45,30,55,40,50],0],["Fourbelin","Pokémon Scélérat",8,[17,18],8,125,[65,60,45,75,55,70],1],["Angoliath","Pokémon Gonflette",8,[17,18],15,610,[95,120,65,95,75,60],2],["Ixon","Pokémon Barrage",8,[17,1],16,460,[93,90,101,60,81,95],2],["Berserkatt","Pokémon Viking",8,[9],8,280,[70,110,100,50,60,50],1],["Corayôme","Pokémon Corail",8,[8],10,4,[60,95,50,145,130,30],2],["Palarticho","Pokémon Canard Fou",8,[2],8,1170,[62,135,95,68,82,65],2],["M. Glaquette","Pokémon Comédien",8,[15,14],15,582,[80,85,75,110,100,70],2],["Tutétékri","Pokémon Rancune",8,[5,8],16,666,[58,95,145,50,105,30],1],["Crèmy","Pokémon Crème",8,[18],2,3,[45,40,40,50,61,34],0],["Charmilly","Pokémon Crème",8,[18],3,5,[65,60,75,110,121,64],2],["Hexadron","Pokémon Escadron",8,[2],30,620,[65,100,100,70,60,75],1],["Wattapik","Pokémon Oursin",8,[13],3,10,[48,101,95,91,85,15],1],["Frissonille","Pokémon Ver",8,[15,7],3,38,[30,25,35,45,30,20],0],["Beldeneige","Pokémon Mite Givre",8,[15,7],13,420,[70,65,60,125,90,65],1],["Dolman","Pokémon Mégalithe",8,[6],25,5200,[100,125,135,20,20,70],1],["Bekaglaçon","Pokémon Pingouin",8,[15],14,890,[75,80,110,65,90,50],1],["Wimessir","Pokémon Émotion",8,[14,1],9,280,[60,65,55,105,95,95],1],["Morpeko","Pokémon Volt Face",8,[13,17],3,30,[58,95,58,70,58,97],1],["Charibari","Pokémon Pachycuivre",8,[9],12,1000,[72,80,49,40,49,40],0],["Pachyradjah","Pokémon Pachycuivre",8,[9],30,6500,[122,130,69,80,69,30],2],["Galvagon","Pokémon Fossile",8,[13,16],18,1900,[90,100,90,80,70,75],2],["Galvagla","Pokémon Fossile",8,[13,15],23,1500,[90,100,90,90,80,55],2],["Hydragon","Pokémon Fossile",8,[11,16],23,2150,[90,90,100,70,80,75],2],["Hydragla","Pokémon Fossile",8,[11,15],20,1750,[90,90,100,80,90,55],2],["Duralugon","Pokémon Alliage",8,[9,16],18,400,[70,95,115,120,50,85],2],["Fantyrm","Pokémon Âme Errante",8,[16,8],5,20,[28,60,30,40,30,82],0],["Dispareptil","Pokémon Baby-sitter",8,[16,8],14,110,[68,80,50,60,50,102],1],["Lanssorien","Pokémon Furtif",8,[16,8],30,500,[88,120,75,100,75,142],3],["Zacian","Pokémon Valeureux",8,[18],28,1100,[92,120,115,80,115,138],5],["Zamazenta","Pokémon Valeureux",8,[2],29,2100,[92,120,115,80,115,138],5],["Éthernatos","Pokémon Giga",8,[4,16],200,9500,[140,85,95,145,95,130],5],["Wushours","Pokémon Kung-fu",8,[2],6,120,[60,90,60,53,50,72],3],["Shifours","Pokémon Kung-fu",8,[2,17],19,1050,[100,130,100,63,60,97],5],["Zarude","Pokémon Vilain Singe",8,[17,12],18,700,[105,120,105,70,95,105],5],["Regieleki","Pokémon Électron",8,[13],12,1450,[80,100,50,100,50,200],5],["Regidrago","Pokémon Boule Dragon",8,[16],21,2000,[200,100,50,100,50,80],5],["Blizzeval","Pokémon Cheval Rétif",8,[15],22,8000,[100,145,130,65,110,30],5],["Spectreval","Pokémon Cheval Vif",8,[8],20,445,[100,65,60,145,80,130],5],["Sylveroy","Pokémon Roi",8,[14,12],11,77,[100,80,80,80,80,80],5],["Cerbyllin","Pokémon Maxi Corne",8,[1,14],18,951,[103,105,72,105,75,65],2],["Hachécateur","Pokémon Hache",8,[7,6],18,890,[70,135,95,45,70,85],3],["Ursaking","Pokémon Tourbe",8,[5,1],24,2900,[130,140,105,45,80,50],3],["Paragruel","Pokémon Poissigrand",8,[11,8],30,1100,[120,112,65,80,75,78],2],["Farfurex","Pokémon Grimpeur",8,[2,4],13,430,[80,130,60,40,80,120],2],["Qwilpik","Pokémon Épineux",8,[17,4],25,605,[85,115,95,65,65,85],2],["Amovénus","Pokémon Hainamour",8,[18,3],16,480,[74,115,70,135,80,106],5],["Poussacha","Chat Plante",9,[12],4,41,[40,61,54,45,45,65],1],["Matourgeon","Chat Plante",9,[12],9,122,[61,80,63,60,63,83],2],["Miascarade","Magicien",9,[12,17],15,312,[76,110,70,81,70,123],3],["Chochodile","Croco Feu",9,[10],4,98,[67,45,59,63,40,36],1],["Crocogril","Croco Feu",9,[10],10,307,[81,55,78,90,58,49],2],["Flâmigator","Chanteur",9,[10,8],16,3265,[104,75,100,110,75,66],3],["Coiffeton","Caneton",9,[11],5,61,[55,65,45,50,45,50],1],["Canarbello","Leçon",9,[11],12,215,[70,85,65,65,60,65],2],["Palmaval","Danseur",9,[11,2],18,619,[85,120,80,85,75,85],3],["Gourmelet","Pourceau",9,[1],5,102,[54,45,40,35,45,35],0],["Fragroin","Pourceau",9,[1],10,1200,[110,100,75,59,80,65],1],["Tissenboule","Boule de Fil",9,[7],3,40,[35,41,45,29,40,20],0],["Filentrappe","Piège",9,[7],10,165,[60,79,92,52,86,35],1],["Lilliterelle","Sauterelle",9,[7],2,10,[33,46,40,21,25,45],0],["Gambex","Sauterelle",9,[7,17],10,175,[71,102,78,52,55,92],1],["Pohm","Souris",9,[13],3,25,[45,50,20,40,25,60],0],["Pohmotte","Souris",9,[13,2],4,65,[60,75,40,50,40,85],1],["Pohmarmotte","Pose Paume",9,[13,2],9,410,[70,115,70,70,60,105],2],["Compagnol","Couple",9,[1],3,18,[50,50,45,40,45,75],0],["Famignol","Famille",9,[1],3,28,[74,75,70,65,75,111],1],["Pâtachiot","Chiot",9,[18],3,109,[37,55,70,30,55,65],0],["Briochien","Chien",9,[18],5,149,[57,80,115,50,80,95],1],["Olivini","Olive",9,[12,1],3,65,[41,35,45,58,51,30],0],["Olivado","Olive",9,[12,1],6,119,[52,53,60,78,78,33],1],["Arboliva","Olive",9,[12,1],14,482,[78,69,90,125,109,39],2],["Tapatoès","Perroquet",9,[1,3],6,24,[82,96,51,45,51,92],1],["Selutin","Halite",9,[6],4,160,[55,55,75,35,35,25],0],["Amassel","Halite",9,[6],6,1050,[60,60,100,35,65,35],1],["Gigansel","Halite",9,[6],23,2400,[100,100,130,45,90,35],2],["Charbambin","Enfant Feu",9,[10],6,105,[40,50,40,50,40,35],0],["Carmadura","Feu Guerrier",9,[10,14],15,850,[85,60,100,125,80,75],2],["Malvalame","Feu Bretteur",9,[10,8],16,620,[75,125,80,60,100,85],2],["Têtampoule","Électêtard",9,[13],3,4,[61,31,41,59,35,45],0],["Ampibidou","Élecrapaud",9,[13],12,1130,[109,64,91,103,83,45],2],["Zapétrel","Océanite",9,[13,3],4,36,[40,40,35,55,40,70],0],["Fulgulairo","Frégate",9,[13,3],14,386,[70,70,60,105,60,125],2],["Grondogue","Jeunot",9,[17],5,160,[60,78,60,40,51,51],0],["Dogrino","Parrain",9,[17],11,610,[80,120,90,60,70,85],2],["Gribouraigne","Souris Venin",9,[4,1],2,7,[40,65,35,40,35,75],0],["Tag-Tag","Singe Venin",9,[4,1],7,272,[63,95,65,80,72,110],1],["Virovent","Virevoltant",9,[12,8],6,6,[40,65,30,45,35,60],0],["Virevorreur","Virevoltant",9,[12,8],12,60,[55,115,70,80,70,90],1],["Terracool","Champiméduse",9,[5,12],9,330,[40,40,35,50,100,70],0],["Terracruel","Champiméduse",9,[5,12],19,580,[80,70,65,80,120,100],2],["Craparoi","Embuscade",9,[6],13,790,[70,100,115,35,55,75],1],["Pimito","Habanero",9,[12],3,30,[50,62,40,62,40,50],0],["Scovilain","Habanero",9,[12,10],9,150,[65,108,65,108,65,75],1],["Léboulérou","Rouleur",9,[7],2,10,[41,50,60,31,58,30],0],["Bérasca","Rouleur",9,[7,14],3,35,[75,50,85,115,100,45],1],["Flotillon","Froufrou",9,[14],2,15,[30,35,30,55,30,75],0],["Cléopsytra","Autruche",9,[14],19,900,[95,60,60,101,60,105],1],["Forgerette","Forge",9,[18,9],4,89,[50,45,45,35,64,58],0],["Forgella","Marteau",9,[18,9],7,591,[65,55,55,45,82,78],1],["Forgelina","Marteau",9,[18,9],7,1128,[85,75,77,70,105,94],2],["Taupikeau","Congre",9,[11],12,18,[10,55,25,35,25,95],0],["Triopikeau","Congre",9,[11],12,54,[35,100,50,50,70,120],1],["Lestombaile","Délesteur",9,[3,17],15,429,[70,103,85,60,85,82],1],["Dofin","Dauphin",9,[11],13,602,[70,45,40,45,40,75],0],["Superdofin","Dauphin/Super Héros",9,[11],13,602,[100,70,72,53,62,100],1],["Vrombi","Monocylindre",9,[9,4],10,350,[45,70,63,30,45,47],0],["Vrombotor","Polycylindre",9,[9,4],18,1200,[80,119,90,54,67,90],2],["Motorizard","Monture",9,[16,1],16,630,[70,95,65,85,65,121],2],["Ferdeter","Ver de Terre",9,[9],25,3100,[70,85,145,60,55,65],1],["Germéclat","Minerai",9,[6,4],7,80,[48,35,42,105,60,60],0],["Floréclat","Minerai",9,[6,4],15,450,[83,55,90,130,81,86],2],["Toutombe","Fantôchien",9,[8],6,350,[50,61,60,30,55,34],0],["Tomberro","Fantôchien",9,[8],20,150,[72,101,100,50,97,68],1],["Flamenroule","Synchro",9,[3,2],16,370,[82,115,74,75,64,90],2],["Piétacé","Baleinapied",9,[15],12,450,[108,68,45,30,40,43],0],["Balbalèze","Baleinapied",9,[15],45,7000,[170,113,65,45,55,73],2],["Délestin","Décharné",9,[11,14],25,900,[90,102,73,78,65,70],1],["Oyacata","Grand Silure",9,[11],120,2200,[150,100,115,65,65,35],2],["Nigirigon","Mimétisme",9,[16,11],3,80,[68,50,60,120,95,82],1],["Courrousinge","Singe Furax",9,[2,8],12,560,[110,115,80,50,90,90],3],["Terraiste","Poissépine",9,[4,5],18,2230,[130,75,60,45,100,20],1],["Farigiraf","Long-Cou",9,[1,14],32,1600,[120,90,70,110,70,60],2],["Deusolourdo","Serpent",9,[1],36,392,[125,100,80,85,75,55],2],["Scalpereur","Pourfendant",9,[17,9],20,1200,[100,135,120,60,85,50],3],["Fort-Ivoire","Paradoxe",9,[5,2],22,3200,[115,131,131,53,53,87],3],["Hurle-Queue","Paradoxe",9,[18,14],12,80,[115,65,99,65,115,111],3],["Fongus-Furie","Paradoxe",9,[12,17],12,210,[111,127,99,79,99,55],3],["Flotte-Mèche","Paradoxe",9,[8,18],14,40,[55,55,55,135,135,135],3],["Rampe-Ailes","Paradoxe",9,[7,2],32,920,[85,135,79,85,105,81],3],["Pelage-Sablé","Paradoxe",9,[13,5],23,600,[85,81,97,121,85,101],3],["Roue-de-Fer","Paradoxe",9,[5,9],9,2400,[90,112,120,72,70,106],3],["Hotte-de-Fer","Paradoxe",9,[15,11],6,110,[56,80,114,124,60,136],3],["Paume-de-Fer","Paradoxe",9,[2,13],18,3807,[154,140,108,50,68,50],3],["Têtes-de-Fer","Paradoxe",9,[17,3],13,1110,[94,80,86,122,80,108],3],["Mite-de-Fer","Paradoxe",9,[10,4],12,360,[80,70,60,140,110,110],3],["Épine-de-Fer","Paradoxe",9,[6,13],16,3030,[100,134,110,70,84,72],3],["Frigodo","Glaçaileron",9,[16,15],5,170,[65,75,45,35,45,55],0],["Cryodo","Glaçaileron",9,[16,15],8,300,[90,95,66,45,65,62],1],["Glaivodo","Dragon Glace",9,[16,15],21,2100,[115,145,92,75,86,87],3],["Mordudor","Coffrotrésor/Chassotrésor",9,[8],3,50,[45,30,70,75,70,10],0],["Gromago","Trésor Animé",9,[9,8],12,300,[87,60,95,133,91,84],3],["Chongjian","Fléau",9,[17,12],15,742,[85,85,100,95,135,70],5],["Baojian","Fléau",9,[17,15],19,1522,[80,120,80,90,65,135],5],["Dinglu","Fléau",9,[17,5],27,6997,[155,110,125,55,80,45],5],["Yuyu","Fléau",9,[17,10],4,49,[55,80,80,135,120,100],5],["Rugit-Lune","Paradoxe",9,[16,17],20,3800,[105,139,71,55,101,119],3],["Garde-de-Fer","Paradoxe",9,[18,2],14,350,[74,130,90,120,60,116],3],["Koraidon","Paradoxe",9,[2,16],25,3030,[100,135,115,85,100,135],5],["Miraidon","Paradoxe",9,[13,16],35,2400,[100,85,100,135,115,135],5],["Serpente-Eau","Paradoxe",9,[11,16],35,2800,[99,83,91,125,83,109],3],["Vert-de-Fer","Paradoxe",9,[12,14],15,1250,[90,130,88,70,108,104],3],["Pomdramour","Sirop Pomme",9,[12,16],4,97,[80,80,110,95,80,40],1],["Poltchageist","Matcha",9,[12,8],1,11,[40,45,45,74,54,50],0],["Théffroyable","Matcha",9,[12,8],2,22,[71,60,106,121,80,70],2],["Félicanis","Serviteur",9,[4,2],18,922,[88,128,115,58,86,80],5],["Fortusimia","Serviteur",9,[4,14],10,122,[88,75,66,130,90,106],5],["Favianos","Serviteur",9,[4,18],14,301,[88,91,82,70,125,99],5],["Ogerpon","Masque",9,[12],12,398,[80,120,84,60,96,110],5],["Pondralugon","Alliage",9,[9,16],20,600,[90,105,130,125,65,85],3],["Pomdorochi","Hydre Pomme",9,[12,16],18,930,[106,80,110,120,80,44],3],["Feu-Perçant","Paradoxe",9,[10,16],35,5900,[105,115,121,65,93,91],3],["Ire-Foudre","Paradoxe",9,[13,16],52,4800,[125,73,91,137,89,75],3],["Roc-de-Fer","Paradoxe",9,[6,14],15,1625,[90,120,80,68,108,124],3],["Chef-de-Fer","Paradoxe",9,[9,14],16,1560,[90,72,100,122,108,98],3],["Terapagos","Téracristal",9,[1],2,65,[90,65,85,65,85,60],5],["Pêchaminus","Emprise",9,[4,8],3,3,[88,88,160,88,88,88],5]];
 const EVO={"1":[2],"2":[3],"4":[5],"5":[6],"7":[8],"8":[9],"10":[11],"11":[12],"13":[14],"14":[15],"16":[17],"17":[18],"19":[20],"21":[22],"23":[24],"25":[26],"27":[28],"29":[30],"30":[31],"32":[33],"33":[34],"35":[36],"37":[38],"39":[40],"41":[42],"42":[169],"43":[44],"44":[45,182],"46":[47],"48":[49],"50":[51],"52":[53,863],"54":[55],"56":[57],"57":[979],"58":[59],"60":[61],"61":[62,186],"63":[64],"64":[65],"66":[67],"67":[68],"69":[70],"70":[71],"72":[73],"74":[75],"75":[76],"77":[78],"79":[80,199],"81":[82],"82":[462],"83":[865],"84":[85],"86":[87],"88":[89],"90":[91],"92":[93],"93":[94],"95":[208],"96":[97],"98":[99],"100":[101],"102":[103],"104":[105],"108":[463],"109":[110],"111":[112],"112":[464],"113":[242],"114":[465],"116":[117],"117":[230],"118":[119],"120":[121],"122":[866],"123":[212,900],"125":[466],"126":[467],"129":[130],"133":[134,135,136,196,197,470,471,700],"137":[233],"138":[139],"140":[141],"147":[148],"148":[149],"152":[153],"153":[154],"155":[156],"156":[157],"158":[159],"159":[160],"161":[162],"163":[164],"165":[166],"167":[168],"170":[171],"172":[25],"173":[35],"174":[39],"175":[176],"176":[468],"177":[178],"179":[180],"180":[181],"183":[184],"187":[188],"188":[189],"190":[424],"191":[192],"193":[469],"194":[195,980],"198":[430],"200":[429],"203":[981],"204":[205],"206":[982],"207":[472],"209":[210],"211":[904],"215":[461,903],"216":[217],"217":[901],"218":[219],"220":[221],"221":[473],"222":[864],"223":[224],"228":[229],"231":[232],"233":[474],"234":[899],"236":[106,107,237],"238":[124],"239":[125],"240":[126],"246":[247],"247":[248],"252":[253],"253":[254],"255":[256],"256":[257],"258":[259],"259":[260],"261":[262],"263":[264],"264":[862],"265":[266,268],"266":[267],"268":[269],"270":[271],"271":[272],"273":[274],"274":[275],"276":[277],"278":[279],"280":[281],"281":[282,475],"283":[284],"285":[286],"287":[288],"288":[289],"290":[291,292],"293":[294],"294":[295],"296":[297],"298":[183],"299":[476],"300":[301],"304":[305],"305":[306],"307":[308],"309":[310],"315":[407],"316":[317],"318":[319],"320":[321],"322":[323],"325":[326],"328":[329],"329":[330],"331":[332],"333":[334],"339":[340],"341":[342],"343":[344],"345":[346],"347":[348],"349":[350],"353":[354],"355":[356],"356":[477],"360":[202],"361":[362,478],"363":[364],"364":[365],"366":[367,368],"371":[372],"372":[373],"374":[375],"375":[376],"387":[388],"388":[389],"390":[391],"391":[392],"393":[394],"394":[395],"396":[397],"397":[398],"399":[400],"401":[402],"403":[404],"404":[405],"406":[315],"408":[409],"410":[411],"412":[413,414],"415":[416],"418":[419],"420":[421],"422":[423],"425":[426],"427":[428],"431":[432],"433":[358],"434":[435],"436":[437],"438":[185],"439":[122],"440":[113],"443":[444],"444":[445],"446":[143],"447":[448],"449":[450],"451":[452],"453":[454],"456":[457],"458":[226],"459":[460],"495":[496],"496":[497],"498":[499],"499":[500],"501":[502],"502":[503],"504":[505],"506":[507],"507":[508],"509":[510],"511":[512],"513":[514],"515":[516],"517":[518],"519":[520],"520":[521],"522":[523],"524":[525],"525":[526],"527":[528],"529":[530],"532":[533],"533":[534],"535":[536],"536":[537],"540":[541],"541":[542],"543":[544],"544":[545],"546":[547],"548":[549],"550":[902],"551":[552],"552":[553],"554":[555],"557":[558],"559":[560],"562":[563,867],"564":[565],"566":[567],"568":[569],"570":[571],"572":[573],"574":[575],"575":[576],"577":[578],"578":[579],"580":[581],"582":[583],"583":[584],"585":[586],"588":[589],"590":[591],"592":[593],"595":[596],"597":[598],"599":[600],"600":[601],"602":[603],"603":[604],"605":[606],"607":[608],"608":[609],"610":[611],"611":[612],"613":[614],"616":[617],"619":[620],"622":[623],"624":[625],"625":[983],"627":[628],"629":[630],"633":[634],"634":[635],"636":[637],"650":[651],"651":[652],"653":[654],"654":[655],"656":[657],"657":[658],"659":[660],"661":[662],"662":[663],"664":[665],"665":[666],"667":[668],"669":[670],"670":[671],"672":[673],"674":[675],"677":[678],"679":[680],"680":[681],"682":[683],"684":[685],"686":[687],"688":[689],"690":[691],"692":[693],"694":[695],"696":[697],"698":[699],"704":[705],"705":[706],"708":[709],"710":[711],"712":[713],"714":[715],"722":[723],"723":[724],"725":[726],"726":[727],"728":[729],"729":[730],"731":[732],"732":[733],"734":[735],"736":[737],"737":[738],"739":[740],"742":[743],"744":[745],"747":[748],"749":[750],"751":[752],"753":[754],"755":[756],"757":[758],"759":[760],"761":[762],"762":[763],"767":[768],"769":[770],"772":[773],"782":[783],"783":[784],"789":[790],"790":[791,792],"803":[804],"808":[809],"810":[811],"811":[812],"813":[814],"814":[815],"816":[817],"817":[818],"819":[820],"821":[822],"822":[823],"824":[825],"825":[826],"827":[828],"829":[830],"831":[832],"833":[834],"835":[836],"837":[838],"838":[839],"840":[841,842,1011],"843":[844],"846":[847],"848":[849],"850":[851],"852":[853],"854":[855],"856":[857],"857":[858],"859":[860],"860":[861],"868":[869],"872":[873],"878":[879],"884":[1018],"885":[886],"886":[887],"891":[892],"906":[907],"907":[908],"909":[910],"910":[911],"912":[913],"913":[914],"915":[916],"917":[918],"919":[920],"921":[922],"922":[923],"924":[925],"926":[927],"928":[929],"929":[930],"932":[933],"933":[934],"935":[936,937],"938":[939],"940":[941],"942":[943],"944":[945],"946":[947],"948":[949],"951":[952],"953":[954],"955":[956],"957":[958],"958":[959],"960":[961],"963":[964],"965":[966],"969":[970],"971":[972],"974":[975],"996":[997],"997":[998],"999":[1000],"1011":[1019],"1012":[1013]}; // numéro -> évolutions possibles
@@ -1204,7 +1393,7 @@ const STATN=["PV","Atq","Déf","A.Spé","D.Spé","Vit"];
 /* Visuels : dossier images du dépôt, un fichier par carte ({id} = numéro de la carte).
    Chemin relatif, sans / au début : le site est publié sous /DexCraft/. Voir dexcraft-guide-images.md. */
 const IMG_URL="images/{id}.webp";
-const PER=10*60*1000, MAXP=10, CARDS=5, START_CREDITS=3100;
+const PER=10*60*1000, MAXP=10, CARDS=5, START_CREDITS=1900; // nouveau joueur : 1 900 crédits et 10 boosters (1.0.0 ; 3 100 avant)
 // Crédits gagnés par carte défaussée, de Commune (0) à Transcendante (7)
 const DISCARD=[2,5,10,15,18,20,50,100];
 const dVal=id=>DISCARD[rar(+id)];
@@ -1212,6 +1401,59 @@ const cr=n=>`${fmtN(n)} crédit${n>1?"s":""}`;
 const selValue=sel=>Object.entries(sel).reduce((a,[id,q])=>a+dVal(id)*q,0);
 const PACK_PRICE=200;
 const CREDIT_PACKS=[{credits:2000,euros:"2 €"},{credits:6000,euros:"5 €"}];
+/* ---------- Boutique cosmétique (0.9.0) ----------
+   Uniquement de la décoration : jamais de cartes, de boosters ni de crédits contre de l'argent réel.
+   Article : « emplacement.nom ». Emplacements portés (profil, « Mon look ») : dos, sac, cadre, pseudo, fond.
+   Badges : affichés dès qu'on les possède. Titre : dans la liste des titres (« lord »).
+   Prix en centimes : exportés dans la configuration, c'est le serveur (paiement Stripe) qui fait foi.
+   Possédés : cos = {article: date} ; portés : look = {emplacement: article} ; visibles par tous : vis (dc__stamp). */
+const COS_SLOTS=[["dos","Dos de carte"],["sac","Sachet de booster"],["cadre","Cadre d’image de profil"],["pseudo","Couleur du pseudo"],["fond","Fond de l’écran des boosters"]];
+const COS={
+  "dos.carton":"Carton","sac.plastique":"Sac plastique","cadre.scotch":"Ruban adhésif","pseudo.gris":"Gris souris","fond.papierpeint":"Papier peint",
+  "dos.braise":"Braise","sac.volcan":"Volcan","cadre.flammes":"Flammes","pseudo.magma":"Magma","fond.volcan":"Volcan",
+  "dos.ocean":"Océan","sac.plage":"Plage","cadre.marine":"Marine","pseudo.corail":"Corail","fond.abysses":"Abysses",
+  "dos.nuit":"Nuit étoilée","sac.galaxie":"Galaxie","cadre.constellation":"Constellation","pseudo.nebuleuse":"Nébuleuse","fond.cosmos":"Cosmos",
+  "dos.or":"Or","sac.noiror":"Noir et or","cadre.dore":"Doré","pseudo.dore":"Dégradé doré","fond.tresor":"Trésor",
+  "dos.diamant":"Diamant","sac.lingot":"Lingot de platine","cadre.solitaire":"Solitaire","pseudo.platine":"Platine","fond.palais":"Palais",
+  "badge.soutien":"♥ Soutien","badge.flambeur":"💸 Flambeur","titre.lord":"🐋 Lord"};
+const BADGES={soutien:{ic:"♥",t:"Soutient DexCraft"},flambeur:{ic:"💸",t:"A dépensé beaucoup trop pour ce badge"}};
+const COS_PACK={}; // article -> pack (rempli ci-dessous)
+const OFFERS=[
+  {k:"soutien",n:"Badge Soutien",eur:300,ribbon:"Merci ♥",d:"Un cœur à côté de votre pseudo, visible par tous. Merci pour votre soutien ♥",items:["badge.soutien"]},
+  {k:"euro",n:"Pack L’euro symbolique",eur:100,ribbon:"Petit budget",d:"Pour 1 €, il ne fallait pas s’attendre à mieux : du carton, du scotch et un sac plastique.",
+   items:["dos.carton","sac.plastique","cadre.scotch","pseudo.gris","fond.papierpeint"]},
+  {k:"brasier",n:"Pack Brasier",eur:500,d:"Des braises, de la lave et un volcan qui gronde.",items:["dos.braise","sac.volcan","cadre.flammes","pseudo.magma","fond.volcan"]},
+  {k:"ocean",n:"Pack Océan",eur:500,d:"Les vagues, la plage et les fonds marins.",items:["dos.ocean","sac.plage","cadre.marine","pseudo.corail","fond.abysses"]},
+  {k:"cosmos",n:"Pack Cosmos",eur:1000,d:"Une nuit étoilée, une galaxie et des nébuleuses.",items:["dos.nuit","sac.galaxie","cadre.constellation","pseudo.nebuleuse","fond.cosmos"]},
+  {k:"or",n:"Pack Or",eur:2000,d:"De l’or brossé, du noir profond et un trésor.",items:["dos.or","sac.noiror","cadre.dore","pseudo.dore","fond.tresor"]},
+  {k:"baleine",n:"Pack Baleine assumée",ic:"🐋",eur:5000,ribbon:"Pour les baleines",
+   d:"Platine, diamants et un palais de marbre, avec en prime le titre Lord. Ça sert à rien et c’est beaucoup trop cher, mais ça brille.",
+   warn:"Aucun avantage en jeu. Ne l’achetez pas si ce n’est pas raisonnable pour vous.",
+   items:["dos.diamant","sac.lingot","cadre.solitaire","pseudo.platine","fond.palais","badge.flambeur","titre.lord"]}];
+OFFERS.forEach(o=>o.items.forEach(i=>COS_PACK[i]=o.k));
+const OFFER_BY=Object.fromEntries(OFFERS.map(o=>[o.k,o]));
+const eurTxt=c=>(c%100?(c/100).toLocaleString("fr-FR",{minimumFractionDigits:2}):c/100)+" €";
+const cosName=i=>COS[i]||i;
+const cosCls=i=>i?String(i).split(".")[1]:"";             // « cadre.flammes » -> « flammes »
+const owns=(p,i)=>!!(p&&p.cos&&p.cos[i]);
+const ownsOffer=(p,o)=>o.items.every(i=>owns(p,i));
+/* ce qu'un joueur porte, vu par les autres (vis, calculé par le serveur) ; pour soi, depuis look et cos */
+function visOf(id){
+  const p=profOf(id);if(!p)return {};
+  if(id===ME){const l=p.look||{};return {f:owns(p,l.cadre)?l.cadre:null,p:owns(p,l.pseudo)?l.pseudo:null,b:Object.keys(p.cos||{}).filter(k=>k.startsWith("badge.")).sort()}}
+  return p.vis||{};
+}
+const myLook=s=>{const l=(S&&S.look)||{};return S&&owns(S,l[s])?l[s]:null};
+/* image de profil d'un joueur, avec son cadre */
+function playerAva(id,size){
+  const v=visOf(id),a=avatarHTML(avatarOf(id),size);
+  return v.f?`<span class="avf fr-${cosCls(v.f)}" style="--s:${size}px">${a}</span>`:a;
+}
+/* pseudo d'un joueur, avec sa couleur et ses badges ; suffixe facultatif (« (vous) ») */
+function playerName(id,suffix){
+  const v=visOf(id),n=esc(nameOf(id))+(suffix||"");
+  return `${v.p?`<span class="ps-${cosCls(v.p)}">${n}</span>`:n}${(v.b||[]).map(b=>{const B=BADGES[cosCls(b)];return B?`<span class="bdg bdg-${cosCls(b)}" title="${esc(B.t)}">${B.ic}</span>`:""}).join("")}`;
+}
 /* Récompense de connexion quotidienne : série de 7 jours (heure de Paris), qui repart à zéro si un jour est manqué.
    Versée par le serveur (dc_daily_claim) : boosters dans la réserve achetée, crédits sur le compte. */
 const DAILY=[{packs:1},{credits:200},{packs:2},{credits:300},{packs:3},{credits:500},{packs:5,credits:1000}];
@@ -1500,7 +1742,7 @@ function avatarHTML(av,size=36){
 /* Titre Bêta testeur : donné à tous les joueurs tant que BETA_OPEN est vrai, et enregistré
    dans leur profil (champ beta). Passez BETA_OPEN à false à la fin de la bêta : ceux qui
    ont joué pendant la bêta gardent le titre, les nouveaux ne l'ont plus. */
-const BETA_OPEN=true;
+const BETA_OPEN=false; // bêta terminée à la sortie de la 1.0.0 : le titre n'est plus donné aux nouveaux joueurs
 /* Maître : toutes les cartes du jeu, Pokémon, formes régionales, méga-évolutions et Gigamax, hors mythiques et transcendantes */
 const masterCount=coll=>DEX_ORDER.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
 const POKE_IDS=DEX.map((d,i)=>i+1);
@@ -1538,9 +1780,9 @@ const DEX_TIERS=[[50,"Novice","dex50"],[151,"Gamin","dex151"],[300,"Scout","dex3
 const TITLES=[
   {k:"alpha",n:"Alpha testeur",ic:"✦",g:"Spéciaux",d:"A aidé au développement en Alpha de DexCraft",test:p=>!!p.alpha},
   {k:"beta",n:"Bêta testeur",ic:"◈",g:"Spéciaux",cls:"beta",d:"A participé à la Bêta ouverte de DexCraft",test:p=>BETA_OPEN||!!p.beta},
-  {k:"secret",n:"Secret",ic:"⁂",g:"Spéciaux",cls:"secret",d:"A obtenu une carte secrète",test:p=>HIDDEN_IDS.some(x=>(p.coll||{})[x]>0),hidden:true},
   {k:"mythique",n:"Mythique",ic:"✦",g:"Spéciaux",cls:"myth",d:"Possède toutes les cartes mythiques",ids:MYTH_IDS,hidden:true},
   {k:"transcendant",n:"Transcendant",ic:"❖",g:"Spéciaux",cls:"trans",d:"Possède toutes les cartes transcendantes",ids:TRANS_IDS,hidden:true},
+  {k:"lord",n:"Lord",ic:"🐋",g:"Spéciaux",cls:"lord",d:"A acheté le Pack Baleine assumée",test:p=>owns(p,"titre.lord")}, // titre de la boutique (0.9.0)
   ...DEX_TIERS.map(([need,n,k])=>({k,n,ic:"★",g:"Pokédex",cls:"tier",d:`A obtenu ${fmtN(need)} cartes différentes, toutes formes comprises`,ids:DEX_ORDER,need})),
   {k:"maitre",n:"Maître",ic:"♛",g:"Pokédex",cls:"master",d:"Possède toutes les cartes du jeu : Pokémon, formes régionales, formes de Zarbi, méga-évolutions et Gigamax",ids:DEX_ORDER},
   {k:"starters",n:"Starters",ic:"✿",g:"Collections",cls:"tc",c:"#e0782a",d:"A obtenu tous les starters des 9 générations",ids:STARTER_IDS},
@@ -1645,7 +1887,8 @@ function renderHeader(){
   {const tb=$("#trade-badge"),n=pendingOffers(),w=wishUnseen(),t=n+w;if(tb){tb.hidden=!t;tb.textContent=t?(t>99?"99+":t):"";tb.title=[n?`${n} proposition${n>1?"s":""} à traiter`:"",w?`${w} carte${w>1?"s":""} recherchée${w>1?"s":""} à l’échange`:""].filter(Boolean).join(", ")}}
   document.querySelectorAll("#tabs button,#h-me").forEach(b=>b.setAttribute("aria-current",b.dataset.view===view?"page":"false"));
   const nmTxt=S.pseudo||"Profil";
-  $("#h-me").innerHTML=avatarHTML(S.avatar,28)+`<span>${esc(nmTxt.length>14?nmTxt.slice(0,13)+"…":nmTxt)}</span>`;
+  {const v=visOf(ME);$("#h-me").innerHTML=playerAva(ME,28)+`<span${v.p?` class="ps-${cosCls(v.p)}"`:""}>${esc(nmTxt.length>14?nmTxt.slice(0,13)+"…":nmTxt)}</span>`}
+  checkUnlock(); // pack reçu (paiement, cadeau) : fenêtre « débloqué »
 }
 function renderAll(){renderHeader();renderView()}
 function keepInputs(fn){
@@ -1670,6 +1913,8 @@ let placeT=0;addEventListener("scroll",()=>{clearTimeout(placeT);placeT=setTimeo
 function renderView(){
   if(!S)return;const app=$("#app");
   keepInputs(()=>{app.innerHTML=({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto})[view]()});
+  // fond de l’écran des boosters (boutique) : seulement sur cet écran
+  {const f=view==="booster"?myLook("fond"):null;if(f)document.body.dataset.fond=cosCls(f);else delete document.body.dataset.fond}
   savePlace();
   lastPackN=packInfo(S).n;
   document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal); // pas de « tirer pour actualiser » pendant une ouverture
@@ -1765,35 +2010,37 @@ addEventListener("keydown",e=>{if(!reveal||view!=="booster"||dlg.open||document.
 function vBooster(){
   if(reveal){
     const all=reveal.every(c=>c.shown);
-    const multi=reveal.length>CARDS;
+    const multi=reveal.length>CARDS,dosCls=myLook("dos")?" bk-"+cosCls(myLook("dos")):""; // dos de carte équipé (boutique)
     return `<div class="booster"><h1>${revealGift?`Votre cadeau`:multi?`Vos ${reveal.length/CARDS} boosters`:"Votre booster"}</h1>
     <div class="reveal-bar" id="reveal-head">${revealHeadHTML()}</div>
     <div class="hand-wrap"><button class="hand-nav prev" data-act="hand-prev" aria-label="Carte précédente">‹</button>
     ${hitsMode&&!reveal.some(isHit)?`<div class="empty" style="margin:24px auto;max-width:520px">Aucune carte Épique ou mieux dans ce tirage.</div>`:""}
     <div class="hand" id="hand">${reveal.map((c,i)=>hitsMode&&!isHit(c)?"":`<button class="flip${c.shown?" shown":""}${rar(c.id)>=3?" hint"+rar(c.id):""}" data-act="flip" data-i="${i}" aria-label="${c.shown?esc(nm(c.id)):"Retourner la carte "+(i+1)}"><div class="flip-in">
-      <div class="face back"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div><div class="face front">${c.shown&&c.isNew?`<span class="new-tag">Nouvelle</span>`:""}${cardHTML(c.id)}</div></div></button>`).join("")}</div>
+      <div class="face back${dosCls}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div><div class="face front">${c.shown&&c.isNew?`<span class="new-tag">Nouvelle</span>`:""}${cardHTML(c.id)}</div></div></button>`).join("")}</div>
     <button class="hand-nav next" data-act="hand-next" aria-label="Carte suivante">›</button></div>
     <div class="hand-count" id="hand-count"></div>
     <div class="reveal-bar" id="reveal-actions">${revealActionsHTML()}</div>
     <div id="reveal-recap" style="width:100%">${recapHTML()}</div></div>`;
   }
   const p=packInfo(S);
-  return `<div class="booster">
-    <h1>Ouvrir un booster</h1>
-    <p class="muted">5 cartes au hasard. Attrapez-les tous !</p>
-    ${tipHTML()}${giftHTML()}${dailyHTML()}
+  return `<div class="booster home">
+    <div class="bh-head"><h1>Ouvrir un booster</h1>
+    <p class="muted">5 cartes au hasard. Attrapez-les tous !</p></div>
+    <div class="bh-left">${tipHTML()}${giftHTML()}${dailyHTML()}
     <details><summary>Comment ça marche ?</summary><div class="rules">
       <p>Vous recevez un booster toutes les 10 minutes, jusqu’à 10 boosters en réserve. Chaque carte a sa propre rareté :</p>
       <table><tr><td class="muted">Rareté</td><td class="muted">Chance</td><td class="muted">Défausse</td></tr>${RAR.slice(0,6).map((r,i)=>`<tr><td><span style="color:var(--r${i})">${gems(i)}</span> ${r} (${BYR[i].length} cartes)</td><td>${pct(ODDS[i])}</td><td>${cr(DISCARD[i])}</td></tr>`).join("")}</table>
       <p>Dans votre collection, vous pouvez défausser vos doubles contre des crédits selon leur rareté, ou les proposer à l’échange contre une carte de même rareté.</p>
-    </div></details>
-    <div class="pack-wrap"><button class="pack-hit" data-act="open" ${p.n<1&&!S.bonus?"disabled":""} aria-label="Ouvrir un booster"><div class="pack"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div><div class="pk-glow"></div></div></button><div class="pack-shadow"></div></div>
+    </div></details></div>
+    <div class="bh-right">
+    <button class="btn volto-cta" data-view="volto"><span class="vb-volt" aria-hidden="true"></span>En attendant vos boosters, une petite VoltoBataille ?</button>
+    <button class="btn shop-cta" data-view="shop">Acheter des boosters, ${PACK_PRICE} crédits l’unité</button>
+    ${discordHTML()}</div>
+    <div class="bh-main"><div class="pack-wrap"><button class="pack-hit" data-act="open" ${p.n<1&&!S.bonus?"disabled":""} aria-label="Ouvrir un booster"><div class="pack${myLook("sac")?" sk-"+cosCls(myLook("sac")):""}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div><div class="pk-glow"></div></div></button><div class="pack-shadow"></div></div>
     <div class="open-row">${OPEN_OPTS.map(k=>`<button class="btn${available(S)>=k?" primary":""}" data-act="open-n" data-n="${k}" ${available(S)<k?"disabled":""} title="${available(S)<k?`Il faut ${k} booster${k>1?"s":""} disponible${k>1?"s":""}`:`Ouvrir ${k} booster${k>1?"s":""} d’un coup`}">Ouvrir${k>1?" "+k:""}</button>`).join("")}</div>    <div class="stock"><div class="big">${p.n}<span class="of"> / ${MAXP}</span></div><div class="muted">boosters disponibles</div>
       <div class="stock-bar">${Array.from({length:MAXP},(_,i)=>`<i class="${i<p.n?"on":""}"></i>`).join("")}</div>
       <div class="muted">${p.next?`Prochain dans <b data-countdown="${p.next}">${fmtLeft(p.next-Date.now())}</b>`:"Réserve pleine"}</div>
-      ${S.bonus?`<div class="bonus-line"><b>+ ${S.bonus}</b> booster${S.bonus>1?"s":""} acheté${S.bonus>1?"s":""}, ouvert${S.bonus>1?"s":""} une fois la réserve gratuite vide</div>`:""}</div>
-    <button class="btn volto-cta" data-view="volto"><span class="vb-volt" aria-hidden="true"></span>En attendant vos boosters, une petite VoltoBataille ?</button>
-    <button class="btn shop-cta" data-view="shop">Acheter des boosters, ${PACK_PRICE} crédits l’unité</button>
+      ${S.bonus?`<div class="bonus-line"><b>+ ${S.bonus}</b> booster${S.bonus>1?"s":""} acheté${S.bonus>1?"s":""}, ouvert${S.bonus>1?"s":""} une fois la réserve gratuite vide</div>`:""}</div></div>
   </div>
   ${hintHidden()?"":`<div style="height:64px" aria-hidden="true"></div><div class="profile-hint"><button class="ph-go" data-view="profile">Changez d’image de profil, de pseudo et voyez la progression de vos titres en cliquant sur votre pseudo pour aller dans votre profil.</button><button class="ph-x" data-act="hide-hint" aria-label="Masquer ce message">×</button></div>`}`;
 }
@@ -2067,13 +2314,13 @@ function tradeInfoHTML(id,m){
     const canGive=Object.keys(S.coll).map(Number).filter(c=>canOffer(m,c)).length;
     return `<div class="info trade-info">
       <h2>${esc(nm(m.card))}</h2><span class="tag" style="color:var(--r${rar(m.card)})">${RAR[rar(m.card)]}</span>
-      ${isMine?"":`<div class="tag-row">${haveTag(m.card)}</div><div class="by">${avatarHTML(avatarOf(m.owner),20)} Proposée par ${esc(who(m.owner))}${badgeTag(m.owner,true)}</div>`}
+      ${isMine?"":`<div class="tag-row">${haveTag(m.card)}</div><div class="by">${playerAva(m.owner,20)} Proposée par ${m.owner===ME?"vous":playerName(m.owner)}${badgeTag(m.owner,true)}</div>`}
       <div class="by">Demande : ${tradeWants(m)}</div>${m.auto?`<div class="by"><b>⚡ Acceptation automatique</b> : ${isMine?"la première proposition valide est acceptée d’office.":"proposez une carte qui correspond et l’échange se fait tout de suite."}</div>`:""}
       ${isMine?(pend.length?`<div class="offers-in">${pend.map(([oid,o])=>{const have=S.coll[o.card]||0;
         return `<div class="offer-in"><div class="mini-wrap">${miniHTML(o.card,{count:have,act:"none"})}</div>
           <div class="oi-txt"><b>${esc(nm(o.card))}</b>
             <span class="evo-have ${have?"ok":"missing"}">${have?`Vous l’avez déjà ×${have}`:"Vous ne l’avez pas"}</span>
-            <span class="by">de ${esc(who(o.by))}${badgeTag(o.by,true)}</span></div>
+            <span class="by">de ${o.by===ME?"vous":playerName(o.by)}${badgeTag(o.by,true)}</span></div>
           <div class="oi-act"><button class="btn small primary" data-act="offer-yes" data-mid="${id}" data-oid="${oid}">Accepter</button>
             <button class="btn small" data-act="offer-no" data-mid="${id}" data-oid="${oid}">Refuser</button></div></div>`}).join("")}</div>`
         :`<div class="by">Aucune proposition reçue pour l’instant.</div>`)
@@ -2103,8 +2350,8 @@ function vRanking(){
   ${ME&&rows.some(r=>r.id===ME)?`<div class="actions" style="margin-top:10px"><button class="btn small" data-act="rank-me">Voir ma position (n° ${rows.findIndex(r=>r.id===ME)+1} sur ${rows.length})</button></div>`:""}
   <div class="lb-legend">${[0,1,2,3,4,5].map(i=>`<span><i class="seg r${i}"></i>${RAR[i]}</span>`).join("")}</div>
   <div class="lb" style="margin-top:16px">${rows.map((r,i)=>`<div class="lb-row${r.id===ME?" me":""}${i<3?" p"+(i+1):""}" data-act="player" data-uid="${esc(r.id)}" role="button" tabindex="0" aria-label="Profil de ${esc(nameOf(r.id))}">
-    <span class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</span>${avatarHTML(avatarOf(r.id),36)}
-    <div style="min-width:0"><div class="nm">${esc(r.id===ME?nameOf(ME)+" (vous)":nameOf(r.id))}${badgeTag(r.id,true)}</div>${lbBar(r)}</div>
+    <span class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</span>${playerAva(r.id,36)}
+    <div style="min-width:0"><div class="nm">${playerName(r.id)}${badgeTag(r.id,true)}</div>${lbBar(r)}</div>
     <span class="sc">${r.m?`<span class="myth-txt">✦${r.m}</span>`:""}${r.x?` <span class="trans-txt">❖${r.x}</span>`:""}</span></div>`).join("")||`<div class="empty">Personne n’a encore joué.</div>`}</div>`;
 }
 
@@ -2121,7 +2368,7 @@ function playerDlg(uid){
     const favs=Object.keys(p.fav||{}).map(Number).filter(id=>c[id]&&D(id)&&seen(id)).sort((a,b)=>rar(b)-rar(a)||a-b);
     const earned=TITLES.filter(t=>titleEarned(t,p)&&(!t.hidden||titleEarned(t,S)));
     openDlg(`<div class="side" style="gap:14px"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
-      <div class="pl-head">${avatarHTML(avatarOf(uid),72)}<div><h2 style="margin:0">${esc(nameOf(uid))}${uid===ME?" (vous)":""}</h2>
+      <div class="pl-head">${playerAva(uid,72)}<div><h2 style="margin:0">${playerName(uid)}</h2>
         <div>${badgeTag(uid,true)}</div>${since?`<p class="muted" style="margin:4px 0 0;font-size:.85rem">Joue depuis le ${since}</p>`:""}</div></div>
       <div class="pl-stats"><div><b>${masterCount(c)} / ${fmtN(LB_TOTAL)}</b><span class="muted">cartes différentes</span></div>
         <div><b>${fmtN(p.total||Object.values(c).reduce((a,b)=>a+b,0))}</b><span class="muted">cartes au total</span></div>
@@ -2140,6 +2387,32 @@ const avaHist=()=>{const h=Array.isArray(S.avaHist)?S.avaHist.map(Number).filter
 /* Profil en sections repliables (maquette B) : carte avec icône, titre et résumé. Les sections ouvertes
    restent ouvertes d'un affichage à l'autre (profOpen) ; les Titres sont ouverts par défaut. */
 const profOpen={titres:true};
+/* ---------- Mon look (0.9.0) : porter les cosmétiques achetés (dc_set_look) ---------- */
+function packMarkup(cls){
+  return `<div class="pack${cls?" sk-"+cls:""}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div></div>`;
+}
+function lookPreview(s,i){
+  const c=i?cosCls(i):"";
+  if(s==="dos")return `<div class="back mini-back${c?" bk-"+c:""}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div>`;
+  if(s==="sac")return `<div class="pack-hit mini-pk" style="--w:42px">${packMarkup(c)}</div>`;
+  if(s==="cadre")return c?`<span class="avf fr-${c}" style="--s:44px">${avatarHTML(S.avatar,44)}</span>`:avatarHTML(S.avatar,44);
+  if(s==="pseudo")return `<b class="look-ps${c?" ps-"+c:""}">${esc(S.pseudo||"Pseudo")}</b>`;
+  return `<span class="fsw${c?" fsw-"+c:" fsw-base"}"></span>`;
+}
+function lookHTML(){
+  const owned=Object.keys(S.cos||{});
+  if(!owned.length)return `<p class="muted">Aucun cosmétique pour l’instant. Les packs de la boutique changent l’apparence de vos cartes, de votre sachet, de votre image de profil, de votre pseudo et de l’écran des boosters.</p>
+    <button class="btn primary" data-view="shop">Voir la boutique</button>`;
+  const rows=COS_SLOTS.map(([s,label])=>{
+    const items=owned.filter(i=>i.startsWith(s+".")&&COS[i]).sort((a,b)=>OFFERS.findIndex(o=>o.k===COS_PACK[a])-OFFERS.findIndex(o=>o.k===COS_PACK[b]));
+    if(!items.length)return "";const cur=myLook(s);
+    return `<h3 class="look-h">${label}</h3><div class="look-row">${[null,...items].map(i=>`<button class="look-opt" data-act="look" data-slot="${s}" data-item="${i||""}" aria-pressed="${(cur||null)===i}">${lookPreview(s,i)}<span>${i?esc(cosName(i)):"Classique"}</span></button>`).join("")}</div>`;
+  }).join("");
+  const bd=owned.filter(i=>i.startsWith("badge.")),tl=owned.filter(i=>i.startsWith("titre."));
+  return `<p class="muted">Vous pouvez mélanger les articles de vos différents packs. Le cadre, la couleur du pseudo et les badges sont visibles par tous les joueurs ; le reste, par vous seul.</p>${rows}
+    ${bd.length?`<h3 class="look-h">Badges</h3><p class="muted" style="margin:0">${bd.map(b=>{const B=BADGES[cosCls(b)];return B?`<span class="bdg bdg-${cosCls(b)}">${B.ic}</span> ${esc(cosName(b).replace(/^\S+\s/,""))}`:""}).join(" · ")} : affichés à côté de votre pseudo.</p>`:""}
+    ${tl.length?`<p class="muted" style="margin:8px 0 0">Titre ${tl.map(t=>esc(cosName(t))).join(", ")} : à choisir dans la section Titres.</p>`:""}`;
+}
 function psec(key,ic,title,sum){
   return `<details class="psec" data-sec="${key}"${profOpen[key]?" open":""}><summary><span class="ps-ic" aria-hidden="true">${ic}</span>
     <span class="ps-tt"><b>${title}</b><span>${sum}</span></span><span class="ps-chev" aria-hidden="true">▼</span></summary><div class="psec-body">`;
@@ -2158,9 +2431,10 @@ function vProfile(){
   const sumTitres=`${tEarned} titre${tEarned>1?"s":""} obtenu${tEarned>1?"s":""} sur ${tAll} · ${tShown} affiché${tShown>1?"s":""} à côté de votre nom`;
   const sumImage=(S.avatar&&D(S.avatar)?esc(nm(S.avatar)):"Aucune image")+(recent.length>1?` · ${recent.length} dernières images`:"");
   const nxP=pseudoNext(S),sumCompte=`Connecté · ${nxP>Date.now()?`pseudo modifiable le ${new Date(nxP).toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`:"pseudo modifiable"}`;
+  const nCos=Object.keys(S.cos||{}).length,nWorn=COS_SLOTS.filter(([s])=>myLook(s)).length,sumLook=nCos?`${nCos} article${nCos>1?"s":""} · ${nWorn} porté${nWorn>1?"s":""}`:"Personnalisez votre apparence avec la boutique";
   const pr=prefs(),sumReg=`${SFX.muted()?"Sons coupés":`Sons activés (${Math.round(pr.vol*100)} %)`} · vibrations ${pr.vib?"activées":"désactivées"}`;
-  return `<div class="profile-head">${avatarHTML(S.avatar,96)}<div>
-    <h1>${esc(S.pseudo||"Mon profil")}</h1>
+  return `<div class="profile-head">${playerAva(ME,96)}<div>
+    <h1>${S.pseudo?playerName(ME):"Mon profil"}</h1>
     ${badgeTag(ME)}
     <div class="stats-row"><div><b>${masterCount(S.coll)} / ${fmtN(LB_TOTAL)}</b><span class="muted">cartes différentes</span></div><div><b>${Object.values(S.coll).reduce((a,b)=>a+b,0)}</b><span class="muted">cartes</span></div><div><b>${S.credits}</b><span class="muted">crédits</span></div><div><b>${fmtN((S.stats&&S.stats.packs)||0)}</b><span class="muted">boosters ouverts</span></div></div>
   </div></div>
@@ -2176,6 +2450,9 @@ function vProfile(){
     :recent.length?`<h3 style="margin:14px 0 8px;font-size:1rem">Dernières images utilisées</h3><div class="ava-grid">${recent.map(pick).join("")}</div>`
     :`<p class="muted" style="font-size:.85rem">Tapez le nom ou le numéro d’un Pokémon de votre collection.</p>`}`
     :`<div class="empty">Ouvrez votre premier booster pour débloquer des images de profil.</div>`}
+  </div></details>
+  ${psec("look","✨","Mon look",sumLook)}
+    ${lookHTML()}
   </div></details>
   ${psec("compte","👤","Compte et pseudo",sumCompte)}
     <div class="acct"><span class="dot"></span><div>
@@ -2235,6 +2512,11 @@ function vProfile(){
       <label class="field">Exemplaires<input type="number" id="gc-n" data-keep="gc-n" value="1" style="width:100px"></label>
       <button class="btn primary" data-act="give-card">Donner</button></div>
     <p class="muted" style="margin:6px 0 0;font-size:.85rem">Au joueur choisi ci-dessus. Toutes les cartes, mythiques et transcendantes comprises. Le joueur les reçoit dans une boîte cadeau, à ouvrir depuis l’écran des boosters. Un nombre négatif retire des exemplaires de sa collection.</p>
+    <h3 style="margin-top:18px">Donner un pack de la boutique</h3>
+    <div class="actions" style="margin-top:10px;align-items:end">
+      <label class="field" style="flex:1;min-width:220px">Offre<select id="go-offer" data-keep="go-offer">${OFFERS.map(o=>`<option value="${o.k}">${esc(o.n)} (${eurTxt(o.eur)})</option>`).join("")}</select></label>
+      <button class="btn primary" data-act="give-offer">Donner</button></div>
+    <p class="muted" style="margin:6px 0 0;font-size:.85rem">Au joueur choisi ci-dessus, sans paiement : geste commercial, souci de livraison après un paiement. Il reçoit la fenêtre « débloqué » à sa prochaine visite.</p>
     <h3 style="margin-top:18px">Remise à zéro générale</h3>
     <p class="muted" style="margin:4px 0 10px;font-size:.85rem">Tous les joueurs repartent de zéro : aucune carte, ${fmtN(START_CREDITS)} crédits, ${MAXP} boosters gratuits, offres uniques de la boutique de nouveau récupérables une fois, dont le Pack fondateur. Le marché est vidé. Pseudos et titres Alpha et Bêta testeur sont conservés.</p>
     <div class="actions"><button class="btn danger" data-act="reset-all">Réinitialiser toutes les collections</button>
@@ -2483,74 +2765,126 @@ function vbQuit(){
   });
 }
 let shopQty=1;
-// Offres achetables une seule fois par joueur
-/* Pendant les phases de test, les offres uniques payantes sont offertes.
-   Passez ALPHA_FREE à false pour rétablir les prix en euros. */
-const ALPHA_FREE=false;
-const ONCE=[
-  /* Offre gratuite des phases de test : supprimez cette ligne après la bêta. */
-  {key:"founder",name:"Pack fondateur",euros:"Gratuit",credits:4000,packs:10,free:true,desc:"Offert à tous les joueurs des phases de pré-alpha, alpha et bêta. Merci d’être là si tôt.",tone:"founder"},
-  {key:"starter",name:"Pack de démarrage",euros:"5 €",credits:8000,packs:30,desc:"Idéal pour bien commencer votre collection.",tone:"starter"},
-  {key:"wailord",name:"Pack Wailord",euros:"20 €",credits:30000,packs:100,desc:"L’offre la plus massive de la boutique.",tone:"wailord"},
-];
-const isFree=o=>!!(o.free||ALPHA_FREE);
-function onceHTML(o,dev){
-  const done=!!(S.bought&&S.bought[o.key]);
-  return `<div class="offer-big once ${o.tone}${done?" done":""}">
-    <span class="once-tag${isFree(o)?" free":""}">${done?"Déjà récupéré":o.free?"Offert, une fois":ALPHA_FREE?"Offert pendant la bêta":"Achat unique"}</span>
-    <div class="offer-visual ${o.tone}" aria-hidden="true"><span class="mini-pack"></span><span class="mini-pack"></span><span class="mini-pack"></span><span class="coin"></span></div>
-    <div><div class="amount">${o.name}</div>
-      <ul class="once-list"><li><b>${fmtN(o.credits)}</b> crédits</li><li><b>${o.packs}</b> boosters</li></ul>
-      <p class="muted" style="margin:6px 0 0">${o.desc} ${isFree(o)?"Récupérable une seule fois par joueur.":"Achetable une seule fois par joueur."}</p></div>
-    <div class="price">${done?"":o.free?"Gratuit":isFree(o)?`<s>${o.euros}</s>Gratuit`:dev?`<s>${o.euros}</s>Gratuit`:o.euros}</div>
-    ${isFree(o)||dev?"":`<p class="pay-note">Paiement indisponible pendant la bêta</p>`}
-    <button class="btn primary" data-act="buy-once" data-key="${o.key}" ${done?"disabled":""}>${done?"Déjà récupéré":isFree(o)?"Récupérer mon pack":dev?"Obtenir gratuitement":"Acheter pour "+o.euros}</button>
+/* Pack gratuit « Lancement de DexCraft » (1.0.0) : une fois par joueur (dc_buy_once, clé enregistrée dans bought).
+   Contenu dans la configuration (cfg.once) : pour arrêter l'offre, mettre LAUNCH à null et régénérer la configuration. */
+const LAUNCH={k:"lancement",n:"Lancement de DexCraft",credits:1000,packs:10};
+function launchHTML(){
+  if(!LAUNCH)return "";
+  const got=!!(S.bought&&S.bought[LAUNCH.k]);
+  return `<div class="offer-big shop-launch${got?" owned":""}"><span class="ribbon rb-launch">Gratuit</span>
+    <div class="offer-visual packs launch" aria-hidden="true"><span class="mini-pack"></span><span class="mini-pack"></span><span class="mini-pack"></span><span class="launch-gift">🎉</span></div>
+    <div><div class="amount">${esc(LAUNCH.n)}</div><p class="muted" style="margin:6px 0 8px">Pour fêter l’ouverture du jeu, un cadeau pour chaque joueur, à récupérer une fois.</p>
+      <ul class="once-list"><li><b>${fmtN(LAUNCH.credits)}</b> crédits</li><li><b>${LAUNCH.packs}</b> boosters</li></ul></div>
+    ${got?`<div class="price owned-txt">✓ Récupéré</div>`:`<div class="price">Gratuit</div><button class="btn primary" data-act="claim-launch">Récupérer</button>`}
   </div>`;
-}
-function buyOnce(key){
-  const o=ONCE.find(x=>x.key===key);if(!o)return;
-  if(S.bought&&S.bought[key]){toast("Vous avez déjà récupéré cette offre.");return}
-  if(!isFree(o)&&!devOn()){buyCredits(0);return}
-  run(async()=>{
-    await rpc("dc_buy_once",{p_key:key});
-    toast(`${o.name} : +${fmtN(o.credits)} crédits et ${o.packs} boosters.`);
-  });
 }
 function vShop(){
   const dev=devOn(),cost=shopQty*PACK_PRICE,can=dev||S.credits>=cost;
-  return `<h1>Boutique</h1><p class="muted">Vous avez <b>${fmtN(S.credits)} crédits</b>. Les crédits servent à acheter des boosters.</p>
-  <div class="pay-banner"><span>Les achats en euros sont désactivés pendant la bêta : aucun paiement n’est possible dans le jeu pour le moment. ${ALPHA_FREE?"En attendant, les offres uniques sont offertes à tous les testeurs.":"Les offres gratuites et les achats en crédits fonctionnent normalement."}</span></div>
-  <div class="f2p-note"><b>DexCraft se joue entièrement gratuitement.</b> Toutes les cartes s’obtiennent sans rien payer, avec les boosters gratuits, les échanges et les évolutions. Les packs payants ne font que gagner du temps : n’en achetez que si vous pouvez vraiment vous le permettre.</div>
-  ${dev?`<div class="dev-banner"><b>Mode développeur actif :</b> tous les achats sont gratuits pour vous. Désactivez-le depuis votre profil.</div>`:""}
-  ${(()=>{const av=ONCE.filter(o=>!(S.bought&&S.bought[o.key]));return av.length?`<h2 style="margin-top:18px">Offres uniques</h2>
-  <div class="shop once-row">${av.map(o=>onceHTML(o,dev)).join("")}</div>`:""})()}
-  <h2 style="margin-top:26px">En permanence</h2>
-  <div class="shop">
-    ${CREDIT_PACKS.map((cp,i)=>`<div class="offer-big">
-      <div class="offer-visual credits" aria-hidden="true"><span class="coin"></span><span class="coin"></span><span class="coin"></span></div>
-      <div><div class="amount">${fmtN(cp.credits)} crédits</div><p class="muted" style="margin:6px 0 0">Pour acheter ${cp.credits/PACK_PRICE} boosters.</p></div>
-      <div class="price">${dev?`<s>${cp.euros}</s>Gratuit`:cp.euros}</div>
-      ${dev?"":`<p class="pay-note">Paiement indisponible pendant la bêta</p>`}
-      <button class="btn primary" data-act="buy-credits" data-i="${i}">${dev?"Obtenir gratuitement":"Acheter pour "+cp.euros}</button>
-    </div>`).join("")}
+  const pay=`<p class="pay-once">🔒 Paiement sécurisé par Stripe · carte bancaire ou PayPal</p>`;
+  return `<h1>Boutique</h1><p class="muted">Vous avez <b>${fmtN(S.credits)} crédits</b>. Les crédits se gagnent gratuitement en jouant et servent à acheter des boosters.</p>
+  <div class="f2p-note"><b>DexCraft se joue entièrement gratuitement.</b> Les cartes, les boosters et les crédits ne s’achètent pas avec de l’argent. Les articles payants sont uniquement décoratifs : n’achetez que si vous pouvez vraiment vous le permettre.</div>
+  ${dev?`<div class="dev-banner"><b>Mode développeur actif :</b> boosters gratuits, et bouton « Obtenir (mode dev) » sur les packs. Désactivez-le depuis votre profil.</div>`:""}
+  <div class="shop cols3">
     <div class="offer-big">
       <div class="offer-visual packs" aria-hidden="true"><span class="mini-pack"></span><span class="mini-pack"></span><span class="mini-pack"></span></div>
-      <div><div class="amount">Boosters</div><p class="muted" style="margin:6px 0 0">${PACK_PRICE} crédits le booster de 5 cartes. Les boosters achetés s’ajoutent à votre réserve, sans limite, et ne ralentissent pas les boosters gratuits.</p></div>
+      <div><div class="amount">Boosters</div><p class="muted" style="margin:6px 0 0">${PACK_PRICE} crédits le booster de 5 cartes. Les crédits se gagnent en jouant : défausse, VoltoBataille, récompense du jour. Les boosters achetés s’ajoutent à votre réserve, sans limite.</p></div>
       <div class="qty" role="group" aria-label="Quantité">${[1,5,10].map(q=>`<button data-act="qty" data-q="${q}" aria-pressed="${q===shopQty}">${q} booster${q>1?"s":""}</button>`).join("")}</div>
       <div class="price">${dev?`<s>${fmtN(cost)} crédits</s>Gratuit`:`${fmtN(cost)} crédits`}</div>
       <button class="btn primary" data-act="buy-packs" ${can?"":"disabled"}>${can?`Acheter ${shopQty} booster${shopQty>1?"s":""}`:`Il vous manque ${fmtN(cost-S.credits)} crédits`}</button>
     </div>
+    ${offerHTML(OFFER_BY.soutien,dev)}
+    ${launchHTML()}
+  </div>
+  <h2 style="margin-top:26px">Packs cosmétiques</h2>
+  <p class="muted" style="margin:0">Chaque pack s’achète une fois. Vous pourrez ensuite changer de look à volonté en mélangeant les articles dans votre profil.</p>${pay}
+  <div class="shop cols3">${OFFERS.filter(o=>o.k!=="soutien").map(o=>offerHTML(o,dev)).join("")}</div>
+  <p class="muted" style="margin-top:22px;font-size:.85rem">Vendu par Duellia. <button class="linkish" data-act="cgv">Conditions générales de vente</button></p>`;
+}
+/* une offre de la boutique : aperçu, contenu, prix, achat (ou déjà possédée) */
+/* aperçu d'une offre (boutique et fenêtre d'achat) : fond, sachet, dos de carte et cadre du pack */
+function offerVisual(o){
+  const it=k=>o.items.find(i=>i.startsWith(k+"."));
+  return o.k==="soutien"?`<div class="offer-visual soutien" aria-hidden="true"><span class="heart">♥</span></div>`
+    :`<div class="offer-visual fsw-${cosCls(it("fond"))}" aria-hidden="true"><div class="pv"><div class="pack-hit" style="--w:66px">${packMarkup(cosCls(it("sac")))}</div>${lookPreview("dos",it("dos"))}<span class="avf fr-${cosCls(it("cadre"))}" style="--s:48px">${avatarHTML(S.avatar||25,48)}</span></div></div>`;
+}
+function offerHTML(o,dev){
+  const own=ownsOffer(S,o),vis=offerVisual(o);
+  return `<div class="offer-big shop-${o.k}${own?" owned":""}">${o.ribbon?`<span class="ribbon rb-${o.k}">${esc(o.ribbon)}</span>`:""}${vis}
+    <div><div class="amount">${o.ic?o.ic+" ":""}${esc(o.n)}</div><p class="muted" style="margin:6px 0 8px">${esc(o.d)}</p>
+      ${o.items.length>1?`<ul class="contents">${o.items.map(i=>`<li>${slotShort(i)} <b>${esc(cosName(i))}</b></li>`).join("")}</ul>`:""}</div>
+    ${o.warn&&!own?`<p class="baleine-note">${esc(o.warn)}</p>`:""}
+    ${own?`<div class="price owned-txt">✓ Dans votre collection</div><button class="btn" data-act="goto-look">Changer de look</button>`
+      :`<div class="price">${eurTxt(o.eur)}</div><button class="btn primary" data-act="buy-offer" data-k="${o.k}">Acheter pour ${eurTxt(o.eur)}</button>${dev?`<button class="btn small" data-act="dev-offer" data-k="${o.k}">Obtenir (mode dev)</button>`:""}`}
   </div>`;
 }
-function buyCredits(i){
-  const cp=CREDIT_PACKS[i||0]||CREDIT_PACKS[0];
-  if(!devOn()){
-    openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Paiement indisponible</h2>
-      <p class="muted">Les achats en euros ne sont pas encore ouverts. Vous pouvez gagner des crédits en défaussant vos doubles ou jusqu’à ${fmtN(VB_CAP)} crédits par jour à la VoltoBataille.</p>
-      <div class="actions"><button class="btn primary" data-act="close">Compris</button></div></div>`,true);return;
-  }
-  run(async()=>{await rpc("dc_admin_buy_credits",{p_i:i||0});toast(`+${fmtN(cp.credits)} crédits (mode développeur).`)});
+const slotShort=i=>({dos:"Dos",sac:"Sachet",cadre:"Cadre",pseudo:"Pseudo",fond:"Fond",badge:"Badge",titre:"Titre"})[String(i).split(".")[0]]||"";
+/* ---------- Achat d'une offre (0.9.0) ----------
+   1. Fenêtre de confirmation : conditions de vente et renonciation au délai de rétractation (contenu numérique
+      fourni tout de suite : article L221-28 13° du Code de la consommation), les deux cases sont obligatoires.
+   2. La fonction Supabase dc-paiement crée la session Stripe Checkout (prix relu dans la configuration du serveur)
+      et renvoie son adresse : le joueur paie sur la page de Stripe (carte bancaire ou PayPal).
+   3. Stripe prévient dc-stripe-webhook, qui livre le pack (dc_pay_grant). De retour sur le jeu (?paiement=ok),
+      le joueur voit son pack arriver (temps réel, relecture) : fenêtre « Pack débloqué ». */
+function buyOffer(k){
+  const o=OFFER_BY[k];if(!o)return;
+  if(ownsOffer(S,o)){toast("Vous possédez déjà cette offre.");return}
+  openDlg(`<div class="side buy-dlg"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
+    ${offerVisual(o)}
+    <h2>${o.ic?o.ic+" ":""}${esc(o.n)}</h2><p class="muted">${esc(o.d)}</p>
+    ${o.items.length>1?`<ul class="contents">${o.items.map(i=>`<li>${slotShort(i)} <b>${esc(cosName(i))}</b></li>`).join("")}</ul>`:""}
+    <div class="price" style="font-size:1.6rem">${eurTxt(o.eur)}</div>
+    <p class="muted" style="margin:0;font-size:.88rem">Article uniquement décoratif, sans aucun avantage en jeu. Paiement unique, pas d’abonnement. TVA non applicable, art. 293 B du CGI.</p>
+    <label class="chk"><input type="checkbox" data-buy-chk> J’accepte les <button type="button" class="linkish" data-act="cgv">conditions générales de vente</button>.</label>
+    <label class="chk"><input type="checkbox" data-buy-chk> Je demande à recevoir mon achat immédiatement et je renonce à mon droit de rétractation de 14 jours.</label>
+    <p class="muted" style="margin:0;font-size:.82rem">Vous avez moins de 18 ans ? Demandez l’accord d’un parent avant d’acheter.</p>
+    <div class="actions"><button class="btn primary" id="buy-go" data-act="buy-go" data-k="${o.k}" disabled>Payer ${eurTxt(o.eur)}</button><button class="btn" data-act="close">Annuler</button></div>
+    <p class="pay-once" style="margin:0">🔒 Vous allez être redirigé vers la page de paiement sécurisée de Stripe.</p></div>`,true);
 }
+document.addEventListener("change",e=>{if(e.target.matches&&e.target.matches("[data-buy-chk]")){const all=[...document.querySelectorAll("[data-buy-chk]")].every(c=>c.checked),b=$("#buy-go");if(b)b.disabled=!all}});
+async function buyGo(k){
+  const o=OFFER_BY[k];if(!o||!SB)return;
+  if(![...document.querySelectorAll("[data-buy-chk]")].every(c=>c.checked)){toast("Cochez les deux cases pour continuer.");return}
+  const {data,error}=await SB.functions.invoke("dc-paiement",{body:{offer:k,consent:true}});
+  if(error){
+    let m="Le paiement n’est pas disponible pour le moment. Réessayez plus tard.";
+    try{const j=await error.context.json();if(j&&j.error)m=j.error}catch(e){}
+    throw new Error(m);
+  }
+  if(!data||!data.url)throw new Error("Le paiement n’est pas disponible pour le moment. Réessayez plus tard.");
+  try{sessionStorage.setItem("dc-pay",JSON.stringify({k,t:Date.now()}))}catch(e){}
+  location.href=data.url; // page de paiement Stripe
+}
+/* retour de la page de paiement : ?paiement=ok ou ?paiement=annule */
+function payReturn(){
+  const q=new URLSearchParams(location.search),st=q.get("paiement");if(!st)return;
+  history.replaceState(null,"",location.pathname+location.hash);
+  if(st==="annule"){toast("Paiement annulé : aucun montant n’a été débité.");return}
+  let p=null;try{p=JSON.parse(sessionStorage.getItem("dc-pay")||"null")}catch(e){}
+  const o=OFFER_BY[(p&&p.k)||q.get("offre")];
+  view="shop";renderAll();
+  if(o&&ownsOffer(S,o))return; // déjà livré : la fenêtre « débloqué » s'affiche d'elle-même
+  openDlg(`<div class="side" style="align-items:center;text-align:center"><div class="spin" aria-hidden="true"></div>
+    <h2>Merci ! Paiement reçu</h2><p class="muted">${o?`Votre ${esc(o.n)} arrive dans quelques secondes…`:"Votre achat arrive dans quelques secondes…"}</p>
+    <p class="muted" style="font-size:.85rem">Si rien n’arrive d’ici quelques minutes, écrivez à ${esc(CGU_MAIL)} : aucun paiement n’est perdu.</p>
+    <div class="actions"><button class="btn" data-act="close">Fermer</button></div></div>`,true);
+  let n=0;const iv=setInterval(()=>{n++;if(!S||n>40||(o&&ownsOffer(S,o))){clearInterval(iv);return}loadMe()},3000); // relecture en plus du temps réel
+}
+/* « Pack débloqué » : le serveur note le dernier pack reçu (unlock), affiché une fois par appareil */
+function checkUnlock(){
+  const u=S&&S.unlock;if(!u||!u.t||!OFFER_BY[u.o])return;
+  let seen=0;try{seen=+localStorage.getItem("dc-unlock-seen")||0}catch(e){}
+  if(u.t<=seen||Date.now()-u.t>864e5)return; // déjà vu sur cet appareil, ou plus vieux qu’un jour
+  if(dlg.open&&!dlg.querySelector(".spin"))return; // une autre fenêtre est ouverte : on attend la suivante
+  try{localStorage.setItem("dc-unlock-seen",String(u.t))}catch(e){}
+  const o=OFFER_BY[u.o];
+  SFX.flip&&SFX.flip(3);vib([40,60,40]);
+  openDlg(`<div class="side unlock-dlg" style="align-items:center;text-align:center"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
+    <div class="unlock-ic" aria-hidden="true">${o.k==="soutien"?"♥":o.ic||"✨"}</div>
+    <h2>${o.k==="soutien"?"Merci pour votre soutien !":`${esc(o.n)} débloqué !`}</h2>
+    <p class="muted">${o.k==="soutien"?"Le badge ♥ Soutien s’affiche maintenant à côté de votre pseudo.":"Choisissez ce que vous portez dans votre profil : vous pouvez mélanger les articles de tous vos packs."}</p>
+    <div class="actions">${o.k==="soutien"?"":`<button class="btn primary" data-act="goto-look">Changer de look</button>`}<button class="btn" data-act="close">${o.k==="soutien"?"Avec plaisir":"Plus tard"}</button></div></div>`,true);
+}
+function gotoLook(){closeDlg();profOpen.look=true;view="profile";renderAll();setTimeout(()=>{const s=document.querySelector('[data-sec="look"]');if(s)s.scrollIntoView({behavior:"smooth",block:"start"})},60)}
 /* ---------- outils administrateur : fonctions dc_admin_* (table admins vérifiée par le serveur) ---------- */
 /* Vide toutes les annonces et rend les cartes et crédits engagés */
 function clearMarket(){
@@ -2724,7 +3058,7 @@ function detail(id){
   openDlg(`${navBtns}<div class="card-holder">${cardHTML(id,true)}</div><div class="side">
     <button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <div><h2>${esc(nm(id))}</h2><p class="muted">${c} exemplaire${c>1?"s":""} dans votre collection</p>
-      <button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}" style="margin-top:8px">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button></div>
+      <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button>${r>=6?"":`<button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>`}</div></div>
     ${online?`<div class="panel"><h3>Proposer à l’échange</h3>
       <div class="actions" style="margin-top:10px;align-items:end">
       <label class="field" style="flex:1;min-width:min(220px,100%)">Carte souhaitée<select id="t-want"><option value="missing" selected>N’importe quelle carte ${RAR[r].toLowerCase()} manquante (que je n’ai pas)</option><option value="">N’importe quelle carte ${RAR[r].toLowerCase()}</option>${same.map(x=>`<option value="${x}">${esc(nm(x))}${S.coll[x]?"":" (manquante)"}</option>`).join("")}</select></label>
@@ -2736,6 +3070,117 @@ function detail(id){
       ?`<button class="btn" disabled title="Retirez-le des favoris d’abord">★ Favori protégé de la défausse</button>`
       :`<button class="btn danger" data-act="do-discard" data-id="${id}">Défausser 1 exemplaire (+${cr(dVal(id))})</button>`}</div>
   </div>`);
+}
+/* ---------- partager une carte (1.0.0) ----------
+   L'image de la carte est redessinée dans un canvas (mêmes couleurs que dans le jeu), puis proposée à copier,
+   à télécharger ou à partager (téléphone : feuille de partage du système), avec un petit texte et le lien du jeu.
+   Depuis la collection (cartes possédées) et depuis la scène d'une carte Légendaire qui vient de tomber. */
+const SITE_URL="https://dexcraft.fr";
+const SHARE_RC=["#b9bccb","#5fbf83","#5a9df0","#a86ef0","#2fd4c9","#f1b72a","#ff4fd8","#c9d2e0"];
+const SHARE_GEM=["#8a8fa8","#2f9e5b","#2f7fe0","#9a4fe6","#0f9c94","#d99a00","#ff4fd8","#7d8496"];
+let shareId=0,shareBlob=null;
+function shareText(id,fresh){
+  const n=nm(id),r=rar(id);
+  return fresh?`Je viens d’obtenir ${n}, une carte ${RAR[r]}, sur DexCraft ! Viens compléter ta collection : ${SITE_URL}`
+    :`Ma carte ${n} (${RAR[r]}) sur DexCraft, le jeu de collection de cartes Pokémon gratuit. Viens jouer : ${SITE_URL}`;
+}
+async function drawShareCard(id){
+  const [n,g,gen,ty,h,w,st,r,ex]=D(id);
+  const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
+  const kind=ex&&ex.base?(ex.kind?formTag(ex):"Méga"):"";
+  const label=r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
+  const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
+  const foot=ex&&(ex.foot||ex.lines)?(ex.foot||""):ex&&ex.kind==="gmax"?`${(h/10).toLocaleString("fr-FR")} m et plus`:ex&&!ex.kind?"":`${(h/10).toLocaleString("fr-FR")} m, ${(w/10).toLocaleString("fr-FR")} kg`;
+  const chips=ex&&ex.chips?ex.chips.map(x=>[x,c1]):ty.map(t=>[TYPES[t][0],TYPES[t][1]]);
+  const src=imgFor(id);let img=null;
+  if(src){img=new Image();img.src=src;try{await img.decode()}catch(e){img=null}}
+  try{await document.fonts.ready}catch(e){}
+  const S2=2,CW=360,CH=500,cv=document.createElement("canvas");cv.width=CW*S2;cv.height=CH*S2;
+  const x=cv.getContext("2d");x.scale(S2,S2);
+  const disp=(wt,px)=>`${wt} ${px}px Fredoka, "Trebuchet MS", sans-serif`,body=(wt,px)=>`${wt} ${px}px "Atkinson Hyperlegible", system-ui, sans-serif`;
+  const rr=(X,Y,W,H,R)=>{x.beginPath();x.roundRect(X,Y,W,H,R)};
+  // fond
+  const bg=x.createLinearGradient(0,0,0,CH);bg.addColorStop(0,"#161b3d");bg.addColorStop(1,"#0c0f24");x.fillStyle=bg;x.fillRect(0,0,CW,CH);
+  const glow=x.createRadialGradient(CW/2,230,20,CW/2,230,260);glow.addColorStop(0,SHARE_RC[r]+"55");glow.addColorStop(1,"transparent");x.fillStyle=glow;x.fillRect(0,0,CW,CH);
+  x.save();x.translate(30,22);
+  // cadre de rareté
+  let rc=SHARE_RC[r];
+  if(r===6&&x.createConicGradient){rc=x.createConicGradient(0,150,210);["#ff4f4f","#ffcf3f","#5fd68f","#4fc3ff","#b46cff","#ff4fd8","#ff4f4f"].forEach((c,i)=>rc.addColorStop(i/6,c))}
+  if(r===7){rc=x.createLinearGradient(0,0,300,420);["#eef1f6","#9aa3b5","#ffffff","#8d96a8","#e3e7ee"].forEach((c,i)=>rc.addColorStop(i/4,c))}
+  x.shadowColor="rgba(0,0,0,.45)";x.shadowBlur=24;x.shadowOffsetY=8;rr(0,0,300,420,14);x.fillStyle=rc;x.fill();x.shadowColor="transparent";
+  // fond de la carte
+  rr(6,6,288,408,9);x.save();x.clip();
+  if(r===5){const gd=x.createLinearGradient(6,6,160,414);[["#fff6cf",0],["#ffe27a",.35],["#f3c440",.62],["#fff0b3",1]].forEach(([c,o])=>gd.addColorStop(o,c));x.fillStyle=gd;x.fillRect(0,0,300,420);
+    x.globalAlpha=.42;x.lineWidth=3;for(let i=-420,k=0;i<460;i+=18,k++){x.strokeStyle=k%2?c2:c1;x.beginPath();x.moveTo(i,420);x.lineTo(i+196,0);x.stroke()}x.globalAlpha=1}
+  else if(r===7){const gd=x.createLinearGradient(0,6,0,414);gd.addColorStop(0,"#f7f8fb");gd.addColorStop(1,"#e8ebf2");x.fillStyle=gd;x.fillRect(0,0,300,420)}
+  else{x.fillStyle="#fbfaf6";x.fillRect(0,0,300,420);
+    if(r===3){const gd=x.createRadialGradient(150,190,10,150,190,220);gd.addColorStop(0,"rgba(168,110,240,.38)");gd.addColorStop(.55,"rgba(168,110,240,.12)");gd.addColorStop(1,"rgba(168,110,240,0)");x.fillStyle=gd;x.fillRect(0,0,300,420)}}
+  x.restore();
+  const ink="#1c2042",soft=r===5?"#5a4410":"#5b6088";
+  // haut : numéro et gemmes
+  x.textBaseline="middle";x.font=body(700,12);x.fillStyle=soft;x.textAlign="left";x.fillText(label,16,21);
+  x.textAlign="right";x.font=body(700,r>=6?17:13);x.fillStyle=SHARE_GEM[r];x.fillText(gems(r),284,21);
+  // illustration
+  rr(16,32,268,142,9);x.save();x.clip();
+  const ag=x.createLinearGradient(16,32,284,174);ag.addColorStop(0,c1);ag.addColorStop(1,c2);x.fillStyle=ag;x.fillRect(16,32,268,142);
+  x.fillStyle="rgba(255,255,255,.34)";x.font=disp(700,88);x.textAlign="right";x.textBaseline="alphabetic";x.fillText(r===7?"❖":r===6?"✦":String(ex&&ex.base?ex.base:id),290,196);
+  if(img){const s=Math.min(160/img.width,130/img.height);x.drawImage(img,150-img.width*s/2,103-img.height*s/2,img.width*s,img.height*s)}
+  else{x.fillStyle="#fff";x.font=disp(700,52);x.textAlign="left";x.fillText(n[0],26,88)}
+  x.font=body(700,11);x.textAlign="left";x.textBaseline="middle";const ew=x.measureText(edition).width+12;
+  rr(22,154,ew,15,6);x.fillStyle="rgba(0,0,0,.25)";x.fill();x.fillStyle="#fff";x.fillText(edition,28,162);
+  x.restore();
+  // nom, catégorie, types
+  x.textAlign="left";x.textBaseline="alphabetic";x.fillStyle=ink;let fs=26;x.font=disp(700,fs);while(x.measureText(n).width>268&&fs>14){fs--;x.font=disp(700,fs)}
+  x.fillText(n,16,204);
+  x.font=body(400,12);x.fillStyle=soft;x.fillText(g,16,222);
+  let cx=16;x.font=body(700,11);x.textBaseline="middle";
+  for(const [t,c] of chips){const tw=x.measureText(t).width+16;rr(cx,230,tw,17,9);x.fillStyle=c;x.fill();x.fillStyle="#fff";x.fillText(t,cx+8,239);cx+=tw+5}
+  // statistiques, ou lignes des cartes spéciales
+  if(ex&&ex.lines){x.fillStyle=ink;x.font=body(400,13);ex.lines.forEach((l,i)=>x.fillText(l,16,272+i*19))}
+  else st.forEach((v,i)=>{const y=268+i*19;x.font=body(700,11.5);x.fillStyle=soft;x.textAlign="left";x.fillText(STATN[i],16,y);
+    rr(62,y-3,186,6,3);x.fillStyle=r===5?"rgba(255,255,255,.55)":"#e5e4ee";x.fill();
+    const bw=Math.max(3,186*Math.min(100,v/1.8)/100),sg=x.createLinearGradient(62,0,62+bw,0);sg.addColorStop(0,c1);sg.addColorStop(1,c2);rr(62,y-3,bw,6,3);x.fillStyle=sg;x.fill();
+    x.fillStyle=ink;x.textAlign="right";x.fillText(String(v),284,y)});
+  x.font=body(700,11);x.fillStyle=soft;x.textAlign="left";x.fillText(foot,16,400);x.textAlign="right";x.fillText(RAR[r],284,400);
+  x.restore();
+  // signature
+  x.textAlign="center";x.textBaseline="alphabetic";x.font=disp(700,22);x.fillStyle="#ffcf3f";x.fillText("◆ DexCraft",CW/2,472);
+  x.font=body(400,12);x.fillStyle="#c8cbe6";x.fillText("dexcraft.fr",CW/2,490);
+  return cv;
+}
+async function shareCard(id,fresh){
+  if(!id||!D(id))return;
+  if(rar(id)>=6)return; // mythiques et transcendantes : jamais partagées (choix de Theo)
+  if(!fresh&&!has(S,id)){toast("Seules les cartes de votre collection se partagent.");return}
+  shareId=id;shareBlob=null;document.querySelectorAll(".legend").forEach(o=>o._close&&o._close()); // depuis la scène Légendaire : on la ferme
+  const canNative=!!(navigator.share&&navigator.canShare);
+  openDlg(`<div class="side share-dlg"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
+    <h2>Partager ${esc(nm(id))}</h2>
+    <div class="share-img" id="share-img"><span class="muted">Préparation de l’image…</span></div>
+    <label class="field">Texte<textarea id="share-txt" rows="3">${esc(shareText(id,fresh))}</textarea></label>
+    <div class="actions">${canNative?`<button class="btn primary" data-act="share-native">📤 Partager…</button>`:""}
+      <button class="btn${canNative?"":" primary"}" data-act="share-copy-img">Copier l’image</button>
+      <button class="btn" data-act="share-copy-txt">Copier le texte</button>
+      <button class="btn" data-act="share-dl">Télécharger l’image</button></div>
+    <p class="muted" style="margin:0">Collez l’image puis le texte dans Discord, une conversation ou sur les réseaux.</p></div>`,true);
+  try{
+    const cv=await drawShareCard(id);if(shareId!==id)return;
+    shareBlob=await new Promise(res=>cv.toBlob(res,"image/png"));
+    const box=$("#share-img");if(box){box.innerHTML="";cv.setAttribute("aria-label","Image de la carte "+nm(id));box.append(cv)}
+  }catch(e){console.warn(e);const box=$("#share-img");if(box)box.innerHTML=`<span class="muted">Impossible de préparer l’image sur cet appareil.</span>`}
+}
+const shareTxtNow=()=>{const t=$("#share-txt");return t?t.value:shareText(shareId)};
+const shareFile=()=>new File([shareBlob],`dexcraft-${pad(shareId)}.png`,{type:"image/png"});
+async function shareAct(a){
+  if(a==="share-copy-txt"){try{await navigator.clipboard.writeText(shareTxtNow());toast("Texte copié.")}catch(e){toast("Copie impossible : sélectionnez le texte et copiez-le à la main.")}return}
+  if(!shareBlob){toast("L’image n’est pas encore prête.");return}
+  if(a==="share-copy-img"){
+    try{await navigator.clipboard.write([new ClipboardItem({"image/png":shareBlob})]);toast("Image copiée. Collez-la, puis copiez le texte.")}
+    catch(e){toast("Ce navigateur ne copie pas les images : utilisez « Télécharger l’image ».")}return}
+  if(a==="share-dl"){const u=URL.createObjectURL(shareBlob),l=document.createElement("a");l.href=u;l.download=shareFile().name;document.body.append(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return}
+  if(a==="share-native"){
+    const f=shareFile(),data=navigator.canShare({files:[f]})?{files:[f],text:shareTxtNow()}:{text:shareTxtNow()};
+    try{await navigator.share(data)}catch(e){if(e&&e.name!=="AbortError")toast("Partage impossible sur cet appareil.")}}
 }
 let tradeGive=null;
 function tradeDlg(mid_){
@@ -3123,11 +3568,11 @@ function legendFx(id){
   const app=$("#app");app.classList.remove("shake");void app.offsetWidth;if(!RM())app.classList.add("shake");
   if(navigator.vibrate)try{vib([80,60,160])}catch(e){}
   const ov=document.createElement("div");ov.className="legend";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Carte légendaire obtenue");
-  ov.innerHTML=`<div class="rays"></div><canvas></canvas><div class="lg-title">Légendaire !</div><div class="lg-card">${cardHTML(id,true)}</div><div class="lg-sub">Touchez pour continuer</div>`;
+  ov.innerHTML=`<div class="rays"></div><canvas></canvas><div class="lg-title">Légendaire !</div><div class="lg-card">${cardHTML(id,true)}</div><button class="btn lg-share" data-act="share-card" data-id="${id}" data-fresh="1">📤 Partager</button><div class="lg-sub">Touchez pour continuer</div>`;
   document.body.append(ov);legendSoon=false;
   let alive=true;
   const close=()=>{if(!alive)return;alive=false;ov.remove();$("#app").classList.remove("shake");if(pendingRender){pendingRender=false;updateReveal()}};
-  setTimeout(()=>ov.addEventListener("click",close),900);
+  ov._close=close;setTimeout(()=>ov.addEventListener("click",close),900);
   const onKey=e=>{if(e.key==="Escape"||e.key==="Enter"){close();removeEventListener("keydown",onKey)}};addEventListener("keydown",onKey);
   if(RM())return;
   const cv=ov.querySelector("canvas"),ctx=cv.getContext("2d"),dpr=Math.min(2,devicePixelRatio||1);
@@ -3157,6 +3602,16 @@ document.addEventListener("click",e=>{
   const a=b.dataset.act,id=+b.dataset.id,mid=b.dataset.mid;
   switch(a){
     case"cgu":openCgu();break;
+    case"cgv":openCgv();break;
+    case"claim-launch":run(async()=>{await rpc("dc_buy_once",{p_key:LAUNCH.k});toast(`Pack de lancement récupéré : +${fmtN(LAUNCH.credits)} crédits et +${LAUNCH.packs} boosters !`)});break;
+    case"discord-soon":e.preventDefault();toast("Le serveur Discord ouvre très bientôt !");break;
+    case"share-card":e.preventDefault();shareCard(id,b.dataset.fresh==="1");break;
+    case"share-copy-img":case"share-copy-txt":case"share-dl":case"share-native":shareAct(a);break;
+    case"buy-offer":buyOffer(b.dataset.k);break;
+    case"buy-go":run(()=>buyGo(b.dataset.k));break;
+    case"goto-look":gotoLook();break;
+    case"dev-offer":if(devOn())run(async()=>{await rpc("dc_admin_give_offer",{p_uid:ME,p_offer:b.dataset.k})});break;
+    case"look":run(async()=>{await rpc("dc_set_look",{p_slot:b.dataset.slot,p_item:b.dataset.item||null})});break;
     case"open":SFX.get();openPack(1);break;
     case"open-n":SFX.get();openPack(+b.dataset.n);break;
     case"toggle-sound":{const on=SFX.toggle();b.textContent=on?"🔊":"🔇";b.setAttribute("aria-label",on?"Couper le son":"Activer le son");b.title=on?"Couper le son":"Activer le son";if(on){SFX.flip(1)}break}
@@ -3181,8 +3636,6 @@ document.addEventListener("click",e=>{
     case"evo-filter":evoFilter=b.dataset.f;renderView();break;
     case"test-mythic":if(devOn())mythicFx(MYTH_IDS[0]);break;
     case"test-trans":if(devOn())transFx(TRANS_IDS[0]);break;
-    case"buy-credits":buyCredits(+(b.dataset.i||0));break;
-    case"buy-once":buyOnce(b.dataset.key);break;
     case"reset-coll":if(!devOn())break;openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Réinitialiser votre collection ?</h2>
       <p>Toutes vos cartes, vos crédits, vos boosters, vos favoris, vos achats uniques et vos annonces en cours seront effacés. Vous repartirez de zéro.</p>
       <div class="actions"><button class="btn danger" data-act="reset-coll-go">Tout effacer</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break;
@@ -3196,6 +3649,8 @@ document.addEventListener("click",e=>{
       if(!uid)break;if(!id){toast("Carte introuvable : choisissez-la dans la liste ou tapez son numéro.");break}
       if(!n){toast("Indiquez un nombre d’exemplaires.");break}
       giveCard(uid,id,n);break}
+    case"give-offer":{if(!devOn()||mode!=="online")break;const uid=$("#gr-user").value,k=$("#go-offer").value;if(!uid||!OFFER_BY[k])break;
+      run(async()=>{await rpc("dc_admin_give_offer",{p_uid:uid,p_offer:k},{render:uid===ME});toast(`${OFFER_BY[k].n} donné à ${nameOf(uid)}.`)});break}
     case"badge":{if(!devOn()||mode!=="online")break;const uid=$("#gr-user").value;if(uid)setBadge(uid,b.dataset.on==="1");break}
     case"set-pseudo":{if(!devOn()||mode!=="online")break;const uid=$("#gr-user").value,v=($("#gr-pseudo").value||"").replace(/\s+/g," ").trim().slice(0,20);
       if(uid)setPseudo(uid,v);break}
@@ -3343,7 +3798,11 @@ addEventListener("scroll",()=>{const t=$("#to-top");if(t)t.hidden=window.scrollY
    ============================================================ */
 /* Sur ce PC (localhost, outils/serveur-local.ps1), le jeu utilise le projet Supabase de TEST :
    jamais de test sur les vrais joueurs. En ligne, c'est la production. Clés publiques (anon). */
-const IS_TEST=location.protocol==="file:"||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+/* Sur ce PC : base de TEST, sauf si l’adresse contient ?prod (gardé pour l’onglet) : tester la boutique et le paiement
+   Stripe en mode test sur la vraie base, réservé aux administrateurs tant que PAY_ADMIN_ONLY=1 (0.9.0). */
+const FORCE_PROD=(()=>{try{if(new URLSearchParams(location.search).has("prod"))sessionStorage.setItem("dc-base","prod");return sessionStorage.getItem("dc-base")==="prod"}catch(e){return false}})();
+const IS_TEST=!FORCE_PROD&&(location.protocol==="file:"||/^(localhost|127\.0\.0\.1)$/.test(location.hostname));
+document.getElementById("version").textContent="version "+APP_VERSION+(IS_TEST?" · BASE DE TEST":FORCE_PROD?" · VRAIE BASE (test local)":""); // ?prod : vraie base depuis ce PC
 const SUPABASE_URL=IS_TEST?"https://thgyzfjozfhwefrztjfh.supabase.co":"https://hxrbzhmzjeuhmaioqhdd.supabase.co";
 const SUPABASE_ANON_KEY=IS_TEST
   ?"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoZ3l6ZmpvemZod2Vmcnp0amZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyMzMzNzYsImV4cCI6MjEwNTgwOTM3Nn0.PhlaME6oTY0geYIZTApnAWuw9u_W8rqJe_3hliVRO9w"
@@ -3363,7 +3822,7 @@ let SB=null,signup=false;
      seulement les annonces nouvelles ou modifiées ;
    - collections : seulement celles des auteurs d'annonces d'échange (« Il l'a déjà », « Manquante »),
      les nouveaux auteurs tout de suite, toutes relues au plus toutes les 5 minutes. */
-const PL_FIELDS=["pseudo","avatar","alpha","beta","shown","unique","total","credits","myth","trans","byr","byrV","masterTs"];
+const PL_FIELDS=["pseudo","avatar","alpha","beta","shown","unique","total","credits","myth","trans","byr","byrV","masterTs","vis"]; // vis : cosmétiques visibles (0.9.0)
 let OWNER_COLL={},ownerCollTs=0,marketT=0,rpcBusy=0,MARKET_TS={},playersTs=0,hiddenAt=0;
 /* lecture paginée : Supabase renvoie 1 000 lignes au plus par requête */
 async function selectAll(make){
@@ -3523,7 +3982,7 @@ async function loadPlayer(uid){
 /* ---------- CGU (0.8.13) : conditions d'utilisation, mentions légales et données personnelles ----------
    Lien « CGU » en bas à droite (et sur l'écran de connexion), adresse directe dexcraft.fr/#cgu.
    Toute modification importante : changer CGU_DATE. */
-const CGU_DATE="26 septembre 2026",CGU_MAIL="contact@dexcraft.fr";
+const CGU_DATE="27 septembre 2026",CGU_MAIL="contact@dexcraft.fr";
 function cguHTML(){
   const m=`<a href="mailto:${CGU_MAIL}">${CGU_MAIL}</a>`;
   return `<div class="side legal"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
@@ -3532,13 +3991,13 @@ function cguHTML(){
 
   <h3>1. Le site et son éditeur</h3>
   <p>DexCraft (<b>dexcraft.fr</b>) est un jeu gratuit de collection de cartes, créé par un fan, sans but commercial.</p>
-  <p><b>Éditeur :</b> DexCraft, site non professionnel édité par un particulier, dont l’identité a été communiquée à l’hébergeur (article 6-III-2 de la loi n° 2004-575 du 21 juin 2004). Contact : ${m}.</p>
+  <p class="legal-id"><b>Éditeur :</b> ${esc(SELLER.nom)}, ${esc(SELLER.ei)}, ${esc(SELLER.adresse)}. SIRET : ${esc(SELLER.siret)}. Contact : ${m}.</p>
   <p><b>Hébergement du site :</b> Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, États-Unis.<br>
   <b>Hébergement des données du jeu :</b> Supabase, Inc., 970 Toa Payoh North #07-04, Singapour 318992 ; serveurs situés en Irlande (Union européenne).</p>
   <p><b>DexCraft n’est ni affilié, ni approuvé, ni soutenu par Nintendo, Game Freak, Creatures Inc. ou The Pokémon Company.</b> Pokémon et les noms, images et marques associés appartiennent à leurs propriétaires respectifs. Pour toute demande concernant ces contenus, écrivez à ${m} : nous répondrons rapidement.</p>
 
   <h3>2. Accès au jeu</h3>
-  <p>Le jeu est gratuit et accessible à toute personne disposant d’un compte. Un mineur de moins de 15 ans doit avoir l’accord d’un parent pour créer un compte. DexCraft est en <b>bêta</b> : le jeu évolue, peut contenir des erreurs et peut être interrompu, modifié ou arrêté à tout moment, sans indemnité. Pendant la bêta, les collections peuvent exceptionnellement être réinitialisées ; nous nous efforcerons de prévenir les joueurs à l’avance.</p>
+  <p>Le jeu est gratuit et accessible à toute personne disposant d’un compte. Un mineur de moins de 15 ans doit avoir l’accord d’un parent pour créer un compte. Le jeu évolue régulièrement, peut contenir des erreurs et peut être interrompu, modifié ou arrêté à tout moment, sans indemnité.</p>
 
   <h3>3. Compte et pseudo</h3>
   <p>Vous êtes responsable de votre compte et de la confidentialité de votre mot de passe. Un seul compte par personne. Le pseudo ne doit pas être injurieux, discriminant, à caractère sexuel, usurper l’identité d’autrui ou contenir de données personnelles ; l’équipe peut le modifier ou le refuser.</p>
@@ -3547,7 +4006,7 @@ function cguHTML(){
   <p>Sont interdits : la triche, l’exploitation volontaire d’un bug (à signaler plutôt qu’à utiliser), les programmes ou scripts qui jouent à votre place, l’utilisation de plusieurs comptes pour s’avantager, toute tentative d’accéder aux données d’un autre joueur ou de perturber le serveur, et tout comportement abusif envers les autres joueurs.</p>
 
   <h3>5. Cartes, crédits et échanges</h3>
-  <p>Les cartes, crédits, boosters et titres sont des éléments de jeu <b>sans valeur monétaire</b>. Ils ne vous appartiennent pas, ne peuvent pas être remboursés et ne peuvent pas être vendus, achetés ou échangés contre de l’argent réel ou un bien, y compris entre joueurs. Un échange accepté entre deux joueurs est définitif. Les codes cadeaux ne servent qu’une fois par joueur et peuvent être désactivés. Les paiements en euros sont désactivés : s’ils sont proposés un jour, des conditions de vente spécifiques s’appliqueront. Le hasard des boosters est tiré par le serveur, avec les taux affichés dans le jeu.</p>
+  <p>Les cartes, crédits, boosters et titres sont des éléments de jeu <b>sans valeur monétaire</b>. Ils ne vous appartiennent pas, ne peuvent pas être remboursés et ne peuvent pas être vendus, achetés ou échangés contre de l’argent réel ou un bien, y compris entre joueurs. Un échange accepté entre deux joueurs est définitif. Les codes cadeaux ne servent qu’une fois par joueur et peuvent être désactivés. Les seuls achats en argent réel sont des articles décoratifs de la boutique, sans avantage de jeu, régis par les <button type="button" class="linkish" data-act="cgv">conditions générales de vente</button>. Le hasard des boosters est tiré par le serveur, avec les taux affichés dans le jeu.</p>
 
   <h3>6. Sanctions</h3>
   <p>En cas de non-respect de ces conditions, l’équipe peut, selon la gravité : retirer les cartes ou crédits obtenus de façon irrégulière, changer le pseudo, réinitialiser la collection, suspendre ou supprimer le compte.</p>
@@ -3558,7 +4017,7 @@ function cguHTML(){
   <h3>8. Données personnelles</h3>
   <p><b>Données collectées :</b> votre adresse e-mail, votre mot de passe (enregistré sous forme chiffrée, que personne ne peut lire, pas même l’équipe), votre pseudo et vos données de jeu (collection, crédits, échanges, titres…), ainsi que les données techniques nécessaires au fonctionnement (adresse IP et journaux de connexion conservés par les hébergeurs). Votre pseudo, votre image de profil, vos titres, votre progression et vos annonces d’échange sont visibles par les autres joueurs ; votre adresse e-mail ne l’est jamais.</p>
   <p><b>Pourquoi :</b> uniquement pour faire fonctionner le jeu et votre compte (exécution du service que vous demandez), le protéger contre la triche et les abus, et vous écrire si nécessaire (confirmation d’inscription, mot de passe oublié). Aucune publicité, aucune revente, aucun pistage.</p>
-  <p><b>Qui les traite :</b> l’éditeur, avec ses prestataires : Supabase (comptes et données du jeu, en Irlande), Cloudflare (hébergement du site, protection contre les robots), OVH (adresse e-mail de contact). Le site charge aussi des polices d’écriture chez Google Fonts et une bibliothèque technique chez jsDelivr, qui voient passer votre adresse IP. Certains de ces prestataires sont situés hors de l’Union européenne et encadrent ces transferts par les garanties prévues par le RGPD.</p>
+  <p><b>Qui les traite :</b> l’éditeur, avec ses prestataires : Supabase (comptes et données du jeu, en Irlande), Cloudflare (hébergement du site, protection contre les robots, adresse e-mail de contact), Stripe (paiements, si vous achetez dans la boutique : ${esc(SELLER.nom)} ne voit jamais vos données bancaires). Le site charge aussi des polices d’écriture chez Google Fonts et une bibliothèque technique chez jsDelivr, qui voient passer votre adresse IP. Certains de ces prestataires sont situés hors de l’Union européenne et encadrent ces transferts par les garanties prévues par le RGPD.</p>
   <p><b>Durée :</b> tant que votre compte existe. À la suppression du compte, votre profil, votre collection et vos annonces sont effacés ; les sauvegardes de sécurité de la base sont effacées au plus tard 30 jours après.</p>
   <p><b>Vos droits :</b> vous pouvez demander l’accès à vos données, leur rectification, leur effacement (suppression du compte), leur portabilité, ou vous opposer à un traitement, en écrivant à ${m}. Vous pouvez aussi saisir la CNIL (<a href="https://www.cnil.fr" target="_blank" rel="noopener">cnil.fr</a>).</p>
 
@@ -3571,6 +4030,49 @@ function cguHTML(){
   </div>`;
 }
 function openCgu(){openDlg(cguHTML(),true);const m=dlg.querySelector(".modal");if(m)m.scrollTop=0}
+/* ---------- CGV (0.9.0) : conditions générales de vente de la boutique cosmétique ----------
+   Vendeur : Duellia, entreprise individuelle de Theo. À COMPLÉTER avant d'ouvrir les paiements (champs entre crochets) :
+   nom et prénom de l'entrepreneur, adresse (ou domiciliation), SIRET, médiateur de la consommation (obligatoire).
+   Changer CGV_DATE à chaque modification importante. */
+const CGV_DATE="27 septembre 2026";
+const SELLER={nom:"Duellia",ei:"Théo Lostria EI",adresse:"80 rue de Cantaing, 59400 Cambrai",siret:"102 402 021 00012",tva:"TVA non applicable, art. 293 B du CGI",
+  mediateur:"CM2C (Centre de la médiation de la consommation de conciliateurs de justice), www.cm2c.net"};
+function cgvHTML(){
+  const m=`<a href="mailto:${CGU_MAIL}">${CGU_MAIL}</a>`;
+  return `<div class="side legal"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
+  <h2>Conditions générales de vente</h2>
+  <p class="muted">Dernière mise à jour : ${esc(CGV_DATE)}. Elles s’appliquent à tout achat dans la boutique de DexCraft (dexcraft.fr).</p>
+
+  <h3>1. Le vendeur</h3>
+  <p class="legal-id"><b>${esc(SELLER.nom)}</b>, ${esc(SELLER.ei)}, ${esc(SELLER.adresse)}. SIRET : ${esc(SELLER.siret)}. ${esc(SELLER.tva)}. Contact : ${m}.</p>
+
+  <h3>2. Ce qui est vendu</h3>
+  <p>Des <b>contenus numériques uniquement décoratifs</b> pour le jeu DexCraft : dos de cartes, sachets de booster, cadres d’image de profil, couleurs de pseudo, fonds d’écran, badges et titres, vendus en packs ou à l’unité. Ils ne donnent <b>aucun avantage de jeu</b>. Les cartes, les boosters et les crédits ne sont jamais vendus contre de l’argent. Les articles achetés sont liés à votre compte : ils ne peuvent être ni revendus, ni transférés, ni échangés contre de l’argent.</p>
+
+  <h3>3. Prix et paiement</h3>
+  <p>Les prix sont indiqués en euros, toutes taxes comprises (${esc(SELLER.tva)}). Chaque achat est un paiement unique, sans abonnement. Le paiement est traité par <b>Stripe</b> (carte bancaire ou PayPal) : ${esc(SELLER.nom)} n’a jamais accès à vos données bancaires. La commande est définitive dès que Stripe confirme le paiement.</p>
+
+  <h3>4. Livraison</h3>
+  <p>Les articles sont ajoutés à votre compte <b>immédiatement</b> après la confirmation du paiement, en général en quelques secondes. Vous les retrouvez dans votre profil, section « Mon look ». Si un achat n’apparaît pas dans l’heure, écrivez à ${m} : il sera livré ou remboursé.</p>
+
+  <h3>5. Droit de rétractation</h3>
+  <p>Les articles sont des contenus numériques fournis dès l’achat. Avant de payer, vous demandez expressément à les recevoir immédiatement et vous reconnaissez perdre votre droit de rétractation de 14 jours (article L221-28 13° du Code de la consommation). Vous recevez une confirmation de la commande par e-mail de la part de Stripe.</p>
+
+  <h3>6. Remboursements et garanties</h3>
+  <p>Les achats ne sont pas remboursés. Seules exceptions, prévues par la loi : un article payé mais jamais livré, un double paiement, ou un défaut qui empêche d’utiliser l’article (garantie légale de conformité des contenus numériques, articles L224-25-1 et suivants du Code de la consommation). Dans ces cas, écrivez à ${m} : nous livrons l’article ou nous vous remboursons. Une contestation bancaire abusive peut entraîner la suspension du compte.</p>
+
+  <h3>7. Mineurs</h3>
+  <p>Un mineur doit obtenir l’accord d’un parent ou d’un représentant légal avant tout achat.</p>
+
+  <h3>8. Arrêt du jeu</h3>
+  <p>DexCraft peut évoluer. Si le jeu devait fermer définitivement, les joueurs seraient prévenus au moins 30 jours à l’avance.</p>
+
+  <h3>9. Réclamations et litiges</h3>
+  <p>Pour toute réclamation, écrivez d’abord à ${m}. Si aucune solution n’est trouvée, vous pouvez recourir gratuitement au médiateur de la consommation : ${esc(SELLER.mediateur)}. Les présentes conditions sont soumises au droit français.</p>
+  <div class="actions" style="margin-top:6px"><button class="btn primary" data-act="close">J’ai compris</button></div>
+  </div>`;
+}
+function openCgv(){openDlg(cgvHTML(),true);const m=dlg.querySelector(".modal");if(m)m.scrollTop=0}
 /* Anti-robots (0.8.7) : Cloudflare Turnstile sur l'inscription, la connexion et « Mot de passe oublié ».
    Clé publique du site ci-dessous (vide = désactivé). En test, clé d'essai de Cloudflare qui laisse toujours passer.
    Ordre de mise en place : 1) mettre la clé ici et pousser ; 2) seulement ensuite, activer la protection dans
@@ -3679,6 +4181,7 @@ async function startOnline(session){
   renderAll();
   if(y)requestAnimationFrame(()=>window.scrollTo(0,y));
   if(!S.pseudoSet)pseudoFirstDlg();
+  else payReturn(); // retour de la page de paiement Stripe
 }
 
 /* Configuration du jeu pour le serveur (table game_config) : outils/generer-config.ps1 ouvre
@@ -3688,7 +4191,8 @@ function gameConfig(){
   ids.forEach(id=>{rar[id]=D(id)[7];const t=evoTargets(id);if(t.length)evo[id]=t});
   return {v:1,scale:SCALE,oddsK:ODDS_K,byr:BYR,rar,evo,evoCost:EVO_COST,discard:DISCARD,dexOrder:DEX_ORDER,hidden:HIDDEN_IDS,
     maxp:MAXP,per:PER,cards:CARDS,startCredits:START_CREDITS,packPrice:PACK_PRICE,byrV:BYR_V,
-    once:Object.fromEntries(ONCE.map(o=>[o.key,{credits:o.credits,packs:o.packs,free:!!o.free}])),creditPacks:CREDIT_PACKS.map(c=>c.credits),
+    once:LAUNCH?{[LAUNCH.k]:{free:true,credits:LAUNCH.credits,packs:LAUNCH.packs}}:{},creditPacks:[], // anciennes offres en euros retirées en 0.9.0 ; once : pack gratuit de lancement (1.0.0)
+    shop:{offers:Object.fromEntries(OFFERS.map(o=>[o.k,{n:o.n,eur:o.eur,items:o.items}])),items:Object.keys(COS)}, // boutique cosmétique : prix en centimes
     vbLevels:VB_LEVELS,vbCap:VB_CAP,betaOpen:BETA_OPEN,openOpts:OPEN_OPTS,pseudoWait:PSEUDO_WAIT,titleMax:TITLE_MAX,
     titleKeys:TITLES.map(t=>t.k),titleDefault:TITLE_DEFAULT,titleDefs:Object.fromEntries(TITLES.map(t=>[t.k,titleDef(t)])),
     pgen:POKE_IDS.map(id=>DEX[id-1][2]).join(""),
@@ -3700,7 +4204,7 @@ function gameConfig(){
 function titleDef(t){
   const same=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
   if(t.stat)return {c:"stat",s:t.stat,n:t.need};
-  const fixed={alpha:{c:"flag",f:"alpha"},beta:{c:"beta"},secret:{c:"secret"},luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"}};
+  const fixed={alpha:{c:"flag",f:"alpha"},beta:{c:"beta"},luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},lord:{c:"cos",i:"titre.lord"}};
   if(fixed[t.k])return fixed[t.k];
   if(t.ids&&same(t.ids,DEX_ORDER))return {c:"dex",n:t.need||DEX_ORDER.length};
   const r=t.ids?BYR.findIndex(b=>same([...t.ids].sort((a,b)=>a-b),[...b].sort((a,b)=>a-b))):-1;
