@@ -1147,7 +1147,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.3";
+const APP_VERSION="1.1.4";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1560,7 +1560,7 @@ function openPack(k=1){
     revealKey=(S.lastOpen&&S.lastOpen.t)||0;saveReveal(drawn,false); // gardé tout de suite : la page peut se fermer pendant l'animation
     SFX.open(k>1);
     const pk=$(".pack");if(pk&&!matchMedia("(prefers-reduced-motion: reduce)").matches){pk.classList.add("tear");await sleep(950)}
-    reveal=drawn;revealGift=false;handScroll=0;
+    reveal=drawn;revealGift=false;hitsMode=false;handScroll=0;
     renderView();window.scrollTo(0,0);
   }).finally(()=>{opening=false;document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal)});
 }
@@ -2037,15 +2037,38 @@ function renderView(){
   document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal); // pas de « tirer pour actualiser » pendant une ouverture
   if(view==="booster"&&reveal)setupHand();
 }
+/* « Aller aux Hits » (1.1.4, remis à la demande de Theo ; retiré en 1.0.6) : seulement à l'ouverture de 10 boosters
+   d'un coup. Les cartes Épique et au-dessus, et les shiny (même une Commune), restent à retourner dans la main ;
+   les autres passent dans un récapitulatif sous la main. Rien ne distingue une carte avant son retournement. */
+const HIT_MIN=3;let hitsMode=false;
+const isHit=c=>rar(c.id)>=HIT_MIN||!!c.shiny;
+const canHits=()=>!!reveal&&!revealGift&&!hitsMode&&reveal.length===10*CARDS&&reveal.some(c=>!c.shown&&!isHit(c));
+function goHits(){
+  if(!canHits())return;flipAbort=true;flippingAll=false;flipGen++;hitsMode=true;
+  reveal.forEach(c=>{if(!isHit(c)){c.shown=true;c.fx=true}});handScroll=0;renderView();
+  const left=reveal.filter(c=>!c.shown).length;
+  toast(left?`Reste ${left} hit${left>1?"s":""} à retourner.`:"Aucun hit dans ce tirage : voici le récapitulatif.");
+}
+function recapHTML(){
+  if(!hitsMode)return "";
+  const rest=reveal.filter(c=>!isHit(c));if(!rest.length)return "";
+  const m=new Map();rest.forEach(c=>{const e=m.get(c.id)||{n:0,isNew:false};e.n++;e.isNew=e.isNew||c.isNew;m.set(c.id,e)});
+  const ids=[...m.keys()].sort((a,b)=>rar(b)-rar(a)||(m.get(b).isNew-m.get(a).isNew)||a-b);
+  const nNew=[...m.values()].filter(e=>e.isNew).length,counts=[0,0,0];rest.forEach(c=>counts[rar(c.id)]++);
+  return `<section class="recap"><h2>Le reste du tirage</h2>
+    <p class="muted" style="margin:4px 0 12px">${rest.length} carte${rest.length>1?"s":""} ajoutée${rest.length>1?"s":""} à votre collection : ${counts.map((n,i)=>n?`${n} ${RAR[i].toLowerCase()}${n>1?"s":""}`:"").filter(Boolean).join(", ")}${nNew?`, dont <b class="new-sum">${nNew} nouvelle${nNew>1?"s":""}</b>`:""}.</p>
+    <div class="grid recap-grid">${ids.map(id=>{const e=m.get(id);return `<div class="recap-item">${e.isNew?`<span class="new-tag">Nouvelle</span>`:""}${miniHTML(id,{count:e.n})}</div>`}).join("")}</div></section>`;
+}
 function revealHeadHTML(){
   const all=reveal.every(c=>c.shown);
+  if(!all&&hitsMode){const left=reveal.filter(c=>!c.shown).length;return `<p class="muted">Aller aux Hits : ${left} carte${left>1?"s":""} Épique ou mieux (ou shiny) à retourner. Le reste est dans le récapitulatif.</p>`}
   if(!all){const left=reveal.filter(c=>!c.shown).length;return `<p class="muted">Faites défiler votre main et touchez une carte pour la retourner. ${left} carte${left>1?"s":""} à découvrir.</p>`}
   const nNew=reveal.filter(c=>c.isNew).length,counts=[0,0,0,0,0,0,0,0];reveal.forEach(c=>counts[rar(c.id)]++);
   return `<div class="reveal-sum">${counts.map((n,i)=>n?`<span><span style="color:var(--r${i})">${gems(i)}</span> ${n} ${RAR[i].toLowerCase()}${n>1?"s":""}</span>`:"").join("")}${nNew?`<span class="new-sum">${nNew} nouvelle${nNew>1?"s":""}</span>`:""}${reveal.some(c=>c.shiny)?`<span class="sh-sum">✨ ${reveal.filter(c=>c.shiny).length} shiny</span>`:""}</div>`;
 }
 function revealActionsHTML(){
   if(reveal.every(c=>c.shown))return `<button class="btn primary" data-act="done-reveal">Continuer</button>`;
-  return `${flippingAll?`<button class="btn primary" data-act="flip-fast">Plus vite !</button>`:`<button class="btn" data-act="flip-all">Tout retourner</button>`}`;
+  return `${flippingAll?`<button class="btn primary" data-act="flip-fast">Plus vite !</button>`:`<button class="btn" data-act="flip-all">Tout retourner</button>`}${canHits()?`<button class="btn" data-act="hits-only">Aller aux Hits</button>`:""}`;
 }
 /* « Plus vite ! » : retourne tout d'un coup ; les mythiques et les transcendantes suivent aussitôt, une par une,
    avec leur scène (1.0.6 : aucune carte ne reste face cachée, sinon leur rareté se devinerait) */
@@ -2067,6 +2090,7 @@ function flipFast(){
 function updateReveal(){
   if(!reveal)return;const h=$("#reveal-head"),a=$("#reveal-actions");
   if(h)h.innerHTML=revealHeadHTML();if(a)a.innerHTML=revealActionsHTML();
+  const rc=$("#reveal-recap");if(rc)rc.innerHTML=recapHTML();
 }
 
 /* ---------- main en éventail ---------- */
@@ -2125,11 +2149,13 @@ function vBooster(){
     return `<div class="booster"><h1>${revealGift?`Votre cadeau`:multi?`Vos ${reveal.length/CARDS} boosters`:"Votre booster"}</h1>
     <div class="reveal-bar" id="reveal-head">${revealHeadHTML()}</div>
     <div class="hand-wrap"><button class="hand-nav prev" data-act="hand-prev" aria-label="Carte précédente">‹</button>
-    <div class="hand" id="hand">${reveal.map((c,i)=>`<button class="flip${c.shown?" shown":""}" data-act="flip" data-i="${i}" aria-label="${c.shown?esc(nm(c.id)):"Retourner la carte "+(i+1)}"><div class="flip-in">
+    <div class="hand" id="hand">${reveal.map((c,i)=>hitsMode&&!isHit(c)?"":`<button class="flip${c.shown?" shown":""}" data-act="flip" data-i="${i}" aria-label="${c.shown?esc(nm(c.id)):"Retourner la carte "+(i+1)}"><div class="flip-in">
       <div class="face back${dosCls}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div><div class="face front">${c.shown&&c.isNew?`<span class="new-tag">Nouvelle</span>`:""}${c.shown&&c.shiny?SH_TAG:""}${cardHTML(c.id,false,c.shiny)}</div></div></button>`).join("")}</div>
     <button class="hand-nav next" data-act="hand-next" aria-label="Carte suivante">›</button></div>
     <div class="hand-count" id="hand-count"></div>
+    ${hitsMode&&!reveal.some(isHit)?`<div class="empty" style="margin:24px auto;max-width:520px">Aucune carte Épique ou mieux dans ce tirage.</div>`:""}
     <div class="reveal-bar" id="reveal-actions">${revealActionsHTML()}</div>
+    <div id="reveal-recap" style="width:100%">${recapHTML()}</div>
     </div>`;
   }
   const p=packInfo(S);
@@ -2195,7 +2221,7 @@ function openGift(){
     if(drawn.length){revealKey=Date.now();saveReveal(drawn,true)}
     const extra=[res.credits?`+${cr(res.credits)}`:"",res.packs?`+${res.packs} booster${res.packs>1?"s":""}`:""].filter(Boolean);
     if(drawn.length){ // des cartes : on les retourne comme un booster
-      reveal=drawn;revealGift=true;handScroll=0;
+      reveal=drawn;revealGift=true;hitsMode=false;handScroll=0;
       renderAll();window.scrollTo(0,0);
       const more=res.total>drawn.length?`${res.total-drawn.length} autres cartes ont rejoint directement votre collection.`:"";
       if(extra.length||more)toast([extra.length?`Votre cadeau contient aussi ${extra.join(" et ")}.`:"",more].filter(Boolean).join(" "));
@@ -3068,7 +3094,7 @@ function clearMarket(){
 function resetEveryone(){
   run(async()=>{
     const r=await rpc("dc_admin_reset_all");
-    VB=null;reveal=null;discardSel=null;tradeSel=null;renderAll();
+    VB=null;reveal=null;hitsMode=false;discardSel=null;tradeSel=null;renderAll();
     toast(`${r.n} joueur${r.n>1?"s":""} remis à zéro.`);
   });
 }
@@ -3158,7 +3184,7 @@ function resetAll(full){
   if(!devOn())return;
   run(async()=>{
     await rpc("dc_admin_reset_me",{p_full:!!full});
-    VB=null;reveal=null;discardSel=null;tradeSel=null;view=full?"profile":"booster";renderAll();
+    VB=null;reveal=null;hitsMode=false;discardSel=null;tradeSel=null;view=full?"profile":"booster";renderAll();
     toast(full?"Profil entièrement réinitialisé.":"Collection réinitialisée.");
   });
 }
@@ -3827,7 +3853,8 @@ document.addEventListener("click",e=>{
     case"hand-next":handStep(1);break;
     case"flip-all":flipAll();break;
     case"flip-fast":flipFast();break;
-    case"done-reveal":reveal=null;revealGift=false;handScroll=0;renderView();window.scrollTo(0,0);break;
+    case"hits-only":goHits();break; // 1.1.4
+    case"done-reveal":reveal=null;revealGift=false;hitsMode=false;handScroll=0;renderView();window.scrollTo(0,0);break;
     case"detail":detail(id);break;
     case"close":closeDlg();break;
     case"evolve":evolveDlg(+b.dataset.from,+b.dataset.to);break;
