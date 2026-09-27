@@ -174,7 +174,7 @@ h3{font-size:1.1rem}
   scroll-snap-type:x mandatory;padding:30px calc(50% - var(--cw)/2) 44px;scrollbar-width:none;cursor:grab;overscroll-behavior-x:contain;-webkit-user-select:none;user-select:none;touch-action:pan-x}
 .hand::-webkit-scrollbar{display:none}
 .hand.dragging{cursor:grabbing;scroll-snap-type:none}
-.hand .flip{flex:0 0 var(--cw);width:var(--cw);height:var(--ch);margin:0 calc(var(--cw)*-.1);scroll-snap-align:center;transform-origin:50% 120%;transition:transform .18s ease-out}
+.hand .flip{flex:0 0 var(--cw);width:var(--cw);height:var(--ch);margin:0 calc(var(--cw)*-.1);scroll-snap-align:center;transform-origin:50% 50%;transition:transform .18s ease-out}
 .hand .flip .card{font-size:clamp(14px,calc(var(--cw)/15),18px)}
 .hand .flip.current{filter:drop-shadow(0 14px 22px rgba(0,0,0,.35))}
 html.revealing,html.revealing body{overscroll-behavior-y:none}
@@ -1143,7 +1143,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.0";
+const APP_VERSION="1.1.1";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1553,6 +1553,7 @@ function openPack(k=1){
     try{res=await rpc("dc_open",{p_k:k})}
     catch(e){res=await recoverOpen(before,k);if(!res)throw e}
     const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shiny:!!c.shiny,shown:false}));
+    revealKey=(S.lastOpen&&S.lastOpen.t)||0;saveReveal(drawn,false); // gardé tout de suite : la page peut se fermer pendant l'animation
     SFX.open(k>1);
     const pk=$(".pack");if(pk&&!matchMedia("(prefers-reduced-motion: reduce)").matches){pk.classList.add("tear");await sleep(950)}
     reveal=drawn;revealGift=false;handScroll=0;
@@ -2003,12 +2004,27 @@ function restorePlace(){
     return +p.y||0}catch(e){return 0}
 }
 let placeT=0;addEventListener("scroll",()=>{clearTimeout(placeT);placeT=setTimeout(savePlace,300)},{passive:true});
+/* Ouverture pas finie (1.1.1) : le tirage et les cartes déjà retournées sont gardés sur l'appareil (localStorage,
+   dc-reveal) dès la réponse du serveur ; si le joueur quitte la page avant d'avoir tout retourné, il reprend là où il
+   en était. Booster : seulement si c'est toujours le dernier tirage du serveur (lastOpen.t) ; cadeau : moins d'un jour. */
+let revealKey=0;
+function saveReveal(list=reveal,g=revealGift){
+  try{if(list&&ME&&!list.every(c=>c.shown))localStorage.setItem("dc-reveal",JSON.stringify({u:ME,t:revealKey,g:!!g,c:list.map(c=>[c.id,c.isNew?1:0,c.shiny?1:0,c.shown?1:0])}));
+    else localStorage.removeItem("dc-reveal")}catch(e){}
+}
+function restoreReveal(){
+  try{const r=JSON.parse(localStorage.getItem("dc-reveal")||"null");if(!r||r.u!==ME||!Array.isArray(r.c)||!r.c.length)return false;
+    const ok=r.g?Date.now()-r.t<864e5:!!(S.lastOpen&&S.lastOpen.t===r.t);
+    if(!ok){localStorage.removeItem("dc-reveal");return false}
+    reveal=r.c.map(([id,n,s,sh])=>({id:+id,isNew:!!n,shiny:!!s,shown:!!sh,fx:!!sh}));revealGift=!!r.g;revealKey=r.t;handScroll=0;view="booster";
+    return true}catch(e){return false}
+}
 function renderView(){
   if(!S)return;const app=$("#app");
   keepInputs(()=>{fillApp(app,({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto})[view]())});
   // fond de l’écran des boosters (boutique) : seulement sur cet écran
   {const f=view==="booster"?myLook("fond"):null;if(f)document.body.dataset.fond=cosCls(f);else delete document.body.dataset.fond}
-  savePlace();
+  savePlace();if(reveal)saveReveal(); // main en cours : cartes retournées gardées (tout retourné : effacé)
   lastPackN=packInfo(S).n;
   document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal); // pas de « tirer pour actualiser » pendant une ouverture
   if(view==="booster"&&reveal)setupHand();
@@ -2054,7 +2070,9 @@ function fanUpdate(){
   cards.forEach((el,i)=>{
     const d=(el.offsetLeft+el.offsetWidth/2-center)/el.offsetWidth,a=Math.min(Math.abs(d),4);
     if(Math.abs(d)<best){best=Math.abs(d);cur=i}
-    el.style.transform=RM()?"":`translateY(${Math.pow(a,1.3)*16}px) rotate(${Math.max(-4,Math.min(4,d))*6}deg) scale(${1-Math.min(a,3)*.07})`;
+    // éventail (1.1.1) : pivot au centre, descente et rotation plafonnées : même les cartes éloignées restent entières
+    // dans la marge du bas de la main (avant, elles descendaient jusqu'à ~170 px et étaient coupées sur grand écran)
+    el.style.transform=RM()?"":`translateY(${Math.pow(Math.min(a,3),1.2)*14}px) rotate(${Math.max(-4,Math.min(4,d))*4}deg) scale(${1-Math.min(a,3)*.07})`;
     el.style.zIndex=String(100-Math.round(a*10));
   });
   cards.forEach((el,i)=>el.classList.toggle("current",i===cur));
@@ -2166,6 +2184,7 @@ function openGift(){
     const res=await rpc("dc_gift_open",{},{render:false});
     const box=$(".gift-box");if(box&&!RM()){box.classList.add("open");SFX.open(false);await sleep(750)}
     const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shown:false}));
+    if(drawn.length){revealKey=Date.now();saveReveal(drawn,true)}
     const extra=[res.credits?`+${cr(res.credits)}`:"",res.packs?`+${res.packs} booster${res.packs>1?"s":""}`:""].filter(Boolean);
     if(drawn.length){ // des cartes : on les retourne comme un booster
       reveal=drawn;revealGift=true;handScroll=0;
@@ -2665,9 +2684,10 @@ function vEvolution(){
     </div>`};
   return `<h1>Évolutions</h1>
   <p class="muted">Réunissez ${EVO_COST} exemplaires d’un même Pokémon pour les échanger contre 1 carte de son évolution, ou contre une de ses méga-évolutions ou sa forme Gigamax. Les ${EVO_COST} cartes sont consommées. Quand un Pokémon a plusieurs évolutions possibles, vous choisissez laquelle.</p>
-  ${(()=>{const plan=quickEvoPlan();return `<div class="actions" style="margin-top:12px">
+  ${(()=>{const plan=quickEvoPlan(),all=quickEvoPlan(true);return `<div class="actions" style="margin-top:12px">
     <button class="btn${plan.length?" primary":""}" data-act="quick-evo" ${plan.length?"":"disabled"}>${plan.length?`Évolution rapide (${plan.length})`:"Évolution rapide : rien à faire"}</button>
-    <span class="muted" style="font-size:.85rem;align-self:center">Fait évoluer d’un coup les Pokémon que vous avez en 4 exemplaires ou plus, quand l’évolution vous manque encore.</span></div>`})()}
+    <button class="btn" data-act="quick-evo" data-all="1" ${all.length?"":"disabled"}>${all.length?`Tout faire évoluer (${all.length})`:"Tout faire évoluer : rien à faire"}</button></div>
+    <p class="muted" style="font-size:.85rem;margin:6px 0 0">Les Pokémon que vous avez en 4 exemplaires ou plus évoluent d’un coup, en gardant toujours un exemplaire. « Évolution rapide » : seulement vers les évolutions qui vous manquent. « Tout faire évoluer » : aussi vers celles que vous avez déjà (chaque carte obtenue augmente votre chance de la trouver en shiny).</p>`})()}
   <div class="evo-q qty" role="group" aria-label="Filtre">
     <button data-act="evo-filter" data-f="ready" aria-pressed="${evoFilter==="ready"}">Prêts à évoluer (${ready.length})</button>
     <button data-act="evo-filter" data-f="all" aria-pressed="${evoFilter==="all"}">Tous mes Pokémon évolutifs (${owned.length})</button>
@@ -2675,40 +2695,47 @@ function vEvolution(){
   ${list.length?`<div class="evo-list">${list.map(row).join("")}</div>`
     :`<div class="empty" style="margin-top:14px">${evoFilter==="ready"?`Aucun Pokémon n’a encore ${EVO_COST} exemplaires. Ouvrez des boosters pour accumuler des doubles.`:"Aucun Pokémon évolutif dans votre collection pour l’instant."}</div>`}`;
 }
-/* Évolution rapide : tous les Pokémon en 4 exemplaires ou plus dont l'évolution manque */
-function quickEvoPlan(){
+/* Évolution rapide : tous les Pokémon en 4 exemplaires ou plus (il en reste toujours au moins 1).
+   all = false : seulement quand une évolution manque encore ; all = true (1.1.1) : aussi quand on les a déjà toutes,
+   vers celle qu'on a le moins (les manquantes d'abord). Même calcul que dc_quick_evo sur le serveur. */
+function quickEvoPlan(all){
   const c={};for(const [k,v] of Object.entries(S.coll))c[+k]=v;
   const plan=[];
   for(const id of Object.keys(c).map(Number).filter(canEvolve).sort((a,b)=>c[b]-c[a]||a-b)){
     let guard=0;
     while(c[id]>=EVO_COST+1&&guard++<60){
-      const to=evoTargets(id).find(x=>!(c[x]>0));if(!to)break;
+      let to=null;for(const x of evoTargets(id)){const n=c[x]||0;if((!n||all)&&(to===null||n<(c[to]||0)))to=x}
+      if(to===null)break;
       c[id]-=EVO_COST;c[to]=(c[to]||0)+1;plan.push([id,to]);
     }
   }
   return plan;
 }
-function quickEvoDlg(){
-  const plan=quickEvoPlan();if(!plan.length)return;
-  const gains=plan.map(([,to])=>to);
+/* cartes obtenues, regroupées : « Florizarre ×3, Dracaufeu » */
+const evoGains=ids=>{const m=new Map();ids.forEach(id=>m.set(id,(m.get(id)||0)+1));return [...m].map(([id,n])=>esc(nameOrHidden(id))+(n>1?` ×${n}`:"")).join(", ")};
+function quickEvoDlg(all){
+  const plan=quickEvoPlan(all);if(!plan.length)return;
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
-    <h2>Évolution rapide</h2>
+    <h2>${all?"Tout faire évoluer":"Évolution rapide"}</h2>
     <p>${plan.length} évolution${plan.length>1?"s":""} seront faites d’un coup, en gardant toujours au moins un exemplaire de chaque Pokémon de base. Cela consomme ${plan.length*EVO_COST} cartes.</p>
-    <p class="muted">Vous obtiendrez : ${gains.map(id=>esc(nameOrHidden(id))).join(", ")}.</p>
-    <div class="actions"><button class="btn primary" data-act="quick-evo-go">Lancer les ${plan.length} évolutions</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
+    <p class="muted">Vous obtiendrez : ${evoGains(plan.map(([,to])=>to))}.</p>
+    <div class="actions"><button class="btn primary" data-act="quick-evo-go"${all?` data-all="1"`:""}>Lancer les ${plan.length} évolutions</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
 }
-function quickEvo(){
-  const plan=quickEvoPlan();if(!plan.length)return;
+function quickEvo(all){
+  const plan=quickEvoPlan(all);if(!plan.length)return;
+  const before=Object.assign({},S.coll);
   run(async()=>{
-    const done=(await rpc("dc_quick_evo")).done||[];
+    const done=(await rpc("dc_quick_evo",{p_all:!!all})).done||[];
     SFX.flip(2);
+    const ids=[...new Set(done)],n=id=>done.filter(x=>x===id).length;
     openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
       <h2>${done.length} évolution${done.length>1?"s":""} réussie${done.length>1?"s":""}</h2>
       <p class="muted">Ces cartes rejoignent votre collection.</p>
-      <div class="grid" style="max-height:52vh;overflow:auto">${done.map(id=>`<div class="recap-item"><span class="new-tag">Nouvelle</span>${miniHTML(id,{count:S.coll[id]||1,sh:showShiny(id),shOwn:hasShiny(id)})}</div>`).join("")}</div>
+      <div class="grid" style="max-height:52vh;overflow:auto">${ids.map(id=>`<div class="recap-item">${before[id]?"":`<span class="new-tag">Nouvelle</span>`}${miniHTML(id,{count:S.coll[id]||n(id),sh:showShiny(id),shOwn:hasShiny(id)})}${n(id)>1?`<span class="muted" style="font-size:.8rem">+${n(id)}</span>`:""}</div>`).join("")}</div>
       <div class="actions"><button class="btn primary" data-act="close">Continuer</button></div></div>`,true);
   });
 }
+
 function evolveDlg(from,to){
   const c=S.coll[from]||0;if(c<EVO_COST||!evoTargets(from).includes(to))return;
   const left=c-EVO_COST,have=S.coll[to]||0;
@@ -3352,7 +3379,7 @@ function tradeDlg(mid_){
 /* ---------- effets de rareté ---------- */
 const RM=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 let pendingRender=false;
-function markShown(b,c){c.shown=true;
+function markShown(b,c){c.shown=true;saveReveal();
   if(RM())b.classList.add("shown");
   else{b.classList.add("flipping");void b.offsetWidth;b.classList.add("shown");clearTimeout(b._flipT);b._flipT=setTimeout(()=>b.classList.remove("flipping"),650)}const fr=b.querySelector(".front");if(c.isNew&&fr&&!fr.querySelector(".new-tag"))fr.insertAdjacentHTML("afterbegin",`<span class="new-tag">Nouvelle</span>`)
   if(c.shiny&&fr&&!fr.querySelector(".sh-tag"))fr.insertAdjacentHTML("afterbegin",SH_TAG)}
@@ -3795,8 +3822,8 @@ document.addEventListener("click",e=>{
     case"detail":detail(id);break;
     case"close":closeDlg();break;
     case"evolve":evolveDlg(+b.dataset.from,+b.dataset.to);break;
-    case"quick-evo":quickEvoDlg();break;
-    case"quick-evo-go":closeDlg();quickEvo();break;
+    case"quick-evo":quickEvoDlg(b.dataset.all==="1");break;
+    case"quick-evo-go":{const all=b.dataset.all==="1";closeDlg();quickEvo(all);break}
     case"evolve-go":closeDlg();evolve(+b.dataset.from,+b.dataset.to);break;
     case"evo-filter":evoFilter=b.dataset.f;renderView();break;
     case"test-mythic":if(devOn())mythicFx(MYTH_IDS[0]);break;
@@ -4348,9 +4375,14 @@ async function startOnline(session){
   OWNER=!!init.admin;
   try{await loadSecrets(secretMissing(S))}catch(e){console.warn(e)} // numéros des cartes secrètes (titres) et données des siennes
   watchShared();
-  const y=restorePlace(); // page rechargée : même écran qu'avant (0.8.14)
+  let y=restorePlace(); // page rechargée : même écran qu'avant (0.8.14)
+  const back=restoreReveal();if(back)y=0; // booster pas fini d'ouvrir (1.1.1) : on le reprend
   renderAll();
   if(y)requestAnimationFrame(()=>window.scrollTo(0,y));
+  if(back){
+    requestAnimationFrame(()=>{const i=reveal.findIndex(c=>!c.shown),b=document.querySelector(`#hand .flip[data-i="${i}"]`);if(b)centerCard(b,true)});
+    toast(`Vous n’aviez pas fini ${revealGift?"d’ouvrir votre cadeau":"d’ouvrir vos boosters"} : retournez les cartes qui restent.`);
+  }
   if(!S.pseudoSet)pseudoFirstDlg();
   else payReturn(); // retour de la page de paiement Stripe
 }

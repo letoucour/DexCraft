@@ -425,18 +425,22 @@ begin
   return jsonb_build_object('profile', public.dc__save(u, d), 'wasNew', was_new);
 end $$;
 
--- Évolution rapide : Pokémon en 4 exemplaires ou plus dont une évolution manque encore
-create or replace function public.dc_quick_evo() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+-- Évolution rapide : Pokémon en 4 exemplaires ou plus (il en reste toujours au moins 1).
+-- p_all = false : seulement quand une évolution manque encore ; p_all = true (1.1.1) : aussi quand on a déjà
+-- toutes ses évolutions, en choisissant celle qu'on a le moins (les manquantes d'abord).
+drop function if exists public.dc_quick_evo();
+create or replace function public.dc_quick_evo(p_all boolean default false) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg();
-  cost int := (cfg ->> 'evoCost')::int; r record; t jsonb; done jsonb := '[]'; guard int; target int;
+  cost int := (cfg ->> 'evoCost')::int; r record; t jsonb; done jsonb := '[]'; guard int; target int; best int; n int;
 begin
   for r in select key::int id from jsonb_each(d -> 'coll') where cfg -> 'evo' ? key
            order by (value #>> '{}')::int desc, key::int loop
     guard := 0;
     while public.dc__count(d, r.id) >= cost + 1 and guard < 60 loop
-      guard := guard + 1; target := null;
+      guard := guard + 1; target := null; best := null;
       for t in select value from jsonb_array_elements(cfg -> 'evo' -> r.id::text) loop
-        if public.dc__count(d, (t #>> '{}')::int) = 0 then target := (t #>> '{}')::int; exit; end if;
+        n := public.dc__count(d, (t #>> '{}')::int);
+        if (n = 0 or coalesce(p_all, false)) and (best is null or n < best) then target := (t #>> '{}')::int; best := n; end if;
       end loop;
       exit when target is null;
       d := public.dc__gain(public.dc__add(d, r.id, -cost), target, 1);
@@ -446,6 +450,7 @@ begin
   if jsonb_array_length(done) = 0 then raise exception 'Plus rien à faire évoluer.'; end if;
   return jsonb_build_object('profile', public.dc__save(u, d), 'done', done);
 end $$;
+
 
 -- ============================================================
 --  Boutique
@@ -515,8 +520,8 @@ revoke all on function public.dc_init() from public, anon;
 grant execute on function public.dc_init() to authenticated;
 revoke all on function public.dc_open(integer) from public, anon;
 grant execute on function public.dc_open(integer) to authenticated;
-revoke all on function public.dc_quick_evo() from public, anon;
-grant execute on function public.dc_quick_evo() to authenticated;
+revoke all on function public.dc_quick_evo(boolean) from public, anon;
+grant execute on function public.dc_quick_evo(boolean) to authenticated;
 revoke all on function public.dc_set_avatar(integer) from public, anon;
 grant execute on function public.dc_set_avatar(integer) to authenticated;
 revoke all on function public.dc_set_pseudo(text) from public, anon;
