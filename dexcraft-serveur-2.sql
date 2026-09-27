@@ -132,9 +132,9 @@ begin
   perform public.dc__lock_many(coalesce(us, '{}') || own);
   perform public.dc__return_offers(m, p_oid);
   p := public.dc__lock(by_);
-  perform public.dc__save(by_, public.dc__bump(public.dc__add(p, public.dc__int(m, 'card')::int, 1), 'trades'), false);
+  perform public.dc__save(by_, public.dc__bump(public.dc__gain(p, public.dc__int(m, 'card')::int, 1), 'trades'), false);
   d := public.dc__lock(own);
-  perform public.dc__save(own, public.dc__bump(public.dc__add(d, public.dc__int(o, 'card')::int, 1), 'trades'), false);
+  perform public.dc__save(own, public.dc__bump(public.dc__gain(d, public.dc__int(o, 'card')::int, 1), 'trades'), false);
   delete from public.docs where path = 'market/' || p_mid;
   -- historique : le propriétaire a donné m.card et reçu o.card
   insert into public.trade_log (owner, owner_card, taker, taker_card) values (own, public.dc__int(m, 'card')::int, by_, public.dc__int(o, 'card')::int);

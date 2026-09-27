@@ -317,6 +317,21 @@ begin
   return jsonb_build_object('profile', public.dc__save(u, d), 'on', on_);
 end $$;
 
+-- Shiny (1.1.0) : forme affichée. p_id = une carte shiny : bascule entre shiny et forme normale (shinyOff) ;
+-- p_id null : réglage « toujours afficher les formes normales » (shinyNorm). Mêmes choix sur tous les appareils.
+create or replace function public.dc_shiny_view(p_id int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); k text := p_id::text; o jsonb;
+begin
+  if p_id is null then
+    d := d || jsonb_build_object('shinyNorm', coalesce(d ->> 'shinyNorm', '') <> 'true');
+  else
+    if not (d -> 'shiny' ? k) then raise exception 'Vous n’avez pas encore cette carte en shiny.'; end if;
+    o := case when jsonb_typeof(d -> 'shinyOff') = 'object' then d -> 'shinyOff' else '{}'::jsonb end;
+    d := jsonb_set(d, '{shinyOff}', case when o ? k then o - k else o || jsonb_build_object(k, 1) end);
+  end if;
+  return jsonb_build_object('profile', public.dc__save(u, d));
+end $$;
+
 create or replace function public.dc_tip_done(p_key text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true);
 begin
@@ -381,7 +396,7 @@ begin
         shown := shown || jsonb_build_array(jsonb_build_object('id', g.c, 'isNew', public.dc__count(d, g.c) = 0));
         nshown := nshown + 1;
       end if;
-      d := public.dc__add(d, g.c, 1); total := total + 1;
+      d := public.dc__gain(d, g.c, 1); total := total + 1;
     end loop;
   end loop;
   d := (d - 'gifts') || jsonb_build_object('credits', public.dc__int(d, 'credits') + cr, 'bonus', public.dc__int(d, 'bonus') + pk);
@@ -457,6 +472,8 @@ revoke all on function public.dc_gift_open() from public, anon;
 grant execute on function public.dc_gift_open() to authenticated;
 revoke all on function public.dc_toggle_wish(integer) from public, anon;
 grant execute on function public.dc_toggle_wish(integer) to authenticated;
+revoke all on function public.dc_shiny_view(integer) from public, anon;
+grant execute on function public.dc_shiny_view(integer) to authenticated;
 revoke all on function public.dc_tip_done(text) from public, anon;
 grant execute on function public.dc_tip_done(text) to authenticated;
 revoke all on function public.dc_trade_bulk(text[],text,text,integer[]) from public, anon;

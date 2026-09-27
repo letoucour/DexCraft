@@ -82,6 +82,12 @@ begin
   return jsonb_set(d, '{coll}', coalesce(d -> 'coll', '{}') || jsonb_build_object(k, c));
 end $$;
 
+-- carte reçue (booster, évolution, échange, cadeau) : ajoutée à la collection ET comptée dans got, le nombre de fois
+-- où le joueur l'a obtenue au total, qui ne baisse jamais (1.1.0 : chance shiny). Une carte rendue (annonce retirée,
+-- proposition refusée) passe par dc__add seul : elle n'est pas comptée deux fois.
+create or replace function public.dc__gain(d jsonb, id int, n int) returns jsonb language sql immutable as
+$$ select jsonb_set(public.dc__add(d, id, n), '{got}', coalesce(d -> 'got', '{}') || jsonb_build_object(id::text, coalesce((d -> 'got' ->> id::text)::int, 0) + n)) $$;
+
 create or replace function public.dc__bump(d jsonb, k text, n bigint default 1) returns jsonb language sql immutable as
 $$ select jsonb_set(d, '{stats}', coalesce(d -> 'stats', '{}') || jsonb_build_object(k, coalesce((d -> 'stats' ->> k)::bigint, 0) + n)) $$;
 
@@ -99,6 +105,9 @@ begin
        || coalesce(d, '{}'::jsonb);
   if jsonb_typeof(d -> 'volto') <> 'object' then d := jsonb_set(d, '{volto}', jsonb_build_object('day', '', 'gained', 0, 'level', 1)); end if;
   if jsonb_typeof(d -> 'stats') <> 'object' then d := jsonb_set(d, '{stats}', '{}'); end if;
+  -- shiny (1.1.0) : got = fois où chaque carte a été obtenue ; shiny = versions shiny débloquées {id: date}
+  if jsonb_typeof(d -> 'got') is distinct from 'object' then d := jsonb_set(d, '{got}', '{}'); end if;
+  if jsonb_typeof(d -> 'shiny') is distinct from 'object' then d := jsonb_set(d, '{shiny}', '{}'); end if;
   return d;
 end $$;
 
@@ -142,6 +151,16 @@ begin
   if jsonb_typeof(d -> 'wish') = 'object' then
     d := jsonb_set(d, '{wish}', coalesce((select jsonb_object_agg(key, value) from jsonb_each(d -> 'wish') where not newcoll ? key or (jsonb_typeof(value) = 'object' and value ? 'k')), '{}'));
   elsif d ? 'wish' then d := d - 'wish'; end if;
+  -- shiny (1.1.0) : nombre de shiny (classement, titres), forme normale choisie (shinyOff) seulement pour un shiny
+  -- débloqué, image de profil en shiny (avaS) visible par tous
+  n := (select count(*) from jsonb_object_keys(d -> 'shiny'));
+  d := jsonb_set(d || jsonb_build_object('shinyN', n), '{stats,shinyN}', to_jsonb(n));
+  if jsonb_typeof(d -> 'shinyOff') = 'object' then
+    d := jsonb_set(d, '{shinyOff}', coalesce((select jsonb_object_agg(key, value) from jsonb_each(d -> 'shinyOff') where d -> 'shiny' ? key), '{}'));
+  elsif d ? 'shinyOff' then d := d - 'shinyOff'; end if;
+  if d ->> 'avatar' is not null and d -> 'shiny' ? (d ->> 'avatar') and not coalesce(d -> 'shinyOff', '{}') ? (d ->> 'avatar')
+     and coalesce(d ->> 'shinyNorm', '') <> 'true' then d := jsonb_set(d, '{avaS}', 'true');
+  else d := d - 'avaS'; end if;
   -- cosmétiques (0.9.0) : articles possédés (cos) ; portés (look), seulement s'ils sont possédés ;
   -- partie visible par les autres joueurs (vis : cadre, couleur du pseudo, badges), lue par le classement
   if d ? 'cos' and jsonb_typeof(d -> 'cos') <> 'object' then d := d - 'cos'; end if;
@@ -334,7 +353,7 @@ create or replace function public.dc_open(p_k int) returns jsonb language plpgsq
 declare
   u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg();
   now_ms bigint := public.dc__now(); maxp int := (cfg ->> 'maxp')::int; per bigint := (cfg ->> 'per')::bigint;
-  b int; i int; r int; x int; k int; id int; legend int; pk record; drawn jsonb := '[]'; pool jsonb;
+  b int; i int; r int; x int; k int; id int; legend int; pk record; drawn jsonb := '[]'; pool jsonb; sh boolean;
 begin
   if not (cfg -> 'openOpts' @> to_jsonb(p_k)) then raise exception 'Nombre de boosters invalide.'; end if;
   select * into pk from public.dc__packinfo(d, now_ms);
@@ -357,8 +376,16 @@ begin
       end loop;
       pool := cfg -> 'byr' -> r;
       id := (pool ->> public.dc__rnd(jsonb_array_length(pool)))::int;
-      drawn := drawn || jsonb_build_array(jsonb_build_object('id', id, 'isNew', public.dc__count(d, id) = 0));
-      d := public.dc__add(d, id, 1);
+      -- shiny (1.1.0) : (1 + fois où la carte a déjà été obtenue) sur 4 096, 100 sur 4 096 au plus ; une fois par carte,
+      -- jamais pour une mythique, une transcendante ou une carte sans illustration shiny (shinyNo)
+      sh := false;
+      if r <= 5 and cfg ? 'shinyBase' and not (cfg -> 'shinyNo' @> to_jsonb(id)) and not (d -> 'shiny' ? id::text) then
+        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0), (cfg ->> 'shinyMax')::int - 1);
+      end if;
+      if sh then d := jsonb_set(d, '{shiny}', (d -> 'shiny') || jsonb_build_object(id::text, now_ms)); end if;
+      drawn := drawn || jsonb_build_array(jsonb_build_object('id', id, 'isNew', public.dc__count(d, id) = 0)
+        || case when sh then '{"shiny": true}'::jsonb else '{}'::jsonb end);
+      d := public.dc__gain(d, id, 1);
       if r = 5 then legend := legend + 1; end if;
     end loop;
     d := public.dc__bump(d, 'packs');
@@ -393,7 +420,7 @@ begin
   if not coalesce(cfg -> 'evo' -> p_from::text @> to_jsonb(p_to), false) then raise exception 'Évolution impossible.'; end if;
   if public.dc__count(d, p_from) < (cfg ->> 'evoCost')::int then raise exception 'Il vous faut % exemplaires pour faire évoluer ce Pokémon.', cfg ->> 'evoCost'; end if;
   was_new := public.dc__count(d, p_to) = 0;
-  d := public.dc__add(public.dc__add(d, p_from, -(cfg ->> 'evoCost')::int), p_to, 1);
+  d := public.dc__gain(public.dc__add(d, p_from, -(cfg ->> 'evoCost')::int), p_to, 1);
   d := public.dc__bump(d, 'evos');
   return jsonb_build_object('profile', public.dc__save(u, d), 'wasNew', was_new);
 end $$;
@@ -412,7 +439,7 @@ begin
         if public.dc__count(d, (t #>> '{}')::int) = 0 then target := (t #>> '{}')::int; exit; end if;
       end loop;
       exit when target is null;
-      d := public.dc__add(public.dc__add(d, r.id, -cost), target, 1);
+      d := public.dc__gain(public.dc__add(d, r.id, -cost), target, 1);
       d := public.dc__bump(d, 'evos'); done := done || to_jsonb(target);
     end loop;
   end loop;
@@ -455,6 +482,7 @@ end $$;
 --  Droits d'exécution des fonctions de cette partie (les dc__* restent internes)
 -- ============================================================
 revoke all on function public.dc__add(jsonb,integer,integer) from public, anon, authenticated;
+revoke all on function public.dc__gain(jsonb,integer,integer) from public, anon, authenticated;
 revoke all on function public.dc__bump(jsonb,text,bigint) from public, anon, authenticated;
 revoke all on function public.dc__cfg() from public, anon, authenticated;
 revoke all on function public.dc__count(jsonb,integer) from public, anon, authenticated;

@@ -1,4 +1,5 @@
 outils/images-manquantes.csv
+outils/shiny-manquantes.csv
 outils/planche-images.html
 images-png/
 images-perso/
@@ -8,3 +9,4 @@ secret/
 sauvegardes/
 CLAUDE.local.md
 index-export.tmp.html
+images-shiny-png/

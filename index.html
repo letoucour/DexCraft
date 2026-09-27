@@ -309,6 +309,15 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .shake{animation:shake .5s linear}
 @keyframes shake{0%,100%{transform:translate(0)}20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-5px)}60%{transform:translate(-5px,-3px)}80%{transform:translate(4px,5px)}}
 .new-tag{position:absolute;top:-10px;right:-8px;z-index:3;background:var(--gold);color:var(--gold-ink);font-weight:700;font-size:.8rem;padding:2px 10px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.sh-tag{position:absolute;top:-10px;left:-8px;z-index:3;background:linear-gradient(100deg,#ffe68a,#ff9fd8,#9fd4ff);color:#2b1a3d;font-weight:800;font-size:.8rem;padding:2px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(255,200,120,.55)}
+.sh-sum{color:var(--gold);font-weight:700}
+.sh-star{position:fixed;z-index:400;pointer-events:none;font-size:20px;color:#ffe27a;text-shadow:0 0 8px #fff,0 0 14px #ffcf3f;transform:translate(-50%,-50%) scale(.3);opacity:0;animation:shStar 1.3s ease-out forwards}
+@keyframes shStar{0%{opacity:1;transform:translate(-50%,-50%) scale(.3)}70%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.1) rotate(90deg)}}
+.card.shiny{box-shadow:0 0 0 2px rgba(255,236,170,.9),0 0 18px rgba(255,210,110,.55)}
+.card .sh-mark{color:#e0a800}
+.mini.shiny{border-color:#e3bd45;box-shadow:0 0 0 1px rgba(227,189,69,.45)}
+.mini .sh-badge{position:absolute;top:26px;left:6px;font-size:.8rem;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.sh-panel{border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
 .reveal-actions{display:flex;gap:10px;justify-content:center;margin-top:20px}
 
 /* Card */
@@ -683,6 +692,11 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .lb-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:.82rem;font-weight:700;color:var(--ink-soft)}
 .lb-legend span{display:flex;align-items:center;gap:5px}
 .lb-legend .seg{width:14px;height:9px;border-radius:3px}
+/* shiny (1.1.0) : aura holographique du classement, qui se remplit avec le nombre de shiny (statique : pas d'animation sur 100 lignes) */
+.lb-bar{position:relative}
+.lb-bar .lb-aura,.lb-legend .lb-aura-key{background:repeating-linear-gradient(100deg,#ff8fd1 0 10px,#ffe68a 10px 20px,#8dffd2 20px 30px,#8cc4ff 30px 40px,#dca0ff 40px 50px)}
+.lb-bar .lb-aura{position:absolute;left:0;top:0;bottom:0;opacity:.8;mix-blend-mode:screen;border-radius:999px;pointer-events:none}
+.lb-bar.has-aura{box-shadow:0 0 7px rgba(255,214,130,.55)}
 
 /* Modal */
 dialog{border:0;padding:0;background:transparent;color:var(--ink);max-width:min(760px,calc(100% - 24px));width:100%}
@@ -1129,7 +1143,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.10";
+const APP_VERSION="1.1.0";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1445,8 +1459,10 @@ function visOf(id){
 }
 const myLook=s=>{const l=(S&&S.look)||{};return S&&owns(S,l[s])?l[s]:null};
 /* image de profil d'un joueur, avec son cadre */
+/* image de profil en shiny (1.1.0) : avaS, calculé par le serveur, visible par tous */
+const avaShiny=id=>{const p=id===ME?S:PLAYERS[id];return !!(p&&p.avaS)};
 function playerAva(id,size){
-  const v=visOf(id),a=avatarHTML(avatarOf(id),size);
+  const v=visOf(id),a=avatarHTML(avatarOf(id),size,avaShiny(id));
   return v.f?`<span class="avf fr-${cosCls(v.f)}" style="--s:${size}px">${a}</span>`:a;
 }
 /* pseudo d'un joueur, avec sa couleur et ses badges ; suffixe facultatif (« (vous) ») */
@@ -1536,7 +1552,7 @@ function openPack(k=1){
     let res;
     try{res=await rpc("dc_open",{p_k:k})}
     catch(e){res=await recoverOpen(before,k);if(!res)throw e}
-    const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shown:false}));
+    const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shiny:!!c.shiny,shown:false}));
     SFX.open(k>1);
     const pk=$(".pack");if(pk&&!matchMedia("(prefers-reduced-motion: reduce)").matches){pk.classList.add("tear");await sleep(950)}
     reveal=drawn;revealGift=false;handScroll=0;
@@ -1706,16 +1722,17 @@ function discard(sel){
 }
 
 /* ---------- rendering helpers ---------- */
-function cardHTML(id,lg){
+function cardHTML(id,lg,sh){ // sh : version shiny (1.1.0)
+  sh=!!sh&&canShiny(id);
   const [n,g,gen,ty,h,w,st,r,ex]=D(id);
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
   const chips=ex&&ex.chips?ex.chips.map(x=>`<span class="type" style="--t:${c1}">${esc(x)}</span>`).join(""):ty.map(t=>`<span class="type" style="--t:${TYPES[t][1]}">${TYPES[t][0]}</span>`).join("");
   const kind=ex&&ex.base?(ex.kind?formTag(ex):"Méga"):"";
   const label=r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
   const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
-  return `<div class="card r${r}${lg?" lg":""}" style="--c1:${c1};--c2:${c2}">
-  <div class="card-top"><span>${label}</span><span class="gems" aria-label="${RAR[r]}">${gems(r)}</span></div>
-  <div class="art">${imgFor(id)?`<img class="art-img" src="${esc(imgFor(id))}" alt="" onerror="this.remove()">`:""}<span class="art-initial" aria-hidden="true">${esc(n[0])}</span><span class="art-no" aria-hidden="true">${r===7?"❖":r===6?"✦":ex&&ex.base?ex.base:id}</span><span class="art-gen">${edition}</span></div>
+  return `<div class="card r${r}${lg?" lg":""}${sh?" shiny":""}" style="--c1:${c1};--c2:${c2}">
+  <div class="card-top"><span>${sh?`<b class="sh-mark" title="Shiny">✨</b> `:""}${label}</span><span class="gems" aria-label="${RAR[r]}">${gems(r)}</span></div>
+  <div class="art">${imgFor(id,sh)?`<img class="art-img" src="${esc(imgFor(id,sh))}" alt="" onerror="this.remove()">`:""}<span class="art-initial" aria-hidden="true">${esc(n[0])}</span><span class="art-no" aria-hidden="true">${r===7?"❖":r===6?"✦":ex&&ex.base?ex.base:id}</span><span class="art-gen">${edition}</span></div>
   <div class="card-name">${esc(n)}</div>
   <div class="genus">${esc(g)}</div>
   <div class="types">${chips}</div>
@@ -1723,18 +1740,34 @@ function cardHTML(id,lg){
     :`<div class="stats">${st.map((v,i)=>`<span>${STATN[i]}</span><i><b style="width:${Math.min(100,v/1.8)}%"></b></i><em>${v}</em>`).join("")}</div>`}
   <div class="card-foot"><span>${ex&&(ex.foot||ex.lines)?esc(ex.foot||""):ex&&ex.kind==="gmax"?`${(h/10).toLocaleString("fr-FR")} m et plus`:ex&&!ex.kind?"":`${(h/10).toLocaleString("fr-FR")} m, ${(w/10).toLocaleString("fr-FR")} kg`}</span><span>${RAR[r]}</span></div>
 </div>`}
-function miniHTML(id,{count=0,missing=false,sel=0,choice=false,act="detail",img=true}={}){
+function miniHTML(id,{count=0,missing=false,sel=0,choice=false,act="detail",img=true,sh=false,shOwn=false}={}){ // sh : image shiny ; shOwn : shiny débloqué (badge ✨)
   const fav=S&&S.fav&&S.fav[id];
   const [n,,,ty,,,,r,ex]=D(id);
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
-  return `<button class="mini r${r}${missing?" missing":""}${sel?" picked":""}${choice?" choice":""}" data-act="${act}" data-id="${id}" style="--c1:${c1};--c2:${c2}" aria-label="${missing?"Carte "+id+" manquante":esc(n)}">
-  <div class="strip"><b>${ex&&ex.base?ex.base:isSpec(id)?"✦":id}</b>${img&&imgFor(id)?`<span class="mimg"><img src="${esc(imgFor(id))}" alt="" loading="lazy" decoding="async" onerror="this.remove()"></span>`:""}</div>${count>1?`<span class="count">×${count}</span>`:""}${fav?`<span class="fav-badge" aria-label="Favori">★</span>`:""}${wished(id)?`<span class="wish-badge${fav?" wb2":""}" aria-label="Recherchée">🔔</span>`:""}${sel?`<span class="sel">−${sel}</span>`:""}
+  return `<button class="mini r${r}${sh&&!missing?" shiny":""}${missing?" missing":""}${sel?" picked":""}${choice?" choice":""}" data-act="${act}" data-id="${id}" style="--c1:${c1};--c2:${c2}" aria-label="${missing?"Carte "+id+" manquante":esc(n)}">
+  <div class="strip"><b>${ex&&ex.base?ex.base:isSpec(id)?"✦":id}</b>${img&&imgFor(id,sh&&!missing)?`<span class="mimg"><img src="${esc(imgFor(id,sh&&!missing))}" alt="" loading="lazy" decoding="async" onerror="this.remove()"></span>`:""}</div>${count>1?`<span class="count">×${count}</span>`:""}${shOwn?`<span class="sh-badge" aria-label="Shiny obtenu">✨</span>`:""}${fav?`<span class="fav-badge" aria-label="Favori">★</span>`:""}${wished(id)?`<span class="wish-badge${fav?" wb2":""}" aria-label="Recherchée">🔔</span>`:""}${sel?`<span class="sel">−${sel}</span>`:""}
   <div class="mi"><div class="mn">${missing?"???":esc(n)}</div><div class="mm"><span>${r>=6?RAR[r]:ex&&ex.base?"№ "+pad(ex.base)+" "+(ex.kind?formTag(ex):"Méga"):"№ "+pad(id)}</span><span class="mg">${gems(r)}</span></div></div></button>`}
 function who(id){if(id===ME)return"vous";return nameOf(id)}
 function nameOf(id){const pl=id===ME?S:PLAYERS[id];return (pl&&pl.pseudo)||"Un dresseur"}
 /* image remplacée : numéro de version ajouté à l’adresse, sinon les navigateurs gardent l’ancienne jusqu’à 4 h (cache Cloudflare) */
 const IMG_V={201:2};
-function imgFor(id){if(isSecretId(id)){const e=SPEC[+id]&&SPEC[+id][8];return e&&e.img?`images/${e.img}.webp`:""}return IMG_URL?IMG_URL.replace("{id}",id)+(IMG_V[id]?"?v="+IMG_V[id]:""):""}
+/* sh : version shiny (images/shiny/<n°>.webp, 1.1.0) */
+function imgFor(id,sh){if(isSecretId(id)){const e=SPEC[+id]&&SPEC[+id][8];return e&&e.img?`images/${e.img}.webp`:""}if(sh&&canShiny(id))return `images/shiny/${id}.webp`;return IMG_URL?IMG_URL.replace("{id}",id)+(IMG_V[id]?"?v="+IMG_V[id]:""):""}
+/* ---------- Shiny (1.1.0) ----------
+   Au tirage d'un booster (dc_open), chaque carte a (1 + nombre de fois où le joueur l'a déjà obtenue) chances sur
+   4 096 de sortir en shiny, 100 sur 4 096 au plus. Une seule fois par carte : le shiny est une version débloquée
+   pour toujours (shiny dans le profil), jamais échangée, défaussée ni consommée ; la carte elle-même reste normale.
+   got = fois où chaque carte a été obtenue (booster, évolution, échange, cadeau), compteur qui ne baisse jamais.
+   Pas de shiny pour les mythiques, les transcendantes, ni les cartes sans illustration shiny (SHINY_NONE).
+   Affichage : shiny par défaut, forme normale au choix par carte (shinyOff) ou partout (shinyNorm), dc_shiny_view. */
+const SHINY_BASE=4096,SHINY_MAX=100;
+const SHINY_NONE=[]; // cartes sans illustration shiny (vide depuis que Theo a fourni Zarbi A, Méga-Carchacrok Z et Méga-Nigirigon)
+const canShiny=id=>(id=+id)>0&&!isSecretId(id)&&!SHINY_NONE.includes(id);
+const gotN=(id,p=S)=>+((p&&p.got&&p.got[id])||0);
+const hasShiny=(id,p=S)=>!!(p&&p.shiny&&p.shiny[id]);
+const showShiny=(id,p=S)=>hasShiny(id,p)&&!(p.shinyOff&&p.shinyOff[id])&&!p.shinyNorm&&canShiny(id); // forme affichée
+let shinyTot=0;const shinyTotal=()=>shinyTot||(shinyTot=DEX_ORDER.filter(canShiny).length); // cartes qui existent en shiny (aura du classement)
+const shinyChance=(id,p=S)=>Math.min(1+gotN(id,p),SHINY_MAX); // sur SHINY_BASE, au prochain tirage de cette carte
 /* ---------- cartes secrètes (0.8.7) ----------
    Mythiques et transcendantes ne sont plus écrites dans ce fichier : le serveur (dc_secret_cards, partie 3) envoie
    la liste de leurs numéros (pour les titres et les tableaux par rareté) et les données des seules cartes que le
@@ -1771,11 +1804,11 @@ async function loadSecrets(ids){
   if(error){console.warn(error);want.forEach(id=>secretAsked.delete(id));return 0}
   return applySecrets(data);
 }
-function avatarHTML(av,size=36){
+function avatarHTML(av,size=36,sh){
   if(!av||!D(av))return `<span class="ava ava-none" style="--s:${size}px" aria-hidden="true">◆</span>`;
   const [n,,,ty,,,,,ex]=D(av);
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
-  const src=imgFor(av);
+  const src=imgFor(av,sh);
   return `<span class="ava" style="--s:${size}px;--c1:${c1};--c2:${c2}" title="${esc(n)}">${src?`<img src="${esc(src)}" alt="" onerror="this.remove()">`:""}<b aria-hidden="true">${esc(n[0])}</b></span>`;
 }
 /* ---------- titres ---------- */
@@ -1846,6 +1879,10 @@ const TITLES=[
     ["days",30,"Fidèle","A joué {n} jours différents"],["days",100,"Vétéran","A joué {n} jours différents"],
     ["vbWins",50,"Joueur de casino","A gagné {n} manches de VoltoBataille"]]
     .map(([stat,need,n,d])=>({k:stat+need,n,ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:d.replace("{n}",fmtN(need)),stat,need})),
+  /* Shiny (1.1.0) : nombre de shiny débloqués (stats.shinyN, tenu par le serveur) */
+  ...[[1,"Première étoile","A trouvé son premier shiny"],[10,"Daltonien","A trouvé {n} shiny"],[50,"Shiny Hunter","A trouvé {n} shiny"],[200,"Légende Chromatique","A trouvé {n} shiny"]]
+    .map(([need,n,d])=>({k:"shinyN"+need,n,ic:"✨",g:"Shiny",cls:"tc",c:"#c9a227",d:d.replace("{n}",fmtN(need)),stat:"shinyN",need})),
+  {k:"shinyAll",n:"Dormir n’est pas une option",ic:"✨",g:"Shiny",cls:"tc",c:"#c9a227",d:"A trouvé tous les shiny du jeu",stat:"shinyN",need:shinyTotal()},
   {k:"luck",n:"Chanceux",ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:"A obtenu 2 Légendaires dans un même booster",test:p=>!!(p.stats&&p.stats.luck)},
   {k:"vbL8",n:"Démineur",ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:"A gagné une manche de VoltoBataille au niveau 8",test:p=>!!(p.stats&&p.stats.vbL8)},
 ];
@@ -1980,7 +2017,7 @@ function revealHeadHTML(){
   const all=reveal.every(c=>c.shown);
   if(!all){const left=reveal.filter(c=>!c.shown).length;return `<p class="muted">Faites défiler votre main et touchez une carte pour la retourner. ${left} carte${left>1?"s":""} à découvrir.</p>`}
   const nNew=reveal.filter(c=>c.isNew).length,counts=[0,0,0,0,0,0,0,0];reveal.forEach(c=>counts[rar(c.id)]++);
-  return `<div class="reveal-sum">${counts.map((n,i)=>n?`<span><span style="color:var(--r${i})">${gems(i)}</span> ${n} ${RAR[i].toLowerCase()}${n>1?"s":""}</span>`:"").join("")}${nNew?`<span class="new-sum">${nNew} nouvelle${nNew>1?"s":""}</span>`:""}</div>`;
+  return `<div class="reveal-sum">${counts.map((n,i)=>n?`<span><span style="color:var(--r${i})">${gems(i)}</span> ${n} ${RAR[i].toLowerCase()}${n>1?"s":""}</span>`:"").join("")}${nNew?`<span class="new-sum">${nNew} nouvelle${nNew>1?"s":""}</span>`:""}${reveal.some(c=>c.shiny)?`<span class="sh-sum">✨ ${reveal.filter(c=>c.shiny).length} shiny</span>`:""}</div>`;
 }
 function revealActionsHTML(){
   if(reveal.every(c=>c.shown))return `<button class="btn primary" data-act="done-reveal">Continuer</button>`;
@@ -1990,10 +2027,11 @@ function revealActionsHTML(){
    avec leur scène (1.0.6 : aucune carte ne reste face cachée, sinon leur rareté se devinerait) */
 function flipFast(){
   if(!reveal)return;flipAbort=true;flippingAll=false;const gen=++flipGen;
-  let top=-1;
-  reveal.forEach(c=>{const r=rar(c.id);if(!c.shown&&r<6){c.shown=true;c.fx=true;top=Math.max(top,r)}});
+  let top=-1;const shs=[];
+  reveal.forEach((c,i)=>{const r=rar(c.id);if(!c.shown&&r<6){c.shown=true;c.fx=true;top=Math.max(top,r);if(c.shiny)shs.push(i)}});
   if(top>=0)SFX.flip(Math.min(top,3));
   renderView();
+  if(shs.length){const b=document.querySelector(`#hand .flip[data-i="${shs[0]}"]`);if(b){centerCard(b,true);setTimeout(()=>shinyFx(b),250)}} // un shiny retourné d'un coup : on le montre
   const rest=handCards().filter(b=>!reveal[+b.dataset.i].shown);
   if(!rest.length)return;
   (async()=>{for(const b of rest){
@@ -2062,7 +2100,7 @@ function vBooster(){
     <div class="reveal-bar" id="reveal-head">${revealHeadHTML()}</div>
     <div class="hand-wrap"><button class="hand-nav prev" data-act="hand-prev" aria-label="Carte précédente">‹</button>
     <div class="hand" id="hand">${reveal.map((c,i)=>`<button class="flip${c.shown?" shown":""}" data-act="flip" data-i="${i}" aria-label="${c.shown?esc(nm(c.id)):"Retourner la carte "+(i+1)}"><div class="flip-in">
-      <div class="face back${dosCls}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div><div class="face front">${c.shown&&c.isNew?`<span class="new-tag">Nouvelle</span>`:""}${cardHTML(c.id)}</div></div></button>`).join("")}</div>
+      <div class="face back${dosCls}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div><div class="face front">${c.shown&&c.isNew?`<span class="new-tag">Nouvelle</span>`:""}${c.shown&&c.shiny?SH_TAG:""}${cardHTML(c.id,false,c.shiny)}</div></div></button>`).join("")}</div>
     <button class="hand-nav next" data-act="hand-next" aria-label="Carte suivante">›</button></div>
     <div class="hand-count" id="hand-count"></div>
     <div class="reveal-bar" id="reveal-actions">${revealActionsHTML()}</div>
@@ -2077,6 +2115,7 @@ function vBooster(){
       <p>Vous recevez un booster toutes les 10 minutes, jusqu’à 10 boosters en réserve. Chaque carte a sa propre rareté :</p>
       <table><tr><td class="muted">Rareté</td><td class="muted">Chance</td><td class="muted">Défausse</td></tr>${RAR.slice(0,6).map((r,i)=>`<tr><td><span style="color:var(--r${i})">${gems(i)}</span> ${r} (${BYR[i].length} cartes)</td><td>${pct(ODDS[i])}</td><td>${cr(DISCARD[i])}</td></tr>`).join("")}</table>
       <p>Dans votre collection, vous pouvez défausser vos doubles contre des crédits selon leur rareté, ou les proposer à l’échange contre une carte de même rareté.</p>
+      <p>✨ <b>Shiny :</b> chaque carte tirée a 1 chance sur ${fmtN(SHINY_BASE)} de sortir en version shiny, plus 1 chance par exemplaire de ce Pokémon déjà obtenu (booster, évolution, échange ou cadeau), jusqu’à ${SHINY_MAX} sur ${fmtN(SHINY_BASE)}. <b>Inutile de garder vos cartes pour augmenter vos chances :</b> chaque exemplaire obtenu compte pour toujours, même si vous l’échangez, le défaussez ou le faites évoluer ensuite. Un shiny se trouve une seule fois par Pokémon et reste à vous pour toujours : il ne s’échange pas et ne se défausse pas.</p>
     </div></details></div>
     <div class="bh-right">
     <button class="btn volto-cta" data-view="volto"><span class="vb-volt" aria-hidden="true"></span>En attendant vos boosters, une petite VoltoBataille ?</button>
@@ -2180,6 +2219,7 @@ function filtered(){
     const d=D(id),c=S.coll[id]||0;
     if(filt.own==="fav"&&!(S.fav&&S.fav[id]))continue;
     if(filt.own==="wish"&&!wished(id))continue;
+    if(filt.own==="shiny"&&!hasShiny(id))continue;
     if(filt.own==="own"&&!c)continue;if(filt.own==="missing"&&c)continue;if(filt.own==="dup"&&c<2)continue;
     if(filt.r!=="all"&&d[7]!=+filt.r)continue;if(filt.g!=="all"&&genOf(id)!=+filt.g)continue;
     if(filt.t!=="all"&&!(d[3]||[]).includes(+filt.t))continue;
@@ -2190,6 +2230,7 @@ function filtered(){
   const pos=new Map(out.map((x,i)=>[x,i])),c=x=>S.coll[x]||0;
   if(filt.sort==="rar")out.sort((a,b)=>rar(b)-rar(a)||pos.get(a)-pos.get(b));
   else if(filt.sort==="count")out.sort((a,b)=>c(b)-c(a)||pos.get(a)-pos.get(b));
+  else if(filt.sort==="got")out.sort((a,b)=>Math.max(gotN(b),c(b))-Math.max(gotN(a),c(a))||pos.get(a)-pos.get(b)); // fois obtenue au total (1.1.0)
   else if(filt.sort==="name")out.sort((a,b)=>(c(b)>0)-(c(a)>0)||(c(a)?nm(a).localeCompare(nm(b),"fr"):pos.get(a)-pos.get(b))); // les manquantes restent dans l'ordre, sans trahir leur nom
   return out;
 }
@@ -2202,16 +2243,16 @@ function vCollection(){
   const ids=filtered();const selN=discardSel?Object.values(discardSel).reduce((a,b)=>a+b,0):0;
   const opt=(k,v,l)=>`<option value="${v}"${String(filt[k])===String(v)?" selected":""}>${l}</option>`;
   return `<div class="col-head"><div><h1>Collection</h1>
-    <div class="col-stat">${nDex}<span> / ${fmtN(LB_TOTAL)} cartes différentes (${uniq} / 1025 Pokémon, ${own(REG_IDS)} / ${REG_IDS.length} formes régionales, ${own(UNOWN_IDS)} / ${UNOWN_IDS.length} formes de Zarbi, ${own(MEGA_IDS)} / ${MEGA_IDS.length} méga-évolutions, ${own(GMAX_IDS)} / ${GMAX_IDS.length} Gigamax)${myth?`, <b class="myth-txt">${myth} mythique${myth>1?"s":""}</b>`:""}${trans?`, <b class="trans-txt">${trans} transcendante${trans>1?"s":""}</b>`:""}, ${fmtN(total)} cartes au total</span></div>
+    <div class="col-stat">${nDex}<span> / ${fmtN(LB_TOTAL)} cartes différentes (${uniq} / 1025 Pokémon, ${own(REG_IDS)} / ${REG_IDS.length} formes régionales, ${own(UNOWN_IDS)} / ${UNOWN_IDS.length} formes de Zarbi, ${own(MEGA_IDS)} / ${MEGA_IDS.length} méga-évolutions, ${own(GMAX_IDS)} / ${GMAX_IDS.length} Gigamax)${myth?`, <b class="myth-txt">${myth} mythique${myth>1?"s":""}</b>`:""}${trans?`, <b class="trans-txt">${trans} transcendante${trans>1?"s":""}</b>`:""}, ${fmtN(total)} cartes au total${S.shinyN?`, <b class="sh-sum">✨ ${fmtN(S.shinyN)} shiny</b>`:""}</span></div>
     <div class="rar-counts">${RAR.slice(0,shownR).map((r,i)=>i>=6?`<span class="${i===7?"trans-txt":"myth-txt"}">${gems(i)} <b>${per[i]}</b></span>`:`<span><span style="color:var(--r${i})">${gems(i)}</span> <b>${per[i]}</b>/${BYR[i].length}</span>`).join("")}</div></div>
     <div class="actions">${discardSel?`<button class="btn small" data-act="discard-cancel">Quitter la défausse</button>`:tradeSel?`<button class="btn small" data-act="trade-cancel">Quitter la sélection</button>`:`<button class="btn" data-act="trade-mode">Mettre à l’échange</button><button class="btn" data-act="discard-mode">Défausser des cartes</button>`}</div></div>
   <div class="progress" style="margin-top:12px"><b style="width:${nDex*100/LB_TOTAL}%"></b></div>
   <div class="toolbar">
     <input type="search" placeholder="Rechercher un nom ou un numéro" data-keep="q" data-f="q" value="${esc(filt.q)}" aria-label="Rechercher">
-    <select data-f="own" aria-label="Filtrer">${opt("own","all","Toutes")}${opt("own","fav","Favoris")}${opt("own","wish","Recherchées 🔔")}${opt("own","own","Possédées")}${opt("own","dup","Doubles")}${opt("own","missing","Manquantes")}</select>
+    <select data-f="own" aria-label="Filtrer">${opt("own","all","Toutes")}${opt("own","fav","Favoris")}${opt("own","wish","Recherchées 🔔")}${opt("own","shiny","Shiny ✨")}${opt("own","own","Possédées")}${opt("own","dup","Doubles")}${opt("own","missing","Manquantes")}</select>
     <select data-f="r" aria-label="Rareté">${opt("r","all","Toutes raretés")}${RAR.slice(0,shownR).map((r,i)=>opt("r",i,r)).join("")}</select>
     <select data-f="t" aria-label="Type">${opt("t","all","Tous types")}${TYPES.slice(1).map((t,i)=>opt("t",i+1,t[0])).join("")}</select>
-    <select data-f="sort" aria-label="Trier">${opt("sort","num","Tri : numéro")}${opt("sort","rar","Tri : rareté")}${opt("sort","count","Tri : exemplaires")}${opt("sort","name","Tri : nom")}</select>
+    <select data-f="sort" aria-label="Trier">${opt("sort","num","Tri : numéro")}${opt("sort","rar","Tri : rareté")}${opt("sort","count","Tri : exemplaires")}${opt("sort","got","Tri : fois obtenue")}${opt("sort","name","Tri : nom")}</select>
     <select data-f="g" aria-label="Génération">${opt("g","all","Toutes générations")}${ROMAN.slice(1).map((r,i)=>opt("g",i+1,"Génération "+r)).join("")}</select>
   </div>
   ${discardSel?(()=>{
@@ -2228,7 +2269,7 @@ function vCollection(){
   ${tradeSel?`<div class="discard-help">
       <p class="muted" style="margin:0 0 8px">Touchez les cartes à proposer à l’échange : une annonce par carte, un exemplaire chacune. Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
       <div class="actions"><button class="btn small" data-act="tsel-dups">Tous mes doubles</button><button class="btn small" data-act="tsel-clear">Tout désélectionner</button></div></div>`:""}
-  ${ids.length?`<div class="grid">${ids.map(id=>{const c=S.coll[id]||0;return miniHTML(id,{count:c,missing:!c,sel:discardSel?discardSel[id]||0:0,choice:!!(tradeSel&&tradeSel.has(id)),act:discardSel?"pick":tradeSel?"tpick":"detail"})}).join("")}</div>`:`<div class="empty">Aucune carte ne correspond à ces filtres.</div>`}
+  ${ids.length?`<div class="grid">${ids.map(id=>{const c=S.coll[id]||0;return miniHTML(id,{count:c,missing:!c,sel:discardSel?discardSel[id]||0:0,choice:!!(tradeSel&&tradeSel.has(id)),act:discardSel?"pick":tradeSel?"tpick":"detail",sh:showShiny(id),shOwn:hasShiny(id)})}).join("")}</div>`:`<div class="empty">Aucune carte ne correspond à ces filtres.</div>`}
   ${tradeSel?`<div class="discard-bar trade-bar${tradeSel.size?"":" empty"}">
     <div class="sum"><b>${tradeSel.size} carte${tradeSel.size>1?"s":""} sélectionnée${tradeSel.size>1?"s":""}</b><span>${tradeSel.size?"une annonce par carte":"touchez les cartes à proposer"}</span></div>
     <label class="field tb-want">Demande<select id="ts-want" data-keep="ts-want"><option value="missing">N’importe quelle carte de même rareté qui me manque</option><option value="any">N’importe quelle carte de même rareté</option><option value="list">Plusieurs cartes précises…</option></select></label>
@@ -2383,19 +2424,21 @@ const LB_TOTAL=DEX_ORDER.length; // toutes les cartes du Pokédex : Pokémon, fo
 function lbBar(r){
   let b=r.byr;
   if(r.id===ME&&S){b=[0,0,0,0,0,0,0,0];for(const k of Object.keys(S.coll))b[rar(+k)]++}
-  if(!b)return `<div class="lb-bar" style="margin-top:5px"><i class="seg neutral" style="width:${Math.min(100,r.score*100/LB_TOTAL)}%" title="Composition inconnue"></i></div>`;
-  const segs=[0,1,2,3,4,5].map(i=>b[i]?`<i class="seg r${i}" style="width:${Math.min(100,b[i]*100/LB_TOTAL)}%" title="${RAR[i]}"></i>`:"").join("");
-  return `<div class="lb-bar" style="margin-top:5px">${segs}</div>`;
+  // aura holographique (1.1.0) : se remplit avec le nombre de shiny, jusqu'à toutes les cartes qui existent en shiny
+  const aura=r.sn?`<i class="lb-aura" style="width:${Math.min(100,r.sn*100/shinyTotal())}%" title="${r.sn} shiny"></i>`:"";
+  const segs=!b?`<i class="seg neutral" style="width:${Math.min(100,r.score*100/LB_TOTAL)}%" title="Composition inconnue"></i>`
+    :[0,1,2,3,4,5].map(i=>b[i]?`<i class="seg r${i}" style="width:${Math.min(100,b[i]*100/LB_TOTAL)}%" title="${RAR[i]}"></i>`:"").join("");
+  return `<div class="lb-bar${r.sn?" has-aura":""}" style="margin-top:5px">${segs}${aura}</div>`;
 }
 function vRanking(){
   const all=Object.assign({},PLAYERS);if(ME&&S)all[ME]=Object.assign({},all[ME],S); // sa propre ligne toujours à jour
   const rows=Object.entries(all).map(([id,p])=>{
     const byr=p.byrV===BYR_V?p.byr:null,diff=byr?byr.slice(0,6).reduce((a,b)=>a+(b||0),0):(p.unique||0); // cartes différentes hors mythiques et transcendantes
-    return {id,u:p.unique||0,score:diff,t:p.total||0,c:p.credits||0,m:p.myth||0,x:p.trans||0,byr,mt:p.masterTs||Infinity};
+    return {id,u:p.unique||0,score:diff,t:p.total||0,c:p.credits||0,m:p.myth||0,x:p.trans||0,byr,mt:p.masterTs||Infinity,sn:p.shinyN||0};
   }).sort((a,b)=>b.score-a.score||(a.score===LB_TOTAL&&a.mt!==b.mt?a.mt-b.mt:0)||b.t-a.t); // entre Maîtres : le premier à avoir obtenu le titre devant
   return `<h1>Classement</h1>
   ${ME&&rows.some(r=>r.id===ME)?`<div class="actions" style="margin-top:10px"><button class="btn small" data-act="rank-me">Voir ma position (n° ${rows.findIndex(r=>r.id===ME)+1} sur ${rows.length})</button></div>`:""}
-  <div class="lb-legend">${[0,1,2,3,4,5].map(i=>`<span><i class="seg r${i}"></i>${RAR[i]}</span>`).join("")}</div>
+  <div class="lb-legend">${[0,1,2,3,4,5].map(i=>`<span><i class="seg r${i}"></i>${RAR[i]}</span>`).join("")}<span><i class="seg lb-aura-key"></i>Aura : shiny</span></div>
   <div class="lb" style="margin-top:16px">${rows.map((r,i)=>`<div class="lb-row${r.id===ME?" me":""}${i<3?" p"+(i+1):""}" data-act="player" data-uid="${esc(r.id)}" role="button" tabindex="0" aria-label="Profil de ${esc(nameOf(r.id))}">
     <span class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</span>${playerAva(r.id,36)}
     <div style="min-width:0"><div class="nm">${playerName(r.id)}${badgeTag(r.id,true)}</div>${lbBar(r)}</div>
@@ -2421,9 +2464,10 @@ function playerDlg(uid){
         <div><b>${fmtN(p.total||Object.values(c).reduce((a,b)=>a+b,0))}</b><span class="muted">cartes au total</span></div>
         <div><b>${fmtN((p.stats&&p.stats.packs)||0)}</b><span class="muted">boosters ouverts</span></div>
         <div><b>${earned.length}</b><span class="muted">titres obtenus</span></div>
+        <div><b>✨ ${fmtN(p.shinyN||0)}</b><span class="muted">shiny</span></div>
         ${per[6]||per[7]?`<div><b>${per[6]?`<span class="myth-txt">✦${per[6]}</span> `:""}${per[7]?`<span class="trans-txt">❖${per[7]}</span>`:""}</b><span class="muted">trophées</span></div>`:""}</div>
       <div class="pl-rar">${[0,1,2,3,4,5].map(i=>`<span style="color:var(--r${i})">${gems(i)} ${RAR[i]}</span><span class="bar"><i style="width:${per[i]*100/BYR[i].length}%;background:var(--r${i})"></i></span><span>${per[i]} / ${BYR[i].length}</span>`).join("")}</div>
-      ${favs.length?`<div><h3 style="margin:0 0 8px">Cartes favorites</h3><div class="pl-favs">${favs.slice(0,24).map(id=>miniHTML(id,{count:c[id],act:"none"})).join("")}</div></div>`:""}
+      ${favs.length?`<div><h3 style="margin:0 0 8px">Cartes favorites</h3><div class="pl-favs">${favs.slice(0,24).map(id=>miniHTML(id,{count:c[id],act:"none",sh:showShiny(id,p),shOwn:hasShiny(id,p)})).join("")}</div></div>`:""}
     </div>`,true);
   });
 }
@@ -2442,7 +2486,7 @@ function lookPreview(s,i){
   const c=i?cosCls(i):"";
   if(s==="dos")return `<div class="back mini-back${c?" bk-"+c:""}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div>`;
   if(s==="sac")return `<div class="pack-hit mini-pk" style="--w:42px">${packMarkup(c)}</div>`;
-  if(s==="cadre")return c?`<span class="avf fr-${c}" style="--s:44px">${avatarHTML(S.avatar,44)}</span>`:avatarHTML(S.avatar,44);
+  if(s==="cadre")return c?`<span class="avf fr-${c}" style="--s:44px">${avatarHTML(S.avatar,44,S.avaS)}</span>`:avatarHTML(S.avatar,44,S.avaS);
   if(s==="pseudo")return `<b class="look-ps${c?" ps-"+c:""}">${esc(S.pseudo||"Pseudo")}</b>`;
   return `<span class="fsw${c?" fsw-"+c:" fsw-base"}"></span>`;
 }
@@ -2473,7 +2517,7 @@ function vProfile(){
   const q=avaQ.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const found=q?seen.filter(id=>nm(id).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").includes(q)||String(id)===q):[];
   const recent=avaHist(),AVA_MAX=30;
-  const pick=id=>`<button class="ava-pick" data-act="set-avatar" data-id="${id}" aria-pressed="${S.avatar===id}"${S.coll[id]?"":` disabled title="Plus dans votre collection"`}>${avatarHTML(id,56)}<span class="n">${esc(nm(id))}</span></button>`;
+  const pick=id=>`<button class="ava-pick" data-act="set-avatar" data-id="${id}" aria-pressed="${S.avatar===id}"${S.coll[id]?"":` disabled title="Plus dans votre collection"`}>${avatarHTML(id,56,showShiny(id))}<span class="n">${esc(nm(id))}</span></button>`;
   const acct=nameOf(ME);
   // résumés des sections repliables (variante B de la maquette du profil)
   const tEarned=TITLES.filter(t=>titleEarned(t,S)).length,tAll=TITLES.filter(t=>!t.hidden||titleEarned(t,S)).length,tShown=titlesOf(ME).length;
@@ -2485,7 +2529,7 @@ function vProfile(){
   return `<div class="profile-head">${playerAva(ME,96)}<div>
     <h1>${S.pseudo?playerName(ME):"Mon profil"}</h1>
     ${badgeTag(ME)}
-    <div class="stats-row"><div><b>${masterCount(S.coll)} / ${fmtN(LB_TOTAL)}</b><span class="muted">cartes différentes</span></div><div><b>${Object.values(S.coll).reduce((a,b)=>a+b,0)}</b><span class="muted">cartes</span></div><div><b>${S.credits}</b><span class="muted">crédits</span></div><div><b>${fmtN((S.stats&&S.stats.packs)||0)}</b><span class="muted">boosters ouverts</span></div></div>
+    <div class="stats-row"><div><b>${masterCount(S.coll)} / ${fmtN(LB_TOTAL)}</b><span class="muted">cartes différentes</span></div><div><b>${Object.values(S.coll).reduce((a,b)=>a+b,0)}</b><span class="muted">cartes</span></div><div><b>${S.credits}</b><span class="muted">crédits</span></div><div><b>${fmtN((S.stats&&S.stats.packs)||0)}</b><span class="muted">boosters ouverts</span></div><div><b>✨ ${fmtN(S.shinyN||0)}</b><span class="muted">shiny</span></div></div>
   </div></div>
 
   ${psec("titres","🏅","Titres",sumTitres)}
@@ -2522,6 +2566,9 @@ function vProfile(){
       <label class="pref pref-vol${on?"":" off"}">Volume <input type="range" min="0" max="100" step="5" value="${Math.round(p.vol*100)}" data-pref="vol" aria-label="Volume"${on?"":" disabled"}> <b>${Math.round(p.vol*100)} %</b></label>
       <label class="pref"><input type="checkbox" data-pref="vib"${p.vib?" checked":""}> Vibrations (téléphone)</label></div>
       <p class="muted" style="margin:6px 0 0;font-size:.85rem">Réglages propres à cet appareil.</p>`})()}
+    <h3 class="psub">Shiny</h3>
+    <label class="pref"><input type="checkbox" data-act="shiny-norm"${S.shinyNorm?" checked":""}> Toujours afficher les formes normales, même pour les cartes obtenues en shiny</label>
+    <p class="muted" style="margin:6px 0 0;font-size:.85rem">Pour une seule carte, utilisez le bouton de sa fiche. Réglage enregistré sur votre compte.</p>
     <h3 class="psub">Entrer un code</h3>
     <p class="muted" style="margin:4px 0 0">Vous avez reçu un code cadeau ? Entrez-le ici. Chaque code ne peut être utilisé qu’une fois par joueur.</p>
     <div class="actions" style="margin-top:10px;align-items:end">
@@ -2658,7 +2705,7 @@ function quickEvo(){
     openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
       <h2>${done.length} évolution${done.length>1?"s":""} réussie${done.length>1?"s":""}</h2>
       <p class="muted">Ces cartes rejoignent votre collection.</p>
-      <div class="grid" style="max-height:52vh;overflow:auto">${done.map(id=>`<div class="recap-item"><span class="new-tag">Nouvelle</span>${miniHTML(id,{count:S.coll[id]||1})}</div>`).join("")}</div>
+      <div class="grid" style="max-height:52vh;overflow:auto">${done.map(id=>`<div class="recap-item"><span class="new-tag">Nouvelle</span>${miniHTML(id,{count:S.coll[id]||1,sh:showShiny(id),shOwn:hasShiny(id)})}</div>`).join("")}</div>
       <div class="actions"><button class="btn primary" data-act="close">Continuer</button></div></div>`,true);
   });
 }
@@ -3126,13 +3173,24 @@ function missingHTML(id){
       <div class="gc-art">${src?`<img src="${esc(src)}" alt="" onerror="this.remove()">`:""}</div>
       <div class="gc-name">???</div><div class="gc-rar">${RAR[r]}</div></div></div>
     <div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
-    <div><h2>${num}</h2><p class="muted">Vous n’avez pas encore cette carte. Rareté : ${RAR[r]}. Ouvrez des boosters, faites évoluer ou échangez pour l’obtenir.</p></div>
+    <div><h2>${num}</h2><p class="muted">${gotN(id)?`Vous avez déjà eu cette carte (${fmtN(gotN(id))} fois), mais plus aucun exemplaire.`:"Vous n’avez pas encore cette carte."} Rareté : ${RAR[r]}. Ouvrez des boosters, faites évoluer ou échangez pour l’obtenir.</p></div>
+    ${hasShiny(id)?`<div class="panel sh-panel"><h3>✨ Shiny débloqué</h3><p class="muted" style="margin:4px 0 0">Il s’affichera de nouveau dès que vous aurez un exemplaire de cette carte.</p></div>`:shinyPanelHTML(id)}
     ${online?`<div class="panel"><h3>🔔 Carte recherchée</h3><p class="muted" style="margin:4px 0 10px">${on?"Vous serez prévenu dès qu’un joueur la met à l’échange.":"Touchez la cloche : vous serez prévenu dès qu’un joueur la met à l’échange."}</p>
       <button class="btn wish-btn${on?" on":""}" data-act="toggle-wish" data-id="${id}" aria-pressed="${on}">${on?"🔔 Je la recherche · Arrêter":"🔔 Je la recherche"}</button></div>`:""}
     ${offers.length?`<div class="panel"><h3>Disponible à l’échange</h3><div class="actions" style="margin-top:10px">${offers.slice(0,6).map(([mid,m])=>`<button class="btn primary" data-act="trade-open" data-mid="${mid}">Annonce de ${esc(who(m.owner))}${m.auto?" ⚡":""}</button>`).join("")}</div>${offers.length>6?`<p class="muted" style="margin:8px 0 0">et ${offers.length-6} autre${offers.length-6>1?"s":""} dans l’onglet Échanges.</p>`:""}</div>`:""}
   </div>`;
 }
 let detailNav=null;
+/* encadré Shiny de la fiche d'une carte : date d'obtention et choix de la forme affichée, ou chance au prochain tirage */
+function shinyPanelHTML(id){
+  if(!canShiny(id)||mode!=="online")return "";
+  if(hasShiny(id)){
+    const on=showShiny(id),dt=new Date(S.shiny[id]).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+    return `<div class="panel sh-panel"><h3>✨ Shiny</h3><p class="muted" style="margin:4px 0 10px">Obtenu le ${dt}.${S.shinyNorm?" Les formes normales sont affichées partout : réglage « Toujours afficher les formes normales » du profil.":""}</p>
+      ${S.shinyNorm?"":`<button class="btn small" data-act="shiny-view" data-id="${id}">${on?"Afficher la forme normale":"✨ Afficher le shiny"}</button>`}</div>`;
+  }
+  return `<div class="panel sh-panel"><h3>✨ Shiny</h3><p class="muted" style="margin:4px 0 0">Chance de le trouver en shiny dans un booster : <b>${shinyChance(id)} sur ${fmtN(SHINY_BASE)}</b>. Elle augmente à chaque exemplaire obtenu, jusqu’à ${SHINY_MAX} sur ${fmtN(SHINY_BASE)}. Inutile de les garder : un exemplaire obtenu compte pour toujours, même échangé, défaussé ou utilisé pour une évolution.</p></div>`;
+}
 function detail(id){
   const c=S.coll[id]||0;
   if(!c){detailNav=null;openDlg(missingHTML(id));return}
@@ -3142,10 +3200,11 @@ function detail(id){
   const nav=view==="collection"&&!discardSel&&!tradeSel?filtered().filter(x=>(S.coll[x]||0)>0):[],at=nav.indexOf(id);
   detailNav=at<0?null:{prev:nav[at-1],next:nav[at+1]};
   const navBtns=detailNav?`<div class="dnav-bar"><button class="dnav" data-act="detail" data-id="${detailNav.prev||""}" aria-label="Carte précédente" ${detailNav.prev?"":"disabled"}>‹</button><span class="dnav-pos">${at+1} / ${nav.length}</span><button class="dnav" data-act="detail" data-id="${detailNav.next||""}" aria-label="Carte suivante" ${detailNav.next?"":"disabled"}>›</button></div>`:"";
-  openDlg(`${navBtns}<div class="card-holder">${cardHTML(id,true)}</div><div class="side">
+  openDlg(`${navBtns}<div class="card-holder">${cardHTML(id,true,showShiny(id))}</div><div class="side">
     <button class="close-x" data-act="close" aria-label="Fermer">×</button>
-    <div><h2>${esc(nm(id))}</h2><p class="muted">${c} exemplaire${c>1?"s":""} dans votre collection</p>
+    <div><h2>${esc(nm(id))}</h2><p class="muted">${c} exemplaire${c>1?"s":""} dans votre collection${r<6?`, obtenue ${fmtN(Math.max(gotN(id),c))} fois au total`:""}</p>
       <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button>${r>=6?"":`<button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>`}${r>=6||mode!=="online"?"":`<button class="btn small wish-btn${wished(id)?" on":""}" data-act="toggle-wish" data-id="${id}" aria-pressed="${wished(id)}" title="Être prévenu quand un joueur la met à l’échange">${wished(id)?"🔔 Je la recherche · Arrêter":"🔔 Je la recherche"}</button>`}</div></div>
+    ${shinyPanelHTML(id)}
     ${online?`<div class="panel"><h3>Proposer à l’échange</h3>
       <div class="actions" style="margin-top:10px;align-items:end">
       <label class="field" style="flex:1;min-width:min(220px,100%)">Carte souhaitée<select id="t-want"><option value="missing" selected>N’importe quelle carte ${RAR[r].toLowerCase()} manquante (que je n’ai pas)</option><option value="">N’importe quelle carte ${RAR[r].toLowerCase()}</option><option value="list">Plusieurs cartes précises…</option>${same.map(x=>`<option value="${x}">${esc(nm(x))}${S.coll[x]?"":" (manquante)"}</option>`).join("")}</select></label>
@@ -3166,12 +3225,12 @@ const SITE_URL="https://dexcraft.fr";
 const SHARE_RC=["#b9bccb","#5fbf83","#5a9df0","#a86ef0","#2fd4c9","#f1b72a","#ff4fd8","#c9d2e0"];
 const SHARE_GEM=["#8a8fa8","#2f9e5b","#2f7fe0","#9a4fe6","#0f9c94","#d99a00","#ff4fd8","#7d8496"];
 let shareId=0,shareBlob=null,shareData="";
-function shareText(id,fresh){
-  const n=nm(id),r=rar(id);
+function shareText(id,fresh,sh){
+  const n=nm(id)+(sh?" shiny ✨":""),r=rar(id);
   return fresh?`Je viens d’obtenir ${n}, une carte ${RAR[r]}, sur DexCraft ! Viens compléter ta collection : ${SITE_URL}`
     :`Ma carte ${n} (${RAR[r]}) sur DexCraft, le jeu de collection de cartes Pokémon gratuit. Viens jouer : ${SITE_URL}`;
 }
-async function drawShareCard(id){
+async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
   const [n,g,gen,ty,h,w,st,r,ex]=D(id);
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
   const kind=ex&&ex.base?(ex.kind?formTag(ex):"Méga"):"";
@@ -3179,7 +3238,7 @@ async function drawShareCard(id){
   const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
   const foot=ex&&(ex.foot||ex.lines)?(ex.foot||""):ex&&ex.kind==="gmax"?`${(h/10).toLocaleString("fr-FR")} m et plus`:ex&&!ex.kind?"":`${(h/10).toLocaleString("fr-FR")} m, ${(w/10).toLocaleString("fr-FR")} kg`;
   const chips=ex&&ex.chips?ex.chips.map(x=>[x,c1]):ty.map(t=>[TYPES[t][0],TYPES[t][1]]);
-  const src=imgFor(id);let img=null;
+  const src=imgFor(id,sh);let img=null;
   if(src){img=new Image();img.src=src;try{await img.decode()}catch(e){img=null}}
   try{await document.fonts.ready}catch(e){}
   const S2=2,CW=360,CH=500,cv=document.createElement("canvas");cv.width=CW*S2;cv.height=CH*S2;
@@ -3205,7 +3264,7 @@ async function drawShareCard(id){
   x.restore();
   const ink="#1c2042",soft=r===5?"#5a4410":"#5b6088";
   // haut : numéro et gemmes
-  x.textBaseline="middle";x.font=body(700,12);x.fillStyle=soft;x.textAlign="left";x.fillText(label,16,21);
+  x.textBaseline="middle";x.font=body(700,12);x.fillStyle=soft;x.textAlign="left";x.fillText((sh?"✨ Shiny · ":"")+label,16,21);
   x.textAlign="right";x.font=body(700,r>=6?17:13);x.fillStyle=SHARE_GEM[r];x.fillText(gems(r),284,21);
   // illustration
   rr(16,32,268,142,9);x.save();x.clip();
@@ -3235,7 +3294,8 @@ async function drawShareCard(id){
   x.font=body(400,12);x.fillStyle="#c8cbe6";x.fillText("dexcraft.fr",CW/2,490);
   return cv;
 }
-async function shareCard(id,fresh){
+async function shareCard(id,fresh,sh){ // sh : shiny (scène Légendaire) ; sinon, forme affichée dans la collection
+  if(!fresh)sh=showShiny(id);
   if(!id||!D(id))return;
   if(rar(id)>=6)return; // mythiques et transcendantes : jamais partagées (choix de Theo)
   if(!fresh&&!has(S,id)){toast("Seules les cartes de votre collection se partagent.");return}
@@ -3243,12 +3303,12 @@ async function shareCard(id,fresh){
   openDlg(`<div class="side share-dlg"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <h2>Partager ${esc(nm(id))}</h2>
     <div class="share-img" id="share-img"><span class="muted">Préparation de l’image…</span></div>
-    <label class="field">Texte<textarea id="share-txt" rows="3">${esc(shareText(id,fresh))}</textarea></label>
+    <label class="field">Texte<textarea id="share-txt" rows="3">${esc(shareText(id,fresh,sh))}</textarea></label>
     <div class="actions"><button class="btn primary" data-act="share-copy">📤 Partager</button>
       <button class="btn" data-act="share-dl">Télécharger l’image</button></div>
     <p class="muted" style="margin:0">« Partager » copie l’image et le texte : collez-les (Ctrl + V) dans Discord, une conversation ou sur les réseaux.</p></div>`,true);
   try{
-    const cv=await drawShareCard(id);if(shareId!==id)return;
+    const cv=await drawShareCard(id,sh);if(shareId!==id)return;
     shareBlob=await new Promise(res=>cv.toBlob(res,"image/png"));shareData=cv.toDataURL("image/png");
     const box=$("#share-img");if(box){box.innerHTML="";cv.setAttribute("aria-label","Image de la carte "+nm(id));box.append(cv)}
   }catch(e){console.warn(e);const box=$("#share-img");if(box)box.innerHTML=`<span class="muted">Impossible de préparer l’image sur cet appareil.</span>`}
@@ -3294,14 +3354,29 @@ const RM=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 let pendingRender=false;
 function markShown(b,c){c.shown=true;
   if(RM())b.classList.add("shown");
-  else{b.classList.add("flipping");void b.offsetWidth;b.classList.add("shown");clearTimeout(b._flipT);b._flipT=setTimeout(()=>b.classList.remove("flipping"),650)}const fr=b.querySelector(".front");if(c.isNew&&fr&&!fr.querySelector(".new-tag"))fr.insertAdjacentHTML("afterbegin",`<span class="new-tag">Nouvelle</span>`)}
+  else{b.classList.add("flipping");void b.offsetWidth;b.classList.add("shown");clearTimeout(b._flipT);b._flipT=setTimeout(()=>b.classList.remove("flipping"),650)}const fr=b.querySelector(".front");if(c.isNew&&fr&&!fr.querySelector(".new-tag"))fr.insertAdjacentHTML("afterbegin",`<span class="new-tag">Nouvelle</span>`)
+  if(c.shiny&&fr&&!fr.querySelector(".sh-tag"))fr.insertAdjacentHTML("afterbegin",SH_TAG)}
+const SH_TAG=`<span class="sh-tag">✨ Shiny !</span>`;
+/* Shiny (1.1.0) : pluie d'étoiles autour de la carte retournée, puis elles s'éteignent (rien de permanent dans la main) */
+function shinyFx(el){
+  if(RM()||!el||!el.isConnected)return;
+  vib([30,40,30,40,60]);SFX.flip(3);
+  const box=el.getBoundingClientRect(),n=16;
+  for(let i=0;i<n;i++){
+    const s=document.createElement("span");s.className="sh-star";s.textContent=i%3?"✦":"✨";
+    const a=Math.PI*2*i/n,d=60+Math.random()*50;
+    s.style.cssText=`left:${box.left+box.width/2}px;top:${box.top+box.height/2}px;--dx:${Math.cos(a)*(box.width/2+d)}px;--dy:${Math.sin(a)*(box.height/2+d)}px;animation-delay:${Math.random()*.25}s`;
+    document.body.appendChild(s);setTimeout(()=>s.remove(),1700);
+  }
+}
 function flipOne(b,c){
   if(c.fx)return;c.fx=true;            // sécurité : une seule animation par carte
   markShown(b,c);const r=rar(c.id);SFX.flip(r);
+  if(c.shiny)setTimeout(()=>shinyFx(b),300);
   if(r===1||r===2)setTimeout(()=>smallFx(b,r),380);
   if(r===3)setTimeout(()=>epicFx(b),350);
   if(r===4)setTimeout(()=>epicFx(b,true),350);
-  if(r===5){legendSoon=true;setTimeout(()=>legendFx(c.id),450)}
+  if(r===5){legendSoon=true;setTimeout(()=>legendFx(c.id,c.shiny),450)}
   if(r===6){legendSoon=true;setTimeout(()=>mythicFx(c.id),450)}
   if(r===7){legendSoon=true;setTimeout(()=>transFx(c.id),450)}
 }
@@ -3317,7 +3392,7 @@ async function flipAll(){
       centerCard(b);await sleep(RM()?0:300);
       if(stop())return;
       flipOne(b,c);updateReveal();const r=rar(c.id);
-      if(r>=5){await waitLegend();}else await sleep([260,1000,1350,1850,2050][r]);
+      if(r>=5){await waitLegend();}else await sleep([260,1000,1350,1850,2050][r]+(c.shiny?1500:0)); // un shiny : le temps de le voir
       if(stop())return;
     }
   }finally{if(gen===flipGen){flippingAll=false;updateReveal()}}
@@ -3651,12 +3726,12 @@ function mythicFx(id){
       cx.save();cx.translate(c.x,c.y);cx.rotate(c.rot);cx.scale(1,Math.cos(c.tilt));cx.fillStyle=c.c;cx.fillRect(-c.w/2,-c.h/2,c.w,c.h);cx.restore()}
     requestAnimationFrame(loop)})(last);
 }
-function legendFx(id){
+function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
   legendSoon=true;
   const app=$("#app");app.classList.remove("shake");void app.offsetWidth;if(!RM())app.classList.add("shake");
   if(navigator.vibrate)try{vib([80,60,160])}catch(e){}
   const ov=document.createElement("div");ov.className="legend";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Carte légendaire obtenue");
-  ov.innerHTML=`<div class="rays"></div><canvas></canvas><div class="lg-title">Légendaire !</div><div class="lg-card">${cardHTML(id,true)}</div><button class="btn lg-share" data-act="share-card" data-id="${id}" data-fresh="1">📤 Partager</button><div class="lg-sub">Touchez pour continuer</div>`;
+  ov.innerHTML=`<div class="rays"></div><canvas></canvas><div class="lg-title">${sh?"Légendaire shiny !":"Légendaire !"}</div><div class="lg-card">${cardHTML(id,true,sh)}</div><button class="btn lg-share" data-act="share-card" data-id="${id}" data-fresh="1"${sh?' data-sh="1"':""}>📤 Partager</button><div class="lg-sub">Touchez pour continuer</div>`;
   document.body.append(ov);legendSoon=false;
   let alive=true;
   const close=()=>{if(!alive)return;alive=false;ov.remove();$("#app").classList.remove("shake");if(pendingRender){pendingRender=false;updateReveal()}};
@@ -3696,7 +3771,7 @@ document.addEventListener("click",e=>{
     case"claim-launch":run(async()=>{await rpc("dc_buy_once",{p_key:LAUNCH.k});toast(`Pack de lancement récupéré : +${fmtN(LAUNCH.credits)} crédits et +${LAUNCH.packs} boosters !`)});break;
     case"badge-info":e.stopPropagation();{const B=BADGES[b.dataset.k];if(B)toast(`${B.ic} ${B.t}`)}break;
     case"discord-soon":e.preventDefault();toast("Le serveur Discord ouvre très bientôt !");break;
-    case"share-card":e.preventDefault();shareCard(id,b.dataset.fresh==="1");break;
+    case"share-card":e.preventDefault();shareCard(id,b.dataset.fresh==="1",b.dataset.sh==="1");break;
     case"share-copy":case"share-dl":shareAct(a);break;
     case"buy-offer":buyOffer(b.dataset.k);break;
     case"buy-go":run(()=>buyGo(b.dataset.k,!!b.dataset.gift));break;
@@ -3787,6 +3862,8 @@ document.addEventListener("click",e=>{
     case"toggle-dev":if(!OWNER)break;run(async()=>{await rpc("dc_admin_toggle_dev");toast(S.dev?"Mode développeur activé.":"Mode développeur désactivé.")});break;
     case"logout":if(SB)SB.auth.signOut();break;
     case"toggle-wish":run(async()=>{const r=await rpc("dc_toggle_wish",{p_id:id});wishSync();toast(r.on?`🔔 Vous serez prévenu dès que cette carte sera mise à l’échange.`:`Vous ne recherchez plus cette carte.`);if(dlg.open)detail(id);else renderView()});break;
+    case"shiny-view":run(async()=>{await rpc("dc_shiny_view",{p_id:id});if(dlg.open)detail(id);else renderView()});break; // forme shiny ou normale d'une carte (1.1.0)
+    case"shiny-norm":run(async()=>{await rpc("dc_shiny_view",{p_id:null});toast(S.shinyNorm?"Les formes normales sont maintenant affichées partout.":"Vos shiny sont de nouveau affichés.")});break;
     case"toggle-fav":run(async()=>{const r=await rpc("dc_toggle_fav",{p_id:id});toast(r.on?`${nm(id)} ajouté à vos favoris.`:`${nm(id)} retiré de vos favoris.`);if(dlg.open)detail(id)});break;
     case"set-avatar":run(async()=>{await rpc("dc_set_avatar",{p_id:id});avaQ="";renderView();toast(`${nm(id)} est votre nouvelle image de profil.`)});break;
     case"save-pseudo":pseudoDlg(($("#pseudo").value||"").replace(/\s+/g," ").trim().slice(0,20));break;
@@ -3915,7 +3992,7 @@ let SB=null,signup=false;
      seulement les annonces nouvelles ou modifiées ;
    - collections : seulement celles des auteurs d'annonces d'échange (« Il l'a déjà », « Manquante »),
      les nouveaux auteurs tout de suite, toutes relues au plus toutes les 5 minutes. */
-const PL_FIELDS=["pseudo","avatar","alpha","beta","shown","unique","total","credits","myth","trans","byr","byrV","masterTs","vis"]; // vis : cosmétiques visibles (0.9.0)
+const PL_FIELDS=["pseudo","avatar","alpha","beta","shown","unique","total","credits","myth","trans","byr","byrV","masterTs","vis","shinyN","avaS"]; // vis : cosmétiques visibles (0.9.0) ; shinyN, avaS : shiny (1.1.0)
 let OWNER_COLL={},ownerCollTs=0,marketT=0,rpcBusy=0,MARKET_TS={},playersTs=0,hiddenAt=0;
 /* lecture paginée : Supabase renvoie 1 000 lignes au plus par requête */
 async function selectAll(make){
@@ -4291,7 +4368,7 @@ function gameConfig(){
     titleKeys:TITLES.map(t=>t.k),titleDefault:TITLE_DEFAULT,titleDefs:Object.fromEntries(TITLES.map(t=>[t.k,titleDef(t)])),
     pgen:POKE_IDS.map(id=>DEX[id-1][2]).join(""),
     ptype:POKE_IDS.map(id=>{const t=DEX[id-1][3];return String.fromCharCode(96+t[0])+(t[1]?String.fromCharCode(96+t[1]):"-")}).join(""),
-    daily:DAILY};
+    daily:DAILY,shinyBase:SHINY_BASE,shinyMax:SHINY_MAX,shinyNo:SHINY_NONE}; // shiny (1.1.0)
 }
 /* Condition d'un titre, pour que le serveur calcule lui-même les titres affichés (champ shown du profil).
    Un nouveau titre d'un genre inconnu arrête l'export : il faut alors l'ajouter ici et dans dc__stamp. */
