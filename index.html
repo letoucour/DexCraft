@@ -1040,7 +1040,6 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 #shop-packs{scroll-margin-top:72px}
 .look-more:hover{border-color:var(--gold)}
 .look-more .lm-ic{font-size:30px;line-height:1;margin-bottom:auto;margin-top:12px}
-.look-shop{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding:12px 14px;border-radius:14px;border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 10%,var(--surface))}
 .back.mini-back{width:46px;aspect-ratio:5/7;border-width:3px;border-radius:7px;box-shadow:0 3px 8px rgba(0,0,0,.25);gap:12%}
 .back.mini-back .bk-gem{border-width:2px;box-shadow:none}
 .back.mini-back .bk-name,.offer-visual .pv .back .bk-name{font-size:7.5px}
@@ -1140,7 +1139,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.4";
+const APP_VERSION="1.0.5";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2462,8 +2461,7 @@ function lookHTML(){
   const bd=owned.filter(i=>i.startsWith("badge.")),tl=owned.filter(i=>i.startsWith("titre."));
   return `<p class="muted">Vous pouvez mélanger les articles de vos différents packs. Le cadre, la couleur du pseudo et les badges sont visibles par tous les joueurs ; le reste, par vous seul.</p>${rows}
     ${bd.length?`<h3 class="look-h">Badges</h3><p class="muted" style="margin:0">${bd.map(b=>{const B=BADGES[cosCls(b)];return B?`<span class="bdg bdg-${cosCls(b)}">${B.ic}</span> ${esc(cosName(b).replace(/^\S+\s/,""))}`:""}).join(" · ")} : affichés à côté de votre pseudo.</p>`:""}
-    ${tl.length?`<p class="muted" style="margin:8px 0 0">Titre ${tl.map(t=>esc(cosName(t))).join(", ")} : à choisir dans la section Titres.</p>`:""}
-    ${left?`<div class="look-shop"><span>Envie d’un autre style ? <b>${left} pack${left>1?"s":""}</b> vous attend${left>1?"ent":""} encore dans la boutique.</span><button class="btn small primary" data-act="goto-packs">Voir les packs</button></div>`:""}`;
+    ${tl.length?`<p class="muted" style="margin:8px 0 0">Titre ${tl.map(t=>esc(cosName(t))).join(", ")} : à choisir dans la section Titres.</p>`:""}`;
 }
 function psec(key,ic,title,sum){
   return `<details class="psec" data-sec="${key}"${profOpen[key]?" open":""}><summary><span class="ps-ic" aria-hidden="true">${ic}</span>
@@ -2822,9 +2820,11 @@ let shopQty=1;
 const LAUNCH={k:"lancement",n:"Lancement de DexCraft",credits:1000,packs:10};
 /* Annonce du lancement (1.0.0) sur l'écran des boosters, tant que le joueur n'a pas récupéré le pack gratuit ;
    ensuite (1.0.4), une invitation à personnaliser son profil depuis son pseudo */
+function lookNewsSeen(){try{return localStorage.getItem("dc-look-news")==="1"}catch(e){return false}}
 function launchNewsHTML(){
   if(LAUNCH&&!(S.bought&&S.bought[LAUNCH.k]))return `<p class="launch-news">🎉 <b>DexCraft est officiellement lancé !</b> Un pack gratuit vous attend dans la <button class="linkish" data-view="shop">boutique</button>.</p>`;
-  return `<p class="launch-news look-news">✨ Personnalisez votre profil et votre environnement de jeu, et gérez vos titres, en cliquant sur <button class="linkish" data-view="profile">votre pseudo</button>.</p>`;
+  if(lookNewsSeen())return ""; // lien déjà cliqué sur cet appareil (1.0.5)
+  return `<p class="launch-news look-news">✨ Personnalisez votre profil et votre environnement de jeu, et gérez vos titres, en cliquant sur <button class="linkish" data-act="look-news">votre pseudo</button>.</p>`;
 }
 function launchHTML(){
   if(!LAUNCH)return "";
@@ -3662,6 +3662,7 @@ document.addEventListener("click",e=>{
   switch(a){
     case"cgu":openCgu();break;
     case"cgv":openCgv();break;
+    case"look-news":try{localStorage.setItem("dc-look-news","1")}catch(e){}view="profile";renderAll();window.scrollTo(0,0);break; // « votre pseudo » : le message ne revient plus
     case"goto-packs":view="shop";renderAll();window.scrollTo(0,0);setTimeout(()=>{const h=$("#shop-packs");if(h)h.scrollIntoView({block:"start"})});break; // « Mon look » → packs de la boutique (1.0.4)
     case"claim-launch":run(async()=>{await rpc("dc_buy_once",{p_key:LAUNCH.k});toast(`Pack de lancement récupéré : +${fmtN(LAUNCH.credits)} crédits et +${LAUNCH.packs} boosters !`)});break;
     case"badge-info":e.stopPropagation();{const B=BADGES[b.dataset.k];if(B)toast(`${B.ic} ${B.t}`)}break;
