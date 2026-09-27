@@ -1132,7 +1132,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.1";
+const APP_VERSION="1.0.2";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3079,7 +3079,7 @@ function detail(id){
 const SITE_URL="https://dexcraft.fr";
 const SHARE_RC=["#b9bccb","#5fbf83","#5a9df0","#a86ef0","#2fd4c9","#f1b72a","#ff4fd8","#c9d2e0"];
 const SHARE_GEM=["#8a8fa8","#2f9e5b","#2f7fe0","#9a4fe6","#0f9c94","#d99a00","#ff4fd8","#7d8496"];
-let shareId=0,shareBlob=null;
+let shareId=0,shareBlob=null,shareData="";
 function shareText(id,fresh){
   const n=nm(id),r=rar(id);
   return fresh?`Je viens d’obtenir ${n}, une carte ${RAR[r]}, sur DexCraft ! Viens compléter ta collection : ${SITE_URL}`
@@ -3153,35 +3153,36 @@ async function shareCard(id,fresh){
   if(!id||!D(id))return;
   if(rar(id)>=6)return; // mythiques et transcendantes : jamais partagées (choix de Theo)
   if(!fresh&&!has(S,id)){toast("Seules les cartes de votre collection se partagent.");return}
-  shareId=id;shareBlob=null;document.querySelectorAll(".legend").forEach(o=>o._close&&o._close()); // depuis la scène Légendaire : on la ferme
-  const canNative=!!(navigator.share&&navigator.canShare);
+  shareId=id;shareBlob=null;shareData="";document.querySelectorAll(".legend").forEach(o=>o._close&&o._close()); // depuis la scène Légendaire : on la ferme
   openDlg(`<div class="side share-dlg"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <h2>Partager ${esc(nm(id))}</h2>
     <div class="share-img" id="share-img"><span class="muted">Préparation de l’image…</span></div>
     <label class="field">Texte<textarea id="share-txt" rows="3">${esc(shareText(id,fresh))}</textarea></label>
-    <div class="actions">${canNative?`<button class="btn primary" data-act="share-native">📤 Partager…</button>`:""}
-      <button class="btn${canNative?"":" primary"}" data-act="share-copy-img">Copier l’image</button>
-      <button class="btn" data-act="share-copy-txt">Copier le texte</button>
+    <div class="actions"><button class="btn primary" data-act="share-copy">📤 Partager</button>
       <button class="btn" data-act="share-dl">Télécharger l’image</button></div>
-    <p class="muted" style="margin:0">Collez l’image puis le texte dans Discord, une conversation ou sur les réseaux.</p></div>`,true);
+    <p class="muted" style="margin:0">« Partager » copie l’image et le texte : collez-les (Ctrl + V) dans Discord, une conversation ou sur les réseaux.</p></div>`,true);
   try{
     const cv=await drawShareCard(id);if(shareId!==id)return;
-    shareBlob=await new Promise(res=>cv.toBlob(res,"image/png"));
+    shareBlob=await new Promise(res=>cv.toBlob(res,"image/png"));shareData=cv.toDataURL("image/png");
     const box=$("#share-img");if(box){box.innerHTML="";cv.setAttribute("aria-label","Image de la carte "+nm(id));box.append(cv)}
   }catch(e){console.warn(e);const box=$("#share-img");if(box)box.innerHTML=`<span class="muted">Impossible de préparer l’image sur cet appareil.</span>`}
 }
 const shareTxtNow=()=>{const t=$("#share-txt");return t?t.value:shareText(shareId)};
 const shareFile=()=>new File([shareBlob],`dexcraft-${pad(shareId)}.png`,{type:"image/png"});
+/* « Partager » : une seule copie qui contient l'image ET le texte (image PNG, texte brut, et une version HTML image + texte
+   pour les messageries et éditeurs qui la lisent). Si le navigateur refuse, on retombe sur l'image seule, puis le texte seul. */
 async function shareAct(a){
-  if(a==="share-copy-txt"){try{await navigator.clipboard.writeText(shareTxtNow());toast("Texte copié.")}catch(e){toast("Copie impossible : sélectionnez le texte et copiez-le à la main.")}return}
-  if(!shareBlob){toast("L’image n’est pas encore prête.");return}
-  if(a==="share-copy-img"){
-    try{await navigator.clipboard.write([new ClipboardItem({"image/png":shareBlob})]);toast("Image copiée. Collez-la, puis copiez le texte.")}
-    catch(e){toast("Ce navigateur ne copie pas les images : utilisez « Télécharger l’image ».")}return}
-  if(a==="share-dl"){const u=URL.createObjectURL(shareBlob),l=document.createElement("a");l.href=u;l.download=shareFile().name;document.body.append(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return}
-  if(a==="share-native"){
-    const f=shareFile(),data=navigator.canShare({files:[f]})?{files:[f],text:shareTxtNow()}:{text:shareTxtNow()};
-    try{await navigator.share(data)}catch(e){if(e&&e.name!=="AbortError")toast("Partage impossible sur cet appareil.")}}
+  if(a==="share-dl"){if(!shareBlob){toast("L’image n’est pas encore prête.");return}
+    const u=URL.createObjectURL(shareBlob),l=document.createElement("a");l.href=u;l.download=shareFile().name;document.body.append(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return}
+  if(a!=="share-copy")return;
+  const txt=shareTxtNow();
+  if(!shareBlob){try{await navigator.clipboard.writeText(txt);toast("Texte copié (l’image n’est pas encore prête).")}catch(e){toast("Copie impossible sur cet appareil.")}return}
+  const html=`<img src="${shareData}" alt="${esc(nm(shareId))}"><p>${esc(txt).replace(/https:\/\/\S+/g,u=>`<a href="${u}">${u}</a>`)}</p>`;
+  const tries=[{"image/png":shareBlob,"text/plain":new Blob([txt],{type:"text/plain"}),"text/html":new Blob([html],{type:"text/html"})},
+    {"image/png":shareBlob,"text/plain":new Blob([txt],{type:"text/plain"})}];
+  for(const t of tries){try{await navigator.clipboard.write([new ClipboardItem(t)]);toast("Image et texte copiés : collez-les où vous voulez !");return}catch(e){}}
+  try{await navigator.clipboard.write([new ClipboardItem({"image/png":shareBlob})]);toast("Image copiée. Ce navigateur ne copie pas l’image et le texte ensemble : copiez le texte à part.");return}catch(e){}
+  try{await navigator.clipboard.writeText(txt);toast("Texte copié. Ce navigateur ne copie pas les images : utilisez « Télécharger l’image ».")}catch(e){toast("Copie impossible : utilisez « Télécharger l’image » et copiez le texte à la main.")}
 }
 let tradeGive=null;
 function tradeDlg(mid_){
@@ -3608,7 +3609,7 @@ document.addEventListener("click",e=>{
     case"badge-info":e.stopPropagation();{const B=BADGES[b.dataset.k];if(B)toast(`${B.ic} ${B.t}`)}break;
     case"discord-soon":e.preventDefault();toast("Le serveur Discord ouvre très bientôt !");break;
     case"share-card":e.preventDefault();shareCard(id,b.dataset.fresh==="1");break;
-    case"share-copy-img":case"share-copy-txt":case"share-dl":case"share-native":shareAct(a);break;
+    case"share-copy":case"share-dl":shareAct(a);break;
     case"buy-offer":buyOffer(b.dataset.k);break;
     case"buy-go":run(()=>buyGo(b.dataset.k));break;
     case"goto-look":gotoLook();break;
