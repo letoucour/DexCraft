@@ -221,11 +221,6 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
   background:rgba(0,0,0,.18);box-shadow:0 0 0 4px rgba(255,207,63,.25)}
 .bk-gem b{transform:rotate(-45deg);font-size:clamp(14px,13cqw,30px);letter-spacing:-.02em}
 .bk-name{font-size:clamp(13px,12cqw,28px);letter-spacing:.01em;text-shadow:0 2px 0 rgba(0,0,0,.3)}
-.flip.hint3:not(.shown) .back{animation:aura3 1.6s ease-in-out infinite}
-.flip.hint5:not(.shown) .back{animation:aura5 1.1s ease-in-out infinite,tremble .5s linear infinite}
-@keyframes aura3{0%,100%{box-shadow:0 0 0 rgba(180,108,255,0)}50%{box-shadow:0 0 28px 6px rgba(180,108,255,.85)}}
-@keyframes aura5{0%,100%{box-shadow:0 0 10px 2px rgba(255,207,63,.5)}50%{box-shadow:0 0 42px 12px rgba(255,207,63,1)}}
-@keyframes tremble{0%,100%{transform:translate(0,0)}25%{transform:translate(-1px,1px) rotate(-.6deg)}75%{transform:translate(1px,-1px) rotate(.6deg)}}
 
 /* Épique : onde violette et étincelles */
 .fx-layer{position:fixed;inset:0;pointer-events:none;z-index:500;overflow:hidden}
@@ -334,22 +329,9 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
   background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.95) 45%,rgba(190,205,230,.7) 55%,transparent 75%);background-size:280% 100%;animation:holo 2.8s linear infinite}
 .mini.r7{border:2px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,conic-gradient(#ffffff,#9aa3b5,#f2f4f8,#7d8496,#ffffff) border-box}
 .mini.r7 .mg{color:#dfe5f0}
-.flip.hint7 .back{background:
-  linear-gradient(135deg,rgba(255,255,255,.35) 0 8%,transparent 8% 18%,rgba(255,255,255,.22) 18% 24%,transparent 24% 40%),
-  linear-gradient(160deg,#6c7482,#aab3c2 20%,#59606c 42%,#cfd6e2 58%,#6c7482 78%,#9aa3b1);
-  border-color:#e9edf5}
-.flip.hint7 .back .bk-gem{border-color:#f4f7ff;box-shadow:0 0 0 4px rgba(255,255,255,.25)}
-.flip.hint7 .back,.flip.hint7 .back .bk-name{color:#f7f9ff}
-.flip.hint7:not(.shown) .back{animation:aura7 1.4s ease-in-out infinite,tremble .3s linear infinite}
-@keyframes aura7{0%,100%{box-shadow:0 0 18px 4px rgba(220,230,255,.6)}50%{box-shadow:0 0 52px 16px rgba(255,255,255,.95)}}
 .myth-txt{background:linear-gradient(90deg,#ff4f4f,#ffcf3f,#5fd68f,#4fc3ff,#b46cff,#ff4fd8);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 .mini.r6{border:2px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,conic-gradient(#ff4f4f,#ffcf3f,#5fd68f,#4fc3ff,#b46cff,#ff4fd8,#ff4f4f) border-box}
 .mini.r6 .mg{background:linear-gradient(90deg,#ff4f4f,#ffcf3f,#4fc3ff,#b46cff);-webkit-background-clip:text;background-clip:text;color:transparent}
-.flip.hint6 .back{background:
-  radial-gradient(circle at 50% 44%,rgba(255,207,63,.25),transparent 45%),
-  repeating-linear-gradient(45deg,#8e1622 0 10px,#7a111c 10px 20px)}
-.flip.hint6:not(.shown) .back{animation:aura6 .9s linear infinite,tremble .35s linear infinite}
-@keyframes aura6{0%{box-shadow:0 0 30px 8px #ff4f4f}20%{box-shadow:0 0 40px 12px #ffcf3f}40%{box-shadow:0 0 30px 8px #5fd68f}60%{box-shadow:0 0 40px 12px #4fc3ff}80%{box-shadow:0 0 30px 8px #b46cff}100%{box-shadow:0 0 30px 8px #ff4f4f}}
 
 /* Mythique : la totale */
 .legend.mythic{background:#05040c;animation:none;overflow:hidden}
@@ -379,8 +361,6 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .card.r4::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:8px;mix-blend-mode:overlay;
   background:linear-gradient(115deg,transparent 25%,rgba(120,255,240,.75) 42%,rgba(255,255,255,.7) 50%,rgba(90,220,255,.7) 58%,transparent 78%);background-size:260% 100%;animation:holo 3.6s linear infinite}
 .mini.r4{border-color:#2fd4c9}
-.flip.hint4:not(.shown) .back{animation:aura4 1.9s ease-in-out infinite}
-@keyframes aura4{0%,100%{box-shadow:0 0 0 rgba(47,212,201,0)}50%{box-shadow:0 0 30px 7px rgba(47,212,201,.9)}}
 .rar-pick.r4 b{color:var(--r4)}
 .card.r0{--rc:#b9bccb}.card.r1{--rc:#5fbf83}.card.r2{--rc:#5a9df0}.card.r3{--rc:#a86ef0}.card.r5{--rc:#f1b72a}
 .card-top{display:flex;justify-content:space-between;align-items:center;font-size:.72rem;font-weight:700;color:#5b6088}
@@ -1139,7 +1119,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.5";
+const APP_VERSION="1.0.6";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1549,7 +1529,7 @@ function openPack(k=1){
     const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shown:false}));
     SFX.open(k>1);
     const pk=$(".pack");if(pk&&!matchMedia("(prefers-reduced-motion: reduce)").matches){pk.classList.add("tear");await sleep(950)}
-    reveal=drawn;revealGift=false;hitsMode=false;handScroll=0;
+    reveal=drawn;revealGift=false;handScroll=0;
     renderView();window.scrollTo(0,0);
   }).finally(()=>{opening=false;document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal)});
 }
@@ -1967,44 +1947,35 @@ function renderView(){
   document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal); // pas de « tirer pour actualiser » pendant une ouverture
   if(view==="booster"&&reveal)setupHand();
 }
-const HIT_MIN=3; // Épique et au-dessus
-let hitsMode=false;
-const isHit=c=>rar(c.id)>=HIT_MIN;
 function revealHeadHTML(){
   const all=reveal.every(c=>c.shown);
-  if(!all&&hitsMode){const left=reveal.filter(c=>!c.shown).length;return `<p class="muted">Aller aux Hits : ${left} carte${left>1?"s":""} Épique ou mieux à retourner. Le reste est dans le récapitulatif.</p>`}
   if(!all){const left=reveal.filter(c=>!c.shown).length;return `<p class="muted">Faites défiler votre main et touchez une carte pour la retourner. ${left} carte${left>1?"s":""} à découvrir.</p>`}
   const nNew=reveal.filter(c=>c.isNew).length,counts=[0,0,0,0,0,0,0,0];reveal.forEach(c=>counts[rar(c.id)]++);
   return `<div class="reveal-sum">${counts.map((n,i)=>n?`<span><span style="color:var(--r${i})">${gems(i)}</span> ${n} ${RAR[i].toLowerCase()}${n>1?"s":""}</span>`:"").join("")}${nNew?`<span class="new-sum">${nNew} nouvelle${nNew>1?"s":""}</span>`:""}</div>`;
 }
 function revealActionsHTML(){
   if(reveal.every(c=>c.shown))return `<button class="btn primary" data-act="done-reveal">Continuer</button>`;
-  return `${flippingAll?`<button class="btn primary" data-act="flip-fast">Plus vite !</button>`:`<button class="btn" data-act="flip-all">Tout retourner</button>`}${hitsMode?"":`<button class="btn" data-act="hits-only">Aller aux Hits</button>`}`;
+  return `${flippingAll?`<button class="btn primary" data-act="flip-fast">Plus vite !</button>`:`<button class="btn" data-act="flip-all">Tout retourner</button>`}`;
 }
-/* « Plus vite ! » : retourne tout d'un coup, sauf les mythiques et les transcendantes */
+/* « Plus vite ! » : retourne tout d'un coup ; les mythiques et les transcendantes suivent aussitôt, une par une,
+   avec leur scène (1.0.6 : aucune carte ne reste face cachée, sinon leur rareté se devinerait) */
 function flipFast(){
-  if(!reveal)return;flipAbort=true;flippingAll=false;flipGen++;
+  if(!reveal)return;flipAbort=true;flippingAll=false;const gen=++flipGen;
   let top=-1;
   reveal.forEach(c=>{const r=rar(c.id);if(!c.shown&&r<6){c.shown=true;c.fx=true;top=Math.max(top,r)}});
   if(top>=0)SFX.flip(Math.min(top,3));
   renderView();
-  const next=handCards().find(b=>!reveal[+b.dataset.i].shown);
-  if(next){centerCard(next,true);fanUpdate()}
-}
-function recapHTML(){
-  if(!hitsMode)return "";
-  const rest=reveal.filter(c=>!isHit(c));if(!rest.length)return "";
-  const m=new Map();rest.forEach(c=>{const e=m.get(c.id)||{n:0,isNew:false};e.n++;e.isNew=e.isNew||c.isNew;m.set(c.id,e)});
-  const ids=[...m.keys()].sort((a,b)=>rar(b)-rar(a)||(m.get(b).isNew-m.get(a).isNew)||a-b);
-  const nNew=[...m.values()].filter(e=>e.isNew).length,counts=[0,0,0];rest.forEach(c=>counts[rar(c.id)]++);
-  return `<section class="recap"><h2>Le reste du tirage</h2>
-    <p class="muted" style="margin:4px 0 12px">${rest.length} carte${rest.length>1?"s":""} ajoutée${rest.length>1?"s":""} à votre collection : ${counts.map((n,i)=>n?`${n} ${RAR[i].toLowerCase()}${n>1?"s":""}`:"").filter(Boolean).join(", ")}${nNew?`, dont <b class="new-sum">${nNew} nouvelle${nNew>1?"s":""}</b>`:""}.</p>
-    <div class="grid recap-grid">${ids.map(id=>{const e=m.get(id);return `<div class="recap-item">${e.isNew?`<span class="new-tag">Nouvelle</span>`:""}${miniHTML(id,{count:e.n})}</div>`}).join("")}</div></section>`;
+  const rest=handCards().filter(b=>!reveal[+b.dataset.i].shown);
+  if(!rest.length)return;
+  (async()=>{for(const b of rest){
+    const c=reveal&&reveal[+b.dataset.i];if(!c||c.shown||!b.isConnected||gen!==flipGen)continue;
+    centerCard(b,true);fanUpdate();await sleep(RM()?0:300);if(gen!==flipGen)return;
+    flipOne(b,c);updateReveal();await waitLegend();
+  }})();
 }
 function updateReveal(){
   if(!reveal)return;const h=$("#reveal-head"),a=$("#reveal-actions");
   if(h)h.innerHTML=revealHeadHTML();if(a)a.innerHTML=revealActionsHTML();
-  const rc=$("#reveal-recap");if(rc)rc.innerHTML=recapHTML();
 }
 
 /* ---------- main en éventail ---------- */
@@ -2061,13 +2032,12 @@ function vBooster(){
     return `<div class="booster"><h1>${revealGift?`Votre cadeau`:multi?`Vos ${reveal.length/CARDS} boosters`:"Votre booster"}</h1>
     <div class="reveal-bar" id="reveal-head">${revealHeadHTML()}</div>
     <div class="hand-wrap"><button class="hand-nav prev" data-act="hand-prev" aria-label="Carte précédente">‹</button>
-    ${hitsMode&&!reveal.some(isHit)?`<div class="empty" style="margin:24px auto;max-width:520px">Aucune carte Épique ou mieux dans ce tirage.</div>`:""}
-    <div class="hand" id="hand">${reveal.map((c,i)=>hitsMode&&!isHit(c)?"":`<button class="flip${c.shown?" shown":""}${rar(c.id)>=3?" hint"+rar(c.id):""}" data-act="flip" data-i="${i}" aria-label="${c.shown?esc(nm(c.id)):"Retourner la carte "+(i+1)}"><div class="flip-in">
+    <div class="hand" id="hand">${reveal.map((c,i)=>`<button class="flip${c.shown?" shown":""}" data-act="flip" data-i="${i}" aria-label="${c.shown?esc(nm(c.id)):"Retourner la carte "+(i+1)}"><div class="flip-in">
       <div class="face back${dosCls}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div><div class="face front">${c.shown&&c.isNew?`<span class="new-tag">Nouvelle</span>`:""}${cardHTML(c.id)}</div></div></button>`).join("")}</div>
     <button class="hand-nav next" data-act="hand-next" aria-label="Carte suivante">›</button></div>
     <div class="hand-count" id="hand-count"></div>
     <div class="reveal-bar" id="reveal-actions">${revealActionsHTML()}</div>
-    <div id="reveal-recap" style="width:100%">${recapHTML()}</div></div>`;
+    </div>`;
   }
   const p=packInfo(S);
   return `<div class="booster home">
@@ -2130,7 +2100,7 @@ function openGift(){
     const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shown:false}));
     const extra=[res.credits?`+${cr(res.credits)}`:"",res.packs?`+${res.packs} booster${res.packs>1?"s":""}`:""].filter(Boolean);
     if(drawn.length){ // des cartes : on les retourne comme un booster
-      reveal=drawn;revealGift=true;hitsMode=false;handScroll=0;
+      reveal=drawn;revealGift=true;handScroll=0;
       renderAll();window.scrollTo(0,0);
       const more=res.total>drawn.length?`${res.total-drawn.length} autres cartes ont rejoint directement votre collection.`:"";
       if(extra.length||more)toast([extra.length?`Votre cadeau contient aussi ${extra.join(" et ")}.`:"",more].filter(Boolean).join(" "));
@@ -2957,7 +2927,7 @@ function clearMarket(){
 function resetEveryone(){
   run(async()=>{
     const r=await rpc("dc_admin_reset_all");
-    VB=null;reveal=null;hitsMode=false;discardSel=null;tradeSel=null;renderAll();
+    VB=null;reveal=null;discardSel=null;tradeSel=null;renderAll();
     toast(`${r.n} joueur${r.n>1?"s":""} remis à zéro.`);
   });
 }
@@ -3047,7 +3017,7 @@ function resetAll(full){
   if(!devOn())return;
   run(async()=>{
     await rpc("dc_admin_reset_me",{p_full:!!full});
-    VB=null;reveal=null;hitsMode=false;discardSel=null;tradeSel=null;view=full?"profile":"booster";renderAll();
+    VB=null;reveal=null;discardSel=null;tradeSel=null;view=full?"profile":"booster";renderAll();
     toast(full?"Profil entièrement réinitialisé.":"Collection réinitialisée.");
   });
 }
@@ -3684,11 +3654,7 @@ document.addEventListener("click",e=>{
     case"hand-next":handStep(1);break;
     case"flip-all":flipAll();break;
     case"flip-fast":flipFast();break;
-    case"hits-only":{if(!reveal)break;flipAbort=true;hitsMode=true;
-      reveal.forEach(c=>{if(!isHit(c))c.shown=true});handScroll=0;renderView();
-      const left=reveal.filter(c=>!c.shown).length;
-      toast(left?`Reste ${left} hit${left>1?"s":""} à retourner.`:"Tirage terminé, voici le récapitulatif.");break}
-    case"done-reveal":reveal=null;revealGift=false;hitsMode=false;handScroll=0;renderView();window.scrollTo(0,0);break;
+    case"done-reveal":reveal=null;revealGift=false;handScroll=0;renderView();window.scrollTo(0,0);break;
     case"detail":detail(id);break;
     case"close":closeDlg();break;
     case"evolve":evolveDlg(+b.dataset.from,+b.dataset.to);break;
