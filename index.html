@@ -609,7 +609,6 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .badge-alpha{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 10px;border-radius:999px;font-weight:700;font-size:.78rem;color:#2b1f00;
   background:linear-gradient(100deg,#ffe27a,#ffcf3f 45%,#ffb000);box-shadow:0 1px 4px rgba(0,0,0,.25);vertical-align:middle;white-space:nowrap}
 .badge-alpha.sm{font-size:.68rem;padding:1px 8px;margin-left:6px}
-.badge-alpha.beta{color:#fff;background:linear-gradient(100deg,#2f7fe0,#4fc3ff 50%,#2f7fe0)}
 .badge-alpha.master{color:#ffcf3f;background:linear-gradient(100deg,#2a1d52,#4b2d86 50%,#2a1d52);box-shadow:0 0 0 1px #ffcf3f,0 1px 6px rgba(120,80,220,.45)}
 .titles{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .badge-alpha.tc{color:#fff;background:var(--tc);text-shadow:0 1px 1px rgba(0,0,0,.35)}
@@ -1003,7 +1002,10 @@ nav.tabs .ti{display:none}
 :root:not([data-theme="dark"]) .ps-platine{background-image:linear-gradient(100deg,#6f7a92 0%,#a9b3c8 30%,#c792b8 45%,#7fa6c9 58%,#6f7a92 100%)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ps-platine{background-image:linear-gradient(100deg,#b9c2d4 0%,#fff 25%,#ffd9f5 38%,#cfe8ff 50%,#fff 62%,#b9c2d4 100%)}}
 /* --- badges (à côté du pseudo) --- */
+.bdg[data-act]{cursor:pointer}
 .bdg{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;width:1.35em;height:1.35em;border-radius:50%;font-size:.8em;vertical-align:.1em;flex:0 0 auto}
+.bdg-alpha{background:linear-gradient(135deg,#ffe27a,#ffcf3f 55%,#f2a900);color:#2b1f00;box-shadow:0 0 0 2px rgba(255,207,63,.3)}
+.bdg-beta{background:linear-gradient(135deg,#4fc3ff,#2f7fe0);color:#fff;box-shadow:0 0 0 2px rgba(79,195,255,.3)}
 .bdg-soutien{background:#ff4f7a;color:#fff;box-shadow:0 0 0 2px rgba(255,79,122,.3)}
 .bdg-flambeur{background:#1f7a3a;box-shadow:0 0 0 2px rgba(220,230,255,.8)}
 .badge-alpha.lord{color:#eaf8ff;background:linear-gradient(100deg,#0b4f8a,#2fa8e8 50%,#0b4f8a);box-shadow:0 0 0 1px #9fe0ff,0 1px 8px rgba(47,168,232,.6);text-shadow:0 1px 1px rgba(0,0,0,.35)}
@@ -1130,7 +1132,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.0";
+const APP_VERSION="1.0.1";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1416,7 +1418,8 @@ const COS={
   "dos.or":"Or","sac.noiror":"Noir et or","cadre.dore":"Doré","pseudo.dore":"Dégradé doré","fond.tresor":"Trésor",
   "dos.diamant":"Diamant","sac.lingot":"Lingot de platine","cadre.solitaire":"Solitaire","pseudo.platine":"Platine","fond.palais":"Palais",
   "badge.soutien":"♥ Soutien","badge.flambeur":"💸 Flambeur","titre.lord":"🐋 Lord"};
-const BADGES={soutien:{ic:"♥",t:"Soutient DexCraft"},flambeur:{ic:"💸",t:"A dépensé beaucoup trop pour ce badge"}};
+/* Badges ronds à droite du pseudo : alpha et beta viennent du profil (champs alpha, beta ; 1.0.1), les autres de la boutique (vis.b) */
+const BADGES={alpha:{ic:"✦",t:"Alpha testeur : a aidé au développement en Alpha de DexCraft"},beta:{ic:"◈",t:"Bêta testeur : a participé à la Bêta ouverte de DexCraft"},soutien:{ic:"♥",t:"Soutient DexCraft"},flambeur:{ic:"💸",t:"A dépensé beaucoup trop pour ce badge"}};
 const COS_PACK={}; // article -> pack (rempli ci-dessous)
 const OFFERS=[
   {k:"soutien",n:"Badge Soutien",eur:300,ribbon:"Merci ♥",d:"Un cœur à côté de votre pseudo, visible par tous. Merci pour votre soutien ♥",items:["badge.soutien"]},
@@ -1452,7 +1455,8 @@ function playerAva(id,size){
 /* pseudo d'un joueur, avec sa couleur et ses badges ; suffixe facultatif (« (vous) ») */
 function playerName(id,suffix){
   const v=visOf(id),n=esc(nameOf(id))+(suffix||"");
-  return `${v.p?`<span class="ps-${cosCls(v.p)}">${n}</span>`:n}${(v.b||[]).map(b=>{const B=BADGES[cosCls(b)];return B?`<span class="bdg bdg-${cosCls(b)}" title="${esc(B.t)}">${B.ic}</span>`:""}).join("")}`;
+  const p=profOf(id)||{},keys=[p.alpha?"alpha":"",p.beta?"beta":"",...(v.b||[]).map(cosCls)].filter(Boolean); // Alpha, Bêta, puis ceux de la boutique
+  return `${v.p?`<span class="ps-${cosCls(v.p)}">${n}</span>`:n}${keys.map(k=>{const B=BADGES[k];return B?`<span class="bdg bdg-${k}" title="${esc(B.t)}" data-act="badge-info" data-k="${k}" role="button" tabindex="0">${B.ic}</span>`:""}).join("")}`;
 }
 /* Récompense de connexion quotidienne : série de 7 jours (heure de Paris), qui repart à zéro si un jour est manqué.
    Versée par le serveur (dc_daily_claim) : boosters dans la réserve achetée, crédits sur le compte. */
@@ -1778,8 +1782,6 @@ const DEX_TIERS=[[50,"Novice","dex50"],[151,"Gamin","dex151"],[300,"Scout","dex3
    ids + need (cartes à posséder) ou test(profil). hidden : jamais montré tant qu'il n'est pas obtenu.
    Les mythiques et les transcendantes ne comptent que pour Secret, Mythique et Transcendant. */
 const TITLES=[
-  {k:"alpha",n:"Alpha testeur",ic:"✦",g:"Spéciaux",d:"A aidé au développement en Alpha de DexCraft",test:p=>!!p.alpha},
-  {k:"beta",n:"Bêta testeur",ic:"◈",g:"Spéciaux",cls:"beta",d:"A participé à la Bêta ouverte de DexCraft",test:p=>BETA_OPEN||!!p.beta},
   {k:"mythique",n:"Mythique",ic:"✦",g:"Spéciaux",cls:"myth",d:"Possède toutes les cartes mythiques",ids:MYTH_IDS,hidden:true},
   {k:"transcendant",n:"Transcendant",ic:"❖",g:"Spéciaux",cls:"trans",d:"Possède toutes les cartes transcendantes",ids:TRANS_IDS,hidden:true},
   {k:"lord",n:"Lord",ic:"🐋",g:"Spéciaux",cls:"lord",d:"A acheté le Pack Baleine assumée",test:p=>owns(p,"titre.lord")}, // titre de la boutique (0.9.0)
@@ -1812,20 +1814,19 @@ const TITLES=[
   {k:"vbL8",n:"Démineur",ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:"A gagné une manche de VoltoBataille au niveau 8",test:p=>!!(p.stats&&p.stats.vbL8)},
 ];
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
-const TITLE_MAX=3,TITLE_DEFAULT=["alpha","beta","maitre"];
+const TITLE_MAX=3,TITLE_DEFAULT=["maitre"]; // Alpha et Bêta testeur : badges à côté du pseudo depuis la 1.0.1, plus des titres
 const profOf=id=>id===ME?S:PLAYERS[id];
 const ownCount=(ids,coll)=>ids.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
 function titleProgress(t,p){if(t.stat)return [Math.min(((p.stats||{})[t.stat])||0,t.need),t.need];const need=t.need||(t.ids?t.ids.length:1);return [t.ids?ownCount(t.ids,p.coll||{}):titleEarned(t,p)?1:0,need]}
 function titleEarned(t,p){if(!p)return false;if(t.test)return t.test(p);const [n,need]=titleProgress(t,p);return need>0&&n>=need} // need 0 : liste vide (cartes secrètes pas encore reçues du serveur), jamais obtenu
-/* Titres choisis par le joueur (3 au plus), sinon ceux par défaut. Alpha puis Bêta passent devant. */
+/* Titres choisis par le joueur (3 au plus), sinon ceux par défaut, dans l'ordre de sélection. */
 function titleSel(p){return Array.isArray(p.titles)?p.titles:TITLE_DEFAULT}
 function titlesOf(id){
   const p=profOf(id);if(!p)return [];
   // les autres joueurs : titres affichés calculés par le serveur (shown), on ne télécharge pas leur collection
   if(id!==ME)return (Array.isArray(p.shown)?p.shown:[]).map(k=>TITLE_BY[k]).filter(Boolean).slice(0,TITLE_MAX);
   const sel=titleSel(p).filter(k=>TITLE_BY[k]&&titleEarned(TITLE_BY[k],p));
-  const rank=k=>k==="alpha"?0:k==="beta"?1:2;
-  return sel.map((k,i)=>[k,i]).sort((a,b)=>rank(a[0])-rank(b[0])||a[1]-b[1]).slice(0,TITLE_MAX).map(([k])=>TITLE_BY[k]);
+  return sel.slice(0,TITLE_MAX).map(k=>TITLE_BY[k]);
 }
 /* Condition d'obtention visible par le joueur : « ??? » pour un titre caché qu'il n'a pas lui-même */
 const titleHow=t=>t.hidden&&!titleEarned(t,S)?"???":t.d;
@@ -1854,7 +1855,7 @@ function titlesPanelHTML(){
       return `<div class="title-pick locked">${titleTag(t)}<span class="tp-d">${esc(t.d)}</span>${t.ids||t.stat?`<span class="tp-bar"><b style="width:${Math.min(100,n*100/need)}%"></b></span><span class="tp-d">${fmtN(n)} / ${fmtN(need)}</span>`:""}</div>`;
     }).join("")}</div></div>`;
   }).join("");
-  return `<p class="muted" style="margin:4px 0 0">Choisissez jusqu’à ${TITLE_MAX} titres parmi ceux obtenus : ils s’affichent à côté de votre nom, au profil, au classement et sur vos annonces. Alpha testeur et Bêta testeur passent toujours en premier. <b>${shown.length} / ${TITLE_MAX} affichés</b>${shown.length?` : ${titlesOf(ME).map(t=>titleTag(t,true)).join("")}`:""}</p>${groups}`;
+  return `<p class="muted" style="margin:4px 0 0">Choisissez jusqu’à ${TITLE_MAX} titres parmi ceux obtenus : ils s’affichent à côté de votre nom, au profil, au classement et sur vos annonces. <b>${shown.length} / ${TITLE_MAX} affichés</b>${shown.length?` : ${titlesOf(ME).map(t=>titleTag(t,true)).join("")}`:""}</p>${groups}`;
 }
 function toggleTitle(k){
   const t=TITLE_BY[k];if(!t||!titleEarned(t,S)){toast("Vous n’avez plus ce titre.");return}
@@ -2518,7 +2519,7 @@ function vProfile(){
       <button class="btn primary" data-act="give-offer">Donner</button></div>
     <p class="muted" style="margin:6px 0 0;font-size:.85rem">Au joueur choisi ci-dessus, sans paiement : geste commercial, souci de livraison après un paiement. Il reçoit la fenêtre « débloqué » à sa prochaine visite.</p>
     <h3 style="margin-top:18px">Remise à zéro générale</h3>
-    <p class="muted" style="margin:4px 0 10px;font-size:.85rem">Tous les joueurs repartent de zéro : aucune carte, ${fmtN(START_CREDITS)} crédits, ${MAXP} boosters gratuits, offres uniques de la boutique de nouveau récupérables une fois, dont le Pack fondateur. Le marché est vidé. Pseudos et titres Alpha et Bêta testeur sont conservés.</p>
+    <p class="muted" style="margin:4px 0 10px;font-size:.85rem">Tous les joueurs repartent de zéro : aucune carte, ${fmtN(START_CREDITS)} crédits, ${MAXP} boosters gratuits, offres uniques de la boutique de nouveau récupérables une fois, dont le Pack fondateur. Le marché est vidé. Pseudos et badges Alpha et Bêta testeur sont conservés.</p>
     <div class="actions"><button class="btn danger" data-act="reset-all">Réinitialiser toutes les collections</button>
       <button class="btn" data-act="fill-packs">Remplir la réserve de boosters de tous les joueurs</button></div>`
     :`<p class="muted" style="margin:10px 0 0">Disponible seulement dans la version publiée, où les autres joueurs existent.</p>`}
@@ -2895,7 +2896,7 @@ function clearMarket(){
   });
 }
 /* Remise à zéro générale : chaque joueur repart comme un compte neuf,
-   en gardant son pseudo, ses titres Alpha et Bêta testeur et son mode développeur. Le marché est vidé. */
+   en gardant son pseudo, ses badges Alpha et Bêta testeur et son mode développeur. Le marché est vidé. */
 function resetEveryone(){
   run(async()=>{
     const r=await rpc("dc_admin_reset_all");
@@ -3604,6 +3605,7 @@ document.addEventListener("click",e=>{
     case"cgu":openCgu();break;
     case"cgv":openCgv();break;
     case"claim-launch":run(async()=>{await rpc("dc_buy_once",{p_key:LAUNCH.k});toast(`Pack de lancement récupéré : +${fmtN(LAUNCH.credits)} crédits et +${LAUNCH.packs} boosters !`)});break;
+    case"badge-info":e.stopPropagation();{const B=BADGES[b.dataset.k];if(B)toast(`${B.ic} ${B.t}`)}break;
     case"discord-soon":e.preventDefault();toast("Le serveur Discord ouvre très bientôt !");break;
     case"share-card":e.preventDefault();shareCard(id,b.dataset.fresh==="1");break;
     case"share-copy-img":case"share-copy-txt":case"share-dl":case"share-native":shareAct(a);break;
@@ -3667,7 +3669,7 @@ document.addEventListener("click",e=>{
     case"reset-all":{if(!devOn()||mode!=="online")break;
       const n=new Set([...Object.keys(PLAYERS),ME]).size;
       openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Réinitialiser toutes les collections ?</h2>
-        <p>Les ${n} joueurs, vous compris, perdent toutes leurs cartes et repartent de zéro : ${fmtN(START_CREDITS)} crédits, ${MAXP} boosters gratuits, offres uniques de la boutique de nouveau récupérables une fois, dont le Pack fondateur. Toutes les annonces du marché sont supprimées. Seuls les pseudos et les titres Alpha et Bêta testeur sont conservés.</p>
+        <p>Les ${n} joueurs, vous compris, perdent toutes leurs cartes et repartent de zéro : ${fmtN(START_CREDITS)} crédits, ${MAXP} boosters gratuits, offres uniques de la boutique de nouveau récupérables une fois, dont le Pack fondateur. Toutes les annonces du marché sont supprimées. Seuls les pseudos et les badges Alpha et Bêta testeur sont conservés.</p>
         <p><b>C’est définitif.</b> Tapez RESET pour confirmer.</p>
         <label class="field">Confirmation<input id="reset-all-txt" autocomplete="off" placeholder="RESET"></label>
         <div class="actions"><button class="btn danger" data-act="reset-all-go">Tout réinitialiser</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break}
@@ -4204,7 +4206,7 @@ function gameConfig(){
 function titleDef(t){
   const same=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
   if(t.stat)return {c:"stat",s:t.stat,n:t.need};
-  const fixed={alpha:{c:"flag",f:"alpha"},beta:{c:"beta"},luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},lord:{c:"cos",i:"titre.lord"}};
+  const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},lord:{c:"cos",i:"titre.lord"}};
   if(fixed[t.k])return fixed[t.k];
   if(t.ids&&same(t.ids,DEX_ORDER))return {c:"dex",n:t.need||DEX_ORDER.length};
   const r=t.ids?BYR.findIndex(b=>same([...t.ids].sort((a,b)=>a-b),[...b].sort((a,b)=>a-b))):-1;

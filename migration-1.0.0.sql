@@ -1,6 +1,8 @@
 -- ============================================================
 --  DexCraft 1.0.0 — sortie de bêta. UNE SEULE FOIS, APRÈS dexcraft-config.sql, juste avant le push.
---  Relançable sans risque.
+--  DÉJÀ PASSÉE EN PRODUCTION le 27 septembre 2026 : NE PLUS LA RELANCER (elle donnerait le badge Bêta testeur
+--  aux joueurs inscrits après la sortie de bêta). Pour recalculer les profils, utiliser migration-1.0.1.sql.
+--  (Relançable seulement avant la sortie de la 1.0.0.)
 --
 --  1. Tous les joueurs inscrits avant la 1.0.0 ont joué pendant la bêta : ils gardent le titre « Bêta testeur »
 --     (beta = true dans leur profil). La configuration 1.0.0 ne le donne plus aux nouveaux comptes (betaOpen = false).
