@@ -292,9 +292,9 @@ end $$;
 
 -- ---------- bulles d'aide des nouveaux joueurs (0.7.0) ----------
 -- Une bulle fermée, ou dont l'action a été faite, ne revient jamais (tips dans le profil, sur tous les appareils).
--- Cartes recherchées (0.8.6) : la cloche d'une carte manquante. Le joueur est prévenu quand elle arrive sur le marché.
+-- Cartes recherchées (0.8.6) : la cloche d'une carte, manquante ou déjà possédée (1.0.9). Le joueur est prévenu quand elle arrive sur le marché.
 -- Seulement les cartes du Pokédex (jamais une mythique ou une transcendante), 300 au plus ; retirées par dc__stamp
--- dès que la carte entre dans la collection.
+-- dès que la carte entre dans la collection, sauf si elle était déjà possédée.
 create or replace function public.dc_toggle_wish(p_id int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); k text := p_id::text; w jsonb; on_ boolean;
 begin
@@ -302,9 +302,10 @@ begin
   w := case when jsonb_typeof(d -> 'wish') = 'object' then d -> 'wish' else '{}'::jsonb end;
   if w ? k then w := w - k; on_ := false;
   else
-    if public.dc__count(d, p_id) > 0 then raise exception 'Vous avez déjà cette carte.'; end if;
     if (select count(*) from jsonb_object_keys(w)) >= 300 then raise exception 'Vous recherchez déjà 300 cartes : retirez-en une d’abord.'; end if;
-    w := w || jsonb_build_object(k, public.dc__now()); on_ := true;
+    -- carte déjà possédée (1.0.9) : marquée pour rester recherchée ; sinon retirée dès qu'elle arrive (dc__stamp)
+    w := w || jsonb_build_object(k, case when public.dc__count(d, p_id) > 0
+      then jsonb_build_object('t', public.dc__now(), 'k', 1) else to_jsonb(public.dc__now()) end); on_ := true;
   end if;
   d := jsonb_set(d, '{wish}', w);
   return jsonb_build_object('profile', public.dc__save(u, d), 'on', on_);

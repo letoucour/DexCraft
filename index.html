@@ -428,6 +428,7 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .fav-btn.on{background:var(--gold);color:var(--gold-ink)}
 /* Cartes recherchées (cloche) : ombre de la carte manquante, bouton, repères */
 .mini .wish-badge{position:absolute;top:5px;right:6px;font-size:.85rem;opacity:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.mini .wish-badge.wb2{right:24px}
 .mini.missing:has(.wish-badge){opacity:.8}
 .wish-btn.on{background:var(--gold);color:var(--gold-ink)}
 .ghost-card{position:relative;aspect-ratio:5/7;width:100%;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;
@@ -1119,7 +1120,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.8";
+const APP_VERSION="1.0.9";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1718,7 +1719,7 @@ function miniHTML(id,{count=0,missing=false,sel=0,choice=false,act="detail",img=
   const [n,,,ty,,,,r,ex]=D(id);
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
   return `<button class="mini r${r}${missing?" missing":""}${sel?" picked":""}${choice?" choice":""}" data-act="${act}" data-id="${id}" style="--c1:${c1};--c2:${c2}" aria-label="${missing?"Carte "+id+" manquante":esc(n)}">
-  <div class="strip"><b>${ex&&ex.base?ex.base:isSpec(id)?"✦":id}</b>${img&&imgFor(id)?`<span class="mimg"><img src="${esc(imgFor(id))}" alt="" loading="lazy" decoding="async" onerror="this.remove()"></span>`:""}</div>${count>1?`<span class="count">×${count}</span>`:""}${fav?`<span class="fav-badge" aria-label="Favori">★</span>`:""}${missing&&wished(id)?`<span class="wish-badge" aria-label="Recherchée">🔔</span>`:""}${sel?`<span class="sel">−${sel}</span>`:""}
+  <div class="strip"><b>${ex&&ex.base?ex.base:isSpec(id)?"✦":id}</b>${img&&imgFor(id)?`<span class="mimg"><img src="${esc(imgFor(id))}" alt="" loading="lazy" decoding="async" onerror="this.remove()"></span>`:""}</div>${count>1?`<span class="count">×${count}</span>`:""}${fav?`<span class="fav-badge" aria-label="Favori">★</span>`:""}${wished(id)?`<span class="wish-badge${fav?" wb2":""}" aria-label="Recherchée">🔔</span>`:""}${sel?`<span class="sel">−${sel}</span>`:""}
   <div class="mi"><div class="mn">${missing?"???":esc(n)}</div><div class="mm"><span>${r>=6?RAR[r]:ex&&ex.base?"№ "+pad(ex.base)+" "+(ex.kind?formTag(ex):"Méga"):"№ "+pad(id)}</span><span class="mg">${gems(r)}</span></div></div></button>`}
 function who(id){if(id===ME)return"vous";return nameOf(id)}
 function nameOf(id){const pl=id===ME?S:PLAYERS[id];return (pl&&pl.pseudo)||"Un dresseur"}
@@ -3063,7 +3064,7 @@ addEventListener("keydown",e=>{if(!dlg.open||!detailNav||!dlg.querySelector(".dn
 dlg.addEventListener("click",e=>{if(e.target===dlg)closeDlg()});
 /* Cartes recherchées (0.8.6) : la cloche d'une carte manquante. Prévenu (bulle de l'onglet Échanges, message)
    quand un autre joueur la met à l'échange. Gardées par le serveur (wish dans le profil, dc_toggle_wish). */
-const wished=id=>!!(S&&S.wish&&S.wish[id])&&!has(S,id);
+const wished=id=>!!(S&&S.wish&&S.wish[id]); // aussi sur une carte possédée (1.0.9)
 /* annonces des autres joueurs pour une carte que je recherche */
 const wishListings=()=>!S||!S.wish?[]:Object.entries(MARKET).filter(([,m])=>m.kind==="t"&&m.status==="open"&&m.owner!==ME&&wished(m.card));
 /* annonces recherchées déjà vues dans l'onglet Échanges (sur cet appareil) : elles ne comptent plus dans la bulle */
@@ -3105,7 +3106,7 @@ function detail(id){
   openDlg(`${navBtns}<div class="card-holder">${cardHTML(id,true)}</div><div class="side">
     <button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <div><h2>${esc(nm(id))}</h2><p class="muted">${c} exemplaire${c>1?"s":""} dans votre collection</p>
-      <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button>${r>=6?"":`<button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>`}</div></div>
+      <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button>${r>=6?"":`<button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>`}${r>=6||mode!=="online"?"":`<button class="btn small wish-btn${wished(id)?" on":""}" data-act="toggle-wish" data-id="${id}" aria-pressed="${wished(id)}" title="Être prévenu quand un joueur la met à l’échange">${wished(id)?"🔔 Je la recherche · Arrêter":"🔔 Je la recherche"}</button>`}</div></div>
     ${online?`<div class="panel"><h3>Proposer à l’échange</h3>
       <div class="actions" style="margin-top:10px;align-items:end">
       <label class="field" style="flex:1;min-width:min(220px,100%)">Carte souhaitée<select id="t-want"><option value="missing" selected>N’importe quelle carte ${RAR[r].toLowerCase()} manquante (que je n’ai pas)</option><option value="">N’importe quelle carte ${RAR[r].toLowerCase()}</option><option value="list">Plusieurs cartes précises…</option>${same.map(x=>`<option value="${x}">${esc(nm(x))}${S.coll[x]?"":" (manquante)"}</option>`).join("")}</select></label>
