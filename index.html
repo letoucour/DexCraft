@@ -92,6 +92,7 @@ h3{font-size:1.1rem}
 .booster.home .bh-left>*{order:1}
 .booster.home .bh-main>*{order:2}
 .booster.home .bh-right>*{order:3}
+@media (max-width:999px){.booster.home .bh-left>.daily{order:3}} /* téléphone : la récompense du jour sous le booster, qu'elle ne pousse plus hors de l'écran (1.0.10) */
 @media (min-width:1000px){
   .booster.home{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-areas:"head head head" "left main right";column-gap:32px;row-gap:6px;align-items:center;max-width:1280px;margin:0 auto}
   .booster.home .bh-head{display:flex;flex-direction:column;gap:6px;grid-area:head}
@@ -1061,6 +1062,14 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 .contents li{background:var(--surface-2);border-radius:999px;padding:2px 10px;font-size:.8rem;color:var(--ink-soft)}
 .contents li b{color:var(--ink)}
 .buy-dlg{gap:12px}
+/* offrir un pack (1.0.10) */
+.offer-big .gift-btn{background:transparent;border:1px dashed var(--gold);color:var(--gold);margin-top:-6px}
+.gift-pick{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--gold);border-radius:14px;background:color-mix(in srgb,var(--gold) 7%,var(--surface))}
+.gift-pick input{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--ink);font:inherit}
+.gift-res{display:flex;flex-wrap:wrap;gap:6px}
+.gift-opt{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:3px 12px 3px 3px;font-weight:700}
+.gift-opt:hover{border-color:var(--gold)}
+.gift-to{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .chk{display:flex;gap:10px;align-items:flex-start;font-size:.92rem;line-height:1.4}
 .chk input{width:20px;height:20px;flex:0 0 auto;margin-top:1px;accent-color:var(--gold)}
 .unlock-ic{font-size:64px;line-height:1;animation:heartBeat 1.4s ease-in-out infinite}
@@ -1120,7 +1129,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.9";
+const APP_VERSION="1.0.10";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2085,7 +2094,7 @@ function vBooster(){
    Elle disparaît pour toujours quand on la ferme ou qu'on fait l'action (tips dans le profil, gardé par le serveur). */
 const TIPS=[
   {k:"booster",ok:()=>!!(S.stats&&S.stats.packs),t:"Touchez le booster pour l’ouvrir et découvrir vos premières cartes !"},
-  {k:"daily",ok:()=>!!S.daily,t:"Chaque jour, une récompense vous attend juste en dessous : pensez à la récupérer !"},
+  {k:"daily",ok:()=>!!S.daily,t:"Chaque jour, une récompense vous attend un peu plus bas : pensez à la récupérer !"},
   {k:"collection",ok:()=>false,t:"Retrouvez toutes vos cartes dans l’onglet 🗂️ Collection."},
   {k:"trades",ok:()=>false,t:"Des doubles ? Échangez-les contre les cartes qui vous manquent dans l’onglet 🔄 Échanges."},
 ];
@@ -2863,6 +2872,7 @@ function offerHTML(o,dev){
     ${o.warn&&!own?`<p class="baleine-note">${esc(o.warn)}</p>`:""}
     ${own?`<div class="price owned-txt">✓ Dans votre collection</div><button class="btn" data-act="goto-look">Changer de look</button>`
       :`<div class="price">${eurTxt(o.eur)}</div><button class="btn primary" data-act="buy-offer" data-k="${o.k}">Acheter pour ${eurTxt(o.eur)}</button>${dev?`<button class="btn small" data-act="dev-offer" data-k="${o.k}">Obtenir (mode dev)</button>`:""}`}
+    <button class="btn gift-btn" data-act="gift-offer" data-k="${o.k}">🎁 Offrir à un joueur</button>
   </div>`;
 }
 const slotShort=i=>({dos:"Dos",sac:"Sachet",cadre:"Cadre",pseudo:"Pseudo",fond:"Fond",badge:"Badge",titre:"Titre"})[String(i).split(".")[0]]||"";
@@ -2873,33 +2883,54 @@ const slotShort=i=>({dos:"Dos",sac:"Sachet",cadre:"Cadre",pseudo:"Pseudo",fond:"
       et renvoie son adresse : le joueur paie sur la page de Stripe (carte bancaire ou PayPal).
    3. Stripe prévient dc-stripe-webhook, qui livre le pack (dc_pay_grant). De retour sur le jeu (?paiement=ok),
       le joueur voit son pack arriver (temps réel, relecture) : fenêtre « Pack débloqué ». */
-function buyOffer(k){
+/* Offrir un pack (1.0.10) : même fenêtre, avec le choix du joueur qui le reçoit (giftTo). On peut offrir un pack
+   qu'on possède déjà ; le serveur refuse si le destinataire l'a déjà (dc-paiement). */
+let giftTo=null;
+function buyOffer(k,gift){
   const o=OFFER_BY[k];if(!o)return;
-  if(ownsOffer(S,o)){toast("Vous possédez déjà cette offre.");return}
+  if(!gift&&ownsOffer(S,o)){toast("Vous possédez déjà cette offre.");return}
+  if(gift)giftTo=null;
   openDlg(`<div class="side buy-dlg"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
     ${offerVisual(o)}
-    <h2>${o.ic?o.ic+" ":""}${esc(o.n)}</h2><p class="muted">${esc(o.d)}</p>
+    <h2>${gift?"🎁 Offrir : ":""}${o.ic?o.ic+" ":""}${esc(o.n)}</h2><p class="muted">${esc(o.d)}</p>
     ${o.items.length>1?`<ul class="contents">${o.items.map(i=>`<li>${slotShort(i)} <b>${esc(cosName(i))}</b></li>`).join("")}</ul>`:""}
+    ${gift?`<div class="gift-pick" id="gift-pick">${giftPickHTML()}</div>`:""}
     <div class="price" style="font-size:1.6rem">${eurTxt(o.eur)}</div>
-    <p class="muted" style="margin:0;font-size:.88rem">Article uniquement décoratif, sans aucun avantage en jeu. Paiement unique, pas d’abonnement. TVA non applicable, art. 293 B du CGI.</p>
+    <p class="muted" style="margin:0;font-size:.88rem">Article uniquement décoratif, sans aucun avantage en jeu. Paiement unique, pas d’abonnement. TVA non applicable, art. 293 B du CGI.${gift?" Le pack est ajouté directement au compte du joueur choisi, qui voit qu’il vient de vous.":""}</p>
     <label class="chk"><input type="checkbox" data-buy-chk> J’accepte les <button type="button" class="linkish" data-act="cgv">conditions générales de vente</button>.</label>
-    <label class="chk"><input type="checkbox" data-buy-chk> Je demande à recevoir mon achat immédiatement et je renonce à mon droit de rétractation de 14 jours.</label>
+    <label class="chk"><input type="checkbox" data-buy-chk> ${gift?"Je demande que le pack soit livré immédiatement au joueur choisi":"Je demande à recevoir mon achat immédiatement"} et je renonce à mon droit de rétractation de 14 jours.</label>
     <p class="muted" style="margin:0;font-size:.82rem">Vous avez moins de 18 ans ? Demandez l’accord d’un parent avant d’acheter.</p>
-    <div class="actions"><button class="btn primary" id="buy-go" data-act="buy-go" data-k="${o.k}" disabled>Payer ${eurTxt(o.eur)}</button><button class="btn" data-act="close">Annuler</button></div>
+    <div class="actions"><button class="btn primary" id="buy-go" data-act="buy-go" data-k="${o.k}"${gift?` data-gift="1"`:""} disabled>${gift?"Offrir pour":"Payer"} ${eurTxt(o.eur)}</button><button class="btn" data-act="close">Annuler</button></div>
     <p class="pay-once" style="margin:0">🔒 Vous allez être redirigé vers la page de paiement sécurisée de Stripe.</p></div>`,true);
 }
-document.addEventListener("change",e=>{if(e.target.matches&&e.target.matches("[data-buy-chk]")){const all=[...document.querySelectorAll("[data-buy-chk]")].every(c=>c.checked),b=$("#buy-go");if(b)b.disabled=!all}});
-async function buyGo(k){
+/* choix du destinataire : recherche parmi les pseudos (résumés du classement), 8 résultats au plus */
+function giftPickHTML(){
+  if(giftTo)return `<div class="gift-to">Pour ${playerAva(giftTo,28)} <b>${esc(nameOf(giftTo))}</b> <button type="button" class="linkish" data-act="gift-change">Changer</button></div>`;
+  return `<label class="field">Joueur qui reçoit le pack<input type="search" data-gift-q placeholder="Rechercher un pseudo" autocomplete="off" aria-label="Rechercher un joueur"></label><div class="gift-res" id="gift-res">${giftResHTML("")}</div>`;
+}
+function giftResHTML(q){
+  const k=norm2(q).trim();if(!k)return `<p class="muted" style="margin:0;font-size:.85rem">Tapez le début de son pseudo.</p>`;
+  const r=Object.entries(PLAYERS).filter(([id,p])=>id!==ME&&p&&p.pseudo&&norm2(p.pseudo).includes(k))
+    .sort(([,a],[,b])=>(norm2(a.pseudo).startsWith(k)?0:1)-(norm2(b.pseudo).startsWith(k)?0:1)||a.pseudo.localeCompare(b.pseudo,"fr")).slice(0,8);
+  return r.length?r.map(([id,p])=>`<button type="button" class="gift-opt" data-act="gift-to" data-uid="${esc(id)}">${playerAva(id,26)} ${esc(p.pseudo)}</button>`).join("")
+    :`<p class="muted" style="margin:0;font-size:.85rem">Aucun joueur trouvé.</p>`;
+}
+function giftRefresh(){const g=$("#gift-pick");if(g)g.innerHTML=giftPickHTML();buyChk();const i=document.querySelector("[data-gift-q]");if(i)i.focus()}
+function buyChk(){const b=$("#buy-go");if(b)b.disabled=![...document.querySelectorAll("[data-buy-chk]")].every(c=>c.checked)||(!!b.dataset.gift&&!giftTo)}
+document.addEventListener("change",e=>{if(e.target.matches&&e.target.matches("[data-buy-chk]"))buyChk()});
+document.addEventListener("input",e=>{if(e.target.matches&&e.target.matches("[data-gift-q]")){const r=$("#gift-res");if(r)r.innerHTML=giftResHTML(e.target.value)}});
+async function buyGo(k,gift){
   const o=OFFER_BY[k];if(!o||!SB)return;
   if(![...document.querySelectorAll("[data-buy-chk]")].every(c=>c.checked)){toast("Cochez les deux cases pour continuer.");return}
-  const {data,error}=await SB.functions.invoke("dc-paiement",{body:{offer:k,consent:true}});
+  if(gift&&!giftTo){toast("Choisissez le joueur qui reçoit le pack.");return}
+  const {data,error}=await SB.functions.invoke("dc-paiement",{body:gift?{offer:k,consent:true,to:giftTo}:{offer:k,consent:true}});
   if(error){
     let m="Le paiement n’est pas disponible pour le moment. Réessayez plus tard.";
     try{const j=await error.context.json();if(j&&j.error)m=j.error}catch(e){}
     throw new Error(m);
   }
   if(!data||!data.url)throw new Error("Le paiement n’est pas disponible pour le moment. Réessayez plus tard.");
-  try{sessionStorage.setItem("dc-pay",JSON.stringify({k,t:Date.now()}))}catch(e){}
+  try{sessionStorage.setItem("dc-pay",JSON.stringify(gift?{k,t:Date.now(),to:nameOf(giftTo)}:{k,t:Date.now()}))}catch(e){}
   location.href=data.url; // page de paiement Stripe
 }
 /* retour de la page de paiement : ?paiement=ok ou ?paiement=annule */
@@ -2910,6 +2941,12 @@ function payReturn(){
   let p=null;try{p=JSON.parse(sessionStorage.getItem("dc-pay")||"null")}catch(e){}
   const o=OFFER_BY[(p&&p.k)||q.get("offre")];
   view="shop";renderAll();
+  if(q.get("cadeau")){ // pack offert : livré sur le compte de l'autre joueur, rien à attendre ici
+    openDlg(`<div class="side" style="align-items:center;text-align:center"><div class="unlock-ic" aria-hidden="true">🎁</div>
+      <h2>Merci ! Paiement reçu</h2><p class="muted">${o?esc(o.n):"Le pack"} arrive dans quelques secondes sur le compte de <b>${esc((p&&p.to)||"votre ami")}</b>. Ce joueur verra que c’est un cadeau de votre part.</p>
+      <p class="muted" style="font-size:.85rem">Un souci ? Écrivez à ${esc(CGU_MAIL)} : aucun paiement n’est perdu.</p>
+      <div class="actions"><button class="btn primary" data-act="close">Fermer</button></div></div>`,true);
+    return}
   if(o&&ownsOffer(S,o))return; // déjà livré : la fenêtre « débloqué » s'affiche d'elle-même
   openDlg(`<div class="side" style="align-items:center;text-align:center"><div class="spin" aria-hidden="true"></div>
     <h2>Merci ! Paiement reçu</h2><p class="muted">${o?`Votre ${esc(o.n)} arrive dans quelques secondes…`:"Votre achat arrive dans quelques secondes…"}</p>
@@ -2920,16 +2957,18 @@ function payReturn(){
 /* « Pack débloqué » : le serveur note le dernier pack reçu (unlock), affiché une fois par appareil */
 function checkUnlock(){
   const u=S&&S.unlock;if(!u||!u.t||!OFFER_BY[u.o])return;
+  if(u.from&&!playersTs)return; // cadeau : attendre la liste des joueurs pour afficher le pseudo (loadPlayers rappelle renderHeader)
   let seen=0;try{seen=+localStorage.getItem("dc-unlock-seen")||0}catch(e){}
   if(u.t<=seen||Date.now()-u.t>864e5)return; // déjà vu sur cet appareil, ou plus vieux qu’un jour
   if(dlg.open&&!dlg.querySelector(".spin"))return; // une autre fenêtre est ouverte : on attend la suivante
   try{localStorage.setItem("dc-unlock-seen",String(u.t))}catch(e){}
-  const o=OFFER_BY[u.o];
+  const o=OFFER_BY[u.o],from=u.from?((PLAYERS[u.from]&&PLAYERS[u.from].pseudo)||"un autre joueur"):""; // from : pack offert par un autre joueur (1.0.10)
   SFX.flip&&SFX.flip(3);vib([40,60,40]);
   openDlg(`<div class="side unlock-dlg" style="align-items:center;text-align:center"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
-    <div class="unlock-ic" aria-hidden="true">${o.k==="soutien"?"♥":o.ic||"✨"}</div>
-    <h2>${o.k==="soutien"?"Merci pour votre soutien !":`${esc(o.n)} débloqué !`}</h2>
-    <p class="muted">${o.k==="soutien"?"Le badge ♥ Soutien s’affiche maintenant à côté de votre pseudo.":"Choisissez ce que vous portez dans votre profil : vous pouvez mélanger les articles de tous vos packs."}</p>
+    <div class="unlock-ic" aria-hidden="true">${from?"🎁":o.k==="soutien"?"♥":o.ic||"✨"}</div>
+    <h2>${from?(from==="un autre joueur"?"Un cadeau pour vous !":`Un cadeau de ${esc(from)} !`):o.k==="soutien"?"Merci pour votre soutien !":`${esc(o.n)} débloqué !`}</h2>
+    <p class="muted">${from?`${esc(from.charAt(0).toUpperCase()+from.slice(1))} vous a offert ${o.k==="soutien"?"le badge ♥ Soutien, qui s’affiche maintenant à côté de votre pseudo.":`un cadeau : <b>${esc(o.n)}</b>. Choisissez ce que vous portez dans votre profil.`}`
+      :o.k==="soutien"?"Le badge ♥ Soutien s’affiche maintenant à côté de votre pseudo.":"Choisissez ce que vous portez dans votre profil : vous pouvez mélanger les articles de tous vos packs."}</p>
     <div class="actions">${o.k==="soutien"?"":`<button class="btn primary" data-act="goto-look">Changer de look</button>`}<button class="btn" data-act="close">${o.k==="soutien"?"Avec plaisir":"Plus tard"}</button></div></div>`,true);
 }
 function gotoLook(){closeDlg();profOpen.look=true;view="profile";renderAll();setTimeout(()=>{const s=document.querySelector('[data-sec="look"]');if(s)s.scrollIntoView({behavior:"smooth",block:"start"})},60)}
@@ -3660,7 +3699,10 @@ document.addEventListener("click",e=>{
     case"share-card":e.preventDefault();shareCard(id,b.dataset.fresh==="1");break;
     case"share-copy":case"share-dl":shareAct(a);break;
     case"buy-offer":buyOffer(b.dataset.k);break;
-    case"buy-go":run(()=>buyGo(b.dataset.k));break;
+    case"buy-go":run(()=>buyGo(b.dataset.k,!!b.dataset.gift));break;
+    case"gift-offer":buyOffer(b.dataset.k,true);break;
+    case"gift-to":giftTo=b.dataset.uid;giftRefresh();break;
+    case"gift-change":giftTo=null;giftRefresh();break;
     case"goto-look":gotoLook();break;
     case"dev-offer":if(devOn())run(async()=>{await rpc("dc_admin_give_offer",{p_uid:ME,p_offer:b.dataset.k})});break;
     case"look":run(async()=>{await rpc("dc_set_look",{p_slot:b.dataset.slot,p_item:b.dataset.item||null})});break;
@@ -4098,7 +4140,8 @@ function cgvHTML(){
   <p class="legal-id"><b>${esc(SELLER.nom)}</b>, ${esc(SELLER.ei)}, ${esc(SELLER.adresse)}. SIRET : ${esc(SELLER.siret)}. ${esc(SELLER.tva)}. Contact : ${m}.</p>
 
   <h3>2. Ce qui est vendu</h3>
-  <p>Des <b>contenus numériques uniquement décoratifs</b> pour le jeu DexCraft : dos de cartes, sachets de booster, cadres d’image de profil, couleurs de pseudo, fonds d’écran, badges et titres, vendus en packs ou à l’unité. Ils ne donnent <b>aucun avantage de jeu</b>. Les cartes, les boosters et les crédits ne sont jamais vendus contre de l’argent. Les articles achetés sont liés à votre compte : ils ne peuvent être ni revendus, ni transférés, ni échangés contre de l’argent.</p>
+  <p>Des <b>contenus numériques uniquement décoratifs</b> pour le jeu DexCraft : dos de cartes, sachets de booster, cadres d’image de profil, couleurs de pseudo, fonds d’écran, badges et titres, vendus en packs ou à l’unité. Ils ne donnent <b>aucun avantage de jeu</b>. Les cartes, les boosters et les crédits ne sont jamais vendus contre de l’argent. Les articles achetés sont liés au compte qui les reçoit : ils ne peuvent être ni revendus, ni transférés, ni échangés contre de l’argent.</p>
+  <p><b>Offrir un pack.</b> Au moment de l’achat, vous pouvez choisir de l’offrir à un autre joueur, même si vous le possédez déjà. Le pack est alors ajouté directement au compte de ce joueur, qui voit votre pseudo, et non au vôtre. Vous restez l’acheteur : la confirmation de paiement vous est envoyée et les conditions ci-dessous (rétractation, remboursements) s’appliquent à vous. Un pack que le joueur choisi possède déjà ne peut pas lui être offert.</p>
 
   <h3>3. Prix et paiement</h3>
   <p>Les prix sont indiqués en euros, toutes taxes comprises (${esc(SELLER.tva)}). Chaque achat est un paiement unique, sans abonnement. Le paiement est traité par <b>Stripe</b> (carte bancaire ou PayPal) : ${esc(SELLER.nom)} n’a jamais accès à vos données bancaires. La commande est définitive dès que Stripe confirme le paiement.</p>

@@ -107,6 +107,8 @@ create table if not exists public.payments (
   paid_at        timestamptz
 );
 create index if not exists payments_uid_idx on public.payments (uid, created_at desc);
+-- pack offert (1.0.10) : uid = celui qui paie, to_uid = le joueur qui reçoit (null : pour soi)
+alter table public.payments add column if not exists to_uid uuid;
 create index if not exists payments_pi_idx on public.payments (payment_intent);
 alter table public.payments enable row level security;
 revoke all on public.payments from anon, authenticated;
@@ -128,7 +130,7 @@ end $$;
 
 -- paiement confirmé par Stripe (appelée uniquement par la fonction dc-stripe-webhook, avec la clé de service)
 create or replace function public.dc_pay_grant(p_session text, p_uid uuid, p_offer text, p_amount int, p_pi text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare pay public.payments; o jsonb := public.dc__cfg() -> 'shop' -> 'offers' -> p_offer; d jsonb;
+declare pay public.payments; o jsonb := public.dc__cfg() -> 'shop' -> 'offers' -> p_offer; d jsonb; dest uuid;
 begin
   if o is null then raise exception 'Offre inconnue : %', p_offer; end if;
   if p_amount is distinct from (o ->> 'eur')::int then raise exception 'Montant inattendu pour % : % au lieu de %', p_offer, p_amount, o ->> 'eur'; end if;
@@ -136,10 +138,13 @@ begin
   select * into pay from public.payments where session_id = p_session for update;
   if pay.uid <> p_uid or pay.offer <> p_offer then raise exception 'Paiement incohérent.'; end if;
   if pay.status = 'paid' then return jsonb_build_object('ok', true, 'deja', true); end if;
-  select data into d from public.docs where path = 'players/' || p_uid for update;
+  -- pack offert (1.0.10) : livré au joueur choisi (to_uid, noté par dc-paiement), avec le nom de celui qui l'offre
+  dest := coalesce(pay.to_uid, p_uid);
+  select data into d from public.docs where path = 'players/' || dest for update;
   if not found then raise exception 'Joueur introuvable.'; end if;
   d := public.dc__grant_offer(public.dc__norm(d), p_offer);
-  update public.docs set data = public.dc__stamp(d, false), updated_at = now() where path = 'players/' || p_uid;
+  if dest <> p_uid then d := jsonb_set(d, '{unlock,from}', to_jsonb(p_uid::text)); end if;
+  update public.docs set data = public.dc__stamp(d, false), updated_at = now() where path = 'players/' || dest;
   update public.payments set status = 'paid', paid_at = now(), payment_intent = p_pi where session_id = p_session;
   return jsonb_build_object('ok', true);
 end $$;
@@ -151,14 +156,15 @@ begin
   select * into pay from public.payments where payment_intent = p_pi and status = 'paid' for update;
   if not found then return jsonb_build_object('ok', false); end if;
   update public.payments set status = 'refunded' where session_id = pay.session_id;
+  -- pack offert : retiré au joueur qui l'a reçu
   select coalesce(jsonb_agg(x), '[]') into keep from public.payments p2, jsonb_array_elements_text(public.dc__cfg() -> 'shop' -> 'offers' -> p2.offer -> 'items') x
-    where p2.uid = pay.uid and p2.status = 'paid';
-  select data into d from public.docs where path = 'players/' || pay.uid for update;
+    where coalesce(p2.to_uid, p2.uid) = coalesce(pay.to_uid, pay.uid) and p2.status = 'paid';
+  select data into d from public.docs where path = 'players/' || coalesce(pay.to_uid, pay.uid) for update;
   if found then
     for i in select jsonb_array_elements_text(public.dc__cfg() -> 'shop' -> 'offers' -> pay.offer -> 'items') loop
       if not keep ? i then d := jsonb_set(d, '{cos}', coalesce(d -> 'cos', '{}') - i); end if;
     end loop;
-    update public.docs set data = public.dc__stamp(d, false), updated_at = now() where path = 'players/' || pay.uid;
+    update public.docs set data = public.dc__stamp(d, false), updated_at = now() where path = 'players/' || coalesce(pay.to_uid, pay.uid);
   end if;
   return jsonb_build_object('ok', true);
 end $$;
