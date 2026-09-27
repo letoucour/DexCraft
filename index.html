@@ -5,6 +5,8 @@
 <script>/* dexcraft.fr (0.8.8) : l’ancienne adresse (GitHub Pages) et l’adresse technique de Cloudflare Pages renvoient
    vers dexcraft.fr, en gardant la fin du lien (#… d’un lien « mot de passe oublié », ?export-config…). */
 if(location.hostname==="letoucour.github.io"||location.hostname==="dexcraft.pages.dev")location.replace("https://dexcraft.fr/"+location.search+location.hash);</script>
+<script>/* thème jour / nuit choisi par le joueur (1.1.2, bouton de l'en-tête), appliqué avant l'affichage : pas d'éclair de l'autre thème */
+try{const t=localStorage.getItem("dc-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- sécurité (0.8.7) : la page ne charge du code que depuis ces adresses et n'envoie des données qu'à Supabase.
      Nouvelle ressource externe (police, script…) : l'ajouter ici, sinon le navigateur la bloque. -->
@@ -1107,6 +1109,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
     <button class="chip" data-act="packs-info" title="Mes boosters" aria-label="Mes boosters : détail"><span aria-hidden="true">📦</span><b id="h-packs">…</b>/10<span id="h-bonus"></span></button>
     <a class="chip discord-chip" id="h-discord" href="#" data-act="discord-soon" aria-label="Rejoindre le Discord de DexCraft" title="Rejoindre le Discord de DexCraft"></a>
     <button class="chip snd-chip" id="h-snd" data-act="toggle-sound" aria-label="Couper le son" title="Couper le son">🔊</button>
+    <button class="chip snd-chip" id="h-theme" data-act="toggle-theme" aria-label="Passer en mode nuit" title="Passer en mode nuit">🌙</button>
     <div class="chip dev-chip" id="h-dev" hidden>Mode dév.</div>
   </div>
 </div></header>
@@ -1143,7 +1146,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.1";
+const APP_VERSION="1.1.2";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3810,6 +3813,7 @@ document.addEventListener("click",e=>{
     case"look":run(async()=>{await rpc("dc_set_look",{p_slot:b.dataset.slot,p_item:b.dataset.item||null})});break;
     case"open":SFX.get();openPack(1);break;
     case"open-n":SFX.get();openPack(+b.dataset.n);break;
+    case"toggle-theme":toggleTheme();break;
     case"toggle-sound":{const on=SFX.toggle();b.textContent=on?"🔊":"🔇";b.setAttribute("aria-label",on?"Couper le son":"Activer le son");b.title=on?"Couper le son":"Activer le son";if(on){SFX.flip(1)}break}
     case"flip":{if(dragMoved){dragMoved=false;break}
       if(flipLock)break;flipLock=true;setTimeout(()=>{flipLock=false},320);
@@ -3963,6 +3967,12 @@ document.addEventListener("click",e=>{
     case"none":break;
   }
 });
+/* Thème jour / nuit (1.1.2) : bouton de l'en-tête. Sans choix du joueur, le thème suit celui de l'appareil ;
+   le choix est gardé sur l'appareil (dc-theme) et appliqué dès le haut de la page. */
+const darkNow=()=>(document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"))==="dark";
+function themeBtn(){const b=$("#h-theme");if(!b)return;const d=darkNow(),t=d?"Passer en mode jour":"Passer en mode nuit";b.textContent=d?"☀️":"🌙";b.setAttribute("aria-label",t);b.title=t}
+function toggleTheme(){const t=darkNow()?"light":"dark";document.documentElement.dataset.theme=t;try{localStorage.setItem("dc-theme",t)}catch(e){}themeBtn()}
+themeBtn();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",themeBtn)}catch(e){}
 document.addEventListener("keydown",e=>{const t=e.target.closest&&e.target.closest(".tag-click,[role=button][data-act]");if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();t.click()}});
 document.addEventListener("input",e=>{
   const sk=e.target.dataset&&e.target.dataset.search;
@@ -4280,7 +4290,7 @@ let capToken="",capWidget=null;
 function captchaInit(){
   if(!TURNSTILE_SITEKEY||capWidget!==null)return;
   const s=document.createElement("script");s.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";s.async=true;
-  s.onload=()=>{try{capWidget=turnstile.render("#gate-captcha",{sitekey:TURNSTILE_SITEKEY,language:"fr",theme:"auto",size:"flexible",
+  s.onload=()=>{try{capWidget=turnstile.render("#gate-captcha",{sitekey:TURNSTILE_SITEKEY,language:"fr",theme:darkNow()?"dark":"light",size:"flexible",
     callback:t=>{capToken=t},"expired-callback":()=>{capToken=""},"error-callback":()=>{capToken=""}})}catch(e){console.warn(e)}};
   document.head.append(s);
 }
