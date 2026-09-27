@@ -204,6 +204,7 @@ begin
       when 'gen' then gencnt[(def ->> 'g')::int] >= (def ->> 'n')::int
       when 'type' then typecnt[(def ->> 't')::int] >= (def ->> 'n')::int
       when 'ids' then (select count(*) from jsonb_array_elements_text(def -> 'ids') x where newcoll ? x) >= (def ->> 'n')::int
+      when 'evo' then (select count(distinct x) from jsonb_each(cfg -> 'evo') e, jsonb_array_elements_text(e.value) x where newcoll ? x) >= (def ->> 'n')::int  -- Darwiniste (1.1.3)
       when 'cos' then coalesce(d -> 'cos', '{}') ? (def ->> 'i')
       else false end;
     if ok then shown := shown || jsonb_build_array(jsonb_build_object('k', r.k, 'o', case r.k when 'alpha' then 0 when 'beta' then 1 else 2 end, 'i', r.i)); end if;

@@ -55,6 +55,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;backgroun
 .top-in{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:6px 12px;flex-wrap:nowrap}
 .brand{font-family:var(--display);font-weight:700;font-size:1.2rem;flex:0 0 auto;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;white-space:nowrap}
 .brand .gem{color:var(--gold);font-size:1.1rem}
+button.brand{border:0;background:none;padding:0;color:inherit;cursor:pointer} /* logo de l’en-tête : retour aux boosters (1.1.3) */
 nav.tabs{display:flex;gap:2px;flex-wrap:nowrap;justify-content:center;flex:1 1 auto;min-width:0}
 nav.tabs button{background:none;border:0;padding:6px 8px;font-size:.88rem;flex:0 0 auto;border-radius:10px;font-weight:700;color:var(--ink-soft);white-space:nowrap}
 nav.tabs button[aria-current="page"]{background:var(--surface-2);color:var(--ink)}
@@ -1093,7 +1094,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <div class="brand"><span class="gem">◆</span>DexCraft</div>
+  <button class="brand" data-view="booster" title="Retour aux boosters" aria-label="DexCraft : retour aux boosters"><span class="gem">◆</span>DexCraft</button>
   <nav class="tabs" id="tabs">
     <button data-view="booster"><span class="ti" aria-hidden="true">📦</span><span class="tl">Boosters</span><span class="tab-badge" id="boost-badge" hidden>!</span></button>
     <button data-view="collection"><span class="ti" aria-hidden="true">🗂️</span><span class="tl">Collection</span></button>
@@ -1146,7 +1147,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.2";
+const APP_VERSION="1.1.3";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1825,6 +1826,9 @@ const masterCount=coll=>DEX_ORDER.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
 const POKE_IDS=DEX.map((d,i)=>i+1);
 const STARTER_IDS=[1,4,7,152,155,158,252,255,258,387,390,393,495,498,501,650,653,656,722,725,728,810,813,816,906,909,912];
 /* Listes des titres de collection ajoutés en 0.8.9 */
+/* « Darwiniste » (1.1.3) : toutes les cartes qu'une évolution peut donner (évolutions, y compris des formes régionales,
+   méga-évolutions et Gigamax), c'est-à-dire les cibles de evoTargets, les mêmes que cfg.evo côté serveur */
+const EVOLVED_IDS=[...new Set(DEX_ORDER.flatMap(id=>[...(EVO[id]||[]),...(MEGA_BY_BASE[id]||[]),...(GMAX_BY_BASE[id]||[])]))].sort((a,b)=>a-b); // même calcul que evoTargets, défini plus bas
 const EEVEE_IDS=[133,134,135,136,196,197,470,471,700];                  // Évoli et ses 8 évolutions
 const BABY_IDS=[172,173,174,175,236,238,239,240,298,360,406,433,438,439,440,446,447,458,848]; // bébés (PokeAPI, is_baby)
 const FOSSIL_IDS=[138,139,140,141,142,345,346,347,348,408,409,410,411,564,565,566,567,696,697,698,699,880,881,882,883];
@@ -1870,6 +1874,7 @@ const TITLES=[
   {k:"stase",n:"Pierre Stase",ic:"⬢",g:"Collections",cls:"tc",c:"#7d8196",d:"Possède tous les Pokémon qui n’évoluent pas (hors légendaires et fabuleux), avec leurs méga-évolutions et formes Gigamax",ids:STASE_IDS},
   {k:"bebe",n:"Baby-sitter",ic:"♡",g:"Collections",cls:"tc",c:"#e58fb0",d:"Possède tous les bébés Pokémon",ids:BABY_IDS},
   {k:"fossile",n:"Archéologue",ic:"⛏",g:"Collections",cls:"tc",c:"#a0784a",d:"Possède tous les Pokémon fossiles et leurs évolutions",ids:FOSSIL_IDS},
+  {k:"darwin",n:"Darwiniste",ic:"🧬",g:"Collections",cls:"tc",c:"#3f9e6b",d:"Possède toutes les cartes qui s’obtiennent par évolution : évolutions, méga-évolutions et formes Gigamax",ids:EVOLVED_IDS}, // 1.1.3
   ...REGIONS.slice(1).map((reg,i)=>({k:"gen"+(i+1),n:"Maître de "+reg,ic:"✧",g:"Régions",cls:"tc",c:REGION_C[i+1],
     d:`A obtenu tous les Pokémon de la génération ${ROMAN[i+1]} (${reg})`,ids:POKE_IDS.filter(x=>DEX[x-1][2]===i+1)})),
   ...TYPES.slice(1).map(([tn,col],i)=>({k:"type"+(i+1),n:tn,ic:"●",g:"Types",cls:"tc",c:col,
@@ -4419,6 +4424,7 @@ function titleDef(t){
   if(t.stat)return {c:"stat",s:t.stat,n:t.need};
   const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},lord:{c:"cos",i:"titre.lord"}};
   if(fixed[t.k])return fixed[t.k];
+  if(t.k==="darwin")return {c:"evo",n:t.ids.length}; // cibles de cfg.evo, comptées par le serveur (1.1.3)
   if(t.ids&&same(t.ids,DEX_ORDER))return {c:"dex",n:t.need||DEX_ORDER.length};
   const r=t.ids?BYR.findIndex(b=>same([...t.ids].sort((a,b)=>a-b),[...b].sort((a,b)=>a-b))):-1;
   if(r>=0)return {c:"rar",r,n:t.need||BYR[r].length};
