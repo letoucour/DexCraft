@@ -1119,7 +1119,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.0.6";
+const APP_VERSION="1.0.7";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2403,8 +2403,8 @@ let avaQ="";
    donc les mêmes sur tous les appareils. Sans historique encore, l'image actuelle. */
 const avaHist=()=>{const h=Array.isArray(S.avaHist)?S.avaHist.map(Number).filter(D):[];return (h.length?h:S.avatar?[S.avatar]:[]).slice(0,5)};
 /* Profil en sections repliables (maquette B) : carte avec icône, titre et résumé. Les sections ouvertes
-   restent ouvertes d'un affichage à l'autre (profOpen) ; les Titres sont ouverts par défaut. */
-const profOpen={titres:true};
+   restent ouvertes d'un affichage à l'autre (profOpen) ; toutes fermées au départ (1.0.7). */
+const profOpen={};
 /* ---------- Mon look (0.9.0) : porter les cosmétiques achetés (dc_set_look) ---------- */
 function packMarkup(cls){
   return `<div class="pack${cls?" sk-"+cls:""}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div></div>`;
