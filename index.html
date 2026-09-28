@@ -1174,7 +1174,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.11";
+const APP_VERSION="1.1.12";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2467,7 +2467,7 @@ function vCollection(){
     </div>`})():""}
   ${tradeSel?`<div class="discard-help">
       <p class="muted" style="margin:0 0 8px">Touchez les cartes à proposer à l’échange : une annonce par carte, un exemplaire chacune. Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
-      <div class="actions"><button class="btn small" data-act="tsel-dups">Tous mes doubles</button><button class="btn small" data-act="tsel-clear">Tout désélectionner</button></div></div>`:""}
+      <div class="actions"><button class="btn small" data-act="tsel-dups">Tous mes doubles</button><button class="btn small" data-act="tsel-shown">Sélectionner les cartes affichées</button><button class="btn small" data-act="tsel-clear">Tout désélectionner</button></div></div>`:""}
   ${ids.length?`<div class="grid" id="coll-grid">${ids.slice(0,collLimitFor(ids)).map(collTile).join("")}</div>${ids.length>collLimit?`<div id="coll-more" class="coll-more" aria-hidden="true"></div>`:""}`:`<div class="empty">Aucune carte ne correspond à ces filtres.</div>`}
   ${tradeSel?`<div class="discard-bar trade-bar${tradeSel.size?"":" empty"}">
     <div class="sum"><b>${tradeSel.size} carte${tradeSel.size>1?"s":""} sélectionnée${tradeSel.size>1?"s":""}</b><span>${tradeSel.size?"une annonce par carte":"touchez les cartes à proposer"}</span></div>
@@ -4142,6 +4142,7 @@ document.addEventListener("click",e=>{
     case"trade-cancel":tradeSel=null;renderView();break;
     case"tsel-clear":tradeSel=new Set();renderView();break;
     case"tsel-dups":tradeSel=new Set(Object.keys(S.coll).filter(k=>S.coll[k]>1).map(Number));if(!tradeSel.size)toast("Vous n’avez aucun double pour l’instant.");renderView();break;
+    case"tsel-shown":{const ids=filtered().filter(x=>(S.coll[x]||0)>0);ids.forEach(x=>tradeSel.add(x));if(!ids.length)toast("Aucune carte de votre collection n’est affichée.");renderView();break} // cartes possédées de la liste filtrée, même celles pas encore affichées plus bas (1.1.12)
     case"tpick":{if(!(S.coll[id]>0))break;tradeSel.has(id)?tradeSel.delete(id):tradeSel.add(id);const y=window.scrollY;renderView();window.scrollTo(0,y);break}
     case"tsel-go":{const ids=[...tradeSel],v=$("#ts-want").value,au=$("#ts-auto").checked;
       if(v==="list")wantPickOpen(ids.map(rar),"Chaque annonce n’acceptera que les cartes choisies de sa rareté.",ws=>tradeMany(ids,"list",au,ws));else tradeMany(ids,v,au);break}
