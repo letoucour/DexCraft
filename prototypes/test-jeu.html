@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Test DexCraft (local)</title>
+<style>html,body{margin:0;height:100%;background:#000}iframe{border:0;width:100%;height:100%}</style></head>
+<body><iframe id="f" src="../index.html?test-local" allow="clipboard-write; clipboard-read"></iframe>
+<script>
+/* Page de test LOCALE (jamais publiée) : charge le jeu et remplace le serveur par un faux, pour faire des captures
+   d'écran sans compte. ?scene=shop|look|booster|ranking|buy|unlock|trades */
+const scene=new URLSearchParams(location.search).get("scene")||"shop";
+const f=document.getElementById("f");
+f.onload=()=>setTimeout(()=>{const w=f.contentWindow;try{const s=w.document.createElement("script");s.textContent=`try{(${setup})(${JSON.stringify(scene)})}catch(e){document.title="ERREUR "+e.message}`;w.document.body.append(s)}catch(e){document.body.insertAdjacentHTML("afterbegin",`<pre style="position:fixed;z-index:9;color:#f55;background:#000;padding:8px">${e.stack}</pre>`)}},5000);
+function setup(scene){
+  const stamp=d=>{const l=d.look||{};const vis={};if(l.cadre&&(d.cos||{})[l.cadre])vis.f=l.cadre;if(l.pseudo&&(d.cos||{})[l.pseudo])vis.p=l.pseudo;const b=Object.keys(d.cos||{}).filter(k=>k.startsWith("badge.")).sort();if(b.length)vis.b=b;d.vis=vis;d.updated=(d.updated||0)+1;return d};
+  const rpcMock=async(n,a)=>{const d=clone(S);
+    if(n==="dc_set_look"){d.look=d.look||{};if(a.p_item)d.look[a.p_slot]=a.p_item;else delete d.look[a.p_slot];return {data:{profile:stamp(d)},error:null}}
+    if(n==="dc_admin_give_offer"){d.cos=d.cos||{};OFFER_BY[a.p_offer].items.forEach(i=>d.cos[i]=Date.now());d.unlock={o:a.p_offer,t:Date.now()};return {data:{profile:stamp(d)},error:null}}
+    if(n==="dc_set_vitrine"){d.vitrine=a.p_slots;return {data:{profile:stamp(d)},error:null}}
+    if(n==="dc_shiny_view"){if(a.p_id==null)d.shinyNorm=!d.shinyNorm;else{d.shinyOff=d.shinyOff||{};if(d.shinyOff[a.p_id])delete d.shinyOff[a.p_id];else d.shinyOff[a.p_id]=1}return {data:{profile:stamp(d)},error:null}}
+    if(n==="dc_secret_cards")return {data:{ids:{6:[],7:[]},cards:{}},error:null};
+    if(/^dc_trade_(create|create_many|bulk)$/.test(n)){window.__last={n,a};return {data:{profile:stamp(d),mid:"m1",n:2,nolist:[4]},error:null}}
+    if(n==="dc_vb_state")return {data:{profile:stamp(d),vb:{level:3,score:0,state:"play",rows:[[5,1],[6,0],[4,2],[7,1],[5,1]],cols:[[5,1],[6,1],[5,1],[6,1],[5,1]],vals:Array(25).fill(null),opened:Array(25).fill(false)}},error:null};
+    return {data:null,error:{message:"?"}}};
+  SB={auth:{},functions:{invoke:async()=>({data:{url:"#"},error:null})},from:()=>({select(){return this},eq(){return this},order(){return this},in(){return Promise.resolve({data:[],error:null})},range(){return Promise.resolve({data:[],error:null})},maybeSingle(){return Promise.resolve({data:null,error:null})}}),rpc:rpcMock,channel:()=>({on(){return this},subscribe(){}})};
+  mode="online";ME="me";OWNER=true;
+  const all=Object.keys(COS).reduce((o,k)=>(o[k]=1,o),{});
+  const rich=scene!=="shop"&&scene!=="buy"&&scene!=="packs";
+  S=norm({pseudo:"Theo",alpha:true,beta:true,pseudoSet:true,avatar:25,coll:{25:2,6:1,129:1,1:3,4:2,7:1,150:1,4007:1},updated:1,stats:{packs:40},tips:{a:1,b:1,c:1,d:1},credits:4500,
+    cos:rich?all:{"dos.braise":1,"sac.volcan":1,"cadre.flammes":1,"pseudo.magma":1,"fond.volcan":1},
+    look:{dos:"dos.diamant",sac:"sac.lingot",cadre:"cadre.solitaire",pseudo:"pseudo.platine",fond:"fond."+(new URLSearchParams(parent.location.search).get("fond")||"palais")}});
+  stamp(S);
+  PLAYERS={me:{pseudo:"Theo",alpha:true,beta:true,avatar:25,unique:900,byr:[300,200,150,100,60,40,0,0],vis:S.vis,shown:["lord"]},
+    a:{pseudo:"Sacha",beta:true,avatar:6,unique:950,byr:[320,210,160,110,70,50,0,0],vis:{f:"cadre.flammes",p:"pseudo.magma",b:["badge.soutien"]}},
+    b:{pseudo:"Ondine",avatar:131,unique:800,byr:[280,190,140,90,50,20,0,0],vis:{f:"cadre.marine",p:"pseudo.corail"}},
+    c:{pseudo:"Pierre",avatar:95,unique:700,byr:[260,170,120,80,40,10,0,0]}};
+  showGate(false);if(new URLSearchParams(parent.location.search).get("theme"))document.documentElement.dataset.theme=new URLSearchParams(parent.location.search).get("theme");
+  if(scene==="shop"||scene==="buy"||scene==="packs"){view="shop";renderAll();if(scene==="buy")buyOffer("cosmos");if(scene==="packs")setTimeout(()=>document.querySelectorAll("#app h2")[2].scrollIntoView(),50)}
+  if(scene==="look"){profOpen.look=true;view="profile";renderAll();setTimeout(()=>document.querySelector('[data-sec="look"]').scrollIntoView(),50)}
+  if(scene==="booster"){view="booster";renderAll()}
+  if(scene==="hand"){view="booster";reveal=[1,4,7,25,6].map(id=>({id,isNew:false,shown:false}));renderAll()}
+  if(scene==="ranking"){view="ranking";renderAll()}
+  if(scene==="volto"){view="volto";renderAll()}
+  if(scene==="coll"){view="collection";renderAll()}
+  if(scene==="shiny"){S.shiny={25:Date.now()-864e5,6:Date.now(),4007:Date.now()};S.got={25:14,6:3,1:40,4:2,7:1,129:1,150:1,4007:1};S.shinyN=3;S.stats.shinyN=3;S.avaS=true;PLAYERS.me.shinyN=3;PLAYERS.me.avaS=true;PLAYERS.a.shinyN=420;PLAYERS.b.shinyN=60;Object.values(PLAYERS).forEach(p=>p.byrV=BYR_V);view=new URLSearchParams(parent.location.search).get("v")||"collection";renderAll()}
+  if(scene==="shinyhand"){S.got={25:14};view="booster";reveal=[1,25,7,150,6].map(id=>({id,isNew:false,shiny:id===25||id===150,shown:false}));renderAll()}
+  if(scene==="share"){view="collection";renderAll();shareCard(+(new URLSearchParams(parent.location.search).get("id")||25))}
+  if(scene==="legend"){view="booster";renderAll();legendFx(150)}
+  if(scene==="look2"){S.cos={"dos.braise":1,"sac.volcan":1,"cadre.flammes":1,"pseudo.magma":1,"fond.volcan":1,"badge.soutien":1};S.look={dos:"dos.braise"};profOpen.look=true;view="profile";renderAll();setTimeout(()=>document.querySelector(`[data-sec="look"]`).scrollIntoView(),50)}
+  if(scene==="wantpick"){view="collection";renderAll();S.wish={"144":1,"243":1};wantPickOpen([5],"Votre carte Mewtwo ne s’échangera que contre une des cartes choisies ici.",()=>{});wantPick.sel.add(144);wantPick.sel.add(243);wantPickRender()}
+  if(scene==="unlock"){S.unlock={o:"baleine",t:Date.now()};view="shop";renderAll()}
+}
+</script></body></html>

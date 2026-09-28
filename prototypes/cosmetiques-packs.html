@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DexCraft — packs cosmétiques</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#161a33;--surface:#20264a;--surface-2:#2a3160;--ink:#f1f0ff;--ink-soft:#a7abd3;--line:#363e72;--gold:#ffcf3f;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif;--body:"Atkinson Hyperlegible",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5}
+main{max-width:1180px;margin:0 auto;padding:24px 16px 60px}
+h1{font-family:var(--display);margin:0 0 4px}
+h2{font-family:var(--display);margin:34px 0 4px;font-size:1.5rem}
+.muted{color:var(--ink-soft);margin:0 0 14px}
+.row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.item{display:flex;flex-direction:column;align-items:center;gap:8px;width:170px}
+.item b{font-family:var(--display);font-size:1.05rem}
+.item>span{font-size:.85rem;color:var(--ink-soft)}
+.item>span.price{color:#2b1f00}.item>span.price.free{color:var(--ink-soft)}
+.price{display:inline-block;background:var(--gold);color:#2b1f00;font-weight:800;border-radius:999px;padding:1px 10px;font-size:.85rem}
+.price.free{background:var(--surface-2);color:var(--ink-soft)}
+
+/* ---------- dos de cartes (repris du jeu : .back) ---------- */
+.back{width:150px;aspect-ratio:5/7;border-radius:14px;background:
+  radial-gradient(circle at 50% 44%,rgba(255,207,63,.18),transparent 45%),
+  repeating-linear-gradient(45deg,#2a3170 0 10px,#232964 10px 20px);
+  border:6px solid #f2f0ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16%;
+  font-family:var(--display);font-weight:700;color:#ffcf3f;box-shadow:0 8px 20px rgba(0,0,0,.25);container-type:inline-size}
+.bk-gem{width:34%;aspect-ratio:1;transform:rotate(45deg);border:4px solid currentColor;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.18);box-shadow:0 0 0 4px color-mix(in srgb,currentColor 25%,transparent)}
+.bk-gem b{transform:rotate(-45deg);font-size:clamp(14px,13cqw,30px);letter-spacing:-.02em}
+.bk-name{font-size:clamp(13px,12cqw,28px);letter-spacing:.01em;text-shadow:0 2px 0 rgba(0,0,0,.3)}
+/* Nuit étoilée : ciel profond et étoiles fixes */
+.back.nuit{color:#fff3c4;border-color:#dfe4ff;background:
+  radial-gradient(1.5px 1.5px at 20% 18%,#fff,transparent),radial-gradient(1px 1px at 72% 12%,#fff,transparent),
+  radial-gradient(1.5px 1.5px at 84% 40%,#fff,transparent),radial-gradient(1px 1px at 12% 62%,#fff,transparent),
+  radial-gradient(2px 2px at 60% 78%,#fff,transparent),radial-gradient(1px 1px at 35% 88%,#fff,transparent),
+  radial-gradient(1px 1px at 48% 30%,#cfe0ff,transparent),radial-gradient(1.5px 1.5px at 90% 86%,#fff,transparent),
+  radial-gradient(ellipse at 70% 20%,rgba(120,90,255,.45),transparent 55%),
+  linear-gradient(180deg,#0b0f2e,#1b1450 60%,#2b1a5e)}
+/* Océan : bleu profond et vagues */
+.back.ocean{color:#e6fbff;border-color:#bff0ff;background:
+  radial-gradient(circle at 50% 44%,rgba(180,240,255,.25),transparent 45%),
+  repeating-radial-gradient(circle at 50% 120%,rgba(255,255,255,.14) 0 3px,transparent 3px 16px),
+  linear-gradient(180deg,#0c6ea8,#063a6b 60%,#021f3f)}
+/* Or : plaqué or brossé */
+.back.or{color:#4a2f00;border-color:#fff4c2;background:
+  radial-gradient(circle at 50% 44%,rgba(255,255,255,.55),transparent 45%),
+  repeating-linear-gradient(90deg,rgba(255,255,255,.12) 0 1px,transparent 1px 3px),
+  linear-gradient(135deg,#fff1a8,#e2a91a 35%,#b87a06 55%,#ffd76a 75%,#a86a00)}
+.back.or .bk-name{text-shadow:0 1px 0 rgba(255,255,255,.6)}
+/* Néon : fond noir, traits lumineux (lueur fixe, sans animation) */
+.back.neon{color:#ff4fd8;border-color:#1b1b2b;background:
+  linear-gradient(transparent 0 calc(100% - 1px),rgba(0,240,255,.35) 0) 0 0/100% 18px,
+  linear-gradient(90deg,transparent 0 calc(100% - 1px),rgba(0,240,255,.35) 0) 0 0/18px 100%,
+  linear-gradient(180deg,#07070f,#140a24);box-shadow:0 0 0 2px #00f0ff,0 0 18px rgba(0,240,255,.6),0 8px 20px rgba(0,0,0,.35)}
+.back.neon .bk-gem{box-shadow:0 0 12px #ff4fd8,inset 0 0 10px rgba(255,79,216,.6)}
+.back.neon .bk-name{color:#00f0ff;text-shadow:0 0 8px #00f0ff}
+
+/* ---------- sachets (repris du jeu : .pack) ---------- */
+.pack-hit{--w:150px;display:block;border:0;padding:0;background:none;width:var(--w);aspect-ratio:190/270;height:auto}
+.pack{position:relative;width:100%;height:100%}
+.pack .cap,.pack .bd{position:absolute;left:0;right:0;overflow:hidden}
+.pack .cap{top:0;height:17%;clip-path:polygon(0 14%,7.14% 0,14.29% 14%,21.43% 0,28.57% 14%,35.71% 0,42.86% 14%,50% 0,57.14% 14%,64.29% 0,71.43% 14%,78.57% 0,85.71% 14%,92.86% 0,100% 14%,100% 100%,0 100%)}
+.pack .bd{top:17%;bottom:0;clip-path:polygon(0 0,100% 0,100% 96.5%,92.86% 100%,85.71% 96.5%,78.57% 100%,71.43% 96.5%,64.29% 100%,57.14% 96.5%,50% 100%,42.86% 96.5%,35.71% 100%,28.57% 96.5%,21.43% 100%,14.29% 96.5%,7.14% 100%,0 96.5%)}
+.pk-skin{position:absolute;left:0;right:0;background:
+  repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 2px,transparent 2px 14px),
+  linear-gradient(160deg,#ffe27a 0%,#f2a900 38%,#e7621e 72%,#a5307a 100%)}
+.pack .cap .pk-skin{top:0;height:588.2%}
+.pack .bd .pk-skin{top:-20.48%;height:120.48%}
+.pk-skin::after{content:"";position:absolute;inset:0;mix-blend-mode:overlay;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.9) 45%,rgba(160,230,255,.7) 50%,rgba(255,170,240,.7) 55%,transparent 70%);
+  background-size:300% 100%;animation:pkHolo 3.2s ease-in-out infinite}
+@keyframes pkHolo{0%{background-position:120% 0}60%,100%{background-position:-60% 0}}
+.pk-crimp{position:absolute;left:0;right:0;height:9%;background:repeating-linear-gradient(90deg,rgba(80,30,0,.22) 0 2px,rgba(255,255,255,.12) 2px 5px)}
+.pack .cap .pk-crimp{top:0}.pack .bd .pk-crimp{bottom:0}
+.pk-cut{position:absolute;left:4%;right:4%;top:17%;border-top:2px dashed rgba(43,20,0,.35);z-index:3}
+.pack-emblem{position:absolute;left:0;right:0;top:10%;bottom:10%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#2b1400}
+.pack-emblem .diamond{width:44%;aspect-ratio:1;transform:rotate(45deg);background:#fff8e0;border:4px solid #2b1400;display:flex;align-items:center;justify-content:center;
+  box-shadow:inset -4px -4px 0 rgba(43,20,0,.15),inset 3px 3px 0 #fff,0 6px 14px rgba(43,20,0,.35)}
+.pack-emblem .diamond span{transform:rotate(-45deg);font-family:var(--display);font-weight:700;font-size:calc(var(--w)*.16)}
+.pack-emblem .pk-name{margin-top:16px;font-family:var(--display);font-weight:700;font-size:calc(var(--w)*.12);line-height:1}
+.pack-emblem small{font-family:var(--display);font-weight:600;font-size:calc(var(--w)*.075);letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+/* Cristal */
+.pack.cristal .pk-skin{background:repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 2px,transparent 2px 12px),
+  conic-gradient(from 200deg at 30% 30%,#e8fbff,#9fdcff,#d7c8ff,#bff6ff,#e8fbff)}
+.pack.cristal .pack-emblem{color:#133a5a}.pack.cristal .diamond{border-color:#133a5a;background:#f4fdff}
+/* Galaxie */
+.pack.galaxie .pk-skin{background:
+  radial-gradient(1.5px 1.5px at 20% 20%,#fff,transparent),radial-gradient(1px 1px at 70% 30%,#fff,transparent),
+  radial-gradient(1.5px 1.5px at 40% 70%,#fff,transparent),radial-gradient(1px 1px at 85% 80%,#fff,transparent),
+  radial-gradient(ellipse at 30% 40%,rgba(255,79,216,.55),transparent 50%),radial-gradient(ellipse at 75% 65%,rgba(80,160,255,.55),transparent 55%),
+  linear-gradient(160deg,#120a3a,#2d0f5e 50%,#07051a)}
+.pack.galaxie .pack-emblem{color:#fff}.pack.galaxie .diamond{border-color:#fff;background:#1b1150;color:#fff}.pack.galaxie .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 2px,rgba(0,0,0,.2) 2px 5px)}
+/* Noir et or */
+.pack.noiror .pk-skin{background:repeating-linear-gradient(135deg,rgba(255,215,106,.10) 0 2px,transparent 2px 14px),linear-gradient(160deg,#2a2a2a,#0b0b0b 55%,#1c1407)}
+.pack.noiror .pack-emblem{color:#ffd76a}.pack.noiror .diamond{border-color:#ffd76a;background:#141414;box-shadow:0 0 0 3px rgba(255,215,106,.25),0 6px 14px rgba(0,0,0,.5)}
+.pack.noiror .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,215,106,.35) 0 2px,rgba(0,0,0,.3) 2px 5px)}
+.pack.noiror .pk-cut{border-color:rgba(255,215,106,.5)}
+
+/* ---------- images de profil et cadres (repris du jeu : .ava) ---------- */
+.ava{--s:36px;--c1:#e0782a;--c2:#b0301a;position:relative;flex:0 0 auto;width:var(--s);height:var(--s);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  background:repeating-radial-gradient(circle at 70% 30%,rgba(255,255,255,.2) 0 2px,transparent 2px 8px),linear-gradient(135deg,var(--c1),var(--c2));
+  box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--line);vertical-align:middle}
+.ava img{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain;z-index:1;border-radius:50%}
+.ava.big{--s:84px}
+/* cadre : anneau dessiné autour (pseudo-élément), l'image garde sa taille */
+.ava[class*="fr-"]::before{content:"";position:absolute;inset:calc(var(--s)*-.12);border-radius:50%;z-index:2;pointer-events:none;
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - var(--r,4px)),#000 calc(100% - var(--r,4px)));mask:radial-gradient(farthest-side,transparent calc(100% - var(--r,4px)),#000 calc(100% - var(--r,4px)))}
+.ava.big{--r:7px}
+.ava.fr-dore::before{background:conic-gradient(#fff4c2,#e2a91a,#a86a00,#ffd76a,#fff4c2,#e2a91a,#a86a00,#ffd76a,#fff4c2)}
+.ava.fr-flammes::before{background:conic-gradient(from 90deg,#ffdd55,#ff7a1a,#e0201a,#ff7a1a,#ffdd55,#ff7a1a,#e0201a,#ff7a1a,#ffdd55);filter:drop-shadow(0 0 4px rgba(255,120,30,.8))}
+.ava.fr-glace::before{background:conic-gradient(#ffffff,#9fe6ff,#4fb8ff,#e8fbff,#9fe6ff,#ffffff,#4fb8ff,#9fe6ff,#ffffff);filter:drop-shadow(0 0 4px rgba(150,220,255,.8))}
+.ava.fr-arcenciel::before{background:conic-gradient(#ff4f4f,#ffb14f,#fff04f,#4fff8a,#4fd8ff,#8a4fff,#ff4fd8,#ff4f4f);animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- pseudo en couleur et badge ---------- */
+.lb{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 12px;width:100%;max-width:520px}
+.lb-row{display:flex;align-items:center;gap:12px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.lb-row:last-child{border-bottom:0}
+.lb-row .rk{width:26px;text-align:center;font-weight:800;color:var(--ink-soft)}
+.lb-row .nm{font-family:var(--display);font-weight:700;font-size:1.08rem;flex:1}
+.lb-row .sc{font-weight:700;color:var(--ink-soft);font-size:.9rem}
+.ps-dore{background:linear-gradient(90deg,#fff1a8,#e2a91a 40%,#ffd76a 60%,#b87a06);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-arcenciel{background:linear-gradient(90deg,#ff4f4f,#ffb14f,#fff04f,#4fff8a,#4fd8ff,#8a4fff,#ff4fd8,#ff4f4f);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:slide 4s linear infinite}
+@keyframes slide{to{background-position:200% 0}}
+.bdg-soutien{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;width:20px;height:20px;border-radius:50%;background:#ff4f7a;color:#fff;font-size:.7rem;vertical-align:2px;box-shadow:0 0 0 2px rgba(255,79,122,.3)}
+
+/* ---------- fonds de la page d'ouverture ---------- */
+.scene{width:250px;height:330px;border-radius:16px;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;overflow:hidden;position:relative}
+.scene .pack-hit{--w:110px}
+.scene h4{margin:0;font-family:var(--display);font-size:1.1rem;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.bg-defaut{background:var(--bg)}
+.bg-aurore{background:radial-gradient(ellipse at 30% 0%,rgba(80,255,180,.45),transparent 55%),radial-gradient(ellipse at 80% 10%,rgba(120,120,255,.45),transparent 50%),linear-gradient(180deg,#07172b,#0a2b3a 50%,#061220)}
+.bg-crepuscule{background:radial-gradient(circle at 50% 110%,rgba(255,200,90,.6),transparent 45%),linear-gradient(180deg,#2a1450,#b2386b 55%,#ff9a52)}
+.bg-abysses{background:radial-gradient(circle at 50% -10%,rgba(120,220,255,.35),transparent 50%),repeating-radial-gradient(circle at 50% 130%,rgba(255,255,255,.05) 0 2px,transparent 2px 22px),linear-gradient(180deg,#0a4b7a,#042544 55%,#010c1c)}
+.bg-cosmos{background:radial-gradient(1.5px 1.5px at 15% 20%,#fff,transparent),radial-gradient(1px 1px at 80% 15%,#fff,transparent),radial-gradient(1.5px 1.5px at 60% 55%,#fff,transparent),radial-gradient(1px 1px at 25% 80%,#fff,transparent),radial-gradient(1px 1px at 90% 70%,#fff,transparent),
+  radial-gradient(ellipse at 70% 35%,rgba(255,79,216,.35),transparent 50%),radial-gradient(ellipse at 25% 60%,rgba(80,160,255,.3),transparent 55%),linear-gradient(180deg,#05040f,#140b33)}
+.note{margin-top:30px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;font-size:.95rem}
+/* ---------- nouveaux articles (packs thématiques) ---------- */
+/* dos */
+.back.givre{color:#16466e;border-color:#ffffff;background:
+  radial-gradient(circle at 50% 44%,rgba(255,255,255,.7),transparent 45%),
+  repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,255,255,.35) 0 6deg,transparent 6deg 30deg),
+  linear-gradient(160deg,#e9f8ff,#a9dcf5 50%,#6fb6e0)}
+.back.braise{color:#ffb84a;border-color:#3a1206;background:
+  radial-gradient(circle at 50% 44%,rgba(255,140,40,.45),transparent 50%),
+  radial-gradient(2px 2px at 20% 80%,#ffcf5a,transparent),radial-gradient(1.5px 1.5px at 70% 70%,#ff8a2a,transparent),radial-gradient(1.5px 1.5px at 40% 20%,#ffcf5a,transparent),radial-gradient(2px 2px at 85% 30%,#ff6a1a,transparent),
+  linear-gradient(180deg,#2a0b05,#5a1408 55%,#8a2a08);box-shadow:0 0 16px rgba(255,100,20,.35),0 8px 20px rgba(0,0,0,.35)}
+/* sachets */
+.pack.plage .pk-skin{background:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 2px,transparent 2px 14px),
+  linear-gradient(180deg,#5fd3f0 0%,#1fa3d6 38%,#9fe6e0 52%,#f5dfa0 60%,#e9c77a 100%)}
+.pack.plage .pack-emblem{color:#0b3a55}.pack.plage .diamond{border-color:#0b3a55;background:#fffaf0}
+.pack.volcan .pk-skin{background:
+  linear-gradient(115deg,transparent 40%,rgba(255,120,20,.9) 41%,transparent 43%),linear-gradient(60deg,transparent 58%,rgba(255,170,40,.8) 59%,transparent 61%),
+  radial-gradient(ellipse at 50% 100%,rgba(255,90,20,.7),transparent 55%),linear-gradient(180deg,#2b2b2b,#1a0d0a 60%,#3a1206)}
+.pack.volcan .pack-emblem{color:#ffb84a}.pack.volcan .diamond{border-color:#ffb84a;background:#1a0d0a}
+.pack.volcan .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,140,40,.35) 0 2px,rgba(0,0,0,.3) 2px 5px)}
+/* cadres */
+.ava.fr-marine::before{background:repeating-conic-gradient(#0b2d5e 0 15deg,#ffffff 15deg 30deg)}
+.ava.fr-constellation::before{background:radial-gradient(circle,#fff 0 1.2px,transparent 1.6px) 0 0/8px 8px,conic-gradient(#1b1450,#3a2a8a,#1b1450,#3a2a8a,#1b1450);filter:drop-shadow(0 0 4px rgba(140,120,255,.8))}
+/* pseudos */
+.ps-corail{background:linear-gradient(90deg,#ff7a6b,#ff9a7a 40%,#ffb38a 60%,#ff6b8a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-nebuleuse{background:linear-gradient(90deg,#b58aff,#ff6bd8 50%,#6bb8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-givre{background:linear-gradient(90deg,#ffffff,#bfeaff 50%,#7fcfff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-magma{background:linear-gradient(90deg,#ffdd55,#ff7a1a 45%,#e0201a);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* fonds */
+.bg-tresor{background:radial-gradient(circle at 50% 110%,rgba(255,215,106,.55),transparent 50%),
+  radial-gradient(2px 2px at 20% 30%,#fff4c2,transparent),radial-gradient(1.5px 1.5px at 75% 20%,#ffd76a,transparent),radial-gradient(2px 2px at 60% 60%,#fff4c2,transparent),radial-gradient(1.5px 1.5px at 30% 70%,#ffd76a,transparent),
+  linear-gradient(180deg,#1a1206,#3a2708 60%,#6a4a0c)}
+.bg-banquise{background:radial-gradient(1.5px 1.5px at 15% 20%,#fff,transparent),radial-gradient(2px 2px at 70% 35%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 60%,#fff,transparent),radial-gradient(2px 2px at 85% 75%,#fff,transparent),
+  linear-gradient(180deg,#7fb8dc,#bfe3f5 60%,#eef9ff)}
+.bg-volcan{background:radial-gradient(ellipse at 50% 115%,rgba(255,90,20,.75),transparent 55%),radial-gradient(1.5px 1.5px at 30% 60%,#ffb84a,transparent),radial-gradient(2px 2px at 70% 45%,#ff8a2a,transparent),linear-gradient(180deg,#120606,#2a0b05 60%,#4a1206)}
+.scene.bg-banquise h4{color:#0b3a55;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+/* présentation des packs */
+.theme{margin-top:30px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px}
+.theme h2{margin:0 0 2px}
+.theme .muted{margin:0 0 12px}
+.combo{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-bottom:14px}
+.combo .scene{width:210px;height:280px}
+.combo .scene .pack-hit{--w:96px}
+.combo .back{width:120px}
+.combo .lb{max-width:320px}
+.pieces{display:flex;flex-wrap:wrap;gap:10px}
+.piece{display:flex;align-items:center;gap:8px;background:var(--surface-2);border-radius:12px;padding:6px 12px;font-size:.9rem}
+.piece i{font-style:normal;color:var(--ink-soft);font-size:.8rem}
+.piece.new{outline:2px dashed var(--gold);outline-offset:-2px}
+.tag-new{font-size:.7rem;font-weight:800;color:#2b1f00;background:var(--gold);border-radius:999px;padding:0 7px}
+.single-row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+/* ---------- pack « Portefeuille vide » : volontairement trop cher ---------- */
+.back.diamant{color:#5a6a8a;border-color:#fff;background:
+  radial-gradient(2px 2px at 18% 22%,#fff,transparent),radial-gradient(2.5px 2.5px at 78% 16%,#fff,transparent),radial-gradient(2px 2px at 30% 82%,#fff,transparent),radial-gradient(2.5px 2.5px at 84% 74%,#fff,transparent),
+  conic-gradient(from 45deg at 50% 45%,#f4f8ff,#cfd9ef,#ffffff,#b9c6e4,#f4f8ff,#dfe7f7,#ffffff,#c4cfe9,#f4f8ff);
+  box-shadow:0 0 0 3px #ffd76a,0 0 22px rgba(255,255,255,.55),0 8px 20px rgba(0,0,0,.3)}
+.back.diamant .bk-gem{background:conic-gradient(#ff9ad5,#9ad8ff,#b6ffb0,#fff59a,#ff9ad5);border-color:#fff;color:#3a2a6a}
+.pack.lingot .pk-skin{background:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 1px,transparent 1px 4px),
+  radial-gradient(2px 2px at 25% 30%,#fff,transparent),radial-gradient(2px 2px at 70% 60%,#fff,transparent),
+  linear-gradient(135deg,#f7f9fc,#c9d2e3 30%,#eef2f8 50%,#aeb8cc 70%,#f7f9fc)}
+.pack.lingot .pack-emblem{color:#2a2f45}.pack.lingot .diamond{border-color:#ffd76a;background:conic-gradient(#fff,#dbe6ff,#fff,#e8dcff,#fff);box-shadow:0 0 0 3px rgba(255,215,106,.5),0 0 16px #fff}
+.pack.lingot .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,215,106,.55) 0 2px,rgba(255,255,255,.4) 2px 5px)}
+.ava.fr-couronne::before{background:conic-gradient(#ffd76a,#fff,#e2a91a,#ffd76a,#fff,#e2a91a,#ffd76a);filter:drop-shadow(0 0 6px rgba(255,215,106,.9))}
+.ava.fr-couronne::after{content:"👑";position:absolute;top:calc(var(--s)*-.55);left:50%;transform:translateX(-50%) rotate(-8deg);font-size:calc(var(--s)*.5);z-index:3;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.ps-milliardaire{background:linear-gradient(100deg,#b87a06 0%,#ffd76a 30%,#ffffff 45%,#ffd76a 60%,#b87a06 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 2.2s linear infinite}
+@keyframes shine{from{background-position:120% 0}to{background-position:-120% 0}}
+.bdg-flambeur{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;width:22px;height:22px;border-radius:50%;background:#1f7a3a;font-size:.75rem;vertical-align:2px;box-shadow:0 0 0 2px rgba(255,215,106,.6)}
+.bg-pieces{position:relative;background:radial-gradient(ellipse at 50% 0%,rgba(255,215,106,.35),transparent 55%),linear-gradient(180deg,#3a0f4a,#1d0726 60%,#12031a)}
+.bg-pieces::before,.bg-pieces::after{content:"🪙 💰 🪙 💎 🪙 💰 🪙";position:absolute;left:0;right:0;top:-30px;text-align:center;font-size:18px;letter-spacing:14px;animation:rain 3s linear infinite;opacity:.85}
+.bg-pieces::after{content:"💎 🪙 💰 🪙 💎 🪙";animation-delay:-1.5s;font-size:14px}
+@keyframes rain{to{transform:translateY(360px)}}
+.theme.flambeur{border:2px solid #ffd76a;box-shadow:0 0 24px rgba(255,215,106,.25)}
+.warn{margin-top:10px;font-size:.88rem;color:#ffd76a}
+</style>
+</head>
+<body><main>
+<h1>Boutique DexCraft — packs cosmétiques</h1>
+<p class="muted">Chaque thème se vend en pack complet, et chaque article reste aussi vendu à l’unité. Les articles encadrés en pointillés jaunes sont <b>nouveaux</b> (dessinés pour compléter le pack). Prix à définir.</p>
+<div id="themes"></div>
+
+<h2>Articles vendus seulement à l’unité</h2>
+<p class="muted">Ceux qui n’appartiennent à aucun thème.</p>
+<div class="single-row" id="singles"></div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const back=(cls)=>`<div class="back ${cls}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div>`;
+const pack=(cls)=>`<div class="pack-hit"><div class="pack ${cls}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div></div></div>`;
+const ava=(fr,img,big)=>`<span class="ava ${big?"big":""} ${fr?"fr-"+fr:""}"><img src="../images/${img}.webp" alt=""></span>`;
+const row=(r,n,ps,fr,img,sup)=>`<div class="lb-row"><span class="rk">${r}</span>${ava(fr,img)}<span class="nm"><span class="${ps}">${n}</span>${sup?`<span class="bdg-soutien">♥</span>`:""}</span><span class="sc">1 163 cartes</span></div>`;
+const THEMES=[
+  {n:"Pack Océan",d:"Vagues, plage et fonds marins.",bg:"abysses",pk:"plage",bk:"ocean",fr:"marine",ps:"ps-corail",img:131,
+   items:[["Dos de carte","Océan",0],["Sachet","Plage",1],["Cadre","Marine",1],["Pseudo","Corail",1],["Fond","Abysses",0]]},
+  {n:"Pack Or",d:"Le luxe : or brossé, noir profond, trésor.",bg:"tresor",pk:"noiror",bk:"or",fr:"dore",ps:"ps-dore",img:25,
+   items:[["Dos de carte","Or",0],["Sachet","Noir et or",0],["Cadre","Doré",0],["Pseudo","Dégradé doré",0],["Fond","Trésor",1]]},
+  {n:"Pack Cosmos",d:"Nuit étoilée, galaxie et nébuleuses.",bg:"cosmos",pk:"galaxie",bk:"nuit",fr:"constellation",ps:"ps-nebuleuse",img:151,
+   items:[["Dos de carte","Nuit étoilée",0],["Sachet","Galaxie",0],["Cadre","Constellation",1],["Pseudo","Nébuleuse",1],["Fond","Cosmos",0]]},
+  {n:"Pack Glace",d:"Cristal, givre et banquise.",bg:"banquise",pk:"cristal",bk:"givre",fr:"glace",ps:"ps-givre",img:144,
+   items:[["Dos de carte","Givre",1],["Sachet","Cristal",0],["Cadre","Glace",0],["Pseudo","Givré",1],["Fond","Banquise",1]]},
+  {n:"Pack Feu",d:"Braises, lave et volcan.",bg:"volcan",pk:"volcan",bk:"braise",fr:"flammes",ps:"ps-magma",img:257,
+   items:[["Dos de carte","Braise",1],["Sachet","Volcan",1],["Cadre","Flammes",0],["Pseudo","Magma",1],["Fond","Volcan",1]]}];
+$("#themes").innerHTML=THEMES.map(t=>`<section class="theme"><h2>${t.n}</h2><p class="muted">${t.d} 5 articles.</p>
+  <div class="combo"><div class="scene bg-${t.bg}"><h4>Ouvrir un booster</h4>${pack(t.pk)}</div>${back(t.bk)}
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px">${ava(t.fr,t.img,true)}<div class="lb">${row("🥇","Dresseur",t.ps,t.fr,t.img,false)}</div></div></div>
+  <div class="pieces">${t.items.map(([k,n,nw])=>`<span class="piece${nw?" new":""}"><i>${k}</i> <b>${n}</b>${nw?` <span class="tag-new">nouveau</span>`:""}</span>`).join("")}</div></section>`).join("");
+const single=(vis,name,sub)=>`<div class="item">${vis}<b>${name}</b><span>${sub}</span></div>`;
+$("#singles").innerHTML=[
+  single(back("neon"),"Dos Néon","traits lumineux"),
+  single(`<div style="height:120px;display:flex;align-items:center">${ava("arcenciel",133,true)}</div>`,"Cadre Arc-en-ciel","tourne doucement"),
+  single(`<div style="height:120px;display:flex;align-items:center;font-family:var(--display);font-weight:700;font-size:1.5rem"><span class="ps-arcenciel">Dresseur</span></div>`,"Pseudo Arc-en-ciel","couleurs qui défilent"),
+  single(`<div class="scene bg-aurore" style="width:170px;height:220px"><h4>Ouvrir un booster</h4>${pack("")}</div>`,"Fond Aurore boréale","vert et violet"),
+  single(`<div class="scene bg-crepuscule" style="width:170px;height:220px"><h4>Ouvrir un booster</h4>${pack("")}</div>`,"Fond Crépuscule","rose orangé"),
+  single(`<div style="height:120px;display:flex;align-items:center;font-family:var(--display);font-weight:700;font-size:1.5rem">Dresseur<span class="bdg-soutien">♥</span></div>`,"Badge ♥ Soutien","« soutient DexCraft »")].join("");
+document.querySelectorAll("#singles .scene .pack-hit").forEach(p=>p.style.setProperty("--w","80px"));
+$("#themes").insertAdjacentHTML("beforeend",`<section class="theme flambeur"><h2>💸 Pack Portefeuille vide</h2>
+  <p class="muted">« Le pack qui ne sert à rien, mais qui brille beaucoup. » Platine, diamants, couronne et pluie de pièces. 6 articles, dont un badge que tout le monde verra.</p>
+  <div class="combo"><div class="scene bg-pieces"><h4>Ouvrir un booster</h4>${pack("lingot")}</div>${back("diamant")}
+  <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:26px">${ava("couronne",52,true)}<div class="lb"><div class="lb-row"><span class="rk">🥇</span>${ava("couronne",52)}<span class="nm"><span class="ps-milliardaire">Dresseur</span><span class="bdg-flambeur" title="A dépensé beaucoup trop pour ce badge">💸</span></span><span class="sc">1 163 cartes</span></div></div></div></div>
+  <div class="pieces">${[["Dos de carte","Diamant"],["Sachet","Lingot de platine"],["Cadre","Couronne"],["Pseudo","Milliardaire"],["Fond","Pluie de pièces"],["Badge","💸 Flambeur"]].map(([k,n])=>`<span class="piece new"><i>${k}</i> <b>${n}</b> <span class="tag-new">nouveau</span></span>`).join("")}</div>
+  <p class="warn">Description en boutique : « Aucun avantage. Aucune utilité. Juste beaucoup trop cher. Le badge 💸 prévient tout le monde. Ne l’achetez pas si ce n’est pas raisonnable pour vous. »</p></section>`);
+</script>
+</body></html>

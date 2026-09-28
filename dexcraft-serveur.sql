@@ -158,8 +158,9 @@ begin
   if jsonb_typeof(d -> 'shinyOff') = 'object' then
     d := jsonb_set(d, '{shinyOff}', coalesce((select jsonb_object_agg(key, value) from jsonb_each(d -> 'shinyOff') where d -> 'shiny' ? key), '{}'));
   elsif d ? 'shinyOff' then d := d - 'shinyOff'; end if;
-  if d ->> 'avatar' is not null and d -> 'shiny' ? (d ->> 'avatar') and not coalesce(d -> 'shinyOff', '{}') ? (d ->> 'avatar')
-     and coalesce(d ->> 'shinyNorm', '') <> 'true' then d := jsonb_set(d, '{avaS}', 'true');
+  -- depuis la 1.2.0, forme choisie avec l'image (avaSh) ; avant, celle affichée dans la collection
+  if d ->> 'avatar' is not null and d -> 'shiny' ? (d ->> 'avatar') and (d ->> 'avaSh' = 'true' or not d ? 'avaSh'
+     and not coalesce(d -> 'shinyOff', '{}') ? (d ->> 'avatar') and coalesce(d ->> 'shinyNorm', '') <> 'true') then d := jsonb_set(d, '{avaS}', 'true');
   else d := d - 'avaS'; end if;
   -- vitrine (1.1.6) : 6 cartes au plus, [{i: n°, s: 1 si montrée en shiny}] ; une carte montrée normale sort de la
   -- vitrine quand elle quitte la collection, une carte montrée en shiny reste (le shiny est acquis pour toujours)
@@ -333,19 +334,23 @@ begin
   return jsonb_build_object('profile', public.dc__save(u, d));
 end $$;
 
-create or replace function public.dc_set_avatar(p_id int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); h jsonb;
+drop function if exists public.dc_set_avatar(int);   -- remplacée par la version avec p_shiny (1.2.0)
+create or replace function public.dc_set_avatar(p_id int, p_shiny boolean default false) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); h jsonb; e jsonb;
 begin
   if public.dc__count(d, p_id) < 1 then raise exception 'Ce Pokémon n’est plus dans votre collection.'; end if;
-  -- historique des 5 dernières images (avaHist), de la plus récente à la plus ancienne, gardé dans le profil (0.6.9)
+  if p_shiny and not (d -> 'shiny' ? p_id::text) then raise exception 'Vous n’avez pas encore ce Pokémon en shiny.'; end if;
+  -- historique des 5 dernières images (avaHist), de la plus récente à la plus ancienne, gardé dans le profil (0.6.9) ;
+  -- une image shiny (1.2.0) s'y note {"i": n°, "s": 1}
+  e := case when p_shiny then jsonb_build_object('i', p_id, 's', 1) else to_jsonb(p_id) end;
   h := case when jsonb_typeof(d -> 'avaHist') = 'array' then d -> 'avaHist' else '[]' end;
   if jsonb_array_length(h) = 0 and d ->> 'avatar' is not null and d -> 'avatar' <> 'null' then h := jsonb_build_array(d -> 'avatar'); end if;
   select coalesce(jsonb_agg(v order by o), '[]') into h from (
-    select v, o from (select to_jsonb(p_id) as v, 0 as o
+    select v, o from (select e as v, 0 as o
                       union all
-                      select v, o from jsonb_array_elements(h) with ordinality as x(v, o) where v <> to_jsonb(p_id)) s
+                      select v, o from jsonb_array_elements(h) with ordinality as x(v, o) where v <> e) s
     order by o limit 5) t;
-  return jsonb_build_object('profile', public.dc__save(u, d || jsonb_build_object('avatar', p_id, 'avaHist', h)));
+  return jsonb_build_object('profile', public.dc__save(u, d || jsonb_build_object('avatar', p_id, 'avaSh', p_shiny, 'avaHist', h)));
 end $$;
 
 create or replace function public.dc_toggle_fav(p_id int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
@@ -414,6 +419,9 @@ begin
   end loop;
   -- dernier tirage gardé dans le profil : si la réponse se perd (réseau mobile coupé), le jeu le relit et l'affiche quand même
   d := d || jsonb_build_object('lastOpen', jsonb_build_object('t', now_ms, 'drawn', drawn));
+  -- 50 dernières cartes tirées (1.2.0), les plus récentes d'abord, à revoir depuis l'écran des boosters
+  d := d || jsonb_build_object('recent', (select jsonb_agg(v order by o) from jsonb_array_elements(drawn || coalesce(d -> 'recent', '[]'))
+    with ordinality as x(v, o) where o <= 50));
   return jsonb_build_object('profile', public.dc__save(u, d), 'drawn', drawn);
 end $$;
 
@@ -495,6 +503,7 @@ declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); o jsonb
 begin
   if o is null then raise exception 'Offre inconnue.'; end if;
   if d -> 'bought' ? p_key then raise exception 'Vous avez déjà récupéré cette offre.'; end if;
+  if o ? 'until' and public.dc__now() >= (o ->> 'until')::bigint then raise exception 'Cette offre est terminée.'; end if;   -- offre limitée (1.2.0)
   if not ((o ->> 'free')::boolean or (public.dc__is_admin(u) and coalesce((d ->> 'dev')::boolean, false))) then
     raise exception 'Paiement indisponible pendant la bêta.';
   end if;
@@ -543,8 +552,8 @@ revoke all on function public.dc_open(integer) from public, anon;
 grant execute on function public.dc_open(integer) to authenticated;
 revoke all on function public.dc_quick_evo(boolean) from public, anon;
 grant execute on function public.dc_quick_evo(boolean) to authenticated;
-revoke all on function public.dc_set_avatar(integer) from public, anon;
-grant execute on function public.dc_set_avatar(integer) to authenticated;
+revoke all on function public.dc_set_avatar(integer,boolean) from public, anon;
+grant execute on function public.dc_set_avatar(integer,boolean) to authenticated;
 revoke all on function public.dc_set_pseudo(text) from public, anon;
 grant execute on function public.dc_set_pseudo(text) to authenticated;
 revoke all on function public.dc_set_titles(jsonb) from public, anon;

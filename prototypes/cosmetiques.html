@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DexCraft — maquettes des cosmétiques</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#161a33;--surface:#20264a;--surface-2:#2a3160;--ink:#f1f0ff;--ink-soft:#a7abd3;--line:#363e72;--gold:#ffcf3f;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif;--body:"Atkinson Hyperlegible",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5}
+main{max-width:1180px;margin:0 auto;padding:24px 16px 60px}
+h1{font-family:var(--display);margin:0 0 4px}
+h2{font-family:var(--display);margin:34px 0 4px;font-size:1.5rem}
+.muted{color:var(--ink-soft);margin:0 0 14px}
+.row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.item{display:flex;flex-direction:column;align-items:center;gap:8px;width:170px}
+.item b{font-family:var(--display);font-size:1.05rem}
+.item>span{font-size:.85rem;color:var(--ink-soft)}
+.item>span.price{color:#2b1f00}.item>span.price.free{color:var(--ink-soft)}
+.price{display:inline-block;background:var(--gold);color:#2b1f00;font-weight:800;border-radius:999px;padding:1px 10px;font-size:.85rem}
+.price.free{background:var(--surface-2);color:var(--ink-soft)}
+
+/* ---------- dos de cartes (repris du jeu : .back) ---------- */
+.back{width:150px;aspect-ratio:5/7;border-radius:14px;background:
+  radial-gradient(circle at 50% 44%,rgba(255,207,63,.18),transparent 45%),
+  repeating-linear-gradient(45deg,#2a3170 0 10px,#232964 10px 20px);
+  border:6px solid #f2f0ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16%;
+  font-family:var(--display);font-weight:700;color:#ffcf3f;box-shadow:0 8px 20px rgba(0,0,0,.25);container-type:inline-size}
+.bk-gem{width:34%;aspect-ratio:1;transform:rotate(45deg);border:4px solid currentColor;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.18);box-shadow:0 0 0 4px color-mix(in srgb,currentColor 25%,transparent)}
+.bk-gem b{transform:rotate(-45deg);font-size:clamp(14px,13cqw,30px);letter-spacing:-.02em}
+.bk-name{font-size:clamp(13px,12cqw,28px);letter-spacing:.01em;text-shadow:0 2px 0 rgba(0,0,0,.3)}
+/* Nuit étoilée : ciel profond et étoiles fixes */
+.back.nuit{color:#fff3c4;border-color:#dfe4ff;background:
+  radial-gradient(1.5px 1.5px at 20% 18%,#fff,transparent),radial-gradient(1px 1px at 72% 12%,#fff,transparent),
+  radial-gradient(1.5px 1.5px at 84% 40%,#fff,transparent),radial-gradient(1px 1px at 12% 62%,#fff,transparent),
+  radial-gradient(2px 2px at 60% 78%,#fff,transparent),radial-gradient(1px 1px at 35% 88%,#fff,transparent),
+  radial-gradient(1px 1px at 48% 30%,#cfe0ff,transparent),radial-gradient(1.5px 1.5px at 90% 86%,#fff,transparent),
+  radial-gradient(ellipse at 70% 20%,rgba(120,90,255,.45),transparent 55%),
+  linear-gradient(180deg,#0b0f2e,#1b1450 60%,#2b1a5e)}
+/* Océan : bleu profond et vagues */
+.back.ocean{color:#e6fbff;border-color:#bff0ff;background:
+  radial-gradient(circle at 50% 44%,rgba(180,240,255,.25),transparent 45%),
+  repeating-radial-gradient(circle at 50% 120%,rgba(255,255,255,.14) 0 3px,transparent 3px 16px),
+  linear-gradient(180deg,#0c6ea8,#063a6b 60%,#021f3f)}
+/* Or : plaqué or brossé */
+.back.or{color:#4a2f00;border-color:#fff4c2;background:
+  radial-gradient(circle at 50% 44%,rgba(255,255,255,.55),transparent 45%),
+  repeating-linear-gradient(90deg,rgba(255,255,255,.12) 0 1px,transparent 1px 3px),
+  linear-gradient(135deg,#fff1a8,#e2a91a 35%,#b87a06 55%,#ffd76a 75%,#a86a00)}
+.back.or .bk-name{text-shadow:0 1px 0 rgba(255,255,255,.6)}
+/* Néon : fond noir, traits lumineux (lueur fixe, sans animation) */
+.back.neon{color:#ff4fd8;border-color:#1b1b2b;background:
+  linear-gradient(transparent 0 calc(100% - 1px),rgba(0,240,255,.35) 0) 0 0/100% 18px,
+  linear-gradient(90deg,transparent 0 calc(100% - 1px),rgba(0,240,255,.35) 0) 0 0/18px 100%,
+  linear-gradient(180deg,#07070f,#140a24);box-shadow:0 0 0 2px #00f0ff,0 0 18px rgba(0,240,255,.6),0 8px 20px rgba(0,0,0,.35)}
+.back.neon .bk-gem{box-shadow:0 0 12px #ff4fd8,inset 0 0 10px rgba(255,79,216,.6)}
+.back.neon .bk-name{color:#00f0ff;text-shadow:0 0 8px #00f0ff}
+
+/* ---------- sachets (repris du jeu : .pack) ---------- */
+.pack-hit{--w:150px;display:block;border:0;padding:0;background:none;width:var(--w);aspect-ratio:190/270;height:auto}
+.pack{position:relative;width:100%;height:100%}
+.pack .cap,.pack .bd{position:absolute;left:0;right:0;overflow:hidden}
+.pack .cap{top:0;height:17%;clip-path:polygon(0 14%,7.14% 0,14.29% 14%,21.43% 0,28.57% 14%,35.71% 0,42.86% 14%,50% 0,57.14% 14%,64.29% 0,71.43% 14%,78.57% 0,85.71% 14%,92.86% 0,100% 14%,100% 100%,0 100%)}
+.pack .bd{top:17%;bottom:0;clip-path:polygon(0 0,100% 0,100% 96.5%,92.86% 100%,85.71% 96.5%,78.57% 100%,71.43% 96.5%,64.29% 100%,57.14% 96.5%,50% 100%,42.86% 96.5%,35.71% 100%,28.57% 96.5%,21.43% 100%,14.29% 96.5%,7.14% 100%,0 96.5%)}
+.pk-skin{position:absolute;left:0;right:0;background:
+  repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 2px,transparent 2px 14px),
+  linear-gradient(160deg,#ffe27a 0%,#f2a900 38%,#e7621e 72%,#a5307a 100%)}
+.pack .cap .pk-skin{top:0;height:588.2%}
+.pack .bd .pk-skin{top:-20.48%;height:120.48%}
+.pk-skin::after{content:"";position:absolute;inset:0;mix-blend-mode:overlay;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.9) 45%,rgba(160,230,255,.7) 50%,rgba(255,170,240,.7) 55%,transparent 70%);
+  background-size:300% 100%;animation:pkHolo 3.2s ease-in-out infinite}
+@keyframes pkHolo{0%{background-position:120% 0}60%,100%{background-position:-60% 0}}
+.pk-crimp{position:absolute;left:0;right:0;height:9%;background:repeating-linear-gradient(90deg,rgba(80,30,0,.22) 0 2px,rgba(255,255,255,.12) 2px 5px)}
+.pack .cap .pk-crimp{top:0}.pack .bd .pk-crimp{bottom:0}
+.pk-cut{position:absolute;left:4%;right:4%;top:17%;border-top:2px dashed rgba(43,20,0,.35);z-index:3}
+.pack-emblem{position:absolute;left:0;right:0;top:10%;bottom:10%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#2b1400}
+.pack-emblem .diamond{width:44%;aspect-ratio:1;transform:rotate(45deg);background:#fff8e0;border:4px solid #2b1400;display:flex;align-items:center;justify-content:center;
+  box-shadow:inset -4px -4px 0 rgba(43,20,0,.15),inset 3px 3px 0 #fff,0 6px 14px rgba(43,20,0,.35)}
+.pack-emblem .diamond span{transform:rotate(-45deg);font-family:var(--display);font-weight:700;font-size:calc(var(--w)*.16)}
+.pack-emblem .pk-name{margin-top:16px;font-family:var(--display);font-weight:700;font-size:calc(var(--w)*.12);line-height:1}
+.pack-emblem small{font-family:var(--display);font-weight:600;font-size:calc(var(--w)*.075);letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+/* Cristal */
+.pack.cristal .pk-skin{background:repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 2px,transparent 2px 12px),
+  conic-gradient(from 200deg at 30% 30%,#e8fbff,#9fdcff,#d7c8ff,#bff6ff,#e8fbff)}
+.pack.cristal .pack-emblem{color:#133a5a}.pack.cristal .diamond{border-color:#133a5a;background:#f4fdff}
+/* Galaxie */
+.pack.galaxie .pk-skin{background:
+  radial-gradient(1.5px 1.5px at 20% 20%,#fff,transparent),radial-gradient(1px 1px at 70% 30%,#fff,transparent),
+  radial-gradient(1.5px 1.5px at 40% 70%,#fff,transparent),radial-gradient(1px 1px at 85% 80%,#fff,transparent),
+  radial-gradient(ellipse at 30% 40%,rgba(255,79,216,.55),transparent 50%),radial-gradient(ellipse at 75% 65%,rgba(80,160,255,.55),transparent 55%),
+  linear-gradient(160deg,#120a3a,#2d0f5e 50%,#07051a)}
+.pack.galaxie .pack-emblem{color:#fff}.pack.galaxie .diamond{border-color:#fff;background:#1b1150;color:#fff}.pack.galaxie .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 2px,rgba(0,0,0,.2) 2px 5px)}
+/* Noir et or */
+.pack.noiror .pk-skin{background:repeating-linear-gradient(135deg,rgba(255,215,106,.10) 0 2px,transparent 2px 14px),linear-gradient(160deg,#2a2a2a,#0b0b0b 55%,#1c1407)}
+.pack.noiror .pack-emblem{color:#ffd76a}.pack.noiror .diamond{border-color:#ffd76a;background:#141414;box-shadow:0 0 0 3px rgba(255,215,106,.25),0 6px 14px rgba(0,0,0,.5)}
+.pack.noiror .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,215,106,.35) 0 2px,rgba(0,0,0,.3) 2px 5px)}
+.pack.noiror .pk-cut{border-color:rgba(255,215,106,.5)}
+
+/* ---------- images de profil et cadres (repris du jeu : .ava) ---------- */
+.ava{--s:36px;--c1:#e0782a;--c2:#b0301a;position:relative;flex:0 0 auto;width:var(--s);height:var(--s);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  background:repeating-radial-gradient(circle at 70% 30%,rgba(255,255,255,.2) 0 2px,transparent 2px 8px),linear-gradient(135deg,var(--c1),var(--c2));
+  box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--line);vertical-align:middle}
+.ava img{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain;z-index:1;border-radius:50%}
+.ava.big{--s:84px}
+/* cadre : anneau dessiné autour (pseudo-élément), l'image garde sa taille */
+.ava[class*="fr-"]::before{content:"";position:absolute;inset:calc(var(--s)*-.12);border-radius:50%;z-index:2;pointer-events:none;
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - var(--r,4px)),#000 calc(100% - var(--r,4px)));mask:radial-gradient(farthest-side,transparent calc(100% - var(--r,4px)),#000 calc(100% - var(--r,4px)))}
+.ava.big{--r:7px}
+.ava.fr-dore::before{background:conic-gradient(#fff4c2,#e2a91a,#a86a00,#ffd76a,#fff4c2,#e2a91a,#a86a00,#ffd76a,#fff4c2)}
+.ava.fr-flammes::before{background:conic-gradient(from 90deg,#ffdd55,#ff7a1a,#e0201a,#ff7a1a,#ffdd55,#ff7a1a,#e0201a,#ff7a1a,#ffdd55);filter:drop-shadow(0 0 4px rgba(255,120,30,.8))}
+.ava.fr-glace::before{background:conic-gradient(#ffffff,#9fe6ff,#4fb8ff,#e8fbff,#9fe6ff,#ffffff,#4fb8ff,#9fe6ff,#ffffff);filter:drop-shadow(0 0 4px rgba(150,220,255,.8))}
+.ava.fr-arcenciel::before{background:conic-gradient(#ff4f4f,#ffb14f,#fff04f,#4fff8a,#4fd8ff,#8a4fff,#ff4fd8,#ff4f4f);animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- pseudo en couleur et badge ---------- */
+.lb{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 12px;width:100%;max-width:520px}
+.lb-row{display:flex;align-items:center;gap:12px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.lb-row:last-child{border-bottom:0}
+.lb-row .rk{width:26px;text-align:center;font-weight:800;color:var(--ink-soft)}
+.lb-row .nm{font-family:var(--display);font-weight:700;font-size:1.08rem;flex:1}
+.lb-row .sc{font-weight:700;color:var(--ink-soft);font-size:.9rem}
+.ps-dore{background:linear-gradient(90deg,#fff1a8,#e2a91a 40%,#ffd76a 60%,#b87a06);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-arcenciel{background:linear-gradient(90deg,#ff4f4f,#ffb14f,#fff04f,#4fff8a,#4fd8ff,#8a4fff,#ff4fd8,#ff4f4f);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:slide 4s linear infinite}
+@keyframes slide{to{background-position:200% 0}}
+.bdg-soutien{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;width:20px;height:20px;border-radius:50%;background:#ff4f7a;color:#fff;font-size:.7rem;vertical-align:2px;box-shadow:0 0 0 2px rgba(255,79,122,.3)}
+
+/* ---------- fonds de la page d'ouverture ---------- */
+.scene{width:250px;height:330px;border-radius:16px;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;overflow:hidden;position:relative}
+.scene .pack-hit{--w:110px}
+.scene h4{margin:0;font-family:var(--display);font-size:1.1rem;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.bg-defaut{background:var(--bg)}
+.bg-aurore{background:radial-gradient(ellipse at 30% 0%,rgba(80,255,180,.45),transparent 55%),radial-gradient(ellipse at 80% 10%,rgba(120,120,255,.45),transparent 50%),linear-gradient(180deg,#07172b,#0a2b3a 50%,#061220)}
+.bg-crepuscule{background:radial-gradient(circle at 50% 110%,rgba(255,200,90,.6),transparent 45%),linear-gradient(180deg,#2a1450,#b2386b 55%,#ff9a52)}
+.bg-abysses{background:radial-gradient(circle at 50% -10%,rgba(120,220,255,.35),transparent 50%),repeating-radial-gradient(circle at 50% 130%,rgba(255,255,255,.05) 0 2px,transparent 2px 22px),linear-gradient(180deg,#0a4b7a,#042544 55%,#010c1c)}
+.bg-cosmos{background:radial-gradient(1.5px 1.5px at 15% 20%,#fff,transparent),radial-gradient(1px 1px at 80% 15%,#fff,transparent),radial-gradient(1.5px 1.5px at 60% 55%,#fff,transparent),radial-gradient(1px 1px at 25% 80%,#fff,transparent),radial-gradient(1px 1px at 90% 70%,#fff,transparent),
+  radial-gradient(ellipse at 70% 35%,rgba(255,79,216,.35),transparent 50%),radial-gradient(ellipse at 25% 60%,rgba(80,160,255,.3),transparent 55%),linear-gradient(180deg,#05040f,#140b33)}
+.note{margin-top:30px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;font-size:.95rem}
+</style>
+</head>
+<body><main>
+<h1>Boutique DexCraft — maquettes des cosmétiques</h1>
+<p class="muted">Aperçus à valider. Rien n'est branché au jeu. Prix arrondis à l'euro.</p>
+
+<h2>Dos de cartes</h2>
+<p class="muted">Le dos de vos cartes quand vous ouvrez un booster (visible par vous). Dessins fixes : pas d'animation, pour rester fluide sur téléphone avec 50 cartes en main.</p>
+<div class="row" id="backs"></div>
+
+<h2>Sachets de booster</h2>
+<p class="muted">L'apparence du sachet à déchirer (visible par vous). Le reflet holographique reste animé.</p>
+<div class="row" id="packs"></div>
+
+<h2>Cadres d'image de profil</h2>
+<p class="muted">Un cadre autour de votre image, dans le classement, les échanges et votre profil (visible par tous).</p>
+<div class="row" id="frames"></div>
+
+<h2>Pseudo en couleur et badge Soutien</h2>
+<p class="muted">Votre pseudo en couleur et le badge ♥ Soutien dans le classement et les échanges (visibles par tous).</p>
+<div class="row"><div class="lb" id="lb"></div></div>
+<div class="row" style="margin-top:12px" id="pseudos"></div>
+
+<h2>Fonds de la page d'ouverture</h2>
+<p class="muted">Remplace le fond bleu de l'écran des boosters (visible par vous).</p>
+<div class="row" id="scenes"></div>
+
+<div class="note"><b>Récapitulatif des prix :</b> dos de carte 2 € · sachet 2 € · cadre 2 € · pseudo en couleur 2 € · fond 2 € · badge ♥ Soutien 3 €.<br>
+Tout reste gratuit côté jeu : cartes, boosters et crédits ne s'achètent pas.</div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const back=(cls)=>`<div class="back ${cls}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div>`;
+const pack=(cls)=>`<div class="pack-hit"><div class="pack ${cls}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div></div></div>`;
+const item=(vis,name,sub,price)=>`<div class="item">${vis}<b>${name}</b><span>${sub}</span>${price?`<span class="price">${price}</span>`:`<span class="price free">Par défaut</span>`}</div>`;
+$("#backs").innerHTML=[["","Classique","actuel",0],["nuit","Nuit étoilée","ciel et étoiles","2 €"],["ocean","Océan","vagues profondes","2 €"],["or","Or","plaqué or brossé","2 €"],["neon","Néon","traits lumineux","2 €"]]
+  .map(([c,n,s,p])=>item(back(c),n,s,p)).join("");
+$("#packs").innerHTML=[["","Holographique","actuel",0],["cristal","Cristal","glace irisée","2 €"],["galaxie","Galaxie","nébuleuse étoilée","2 €"],["noiror","Noir et or","luxe","2 €"]]
+  .map(([c,n,s,p])=>item(pack(c),n,s,p)).join("");
+const ava=(fr,img,big)=>`<span class="ava ${big?"big":""} ${fr?"fr-"+fr:""}"><img src="../images/${img}.webp" alt=""></span>`;
+$("#frames").innerHTML=[["","Sans cadre","actuel",0,6],["dore","Doré","anneau d'or",  "2 €",25],["flammes","Flammes","anneau de feu","2 €",257],["glace","Glace","anneau givré","2 €",144],["arcenciel","Arc-en-ciel","tourne doucement","2 €",151]]
+  .map(([f,n,s,p,img])=>item(`<div style="display:flex;gap:18px;align-items:center;height:120px">${ava(f,img,true)}${ava(f,img)}</div>`,n,s,p)).join("");
+$("#lb").innerHTML=[
+  [1,"TheoToucour","", "dore",25,true],[2,"Sacha","ps-arcenciel","arcenciel",151,true],[3,"Ondine","ps-dore","glace",121,false],[4,"Pierre","","",95,false]]
+  .map(([r,n,ps,fr,img,sup])=>`<div class="lb-row"><span class="rk">${["🥇","🥈","🥉","4"][r-1]}</span>${ava(fr,img)}<span class="nm"><span class="${ps}">${n}</span>${sup?`<span class="bdg-soutien" title="Soutient DexCraft">♥</span>`:""}</span><span class="sc">${1200-r*37} cartes</span></div>`).join("");
+$("#pseudos").innerHTML=[["","Classique","actuel",0],["ps-dore","Dégradé doré","or brillant","2 €"],["ps-arcenciel","Arc-en-ciel","couleurs qui défilent","2 €"]]
+  .map(([c,n,s,p])=>item(`<div style="height:40px;display:flex;align-items:center;font-family:var(--display);font-weight:700;font-size:1.5rem"><span class="${c}">Dresseur</span></div>`,n,s,p)).join("")
+  +item(`<div style="height:40px;display:flex;align-items:center;font-family:var(--display);font-weight:700;font-size:1.5rem">Dresseur<span class="bdg-soutien">♥</span></div>`,"Badge ♥ Soutien","« soutient DexCraft »","3 €");
+$("#scenes").innerHTML=[["defaut","Classique","actuel",0],["aurore","Aurore boréale","vert et violet","2 €"],["crepuscule","Crépuscule","rose orangé","2 €"],["abysses","Abysses","fond marin","2 €"],["cosmos","Cosmos","espace étoilé","2 €"]]
+  .map(([c,n,s,p])=>`<div class="item" style="width:250px"><div class="scene bg-${c}"><h4>Ouvrir un booster</h4>${pack("")}</div><b>${n}</b><span>${s}</span>${p?`<span class="price">${p}</span>`:`<span class="price free">Par défaut</span>`}</div>`).join("");
+</script>
+</body></html>

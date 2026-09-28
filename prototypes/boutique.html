@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DexCraft — packs et boutique</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#161a33;--surface:#20264a;--surface-2:#2a3160;--ink:#f1f0ff;--ink-soft:#a7abd3;--line:#363e72;--gold:#ffcf3f;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif;--body:"Atkinson Hyperlegible",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5}
+main{max-width:1180px;margin:0 auto;padding:24px 16px 60px}
+h1{font-family:var(--display);margin:0 0 4px}
+h2{font-family:var(--display);margin:34px 0 4px;font-size:1.5rem}
+.muted{color:var(--ink-soft);margin:0 0 14px}
+.row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.item{display:flex;flex-direction:column;align-items:center;gap:8px;width:170px}
+.item b{font-family:var(--display);font-size:1.05rem}
+.item>span{font-size:.85rem;color:var(--ink-soft)}
+.item>span.price{color:#2b1f00}.item>span.price.free{color:var(--ink-soft)}
+.price{display:inline-block;background:var(--gold);color:#2b1f00;font-weight:800;border-radius:999px;padding:1px 10px;font-size:.85rem}
+.price.free{background:var(--surface-2);color:var(--ink-soft)}
+
+/* ---------- dos de cartes (repris du jeu : .back) ---------- */
+.back{width:150px;aspect-ratio:5/7;border-radius:14px;background:
+  radial-gradient(circle at 50% 44%,rgba(255,207,63,.18),transparent 45%),
+  repeating-linear-gradient(45deg,#2a3170 0 10px,#232964 10px 20px);
+  border:6px solid #f2f0ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16%;
+  font-family:var(--display);font-weight:700;color:#ffcf3f;box-shadow:0 8px 20px rgba(0,0,0,.25);container-type:inline-size}
+.bk-gem{width:34%;aspect-ratio:1;transform:rotate(45deg);border:4px solid currentColor;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.18);box-shadow:0 0 0 4px color-mix(in srgb,currentColor 25%,transparent)}
+.bk-gem b{transform:rotate(-45deg);font-size:clamp(14px,13cqw,30px);letter-spacing:-.02em}
+.bk-name{font-size:clamp(13px,12cqw,28px);letter-spacing:.01em;text-shadow:0 2px 0 rgba(0,0,0,.3)}
+/* Nuit étoilée : ciel profond et étoiles fixes */
+.back.nuit{color:#fff3c4;border-color:#dfe4ff;background:
+  radial-gradient(1.5px 1.5px at 20% 18%,#fff,transparent),radial-gradient(1px 1px at 72% 12%,#fff,transparent),
+  radial-gradient(1.5px 1.5px at 84% 40%,#fff,transparent),radial-gradient(1px 1px at 12% 62%,#fff,transparent),
+  radial-gradient(2px 2px at 60% 78%,#fff,transparent),radial-gradient(1px 1px at 35% 88%,#fff,transparent),
+  radial-gradient(1px 1px at 48% 30%,#cfe0ff,transparent),radial-gradient(1.5px 1.5px at 90% 86%,#fff,transparent),
+  radial-gradient(ellipse at 70% 20%,rgba(120,90,255,.45),transparent 55%),
+  linear-gradient(180deg,#0b0f2e,#1b1450 60%,#2b1a5e)}
+/* Océan : bleu profond et vagues */
+.back.ocean{color:#e6fbff;border-color:#bff0ff;background:
+  radial-gradient(circle at 50% 44%,rgba(180,240,255,.25),transparent 45%),
+  repeating-radial-gradient(circle at 50% 120%,rgba(255,255,255,.14) 0 3px,transparent 3px 16px),
+  linear-gradient(180deg,#0c6ea8,#063a6b 60%,#021f3f)}
+/* Or : plaqué or brossé */
+.back.or{color:#4a2f00;border-color:#fff4c2;background:
+  radial-gradient(circle at 50% 44%,rgba(255,255,255,.55),transparent 45%),
+  repeating-linear-gradient(90deg,rgba(255,255,255,.12) 0 1px,transparent 1px 3px),
+  linear-gradient(135deg,#fff1a8,#e2a91a 35%,#b87a06 55%,#ffd76a 75%,#a86a00)}
+.back.or .bk-name{text-shadow:0 1px 0 rgba(255,255,255,.6)}
+/* Néon : fond noir, traits lumineux (lueur fixe, sans animation) */
+.back.neon{color:#ff4fd8;border-color:#1b1b2b;background:
+  linear-gradient(transparent 0 calc(100% - 1px),rgba(0,240,255,.35) 0) 0 0/100% 18px,
+  linear-gradient(90deg,transparent 0 calc(100% - 1px),rgba(0,240,255,.35) 0) 0 0/18px 100%,
+  linear-gradient(180deg,#07070f,#140a24);box-shadow:0 0 0 2px #00f0ff,0 0 18px rgba(0,240,255,.6),0 8px 20px rgba(0,0,0,.35)}
+.back.neon .bk-gem{box-shadow:0 0 12px #ff4fd8,inset 0 0 10px rgba(255,79,216,.6)}
+.back.neon .bk-name{color:#00f0ff;text-shadow:0 0 8px #00f0ff}
+
+/* ---------- sachets (repris du jeu : .pack) ---------- */
+.pack-hit{--w:150px;display:block;border:0;padding:0;background:none;width:var(--w);aspect-ratio:190/270;height:auto}
+.pack{position:relative;width:100%;height:100%}
+.pack .cap,.pack .bd{position:absolute;left:0;right:0;overflow:hidden}
+.pack .cap{top:0;height:17%;clip-path:polygon(0 14%,7.14% 0,14.29% 14%,21.43% 0,28.57% 14%,35.71% 0,42.86% 14%,50% 0,57.14% 14%,64.29% 0,71.43% 14%,78.57% 0,85.71% 14%,92.86% 0,100% 14%,100% 100%,0 100%)}
+.pack .bd{top:17%;bottom:0;clip-path:polygon(0 0,100% 0,100% 96.5%,92.86% 100%,85.71% 96.5%,78.57% 100%,71.43% 96.5%,64.29% 100%,57.14% 96.5%,50% 100%,42.86% 96.5%,35.71% 100%,28.57% 96.5%,21.43% 100%,14.29% 96.5%,7.14% 100%,0 96.5%)}
+.pk-skin{position:absolute;left:0;right:0;background:
+  repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 2px,transparent 2px 14px),
+  linear-gradient(160deg,#ffe27a 0%,#f2a900 38%,#e7621e 72%,#a5307a 100%)}
+.pack .cap .pk-skin{top:0;height:588.2%}
+.pack .bd .pk-skin{top:-20.48%;height:120.48%}
+.pk-skin::after{content:"";position:absolute;inset:0;mix-blend-mode:overlay;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.9) 45%,rgba(160,230,255,.7) 50%,rgba(255,170,240,.7) 55%,transparent 70%);
+  background-size:300% 100%;animation:pkHolo 3.2s ease-in-out infinite}
+@keyframes pkHolo{0%{background-position:120% 0}60%,100%{background-position:-60% 0}}
+.pk-crimp{position:absolute;left:0;right:0;height:9%;background:repeating-linear-gradient(90deg,rgba(80,30,0,.22) 0 2px,rgba(255,255,255,.12) 2px 5px)}
+.pack .cap .pk-crimp{top:0}.pack .bd .pk-crimp{bottom:0}
+.pk-cut{position:absolute;left:4%;right:4%;top:17%;border-top:2px dashed rgba(43,20,0,.35);z-index:3}
+.pack-emblem{position:absolute;left:0;right:0;top:10%;bottom:10%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#2b1400}
+.pack-emblem .diamond{width:44%;aspect-ratio:1;transform:rotate(45deg);background:#fff8e0;border:4px solid #2b1400;display:flex;align-items:center;justify-content:center;
+  box-shadow:inset -4px -4px 0 rgba(43,20,0,.15),inset 3px 3px 0 #fff,0 6px 14px rgba(43,20,0,.35)}
+.pack-emblem .diamond span{transform:rotate(-45deg);font-family:var(--display);font-weight:700;font-size:calc(var(--w)*.16)}
+.pack-emblem .pk-name{margin-top:16px;font-family:var(--display);font-weight:700;font-size:calc(var(--w)*.12);line-height:1}
+.pack-emblem small{font-family:var(--display);font-weight:600;font-size:calc(var(--w)*.075);letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+/* Cristal */
+.pack.cristal .pk-skin{background:repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 2px,transparent 2px 12px),
+  conic-gradient(from 200deg at 30% 30%,#e8fbff,#9fdcff,#d7c8ff,#bff6ff,#e8fbff)}
+.pack.cristal .pack-emblem{color:#133a5a}.pack.cristal .diamond{border-color:#133a5a;background:#f4fdff}
+/* Galaxie */
+.pack.galaxie .pk-skin{background:
+  radial-gradient(1.5px 1.5px at 20% 20%,#fff,transparent),radial-gradient(1px 1px at 70% 30%,#fff,transparent),
+  radial-gradient(1.5px 1.5px at 40% 70%,#fff,transparent),radial-gradient(1px 1px at 85% 80%,#fff,transparent),
+  radial-gradient(ellipse at 30% 40%,rgba(255,79,216,.55),transparent 50%),radial-gradient(ellipse at 75% 65%,rgba(80,160,255,.55),transparent 55%),
+  linear-gradient(160deg,#120a3a,#2d0f5e 50%,#07051a)}
+.pack.galaxie .pack-emblem{color:#fff}.pack.galaxie .diamond{border-color:#fff;background:#1b1150;color:#fff}.pack.galaxie .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 2px,rgba(0,0,0,.2) 2px 5px)}
+/* Noir et or */
+.pack.noiror .pk-skin{background:repeating-linear-gradient(135deg,rgba(255,215,106,.10) 0 2px,transparent 2px 14px),linear-gradient(160deg,#2a2a2a,#0b0b0b 55%,#1c1407)}
+.pack.noiror .pack-emblem{color:#ffd76a}.pack.noiror .diamond{border-color:#ffd76a;background:#141414;box-shadow:0 0 0 3px rgba(255,215,106,.25),0 6px 14px rgba(0,0,0,.5)}
+.pack.noiror .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,215,106,.35) 0 2px,rgba(0,0,0,.3) 2px 5px)}
+.pack.noiror .pk-cut{border-color:rgba(255,215,106,.5)}
+
+/* ---------- images de profil et cadres (repris du jeu : .ava) ---------- */
+.ava{--s:36px;--c1:#e0782a;--c2:#b0301a;position:relative;flex:0 0 auto;width:var(--s);height:var(--s);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  background:repeating-radial-gradient(circle at 70% 30%,rgba(255,255,255,.2) 0 2px,transparent 2px 8px),linear-gradient(135deg,var(--c1),var(--c2));
+  box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--line);vertical-align:middle}
+.ava img{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain;z-index:1;border-radius:50%}
+.ava.big{--s:84px}
+/* cadre : anneau dessiné autour (pseudo-élément), l'image garde sa taille */
+.ava[class*="fr-"]::before{content:"";position:absolute;inset:calc(var(--s)*-.12);border-radius:50%;z-index:2;pointer-events:none;
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - var(--r,4px)),#000 calc(100% - var(--r,4px)));mask:radial-gradient(farthest-side,transparent calc(100% - var(--r,4px)),#000 calc(100% - var(--r,4px)))}
+.ava.big{--r:7px}
+.ava.fr-dore::before{background:conic-gradient(#fff4c2,#e2a91a,#a86a00,#ffd76a,#fff4c2,#e2a91a,#a86a00,#ffd76a,#fff4c2)}
+.ava.fr-flammes::before{background:conic-gradient(from 90deg,#ffdd55,#ff7a1a,#e0201a,#ff7a1a,#ffdd55,#ff7a1a,#e0201a,#ff7a1a,#ffdd55);filter:drop-shadow(0 0 4px rgba(255,120,30,.8))}
+.ava.fr-glace::before{background:conic-gradient(#ffffff,#9fe6ff,#4fb8ff,#e8fbff,#9fe6ff,#ffffff,#4fb8ff,#9fe6ff,#ffffff);filter:drop-shadow(0 0 4px rgba(150,220,255,.8))}
+.ava.fr-arcenciel::before{background:conic-gradient(#ff4f4f,#ffb14f,#fff04f,#4fff8a,#4fd8ff,#8a4fff,#ff4fd8,#ff4f4f);animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- pseudo en couleur et badge ---------- */
+.lb{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 12px;width:100%;max-width:520px}
+.lb-row{display:flex;align-items:center;gap:12px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.lb-row:last-child{border-bottom:0}
+.lb-row .rk{width:26px;text-align:center;font-weight:800;color:var(--ink-soft)}
+.lb-row .nm{font-family:var(--display);font-weight:700;font-size:1.08rem;flex:1}
+.lb-row .sc{font-weight:700;color:var(--ink-soft);font-size:.9rem}
+.ps-dore{background:linear-gradient(90deg,#fff1a8,#e2a91a 40%,#ffd76a 60%,#b87a06);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-arcenciel{background:linear-gradient(90deg,#ff4f4f,#ffb14f,#fff04f,#4fff8a,#4fd8ff,#8a4fff,#ff4fd8,#ff4f4f);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:slide 4s linear infinite}
+@keyframes slide{to{background-position:200% 0}}
+.bdg-soutien{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;width:20px;height:20px;border-radius:50%;background:#ff4f7a;color:#fff;font-size:.7rem;vertical-align:2px;box-shadow:0 0 0 2px rgba(255,79,122,.3)}
+
+/* ---------- fonds de la page d'ouverture ---------- */
+.scene{width:250px;height:330px;border-radius:16px;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;overflow:hidden;position:relative}
+.scene .pack-hit{--w:110px}
+.scene h4{margin:0;font-family:var(--display);font-size:1.1rem;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.bg-defaut{background:var(--bg)}
+.bg-aurore{background:radial-gradient(ellipse at 30% 0%,rgba(80,255,180,.45),transparent 55%),radial-gradient(ellipse at 80% 10%,rgba(120,120,255,.45),transparent 50%),linear-gradient(180deg,#07172b,#0a2b3a 50%,#061220)}
+.bg-crepuscule{background:radial-gradient(circle at 50% 110%,rgba(255,200,90,.6),transparent 45%),linear-gradient(180deg,#2a1450,#b2386b 55%,#ff9a52)}
+.bg-abysses{background:radial-gradient(circle at 50% -10%,rgba(120,220,255,.35),transparent 50%),repeating-radial-gradient(circle at 50% 130%,rgba(255,255,255,.05) 0 2px,transparent 2px 22px),linear-gradient(180deg,#0a4b7a,#042544 55%,#010c1c)}
+.bg-cosmos{background:radial-gradient(1.5px 1.5px at 15% 20%,#fff,transparent),radial-gradient(1px 1px at 80% 15%,#fff,transparent),radial-gradient(1.5px 1.5px at 60% 55%,#fff,transparent),radial-gradient(1px 1px at 25% 80%,#fff,transparent),radial-gradient(1px 1px at 90% 70%,#fff,transparent),
+  radial-gradient(ellipse at 70% 35%,rgba(255,79,216,.35),transparent 50%),radial-gradient(ellipse at 25% 60%,rgba(80,160,255,.3),transparent 55%),linear-gradient(180deg,#05040f,#140b33)}
+.note{margin-top:30px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;font-size:.95rem}
+/* ---------- nouveaux articles (packs thématiques) ---------- */
+/* dos */
+.back.givre{color:#16466e;border-color:#ffffff;background:
+  radial-gradient(circle at 50% 44%,rgba(255,255,255,.7),transparent 45%),
+  repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,255,255,.35) 0 6deg,transparent 6deg 30deg),
+  linear-gradient(160deg,#e9f8ff,#a9dcf5 50%,#6fb6e0)}
+.back.braise{color:#ffb84a;border-color:#3a1206;background:
+  radial-gradient(circle at 50% 44%,rgba(255,140,40,.45),transparent 50%),
+  radial-gradient(2px 2px at 20% 80%,#ffcf5a,transparent),radial-gradient(1.5px 1.5px at 70% 70%,#ff8a2a,transparent),radial-gradient(1.5px 1.5px at 40% 20%,#ffcf5a,transparent),radial-gradient(2px 2px at 85% 30%,#ff6a1a,transparent),
+  linear-gradient(180deg,#2a0b05,#5a1408 55%,#8a2a08);box-shadow:0 0 16px rgba(255,100,20,.35),0 8px 20px rgba(0,0,0,.35)}
+/* sachets */
+.pack.plage .pk-skin{background:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 2px,transparent 2px 14px),
+  linear-gradient(180deg,#5fd3f0 0%,#1fa3d6 38%,#9fe6e0 52%,#f5dfa0 60%,#e9c77a 100%)}
+.pack.plage .pack-emblem{color:#0b3a55}.pack.plage .diamond{border-color:#0b3a55;background:#fffaf0}
+.pack.volcan .pk-skin{background:
+  linear-gradient(115deg,transparent 40%,rgba(255,120,20,.9) 41%,transparent 43%),linear-gradient(60deg,transparent 58%,rgba(255,170,40,.8) 59%,transparent 61%),
+  radial-gradient(ellipse at 50% 100%,rgba(255,90,20,.7),transparent 55%),linear-gradient(180deg,#2b2b2b,#1a0d0a 60%,#3a1206)}
+.pack.volcan .pack-emblem{color:#ffb84a}.pack.volcan .diamond{border-color:#ffb84a;background:#1a0d0a}
+.pack.volcan .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,140,40,.35) 0 2px,rgba(0,0,0,.3) 2px 5px)}
+/* cadres */
+.ava.fr-marine::before{background:repeating-conic-gradient(#0b2d5e 0 15deg,#ffffff 15deg 30deg)}
+.ava.fr-constellation::before{background:radial-gradient(circle,#fff 0 1.2px,transparent 1.6px) 0 0/8px 8px,conic-gradient(#1b1450,#3a2a8a,#1b1450,#3a2a8a,#1b1450);filter:drop-shadow(0 0 4px rgba(140,120,255,.8))}
+/* pseudos */
+.ps-corail{background:linear-gradient(90deg,#ff7a6b,#ff9a7a 40%,#ffb38a 60%,#ff6b8a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-nebuleuse{background:linear-gradient(90deg,#b58aff,#ff6bd8 50%,#6bb8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-givre{background:linear-gradient(90deg,#ffffff,#bfeaff 50%,#7fcfff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-magma{background:linear-gradient(90deg,#ffdd55,#ff7a1a 45%,#e0201a);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* fonds */
+.bg-tresor{background:radial-gradient(circle at 50% 110%,rgba(255,215,106,.55),transparent 50%),
+  radial-gradient(2px 2px at 20% 30%,#fff4c2,transparent),radial-gradient(1.5px 1.5px at 75% 20%,#ffd76a,transparent),radial-gradient(2px 2px at 60% 60%,#fff4c2,transparent),radial-gradient(1.5px 1.5px at 30% 70%,#ffd76a,transparent),
+  linear-gradient(180deg,#1a1206,#3a2708 60%,#6a4a0c)}
+.bg-banquise{background:radial-gradient(1.5px 1.5px at 15% 20%,#fff,transparent),radial-gradient(2px 2px at 70% 35%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 60%,#fff,transparent),radial-gradient(2px 2px at 85% 75%,#fff,transparent),
+  linear-gradient(180deg,#7fb8dc,#bfe3f5 60%,#eef9ff)}
+.bg-volcan{background:radial-gradient(ellipse at 50% 115%,rgba(255,90,20,.75),transparent 55%),radial-gradient(1.5px 1.5px at 30% 60%,#ffb84a,transparent),radial-gradient(2px 2px at 70% 45%,#ff8a2a,transparent),linear-gradient(180deg,#120606,#2a0b05 60%,#4a1206)}
+.scene.bg-banquise h4{color:#0b3a55;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+/* présentation des packs */
+.theme{margin-top:30px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px}
+.theme h2{margin:0 0 2px}
+.theme .muted{margin:0 0 12px}
+.combo{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-bottom:14px}
+.combo .scene{width:210px;height:280px}
+.combo .scene .pack-hit{--w:96px}
+.combo .back{width:120px}
+.combo .lb{max-width:320px}
+.pieces{display:flex;flex-wrap:wrap;gap:10px}
+.piece{display:flex;align-items:center;gap:8px;background:var(--surface-2);border-radius:12px;padding:6px 12px;font-size:.9rem}
+.piece i{font-style:normal;color:var(--ink-soft);font-size:.8rem}
+.piece.new{outline:2px dashed var(--gold);outline-offset:-2px}
+.tag-new{font-size:.7rem;font-weight:800;color:#2b1f00;background:var(--gold);border-radius:999px;padding:0 7px}
+.single-row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+/* ---------- pack « Portefeuille vide » : volontairement trop cher ---------- */
+.back.diamant{color:#5a6a8a;border-color:#fff;background:
+  radial-gradient(2px 2px at 18% 22%,#fff,transparent),radial-gradient(2.5px 2.5px at 78% 16%,#fff,transparent),radial-gradient(2px 2px at 30% 82%,#fff,transparent),radial-gradient(2.5px 2.5px at 84% 74%,#fff,transparent),
+  conic-gradient(from 45deg at 50% 45%,#f4f8ff,#cfd9ef,#ffffff,#b9c6e4,#f4f8ff,#dfe7f7,#ffffff,#c4cfe9,#f4f8ff);
+  box-shadow:0 0 0 3px #ffd76a,0 0 22px rgba(255,255,255,.55),0 8px 20px rgba(0,0,0,.3)}
+.back.diamant .bk-gem{background:conic-gradient(#ff9ad5,#9ad8ff,#b6ffb0,#fff59a,#ff9ad5);border-color:#fff;color:#3a2a6a}
+.pack.lingot .pk-skin{background:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 1px,transparent 1px 4px),
+  radial-gradient(2px 2px at 25% 30%,#fff,transparent),radial-gradient(2px 2px at 70% 60%,#fff,transparent),
+  linear-gradient(135deg,#f7f9fc,#c9d2e3 30%,#eef2f8 50%,#aeb8cc 70%,#f7f9fc)}
+.pack.lingot .pack-emblem{color:#2a2f45}.pack.lingot .diamond{border-color:#ffd76a;background:conic-gradient(#fff,#dbe6ff,#fff,#e8dcff,#fff);box-shadow:0 0 0 3px rgba(255,215,106,.5),0 0 16px #fff}
+.pack.lingot .pk-crimp{background:repeating-linear-gradient(90deg,rgba(255,215,106,.55) 0 2px,rgba(255,255,255,.4) 2px 5px)}
+.ava.fr-couronne::before{background:conic-gradient(#ffd76a,#fff,#e2a91a,#ffd76a,#fff,#e2a91a,#ffd76a);filter:drop-shadow(0 0 6px rgba(255,215,106,.9))}
+.ava.fr-couronne::after{content:"👑";position:absolute;top:calc(var(--s)*-.55);left:50%;transform:translateX(-50%) rotate(-8deg);font-size:calc(var(--s)*.5);z-index:3;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.ps-milliardaire{background:linear-gradient(100deg,#b87a06 0%,#ffd76a 30%,#ffffff 45%,#ffd76a 60%,#b87a06 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 2.2s linear infinite}
+@keyframes shine{from{background-position:120% 0}to{background-position:-120% 0}}
+.bdg-flambeur{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;width:22px;height:22px;border-radius:50%;background:#1f7a3a;font-size:.75rem;vertical-align:2px;box-shadow:0 0 0 2px rgba(255,215,106,.6)}
+.bg-pieces{position:relative;background:radial-gradient(ellipse at 50% 0%,rgba(255,215,106,.35),transparent 55%),linear-gradient(180deg,#3a0f4a,#1d0726 60%,#12031a)}
+.bg-pieces::before,.bg-pieces::after{content:"🪙 💰 🪙 💎 🪙 💰 🪙";position:absolute;left:0;right:0;top:-30px;text-align:center;font-size:18px;letter-spacing:14px;animation:rain 3s linear infinite;opacity:.85}
+.bg-pieces::after{content:"💎 🪙 💰 🪙 💎 🪙";animation-delay:-1.5s;font-size:14px}
+@keyframes rain{to{transform:translateY(360px)}}
+.theme.flambeur{border:2px solid #ffd76a;box-shadow:0 0 24px rgba(255,215,106,.25)}
+.warn{margin-top:10px;font-size:.88rem;color:#ffd76a}
+/* ---------- boutique (repris du jeu) ---------- */
+.btn{border:0;border-radius:12px;padding:10px 18px;font-weight:700;background:var(--surface-2);color:var(--ink);font-family:inherit;font-size:1rem;cursor:pointer}
+.btn.primary{background:var(--gold);color:#2b1f00}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-top:16px}
+.offer-big{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.offer-visual{height:170px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden}
+.offer-visual.packs{background:radial-gradient(circle at 50% 120%,rgba(231,98,30,.5),transparent 60%),var(--surface-2)}
+.mini-pack{width:62px;height:88px;border-radius:5px;background:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 2px,transparent 2px 10px),linear-gradient(160deg,#ffe27a,#f2a900 38%,#e7621e 72%,#a5307a);box-shadow:0 6px 14px rgba(0,0,0,.3)}
+.mini-pack:nth-child(1){transform:rotate(-10deg) translateX(14px)}
+.mini-pack:nth-child(2){transform:translateY(-6px);z-index:1;width:70px;height:98px}
+.mini-pack:nth-child(3){transform:rotate(10deg) translateX(-14px)}
+.offer-big .amount{font-family:var(--display);font-weight:700;font-size:1.7rem;line-height:1.05}
+.offer-big .price{font-family:var(--display);font-weight:700;font-size:1.35rem;color:var(--gold);background:none;padding:0;border-radius:0}
+.qty{display:flex;gap:6px;flex-wrap:wrap}
+.qty button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:6px 14px;font-weight:700;font-family:inherit}
+.qty button[aria-pressed="true"]{border-color:var(--gold);background:var(--surface-2)}
+.f2p-note{margin-top:12px;border:2px solid #5fd68f;background:color-mix(in srgb,#5fd68f 12%,var(--surface));border-radius:14px;padding:12px 18px}
+.secure{font-size:.8rem;color:var(--ink-soft);text-align:center;margin:0}
+.contents{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.contents li{background:var(--surface-2);border-radius:999px;padding:2px 10px;font-size:.8rem;color:var(--ink-soft)}
+.contents li b{color:var(--ink)}
+/* vignette d'un pack : fond + sachet + dos + cadre */
+.pv{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:14px;position:relative}
+.pv .pack-hit{--w:74px}
+.pv .back{width:70px;border-width:4px;border-radius:9px}
+.pv .back .bk-gem{border-width:3px}
+.pv .ava{--s:52px}
+.pv .ava.fr-couronne{margin-top:18px}
+.offer-big.soutien{border-color:#ff4f7a;background:linear-gradient(160deg,color-mix(in srgb,#ff4f7a 14%,var(--surface)),var(--surface) 60%)}
+.offer-visual.soutien{background:radial-gradient(circle at 50% 120%,rgba(255,79,122,.5),transparent 60%),var(--surface-2);font-family:var(--display);font-weight:700;font-size:1.8rem}
+.offer-visual.soutien .heart{font-size:64px;color:#ff4f7a;animation:beat 1.2s ease-in-out infinite;text-shadow:0 0 18px rgba(255,79,122,.7)}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.18)}30%{transform:scale(1)}45%{transform:scale(1.1)}}
+.offer-big.baleine{border:2px solid #ffd76a;background:linear-gradient(160deg,color-mix(in srgb,#ffd76a 12%,var(--surface)),var(--surface) 60%);box-shadow:0 0 28px rgba(255,215,106,.25)}
+.offer-big .ribbon{align-self:flex-start;font-size:.75rem;font-weight:800;border-radius:999px;padding:2px 10px;background:#ffd76a;color:#2b1f00}
+.offer-big .ribbon.pink{background:#ff4f7a;color:#fff}
+.baleine-note{font-size:.85rem;color:#ffd76a;margin:0}
+/* titre Lord (comme les titres du jeu) */
+.badge-alpha{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 10px;border-radius:999px;font-weight:700;font-size:.78rem}
+.badge-alpha.wailord{color:#eaf8ff;background:linear-gradient(100deg,#0b4f8a,#2fa8e8 50%,#0b4f8a);background-size:200% 100%;box-shadow:0 0 0 1px #9fe0ff,0 1px 8px rgba(47,168,232,.6);animation:slide 3s linear infinite;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.section-title{margin-top:26px}
+.phone{width:390px;margin:0 auto}
+/* ---------- pack « L'euro symbolique » : volontairement pas ouf ---------- */
+.back.carton{color:#3b2a14;border-color:#d9b98a;background:
+  repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 2px,transparent 2px 7px),
+  radial-gradient(circle at 70% 80%,rgba(120,80,30,.25),transparent 30%),
+  linear-gradient(180deg,#c99d62,#b5854b);box-shadow:0 6px 12px rgba(0,0,0,.25)}
+.back.carton .bk-gem{background:none;border-style:dashed;border-color:#3b2a14;box-shadow:none}
+.back.carton .bk-name{font-family:"Segoe Print","Comic Sans MS",cursive;transform:rotate(-7deg);color:#1f1f1f;text-shadow:none}
+.pack.plastique .pk-skin{background:
+  linear-gradient(100deg,transparent,rgba(255,255,255,.55) 28%,transparent 42%,rgba(255,255,255,.4) 64%,transparent 80%),
+  repeating-linear-gradient(172deg,rgba(0,0,0,.06) 0 2px,transparent 2px 13px),
+  linear-gradient(180deg,#eef0f3,#cdd2d9)}
+.pack.plastique .pack-emblem{color:#6b7280}.pack.plastique .diamond{border-color:#9aa1ab;background:#fff;box-shadow:none}
+.pack.plastique .pk-crimp{background:repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 2px,rgba(255,255,255,.4) 2px 5px)}
+.ava.fr-scotch::before{background:repeating-conic-gradient(from 10deg,rgba(236,232,205,.95) 0 28deg,transparent 28deg 65deg);filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.ps-gris{color:#8a8f9c}
+.bg-papierpeint{background:
+  radial-gradient(circle at 25% 25%,#c3a868 0 5px,transparent 6px) 0 0/38px 38px,
+  radial-gradient(circle at 75% 75%,#a88f55 0 5px,transparent 6px) 0 0/38px 38px,
+  repeating-linear-gradient(90deg,rgba(0,0,0,.03) 0 19px,transparent 19px 38px),
+  linear-gradient(180deg,#eadcae,#d6c28a)}
+.scene.bg-papierpeint h4{color:#4a3b1a;text-shadow:none}
+.offer-big.euro{border-style:dashed;border-color:#9aa1ab}
+.offer-big .ribbon.grey{background:#9aa1ab;color:#1f2333}
+/* fond Palais (Baleine) : marbre blanc veiné, losanges diamantés, reflet holographique lent */
+.bg-palais{position:relative;overflow:hidden;background:
+  linear-gradient(45deg,transparent 46%,rgba(255,255,255,.55) 49%,rgba(200,215,240,.5) 50%,rgba(255,255,255,.55) 51%,transparent 54%) 0 0/46px 46px,
+  linear-gradient(-45deg,transparent 46%,rgba(255,255,255,.55) 49%,rgba(200,215,240,.5) 50%,rgba(255,255,255,.55) 51%,transparent 54%) 0 0/46px 46px,
+  linear-gradient(115deg,transparent 30%,rgba(120,120,140,.18) 31%,transparent 33%,transparent 60%,rgba(120,120,140,.14) 61%,transparent 62.5%),
+  linear-gradient(35deg,transparent 45%,rgba(140,140,160,.16) 46%,transparent 47.5%),
+  radial-gradient(ellipse at 30% 20%,#ffffff,transparent 60%),
+  linear-gradient(180deg,#f3f1ec,#dcd8cf 60%,#c9c3b6)}
+.bg-palais::after{content:"";position:absolute;inset:0;mix-blend-mode:overlay;pointer-events:none;
+  background:linear-gradient(115deg,transparent 25%,rgba(255,150,230,.55) 40%,rgba(150,230,255,.55) 50%,rgba(255,245,150,.5) 60%,transparent 75%);background-size:300% 100%;animation:pkHolo 7s ease-in-out infinite}
+.scene.bg-palais h4{color:#3a3450;text-shadow:0 1px 0 rgba(255,255,255,.7);position:relative;z-index:1}
+.bg-palais .pack-hit,.bg-palais .pv{position:relative;z-index:1}
+.pay-once{font-size:.85rem;color:var(--ink-soft);margin:4px 0 0}
+/* Baleine v2 : platine et nacre, diamant taillé (au lieu de l'or et de la couronne) */
+.ava.fr-solitaire::before{background:conic-gradient(#ffffff,#d9dee8,#f6e9ff,#c9d2e3,#e6f7ff,#ffffff,#d9dee8,#fff4e0,#c9d2e3,#ffffff);filter:drop-shadow(0 0 5px rgba(220,230,255,.9))}
+.ava.fr-solitaire::after{content:"";position:absolute;left:50%;top:calc(var(--s)*-.42);width:calc(var(--s)*.46);height:calc(var(--s)*.38);transform:translateX(-50%);z-index:3;
+  clip-path:polygon(22% 0,78% 0,100% 30%,50% 100%,0 30%);
+  background:linear-gradient(115deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.95) 45%,rgba(255,255,255,0) 60%) 0 0/300% 100%,
+    linear-gradient(90deg,transparent 49%,rgba(120,140,180,.35) 50%,transparent 51%),
+    linear-gradient(180deg,transparent 29%,rgba(120,140,180,.4) 30%,transparent 31%),
+    conic-gradient(from 200deg at 50% 30%,#ffffff,#cfe8ff,#ffd9f5,#fff7d6,#d6fff4,#ffffff);
+  filter:drop-shadow(0 0 4px rgba(255,255,255,.9)) drop-shadow(0 2px 3px rgba(40,50,90,.4));animation:pkHolo 3.5s ease-in-out infinite}
+.ps-platine{background:linear-gradient(100deg,#b9c2d4 0%,#ffffff 25%,#ffd9f5 38%,#cfe8ff 50%,#ffffff 62%,#b9c2d4 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 3s linear infinite;filter:drop-shadow(0 0 3px rgba(255,255,255,.35))}
+.back.diamant{box-shadow:0 0 0 3px #e6ecf7,0 0 22px rgba(255,255,255,.55),0 8px 20px rgba(0,0,0,.3)}
+.pack.lingot .diamond{border-color:#c9d2e3;box-shadow:0 0 0 3px rgba(220,230,255,.6),0 0 16px #fff}
+.pack.lingot .pk-crimp{background:repeating-linear-gradient(90deg,rgba(200,210,230,.7) 0 2px,rgba(255,255,255,.4) 2px 5px)}
+.bdg-flambeur{box-shadow:0 0 0 2px rgba(220,230,255,.8)}
+</style>
+</head>
+<body><main>
+<h1>DexCraft — packs et boutique</h1>
+<p class="muted">Maquette animée. Partie 1 : chaque pack en situation. Partie 2 : la boutique telle qu’elle apparaîtrait dans le jeu.</p>
+
+<h2 class="section-title">1. Les packs</h2>
+<div id="themes"></div>
+
+<h2 class="section-title">2. La boutique dans le jeu</h2>
+<div id="shopview"></div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const back=(cls)=>`<div class="back ${cls}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div>`;
+const pack=(cls)=>`<div class="pack-hit"><div class="pack ${cls}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div></div></div>`;
+const ava=(fr,img,big)=>`<span class="ava ${big?"big":""} ${fr?"fr-"+fr:""}"><img src="../images/${img}.webp" alt=""></span>`;
+const WAILORD=`<span class="badge-alpha wailord">🐋 Lord</span>`;
+const PACKS=[
+  {n:"Pack L’euro symbolique",p:"1 €",d:"Pour 1 €, il ne fallait pas s’attendre à mieux : du carton, du scotch et un sac plastique.",bg:"papierpeint",pk:"plastique",bk:"carton",fr:"scotch",ps:"ps-gris",img:129,euro:1,
+   items:[["Dos","Carton"],["Sachet","Sac plastique"],["Cadre","Ruban adhésif"],["Pseudo","Gris souris"],["Fond","Papier peint"]]},
+  {n:"Pack Brasier",p:"5 €",d:"Des braises, de la lave et un volcan qui gronde.",bg:"volcan",pk:"volcan",bk:"braise",fr:"flammes",ps:"ps-magma",img:257,
+   items:[["Dos","Braise"],["Sachet","Volcan"],["Cadre","Flammes"],["Pseudo","Magma"],["Fond","Volcan"]]},
+  {n:"Pack Océan",p:"5 €",d:"Les vagues, la plage et les fonds marins.",bg:"abysses",pk:"plage",bk:"ocean",fr:"marine",ps:"ps-corail",img:131,
+   items:[["Dos","Océan"],["Sachet","Plage"],["Cadre","Marine"],["Pseudo","Corail"],["Fond","Abysses"]]},
+  {n:"Pack Cosmos",p:"10 €",d:"Une nuit étoilée, une galaxie et des nébuleuses.",bg:"cosmos",pk:"galaxie",bk:"nuit",fr:"constellation",ps:"ps-nebuleuse",img:151,
+   items:[["Dos","Nuit étoilée"],["Sachet","Galaxie"],["Cadre","Constellation"],["Pseudo","Nébuleuse"],["Fond","Cosmos"]]},
+  {n:"Pack Or",p:"20 €",d:"De l’or brossé, du noir profond et un trésor.",bg:"tresor",pk:"noiror",bk:"or",fr:"dore",ps:"ps-dore",img:25,
+   items:[["Dos","Or"],["Sachet","Noir et or"],["Cadre","Doré"],["Pseudo","Dégradé doré"],["Fond","Trésor"]]},
+  {n:"🐋 Pack Baleine assumée",p:"50 €",d:"Platine, diamants et un palais de marbre, avec en prime le titre Lord. Ça sert à rien et c’est beaucoup trop cher, mais ça brille.",bg:"palais",pk:"lingot",bk:"diamant",fr:"solitaire",ps:"ps-platine",img:321,baleine:1,
+   items:[["Dos","Diamant"],["Sachet","Lingot de platine"],["Cadre","Solitaire"],["Pseudo","Platine"],["Fond","Palais"],["Badge","💸 Flambeur"],["Titre","🐋 Lord"]]}];
+const nameRow=(t,big)=>`<div class="lb"><div class="lb-row"><span class="rk">🥇</span>${ava(t.fr,t.img)}<span class="nm"><span class="${t.ps}">Dresseur</span>${t.baleine?`<span class="bdg-flambeur" title="A dépensé beaucoup trop pour ce badge">💸</span>${WAILORD}`:""}</span><span class="sc">1 163 cartes</span></div></div>`;
+$("#themes").innerHTML=PACKS.map(t=>`<section class="theme${t.baleine?" flambeur":""}"><h2>${t.n} <span class="price" style="font-size:1rem;vertical-align:3px;margin-left:8px">${t.p}</span></h2><p class="muted">${t.d}</p>
+  <div class="combo"><div class="scene bg-${t.bg}"><h4>Ouvrir un booster</h4>${pack(t.pk)}</div>${back(t.bk)}
+  <div style="display:flex;flex-direction:column;align-items:center;gap:16px;${t.baleine?"padding-top:26px":""}">${ava(t.fr,t.img,true)}${nameRow(t)}</div></div>
+  <div class="pieces">${t.items.map(([k,n])=>`<span class="piece"><i>${k}</i> <b>${n}</b></span>`).join("")}</div></section>`).join("")
+  +`<section class="theme"><h2>♥ Badge Soutien <span class="price" style="font-size:1rem;vertical-align:3px;margin-left:8px">3 €</span></h2><p class="muted">Le seul article vendu à l’unité : un cœur à côté du pseudo, pour dire qu’on soutient DexCraft.</p>
+  <div class="lb">${`<div class="lb-row"><span class="rk">🥇</span>${ava("",6)}<span class="nm">Dresseur<span class="bdg-soutien" title="Soutient DexCraft">♥</span></span><span class="sc">1 163 cartes</span></div>`}</div></section>`;
+/* boutique */
+const offerPack=t=>`<div class="offer-big${t.baleine?" baleine":""}${t.euro?" euro":""}">${t.baleine?`<span class="ribbon">Pour les baleines</span>`:""}${t.euro?`<span class="ribbon grey">Petit budget</span>`:""}
+  <div class="offer-visual bg-${t.bg}"><div class="pv">${pack(t.pk)}${back(t.bk)}${ava(t.fr,t.img)}</div></div>
+  <div><div class="amount">${t.n}</div><p class="muted" style="margin:6px 0 8px">${t.d}</p><ul class="contents">${t.items.map(([k,n])=>`<li>${k} <b>${n}</b></li>`).join("")}</ul></div>
+  ${t.baleine?`<p class="baleine-note">Aucun avantage en jeu. Ne l’achetez pas si ce n’est pas raisonnable pour vous.</p>`:""}
+  <div class="price">${t.p}</div><button class="btn primary">Acheter pour ${t.p}</button></div>`;
+if(location.search.includes("seul")){document.querySelectorAll("main>h1,main>p.muted,main>h2,#themes").forEach(e=>e.remove())}
+$("#shopview").innerHTML=`<div style="background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:18px">
+  <h1 style="margin:0">Boutique</h1><p class="muted" style="margin:4px 0 0">Vous avez <b>12 450 crédits</b>. Les crédits se gagnent gratuitement en jouant et servent à acheter des boosters.</p>
+  <div class="f2p-note"><b>DexCraft se joue entièrement gratuitement.</b> Les cartes, les boosters et les crédits ne s’achètent pas avec de l’argent. Les articles payants sont uniquement décoratifs : n’achetez que si vous pouvez vraiment vous le permettre.</div>
+  <h2 style="margin-top:22px">Boosters</h2>
+  <div class="shop"><div class="offer-big"><div class="offer-visual packs"><span class="mini-pack"></span><span class="mini-pack"></span><span class="mini-pack"></span></div>
+    <div><div class="amount">Boosters</div><p class="muted" style="margin:6px 0 0">100 crédits le booster de 5 cartes. Les crédits se gagnent en jouant : défausse, VoltoBataille, récompense du jour.</p></div>
+    <div class="qty"><button aria-pressed="true">1 booster</button><button aria-pressed="false">5 boosters</button><button aria-pressed="false">10 boosters</button></div>
+    <div class="price">100 crédits</div><button class="btn primary">Acheter 1 booster</button></div></div>
+  <h2 style="margin-top:26px">Soutenir DexCraft</h2><p class="pay-once">🔒 Paiement sécurisé par Stripe · carte bancaire ou PayPal</p>
+  <div class="shop"><div class="offer-big soutien"><span class="ribbon pink">Merci ♥</span><div class="offer-visual soutien"><span class="heart">♥</span></div>
+    <div><div class="amount">Badge Soutien</div><p class="muted" style="margin:6px 0 0">Un cœur à côté de votre pseudo, visible par tous. Merci pour votre soutien ♥</p></div>
+    <div class="price">3 €</div><button class="btn primary">Acheter pour 3 €</button></div></div>
+  <h2 style="margin-top:26px">Packs cosmétiques</h2>
+  <p class="muted" style="margin:0">Chaque pack s’achète une fois. Vous pourrez ensuite changer de look à volonté en mélangeant les articles dans votre profil.</p><p class="pay-once">🔒 Paiement sécurisé par Stripe · carte bancaire ou PayPal</p>
+  <div class="shop">${PACKS.map(offerPack).join("")}</div></div>`;
+</script>
+</body></html>

@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propositions de booster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Couleurs du jeu (index.html) */
+:root{
+  --bg:#eef0fa;--surface:#fff;--surface-2:#e3e6f5;--ink:#1c2042;--ink-soft:#5b6088;--line:#cfd3ea;--gold:#e0a800;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif;--body:"Atkinson Hyperlegible",system-ui,sans-serif;
+  /* couleurs du booster actuel */
+  --y:#ffe27a;--o:#f2a900;--r:#e7621e;--m:#a5307a;--cream:#fff8e0;--brown:#2b1400;
+  --w:170px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161a33;--surface:#20264a;--surface-2:#2a3160;--ink:#f1f0ff;--ink-soft:#a7abd3;--line:#343b6b}}
+:root[data-theme="dark"]{--bg:#161a33;--surface:#20264a;--surface-2:#2a3160;--ink:#f1f0ff;--ink-soft:#a7abd3;--line:#343b6b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5}
+header{max-width:1200px;margin:0 auto;padding:24px 16px 4px;display:flex;flex-wrap:wrap;gap:12px;align-items:end;justify-content:space-between}
+h1{font-family:var(--display);margin:0;font-size:1.8rem}
+header p{margin:4px 0 0;color:var(--ink-soft)}
+.theme{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 14px;font-weight:700;cursor:pointer}
+main{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.prop{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.prop.ref{opacity:.85;border-style:dashed}
+.prop h2{font-family:var(--display);margin:0;font-size:1.25rem}
+.prop h2 small{font-size:.8rem;color:var(--ink-soft);font-weight:600;margin-left:6px}
+.prop p{margin:0;color:var(--ink-soft);font-size:.9rem}
+.stage.open-top{overflow:visible;padding-top:90px;height:calc(var(--w)*270/190 + 160px)}
+.stage{height:calc(var(--w)*270/190 + 70px);display:flex;align-items:center;justify-content:center;perspective:900px;position:relative;
+  background:radial-gradient(circle at 50% 60%,var(--surface-2),transparent 70%);border-radius:14px;overflow:hidden}
+.acts{display:flex;gap:8px}
+.acts button{flex:1;border:0;border-radius:10px;padding:10px;font-weight:700;font-family:var(--body);cursor:pointer;background:var(--gold);color:#2a1d00}
+.acts button.sec{background:var(--surface-2);color:var(--ink)}
+.pk{position:relative;width:var(--w);aspect-ratio:190/270;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hint{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:.75rem;color:var(--ink-soft)}
+
+/* Losange DC, commun aux 4 propositions */
+.dia{width:44%;aspect-ratio:1;transform:rotate(45deg);background:var(--cream);border:4px solid var(--brown);display:flex;align-items:center;justify-content:center}
+.dia b{transform:rotate(-45deg);font-family:var(--display);font-weight:700;font-size:calc(var(--w)*.16);color:var(--brown);letter-spacing:-.03em}
+.name{font-family:var(--display);font-weight:700;color:var(--brown);font-size:calc(var(--w)*.12);line-height:1}
+.sub{font-family:var(--display);font-weight:600;color:var(--brown);font-size:calc(var(--w)*.075);letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+.skin{position:absolute;left:0;right:0;background:
+  repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 2px,transparent 2px 14px),
+  linear-gradient(160deg,var(--y) 0%,var(--o) 38%,var(--r) 72%,var(--m) 100%)}
+
+/* ============ Actuel (référence) ============ */
+.cur .body{position:absolute;inset:0;border-radius:4px;background:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 2px,transparent 2px 14px),linear-gradient(160deg,var(--y),var(--o) 38%,var(--r) 72%,var(--m))}
+.cur::before,.cur::after{content:"";position:absolute;left:-2px;right:-2px;height:14px;z-index:2;border-radius:3px;background:repeating-linear-gradient(90deg,rgba(60,25,0,.28) 0 2px,transparent 2px 6px),linear-gradient(#ffe9a0,#e9b43a)}
+.cur::before{top:-4px}.cur::after{bottom:-4px;background:repeating-linear-gradient(90deg,rgba(60,25,0,.28) 0 2px,transparent 2px 6px),linear-gradient(#c9559a,#a5307a)}
+.cur .em{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.cur .em .dia{width:50%;box-shadow:6px 6px 0 rgba(43,20,0,.25)}
+.cur .em .name{margin-top:18px}
+.cur.open{animation:curTear .55s ease-in forwards}
+@keyframes curTear{40%{transform:scale(1.06) rotate(3deg)}100%{transform:scale(.6) translateY(-40px);opacity:0}}
+
+/* ============ 1. Sachet holographique ============ */
+.p1{transform-style:preserve-3d;transition:transform .15s ease-out;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.p1 .cap,.p1 .bd{position:absolute;left:0;right:0;overflow:hidden}
+.p1 .cap{top:0;height:17%;clip-path:polygon(var(--zig-top),100% 100%,0 100%)}
+.p1 .bd{top:17%;bottom:0;clip-path:polygon(0 0,100% 0,var(--zig-bot))}
+.p1 .cap .skin{top:0;height:588.2%}
+.p1 .bd .skin{top:-20.48%;height:120.48%}
+.p1 .crimp{position:absolute;left:0;right:0;height:9%;background:repeating-linear-gradient(90deg,rgba(80,30,0,.22) 0 2px,rgba(255,255,255,.12) 2px 5px)}
+.p1 .cap .crimp{top:0}.p1 .bd .crimp{bottom:0}
+.p1 .cut{position:absolute;left:4%;right:4%;top:17%;border-top:2px dashed rgba(43,20,0,.35);z-index:3}
+.p1 .cut::before{content:"✂";position:absolute;left:-6px;top:-13px;font-size:12px;color:rgba(43,20,0,.55)}
+.p1 .em{position:absolute;left:0;right:0;top:10%;bottom:10%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.p1 .em .dia{box-shadow:inset -4px -4px 0 rgba(43,20,0,.15),inset 3px 3px 0 #fff,0 6px 14px rgba(43,20,0,.35)}
+.p1 .em .name{margin-top:16px;text-shadow:0 1px 0 rgba(255,255,255,.45)}
+/* reflet posé dans chaque morceau du sachet : découpé avec lui, il part avec le haut déchiré */
+.p1 .skin::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.9) 45%,rgba(160,230,255,.7) 50%,rgba(255,170,240,.7) 55%,transparent 70%);
+  background-size:300% 100%;animation:holo 3.2s ease-in-out infinite}
+@keyframes holo{0%{background-position:120% 0}60%,100%{background-position:-60% 0}}
+.p1 .glow{position:absolute;left:10%;right:10%;top:12%;height:12%;border-radius:50%;background:radial-gradient(#fff,rgba(255,236,160,.8) 40%,transparent 70%);opacity:0;filter:blur(4px)}
+.p1.open{animation:p1drop .5s .55s ease-in forwards}
+.p1.open .cap{animation:p1cap .55s cubic-bezier(.5,0,.6,1) forwards}
+.p1.open .glow{animation:p1glow .9s .2s ease-out forwards}
+.p1.open .cut{opacity:0;transition:opacity .1s}
+@keyframes p1cap{30%{transform:translate(6px,-4px) rotate(-4deg)}100%{transform:translate(70px,-90px) rotate(38deg);opacity:0}}
+@keyframes p1glow{0%{opacity:0;transform:scale(.6)}35%{opacity:1;transform:scale(1.6,2.4)}100%{opacity:0;transform:scale(2.4,5)}}
+@keyframes p1drop{to{transform:translateY(60px) scale(.9);opacity:0}}
+
+/* ============ 2. Écrin nuit ============ */
+.p2{border-radius:16px;padding:5px;background:conic-gradient(from 210deg,#fff4c2,var(--o),#8a5a00,var(--y),#fff4c2,var(--o),#8a5a00,#fff4c2);box-shadow:0 12px 28px rgba(10,12,40,.45)}
+.p2 .half{position:absolute;top:5px;bottom:5px;overflow:hidden}
+.p2 .half.l{left:5px;right:50%;border-radius:11px 0 0 11px}
+.p2 .half.r{left:50%;right:5px;border-radius:0 11px 11px 0}
+.p2 .in{position:absolute;top:0;bottom:0;width:calc(var(--w) - 10px);background:
+  radial-gradient(circle at 50% 42%,rgba(255,236,160,.45),transparent 45%),
+  radial-gradient(#fff3 1.2px,transparent 1.6px) 0 0/14px 14px,
+  linear-gradient(170deg,#262c58 0%,#1a1f45 45%,#3a1c4d 100%)}
+.p2 .half.l .in{left:0}.p2 .half.r .in{right:0}
+.p2 .band{position:absolute;left:0;right:0;height:22%;bottom:0;background:linear-gradient(160deg,var(--y),var(--o) 38%,var(--r) 72%,var(--m))}
+.p2 .band.t{top:0;bottom:auto;height:7%;opacity:.9}
+.p2 .em{position:absolute;inset:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding-bottom:14%}
+.p2 .em .dia{background:linear-gradient(135deg,#fff8e0,#ffe27a);border-color:#fff4c2;box-shadow:0 0 0 3px rgba(224,168,0,.5),0 0 26px rgba(255,210,90,.75)}
+.p2 .em .dia b{color:#1a1f45}
+.p2 .em .name{margin-top:18px;background:linear-gradient(90deg,#fff4c2,#e0a800,#fff4c2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.p2 .em .sub{color:#fff;opacity:.95;position:absolute;bottom:6%}
+.p2 .ring{position:absolute;left:50%;top:40%;width:62%;aspect-ratio:1;margin-left:-31%;margin-top:-31%;border-radius:50%;border:2px solid rgba(255,226,122,.55);animation:ring 2.4s ease-out infinite;pointer-events:none}
+@keyframes ring{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.p2 .beam{position:absolute;left:50%;top:-10%;bottom:-10%;width:0;margin-left:0;background:linear-gradient(transparent,#fff,transparent);filter:blur(3px);opacity:0}
+.p2.open .em .dia{animation:p2spin .5s cubic-bezier(.5,0,.3,1) forwards}
+.p2.open .em{animation:p2fade .3s .45s forwards}
+.p2.open .half.l{animation:p2l .6s .45s cubic-bezier(.6,0,.3,1) forwards}
+.p2.open .half.r{animation:p2r .6s .45s cubic-bezier(.6,0,.3,1) forwards}
+.p2.open .beam{animation:p2beam .8s .4s ease-out forwards}
+.p2.open .ring,.p3.open .spark{animation:none;opacity:0}
+.p2.open{animation:p2frame .6s .45s forwards}
+@keyframes p2spin{60%{transform:rotate(45deg) scale(1.25);filter:brightness(1.6)}100%{transform:rotate(405deg) scale(1.1);filter:brightness(2)}}
+@keyframes p2fade{to{opacity:0}}
+@keyframes p2l{to{transform:translateX(-70%) rotate(-8deg);opacity:0}}
+@keyframes p2r{to{transform:translateX(70%) rotate(8deg);opacity:0}}
+@keyframes p2beam{0%{width:0;margin-left:0;opacity:0}30%{width:30px;margin-left:-15px;opacity:1}100%{width:120px;margin-left:-60px;opacity:0}}
+@keyframes p2frame{to{background:transparent;box-shadow:none}}
+
+/* ============ 3. Éclat solaire ============ */
+.p3 .sun{position:absolute;left:50%;top:50%;width:260%;aspect-ratio:1;margin:-130% 0 0 -130%;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,rgba(255,226,122,.55) 0 7deg,transparent 7deg 20deg);
+  -webkit-mask:radial-gradient(circle,#000 18%,transparent 55%);mask:radial-gradient(circle,#000 18%,transparent 55%);animation:sun 18s linear infinite;pointer-events:none}
+@keyframes sun{to{transform:rotate(360deg)}}
+.p3 .card{position:absolute;inset:0;border-radius:18px;overflow:hidden;box-shadow:0 10px 24px rgba(165,48,122,.35),inset 0 0 0 3px rgba(255,255,255,.35)}
+.p3 .card .skin{top:0;bottom:0;background:
+  repeating-conic-gradient(from 0deg at 50% 40%,rgba(255,255,255,.14) 0 6deg,transparent 6deg 18deg),
+  linear-gradient(160deg,var(--y) 0%,var(--o) 38%,var(--r) 72%,var(--m) 100%)}
+.p3 .em{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:16%}
+.p3 .em .dia{width:50%;box-shadow:0 0 0 5px rgba(255,255,255,.55),0 8px 18px rgba(43,20,0,.35)}
+.p3 .ribbon{position:absolute;left:-4%;right:-4%;bottom:12%;padding:6px 0 7px;background:var(--brown);color:var(--cream);text-align:center;transform:rotate(-4deg);box-shadow:0 4px 10px rgba(0,0,0,.3)}
+.p3 .ribbon .name{color:#ffe27a;font-size:calc(var(--w)*.11)}
+.p3 .ribbon .sub{color:var(--cream);font-size:calc(var(--w)*.06);opacity:.85}
+.p3 .spark{position:absolute;width:10px;height:10px;background:#fff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:twinkle 1.8s ease-in-out infinite;pointer-events:none}
+@keyframes twinkle{0%,100%{transform:scale(.2);opacity:0}50%{transform:scale(1);opacity:1}}
+.p3 .shard{position:absolute;left:50%;top:45%;width:18px;height:18px;margin:-9px;background:linear-gradient(160deg,var(--y),var(--r));clip-path:polygon(50% 0,100% 100%,0 80%);opacity:0;pointer-events:none}
+.p3 .flash{position:absolute;inset:-40%;background:radial-gradient(circle,#fff 0,rgba(255,240,190,.9) 25%,transparent 60%);opacity:0;pointer-events:none}
+.p3.open .card,.p3.open .em,.p3.open .ribbon{animation:p3charge .45s ease-in,p3burst .35s .45s ease-out forwards}
+.p3.open .sun{animation:sun 18s linear infinite,p3sun .8s .3s ease-out forwards}
+.p3.open .flash{animation:p3flash .7s .42s ease-out forwards}
+.p3.open .shard{animation:p3shard .7s .45s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes p3charge{0%,100%{transform:none}20%{transform:translate(-3px,1px) rotate(-2deg)}40%{transform:translate(3px,-1px) rotate(2deg)}60%{transform:translate(-4px,0) rotate(-3deg) scale(1.03)}80%{transform:translate(4px,1px) rotate(3deg) scale(1.05)}}
+@keyframes p3burst{to{transform:scale(1.35);opacity:0;filter:blur(6px) brightness(2)}}
+@keyframes p3sun{50%{opacity:1;transform:scale(1.5) rotate(40deg)}100%{opacity:0;transform:scale(2) rotate(80deg)}}
+@keyframes p3flash{0%{opacity:0;transform:scale(.4)}30%{opacity:1}100%{opacity:0;transform:scale(1.3)}}
+@keyframes p3shard{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot))}}
+
+/* ============ 4. Pochette scellée ============ */
+.p4{perspective:700px}
+.p4 .back{position:absolute;inset:0;border-radius:10px;background:linear-gradient(160deg,#8a2466,#5e1446)}
+.p4 .cards{position:absolute;left:12%;right:12%;top:30%;bottom:6%}
+.p4 .cards i{position:absolute;inset:0;border-radius:8px;border:3px solid #fff;background:radial-gradient(circle at 50% 45%,#fff8e0 0 12%,transparent 13%),linear-gradient(160deg,#3c6fe0,#20308a);box-shadow:0 4px 10px rgba(0,0,0,.35)}
+.p4 .cards i:nth-child(1){transform:rotate(-7deg) translateX(-8px)}
+.p4 .cards i:nth-child(3){transform:rotate(7deg) translateX(8px)}
+.p4 .front{position:absolute;left:0;right:0;bottom:0;top:22%;border-radius:0 0 10px 10px;overflow:hidden;box-shadow:0 -2px 6px rgba(0,0,0,.18)}
+.p4 .front .skin{top:-28.2%;height:128.2%}
+.p4 .flap{position:absolute;left:0;right:0;top:0;height:46%;transform-origin:50% 0;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.5,0,.3,1);z-index:3}
+.p4 .flap .face{position:absolute;inset:0;clip-path:polygon(0 0,100% 0,50% 100%);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.p4 .flap .face.out{background:linear-gradient(170deg,#fff0b8,var(--y) 40%,var(--o));box-shadow:inset 0 -2px 0 rgba(0,0,0,.1)}
+.p4 .flap .face.inn{background:linear-gradient(#8a2466,#c9559a);transform:rotateX(180deg);clip-path:polygon(0 100%,100% 100%,50% 0)}
+.p4 .flap .edge{position:absolute;inset:0;clip-path:polygon(0 0,100% 0,50% 100%,50% 97%,96% 2%,4% 2%,50% 97%,50% 100%);background:rgba(43,20,0,.35)}
+.p4 .seal{position:absolute;left:50%;top:46%;width:40%;margin-left:-20%;margin-top:-20%;z-index:4}
+.p4 .seal .dia{width:100%;box-shadow:0 4px 0 rgba(43,20,0,.35),0 0 0 4px rgba(255,248,224,.5)}
+.p4 .label{position:absolute;left:0;right:0;bottom:9%;text-align:center;z-index:2}
+.p4 .label .name{color:#fff;text-shadow:0 2px 0 rgba(43,20,0,.35)}
+.p4 .label .sub{color:#fff;opacity:.9}
+.p4.open .seal{animation:p4seal .35s ease-in forwards}
+.p4.open .flap{transform:rotateX(-178deg);transition-delay:.25s;animation:p4z .6s steps(1,end) forwards}
+@keyframes p4z{to{z-index:0}}
+.p4 .cards{z-index:1}.p4 .front{z-index:2}
+.p4.open .cards i{animation:p4rise .55s .6s cubic-bezier(.3,1.4,.5,1) forwards}
+.p4.open .cards i:nth-child(1){--r:-14deg;--x:-26px}
+.p4.open .cards i:nth-child(2){--r:0deg;--x:0px;animation-delay:.68s}
+.p4.open .cards i:nth-child(3){--r:14deg;--x:26px;animation-delay:.76s}
+.p4.open{animation:p4out .4s 1.35s ease-in forwards}
+@keyframes p4seal{40%{transform:scale(1.25)}100%{transform:scale(.2) translateY(-30px) rotate(90deg);opacity:0}}
+@keyframes p4rise{to{transform:translate(var(--x),-62%) rotate(var(--r))}}
+@keyframes p4out{to{transform:translateY(-30px) scale(.9);opacity:0}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Propositions de booster</h1><p>Touchez un booster (ou « Ouvrir ») pour voir l’ouverture. Il revient tout seul après l’animation.</p></div>
+  <button class="theme" id="theme">Fond clair / sombre</button>
+</header>
+<main>
+  <section class="prop">
+    <h2>1. Sachet holographique</h2>
+    <p>Un vrai sachet scellé, bords sertis en dents de scie, reflet holographique qui passe en boucle et léger relief quand on le survole. À l’ouverture, le haut se déchire le long des pointillés, une lumière jaillit, puis le sachet tombe.</p>
+    <div class="stage"><div class="pk p1" data-open>
+      <div class="cap"><div class="skin"></div><div class="crimp"></div></div>
+      <div class="bd"><div class="skin"></div><div class="crimp"></div></div>
+      <div class="em"><div class="dia"><b>DC</b></div><span class="name">DexCraft</span><span class="sub">5 cartes</span></div>
+      <div class="cut"></div><div class="glow"></div>
+    </div><span class="hint">Survolez pour l’incliner</span></div>
+    <div class="acts"><button data-go>Ouvrir</button></div>
+  </section>
+
+  <section class="prop">
+    <h2>2. Écrin nuit</h2>
+    <p>Dans le style de l’interface : fond bleu nuit étoilé, cadre doré, bandes aux couleurs du booster, losange lumineux avec une onde qui pulse. À l’ouverture, le losange tourne sur lui-même et l’écrin s’ouvre en deux sur un rai de lumière.</p>
+    <div class="stage"><div class="pk p2" data-open>
+      <div class="half l"><div class="in"><div class="band t"></div><div class="band"></div></div></div>
+      <div class="half r"><div class="in"><div class="band t"></div><div class="band"></div></div></div>
+      <div class="ring"></div>
+      <div class="em"><div class="dia"><b>DC</b></div><span class="name">DexCraft</span><span class="sub">5 cartes</span></div>
+      <div class="beam"></div>
+    </div></div>
+    <div class="acts"><button data-go>Ouvrir</button></div>
+  </section>
+
+  <section class="prop">
+    <h2>3. Éclat solaire</h2>
+    <p>Des rayons qui tournent doucement derrière le booster, des étincelles, et un ruban « DexCraft ». À l’ouverture, le booster tremble, se charge de lumière puis éclate en morceaux dans un flash.</p>
+    <div class="stage"><div class="pk p3" data-open>
+      <div class="sun"></div>
+      <div class="card"><div class="skin"></div></div>
+      <div class="em"><div class="dia"><b>DC</b></div></div>
+      <div class="ribbon"><div class="name">DexCraft</div><div class="sub">5 cartes</div></div>
+      <i class="spark" style="left:12%;top:14%;animation-delay:.2s"></i><i class="spark" style="right:14%;top:26%;animation-delay:.9s"></i><i class="spark" style="left:20%;top:58%;animation-delay:1.4s"></i><i class="spark" style="right:10%;top:62%;animation-delay:.5s"></i>
+      <div class="flash"></div>
+    </div></div>
+    <div class="acts"><button data-go>Ouvrir</button></div>
+  </section>
+
+  <section class="prop">
+    <h2>4. Pochette scellée</h2>
+    <p>Une pochette fermée par un rabat, le losange DC fait office de cachet de cire. À l’ouverture, le cachet saute, le rabat se soulève et les cartes sortent en éventail de la pochette.</p>
+    <div class="stage open-top"><div class="pk p4" data-open>
+      <div class="back"></div>
+      <div class="cards"><i></i><i></i><i></i></div>
+      <div class="front"><div class="skin"></div></div>
+      <div class="flap"><div class="face out"></div><div class="face inn"></div><div class="edge"></div></div>
+      <div class="seal"><div class="dia"><b>DC</b></div></div>
+      <div class="label"><div class="name">DexCraft</div><div class="sub">5 cartes</div></div>
+    </div></div>
+    <div class="acts"><button data-go>Ouvrir</button></div>
+  </section>
+
+  <section class="prop ref">
+    <h2>Actuel <small>pour comparer</small></h2>
+    <p>Le booster en place aujourd’hui.</p>
+    <div class="stage"><div class="pk cur" data-open>
+      <div class="body"></div>
+      <div class="em"><div class="dia"><b>DC</b></div><span class="name">DexCraft</span><span class="sub">5 cartes</span></div>
+    </div></div>
+    <div class="acts"><button data-go class="sec">Ouvrir</button></div>
+  </section>
+</main>
+<script>
+// bords en dents de scie du sachet (proposition 1)
+(function(){
+  const n=14,top=[],bot=[];
+  for(let i=0;i<=n;i++){const x=(i/n*100).toFixed(2);top.push(`${x}% ${i%2?0:14}%`)}
+  for(let i=n;i>=0;i--){const x=(i/n*100).toFixed(2);bot.push(`${x}% ${i%2?100:96.5}%`)}
+  const p=document.querySelector(".p1");
+  p.style.setProperty("--zig-top",top.join(","));
+  p.style.setProperty("--zig-bot","100% 96.5%,"+bot.join(",")+",0 96.5%");
+})();
+// éclats de la proposition 3
+(function(){
+  const p=document.querySelector(".p3");
+  for(let i=0;i<14;i++){const a=Math.PI*2*i/14,d=110+Math.random()*60,s=document.createElement("i");s.className="shard";
+    s.style.cssText=`--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d}px;--rot:${Math.random()*540-270}deg;transform:scale(${.6+Math.random()*.8})`;p.append(s)}
+})();
+// inclinaison du sachet au survol
+const p1=document.querySelector(".p1");
+p1.parentElement.addEventListener("pointermove",e=>{if(p1.classList.contains("open"))return;const r=p1.getBoundingClientRect();
+  p1.style.setProperty("--ry",((e.clientX-r.left)/r.width-.5)*24+"deg");p1.style.setProperty("--rx",-((e.clientY-r.top)/r.height-.5)*18+"deg")});
+p1.parentElement.addEventListener("pointerleave",()=>{p1.style.setProperty("--rx","0deg");p1.style.setProperty("--ry","0deg")});
+// ouverture puis retour
+const DUR={p1:1300,p2:1300,p3:1300,p4:1900,cur:900};
+function play(pk){
+  if(pk.classList.contains("open"))return;
+  pk.classList.add("open");
+  const k=Object.keys(DUR).find(c=>pk.classList.contains(c));
+  setTimeout(()=>{pk.classList.remove("open");pk.style.opacity=0;requestAnimationFrame(()=>{pk.style.transition="opacity .35s";pk.style.opacity=1;setTimeout(()=>pk.style.transition="",400)})},DUR[k]+500);
+}
+document.querySelectorAll("[data-open]").forEach(pk=>pk.addEventListener("click",()=>play(pk)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>play(b.closest(".prop").querySelector("[data-open]"))));
+// capture : boosters.html#t=600 fige toutes les ouvertures à 600 ms (#t=0 : état fermé, fond sombre avec &dark)
+{const m=location.hash.match(/t=(\d+)/);if(location.hash.includes("dark"))document.documentElement.dataset.theme="dark";
+  if(m&&+m[1]>0){document.querySelectorAll("[data-open]").forEach(pk=>pk.classList.add("open"));
+    requestAnimationFrame(()=>document.getAnimations().forEach(a=>{a.pause();a.currentTime=+m[1]}))}}
+document.getElementById("theme").addEventListener("click",()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;r.dataset.theme=dark?"light":"dark"});
+</script>
+</body>
+</html>

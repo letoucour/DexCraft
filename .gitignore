@@ -10,3 +10,6 @@ sauvegardes/
 CLAUDE.local.md
 index-export.tmp.html
 images-shiny-png/
+
+# réglages locaux de Claude Code (serveur de test)
+.claude/

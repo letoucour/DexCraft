@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette du profil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Couleurs du jeu (thème sombre) */
+:root{--bg:#161a33;--surface:#20264a;--surface-2:#2a3160;--ink:#f1f0ff;--ink-soft:#a7abd3;--line:#343b6b;--gold:#e0a800;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif;--body:"Atkinson Hyperlegible",system-ui,sans-serif}
+:root[data-theme="light"]{--bg:#eef0fa;--surface:#fff;--surface-2:#e3e6f5;--ink:#1c2042;--ink-soft:#5b6088;--line:#cfd3ea}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;overflow-x:hidden}
+main *{min-width:0}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+.bar b{font-family:var(--display);margin-right:6px}
+.bar button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:7px 12px;font-weight:700;cursor:pointer}
+.bar button[aria-pressed="true"]{border-color:var(--gold);background:var(--surface-2)}
+main{max-width:860px;margin:0 auto;padding:18px 16px 60px}
+.explain{background:var(--surface-2);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:.92rem;color:var(--ink-soft)}
+h1,h2,h3{font-family:var(--display);margin:0}
+.muted{color:var(--ink-soft)}
+/* en-tête du profil, comme aujourd'hui */
+.head{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.ava{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#e8c36a,#8a5a1a);display:flex;align-items:center;justify-content:center;font-size:2.6rem;box-shadow:0 0 0 3px var(--gold)}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.tag{font-size:.78rem;font-weight:800;padding:3px 10px;border-radius:999px;background:#3f5bb5;color:#fff}
+.tag.a{background:linear-gradient(90deg,#ffcf3f,#e0a800);color:#2a1d00}.tag.c{background:#e3e6f5;color:#1c2042}
+.stats{display:flex;gap:24px;flex-wrap:wrap}.stats b{font-family:var(--display);font-size:1.4rem;display:block}.stats span{color:var(--ink-soft);font-size:.9rem}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+/* ---------- A : onglets du profil ---------- */
+.ptabs{display:flex;gap:6px;margin:22px 0 14px;padding:5px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto;scrollbar-width:none}
+.ptabs button{flex:1 0 auto;border:0;background:none;color:var(--ink-soft);font-weight:800;font-size:.95rem;padding:9px 14px;border-radius:10px;cursor:pointer;white-space:nowrap;display:flex;gap:6px;align-items:center;justify-content:center}
+.ptabs button[aria-selected="true"]{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 -3px 0 var(--gold)}
+.ptabs .cnt{font-size:.72rem;background:var(--bg);border-radius:999px;padding:1px 7px;color:var(--ink-soft)}
+.pane[hidden]{display:none}
+.pane{animation:fade .25s ease-out}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}}
+/* ---------- B : sections repliables ---------- */
+.acc{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.acc details{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.acc details[open]{border-color:var(--gold)}
+.acc summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 18px}
+.acc summary::-webkit-details-marker{display:none}
+.acc .ic{width:38px;height:38px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex:0 0 auto}
+.acc .tt{flex:1;min-width:0}.acc .tt b{font-family:var(--display);font-size:1.1rem;display:block}.acc .tt span{color:var(--ink-soft);font-size:.86rem}
+.acc .chev{color:var(--ink-soft);transition:transform .2s}
+.acc details[open] .chev{transform:rotate(180deg)}
+.acc .body{padding:0 18px 16px}
+/* contenus d'exemple */
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;font-weight:700;flex:1 1 180px;min-width:0}
+input[type=text],input[type=search]{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--ink);font:inherit}
+.btn{border:0;border-radius:12px;padding:10px 16px;font-weight:800;background:var(--gold);color:#2a1d00;cursor:pointer}
+.btn.sec{background:var(--surface-2);color:var(--ink)}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:10px}
+.tcard{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg);font-size:.8rem}
+.tcard.on{border-color:var(--gold)}.tcard .n{font-weight:800}.tcard .p{height:5px;border-radius:3px;background:var(--surface-2);margin-top:6px;overflow:hidden}.tcard .p i{display:block;height:100%;background:var(--gold)}
+.avas{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.av{width:62px;text-align:center;font-size:.72rem;font-weight:700}.av i{display:block;width:56px;height:56px;margin:0 auto 4px;border-radius:50%;background:var(--surface-2);font-style:normal;font-size:1.6rem;line-height:56px}
+.av.cur i{box-shadow:0 0 0 3px var(--gold)}
+.pref{display:flex;align-items:center;gap:10px;font-weight:700;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="bar"><b>Maquette du profil</b>
+  <button data-v="a" aria-pressed="true">A. Onglets du profil</button>
+  <button data-v="b" aria-pressed="false">B. Sections repliables</button>
+  <button id="theme">Clair / sombre</button>
+</div>
+<main>
+  <div class="explain" id="explain"></div>
+
+  <!-- en-tête inchangé -->
+  <div class="head"><div class="ava">🦔</div><div>
+    <h1>TheoToucour</h1>
+    <div class="tags"><span class="tag a">✦ Alpha testeur</span><span class="tag c">★ Champion</span><span class="tag">▲ Diplomate</span></div>
+    <div class="stats"><div><b>790 / 1 118</b><span>cartes différentes</span></div><div><b>1 079</b><span>cartes</span></div><div><b>86</b><span>crédits</span></div><div><b>412</b><span>boosters ouverts</span></div></div>
+  </div></div>
+
+  <!-- ===== Variante A ===== -->
+  <section id="va">
+    <nav class="ptabs" role="tablist">
+      <button role="tab" data-p="titres" aria-selected="true">🏅 Titres <span class="cnt">24 / 63</span></button>
+      <button role="tab" data-p="image" aria-selected="false">🖼️ Image</button>
+      <button role="tab" data-p="compte" aria-selected="false">👤 Compte</button>
+      <button role="tab" data-p="reglages" aria-selected="false">⚙️ Réglages</button>
+    </nav>
+    <div class="pane panel" data-pane="titres"></div>
+    <div class="pane panel" data-pane="image" hidden></div>
+    <div class="pane panel" data-pane="compte" hidden></div>
+    <div class="pane panel" data-pane="reglages" hidden></div>
+  </section>
+
+  <!-- ===== Variante B ===== -->
+  <section id="vb" class="acc" hidden>
+    <details open><summary><span class="ic">🏅</span><span class="tt"><b>Titres</b><span>24 titres obtenus sur 63 · 3 affichés à côté de votre nom</span></span><span class="chev">▼</span></summary><div class="body" data-pane="titres"></div></details>
+    <details><summary><span class="ic">🖼️</span><span class="tt"><b>Image de profil</b><span>Sabelette · 5 dernières images</span></span><span class="chev">▼</span></summary><div class="body" data-pane="image"></div></details>
+    <details><summary><span class="ic">👤</span><span class="tt"><b>Compte et pseudo</b><span>Connecté · pseudo modifiable dans 3 jours</span></span><span class="chev">▼</span></summary><div class="body" data-pane="compte"></div></details>
+    <details><summary><span class="ic">⚙️</span><span class="tt"><b>Réglages et code cadeau</b><span>Sons activés · vibrations activées</span></span><span class="chev">▼</span></summary><div class="body" data-pane="reglages"></div></details>
+  </section>
+</main>
+<template id="t-titres">
+  <p class="muted" style="margin:0">Choisissez jusqu’à 3 titres parmi ceux obtenus. <b>3 / 3 affichés</b></p>
+  <h3 style="margin:14px 0 0;font-size:1rem">Pokédex <span class="muted">6 / 8</span></h3>
+  <div class="tgrid"><div class="tcard on"><div class="n">★ Champion</div>750 cartes différentes</div><div class="tcard"><div class="n">★ Conseil 4</div>950 cartes différentes<div class="p"><i style="width:83%"></i></div></div><div class="tcard"><div class="n">♛ Maître</div>Toutes les cartes<div class="p"><i style="width:70%"></i></div></div></div>
+  <h3 style="margin:14px 0 0;font-size:1rem">Activité <span class="muted">7 / 16</span></h3>
+  <div class="tgrid"><div class="tcard on"><div class="n">▲ Diplomate</div>80 échanges conclus</div><div class="tcard"><div class="n">▲ Charismatique</div>200 échanges<div class="p"><i style="width:44%"></i></div></div><div class="tcard"><div class="n">▲ Fidèle</div>30 jours de jeu<div class="p"><i style="width:60%"></i></div></div></div>
+  <p class="muted" style="margin:10px 0 0;font-size:.85rem">… et les autres groupes (Collections, Régions, Types), comme aujourd’hui.</p>
+</template>
+<template id="t-image">
+  <input type="search" placeholder="Rechercher un Pokémon de votre collection" style="width:100%">
+  <h3 style="margin:14px 0 0;font-size:1rem">Dernières images utilisées</h3>
+  <div class="avas"><div class="av cur"><i>🦔</i>Sabelette</div><div class="av"><i>⚡</i>Pikachu</div><div class="av"><i>🐉</i>Dracaufeu</div><div class="av"><i>🦊</i>Évoli</div><div class="av"><i>🐢</i>Carapuce</div></div>
+</template>
+<template id="t-compte">
+  <p style="margin:0"><b>Connecté.</b> <span class="muted">Votre progression est sauvegardée en ligne.</span> <button class="btn sec" style="margin-left:6px;padding:6px 12px">Se déconnecter</button></p>
+  <div class="row" style="margin-top:12px"><label class="field">Pseudo<input type="text" value="TheoToucour"></label><button class="btn">Enregistrer</button></div>
+  <p class="muted" style="margin:6px 0 0;font-size:.85rem">3 à 20 caractères. Prochain changement possible le 29 septembre.</p>
+</template>
+<template id="t-reglages">
+  <label class="pref"><input type="checkbox" checked> Sons du jeu</label>
+  <label class="pref">Volume <input type="range" value="80" style="flex:1;max-width:240px"> 80 %</label>
+  <label class="pref"><input type="checkbox" checked> Vibrations</label>
+  <div class="row" style="margin-top:14px"><label class="field">Entrer un code<input type="text" placeholder="Code cadeau"></label><button class="btn">Valider</button></div>
+</template>
+<script>
+document.querySelectorAll("[data-pane]").forEach(p=>{p.innerHTML=document.getElementById("t-"+p.dataset.pane).innerHTML});
+const EXPL={a:"<b>A. Onglets du profil</b> : l’en-tête reste tel quel ; en dessous, 4 onglets (Titres, Image, Compte, Réglages). Une seule section à la fois, la page ne défile presque plus. Le jeu retient le dernier onglet ouvert.",
+  b:"<b>B. Sections repliables</b> : l’en-tête reste tel quel ; chaque section devient une carte avec une icône et un résumé (« 24 titres obtenus sur 63 »). On déplie ce qu’on veut ; les Titres sont ouverts par défaut."};
+function show(v){document.getElementById("va").hidden=v!=="a";document.getElementById("vb").hidden=v!=="b";document.getElementById("explain").innerHTML=EXPL[v];
+  document.querySelectorAll(".bar [data-v]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v))}
+document.querySelectorAll(".bar [data-v]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.v)));
+document.querySelectorAll(".ptabs button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".ptabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  document.querySelectorAll("#va .pane").forEach(p=>p.hidden=p.dataset.pane!==b.dataset.p)}));
+document.getElementById("theme").addEventListener("click",()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme==="dark"?"light":"dark"});
+show(location.hash==="#b"?"b":"a");
+</script>
+</body>
+</html>
