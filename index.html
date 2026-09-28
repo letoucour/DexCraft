@@ -1174,7 +1174,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.13";
+const APP_VERSION="1.1.14";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1457,6 +1457,12 @@ const FORMS={
 const UNOWN_LETTERS=[..."BCDEFGHIJKLMNOPQRSTUVWXYZ!?"];
 UNOWN_LETTERS.forEach((l,i)=>{const z=DEX[200];FORMS[7001+i]=["Zarbi "+l,z[1],z[2],z[3],z[4],z[5],z[6],z[7],{base:201,kind:"zarbi",letter:l}]});
 DEX[200][0]="Zarbi A";DEX[200][8]={base:201,kind:"zarbi",letter:"A"}; // Zarbi lui-même : la forme A (0.8.11), nommée et étiquetée comme les autres
+/* Prismillon (1.1.14) : ses 19 autres motifs, numéros 8071 à 8089 (Prismillon n° 666 = Motif Floraison), mêmes données et
+   rareté ; illustrations de Pokémon HOME, normales et shiny (l'illustration officielle n'existe pas en shiny) : choix de Theo. */
+const VIV_MOTIFS=["Blizzard","Banquise","Glace","Continent","Verdure","Monarchie","Métropole","Rivage","Archipel","Sécheresse","Sable","Delta","Cyclone","Mangrove","Zénith","Soleil Levant","Jungle","Fantaisie","Poké Ball"];
+VIV_MOTIFS.forEach((m,i)=>{const z=DEX[665];FORMS[8071+i]=["Prismillon Motif "+m,z[1],z[2],z[3],z[4],z[5],z[6],z[7],{base:666,kind:"forme",tag:m,fn:"Motif "+m}]});
+const VIV_IDS=VIV_MOTIFS.map((m,i)=>8071+i);
+EVO[665]=[...(EVO[665]||[]),...VIV_IDS]; // Pérégrain évolue au choix en Prismillon ou en n'importe lequel de ses 19 autres motifs (choix de Theo)
 for(const id in FORMS)if(FORMS[id][7]===null)FORMS[id][7]=DEX[FORMS[id][8].base-1][7]; // rareté du Pokémon d'origine
 /* Évolutions officielles des formes régionales. Les espèces qui n'évoluent qu'à partir d'une forme régionale
    (Berserkatt, Palarticho, M. Glaquette, Corayôme, Ixon, Tutétékri, Qwilpik, Farfurex, Terraiste) ne
@@ -2002,6 +2008,7 @@ const TITLES=[
   {k:"bebe",n:"Baby-sitter",ic:"♡",g:"Collections",cls:"tc",c:"#e58fb0",d:"Possède tous les bébés Pokémon",ids:BABY_IDS},
   {k:"fossile",n:"Archéologue",ic:"⛏",g:"Collections",cls:"tc",c:"#a0784a",d:"Possède tous les Pokémon fossiles et leurs évolutions",ids:FOSSIL_IDS},
   {k:"darwin",n:"Darwiniste",ic:"🧬",g:"Collections",cls:"tc",c:"#3f9e6b",d:"Possède toutes les cartes qui s’obtiennent par évolution : évolutions, méga-évolutions et formes Gigamax",ids:EVOLVED_IDS}, // 1.1.3
+  {k:"globe",n:"Globetrotter",ic:"🌍",g:"Collections",cls:"tc",c:"#2f8fa0",d:"Possède les 20 motifs de Prismillon",ids:[666,...VIV_IDS]}, // 1.1.14
   ...REGIONS.slice(1).map((reg,i)=>({k:"gen"+(i+1),n:"Maître de "+reg,ic:"✧",g:"Régions",cls:"tc",c:REGION_C[i+1],
     d:`A obtenu tous les Pokémon de la génération ${ROMAN[i+1]} (${reg})`,ids:POKE_IDS.filter(x=>DEX[x-1][2]===i+1)})),
   ...TYPES.slice(1).map(([tn,col],i)=>({k:"type"+(i+1),n:tn,ic:"●",g:"Types",cls:"tc",c:col,
