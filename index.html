@@ -1174,7 +1174,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.14";
+const APP_VERSION="1.1.15";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1663,9 +1663,13 @@ const MULTI=5;
 const OPEN_OPTS=[1,5,10];
 const available=s=>packInfo(s).n+(s.bonus||0);
 /* Le tirage se fait sur le serveur (dc_open) : cartes, rareté et compteurs. */
+/* même nombre que la dernière ouverture si possible, sinon 1 ; 0 s’il n’en reste aucun (bouton « Booster suivant », 1.1.15) */
+let lastOpenK=1;
+const nextOpenK=()=>{const a=S?available(S):0;return a>=lastOpenK?lastOpenK:a>=1?1:0};
 function openPack(k=1){
   if(opening||!OPEN_OPTS.includes(k))return;
   if(available(S)<k){toast(k>1?`Il vous faut ${k} boosters disponibles pour en ouvrir ${k} d’un coup.`:"Aucun booster disponible. Attendez le prochain ou passez par la boutique.");return}
+  lastOpenK=k;
   opening=true;document.documentElement.classList.add("revealing"); // pas de « tirer pour actualiser » pendant l'ouverture
   const before=(S.stats&&S.stats.packs)||0;
   run(async()=>{
@@ -2204,7 +2208,10 @@ function revealHeadHTML(){
   return `<div class="reveal-sum">${counts.map((n,i)=>n?`<span><span style="color:var(--r${i})">${gems(i)}</span> ${n} ${RAR[i].toLowerCase()}${n>1?"s":""}</span>`:"").join("")}${nNew?`<span class="new-sum">${nNew} nouvelle${nNew>1?"s":""}</span>`:""}${reveal.some(c=>c.shiny)?`<span class="sh-sum">✨ ${reveal.filter(c=>c.shiny).length} shiny</span>`:""}</div>`;
 }
 function revealActionsHTML(){
-  if(reveal.every(c=>c.shown))return `<button class="btn primary" data-act="done-reveal">Continuer</button>`;
+  if(reveal.every(c=>c.shown)){ // fin de l’ouverture (1.1.15) : retour à l’écran des boosters, ou booster suivant s’il en reste
+    const k=revealGift?0:nextOpenK();
+    return `<button class="btn" data-act="done-reveal">Retour</button>${k?`<button class="btn primary" data-act="next-pack" data-n="${k}">${k>1?`${k} boosters suivants`:"Booster suivant"}</button>`:""}`;
+  }
   return `${flippingAll?`<button class="btn primary" data-act="flip-fast">Plus vite !</button>`:`<button class="btn" data-act="flip-all">Tout retourner</button>`}${canHits()?`<button class="btn" data-act="hits-only">Aller aux Hits</button>`:""}`;
 }
 /* « Plus vite ! » : retourne tout d'un coup ; les mythiques et les transcendantes suivent aussitôt, une par une,
@@ -4055,6 +4062,7 @@ document.addEventListener("click",e=>{
     case"flip-fast":flipFast();break;
     case"hits-only":goHits();break; // 1.1.4
     case"done-reveal":reveal=null;revealGift=false;hitsMode=false;handScroll=0;renderView();window.scrollTo(0,0);break;
+    case"next-pack":{const k=+b.dataset.n||1;reveal=null;revealGift=false;hitsMode=false;handScroll=0;renderView();window.scrollTo(0,0);openPack(k);break}
     case"detail":detail(id);break;
     case"close":closeDlg();break;
     case"evolve":evolveDlg(+b.dataset.from,+b.dataset.to);break;
