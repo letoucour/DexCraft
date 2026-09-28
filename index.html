@@ -1169,7 +1169,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.7";
+const APP_VERSION="1.1.8";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1410,7 +1410,42 @@ const FORMS={
   8032:["Météno Noyau Vert","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Vert",fn:"Noyau Vert"}],
   8033:["Météno Noyau Bleu","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Bleu",fn:"Noyau Bleu"}],
   8034:["Météno Noyau Indigo","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Indigo",fn:"Noyau Indigo"}],
-  8035:["Météno Noyau Violet","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Violet",fn:"Noyau Violet"}]
+  8035:["Météno Noyau Violet","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Violet",fn:"Noyau Violet"}],
+  8036:["Deoxys Forme Attaque","Pokémon ADN",3,[14],17,608,[50,180,20,180,20,150],null,{base:386,kind:"forme",tag:"Attaque",fn:"Forme Attaque"}],
+  8037:["Deoxys Forme Défense","Pokémon ADN",3,[14],17,608,[50,70,160,70,160,90],null,{base:386,kind:"forme",tag:"Défense",fn:"Forme Défense"}],
+  8038:["Deoxys Forme Vitesse","Pokémon ADN",3,[14],17,608,[50,95,90,95,90,180],null,{base:386,kind:"forme",tag:"Vitesse",fn:"Forme Vitesse"}],
+  8039:["Giratina Forme Originelle","Pokémon Renégat",4,[8,16],69,6500,[150,120,100,120,100,90],null,{base:487,kind:"forme",tag:"Originelle",fn:"Forme Originelle"}],
+  8040:["Shaymin Forme Céleste","Pokémon Gratitude",4,[12,3],4,52,[100,103,75,120,75,127],null,{base:492,kind:"forme",tag:"Céleste",fn:"Forme Céleste"}],
+  8041:["Boréas Forme Totémique","Pokémon Tornade",5,[3],14,630,[79,100,80,110,90,121],null,{base:641,kind:"forme",tag:"Totémique",fn:"Forme Totémique"}],
+  8042:["Fulguris Forme Totémique","Pokémon Foudroyeur",5,[13,3],30,610,[79,105,70,145,80,101],null,{base:642,kind:"forme",tag:"Totémique",fn:"Forme Totémique"}],
+  8043:["Démétéros Forme Totémique","Pokémon Fertilité",5,[5,3],13,680,[89,145,90,105,80,91],null,{base:645,kind:"forme",tag:"Totémique",fn:"Forme Totémique"}],
+  8044:["Amovénus Forme Totémique","Pokémon Hainamour",8,[18,3],16,480,[74,115,110,135,100,46],null,{base:905,kind:"forme",tag:"Totémique",fn:"Forme Totémique"}],
+  8045:["Keldeo Aspect Décidé","Pokémon Poulain",5,[11,2],14,485,[91,72,90,129,90,108],null,{base:647,kind:"forme",tag:"Décidé",fn:"Aspect Décidé"}],
+  8046:["Meloetta Forme Danse","Pokémon Mélodie",5,[1,2],6,65,[100,128,90,77,77,128],null,{base:648,kind:"forme",tag:"Danse",fn:"Forme Danse"}],
+  8047:["Hoopa Déchaîné","Pokémon Chenapan",6,[14,17],65,4900,[80,160,60,170,130,80],null,{base:720,kind:"forme",tag:"Déchaîné",fn:"Hoopa Déchaîné"}],
+  8048:["Zygarde Forme 10 %","Pokémon Équilibre",6,[16,5],12,335,[54,100,71,61,85,115],null,{base:718,kind:"forme",tag:"10 %",fn:"Forme 10 %"}],
+  8049:["Magearna Couleur du Passé","Pokémon Artificiel",7,[9,18],10,805,[80,95,115,130,115,65],null,{base:801,kind:"forme",tag:"Couleur du Passé",fn:"Couleur du Passé"}],
+  8050:["Zarude Papa","Pokémon Vilain Singe",8,[17,12],18,700,[105,120,105,70,95,105],null,{base:893,kind:"forme",tag:"Papa",fn:"Papa"}],
+  8051:["Ogerpon Masque du Puits","Masque",9,[12,11],12,398,[80,120,84,60,96,110],null,{base:1017,kind:"forme",tag:"Puits",fn:"Masque du Puits"}],
+  8052:["Ogerpon Masque du Fourneau","Masque",9,[12,10],12,398,[80,120,84,60,96,110],null,{base:1017,kind:"forme",tag:"Fourneau",fn:"Masque du Fourneau"}],
+  8053:["Ogerpon Masque de la Pierre","Masque",9,[12,6],12,398,[80,120,84,60,96,110],null,{base:1017,kind:"forme",tag:"Pierre",fn:"Masque de la Pierre"}],
+  8054:["Dialga Forme Originelle","Pokémon Temps",4,[9,16],70,8487,[100,100,120,150,120,90],null,{base:483,kind:"forme",tag:"Originelle",fn:"Forme Originelle"}],
+  8055:["Palkia Forme Originelle","Pokémon Espace",4,[11,16],63,6590,[90,100,100,150,120,120],null,{base:484,kind:"forme",tag:"Originelle",fn:"Forme Originelle"}],
+  8056:["Kyurem Noir","Pokémon Frontière",5,[16,15],33,3250,[125,170,100,120,90,95],null,{base:646,kind:"forme",tag:"Noir",fn:"Kyurem Noir"}],
+  8057:["Kyurem Blanc","Pokémon Frontière",5,[16,15],36,3250,[125,120,90,170,100,95],null,{base:646,kind:"forme",tag:"Blanc",fn:"Kyurem Blanc"}],
+  8058:["Necrozma Crinière du Couchant","Pokémon Prisme",7,[14,9],38,4600,[97,157,127,113,109,77],null,{base:800,kind:"forme",tag:"Couchant",fn:"Crinière du Couchant"}],
+  8059:["Necrozma Ailes de l’Aurore","Pokémon Prisme",7,[14,8],42,3500,[97,113,109,157,127,77],null,{base:800,kind:"forme",tag:"Aurore",fn:"Ailes de l’Aurore"}],
+  8060:["Ultra-Necrozma","Pokémon Prisme",7,[14,16],75,2300,[97,167,97,167,97,129],null,{base:800,kind:"forme",tag:"Ultra",fn:"Ultra-Necrozma"}],
+  8061:["Sylveroy Cavalier du Froid","Pokémon Roi",8,[14,15],24,8091,[100,165,150,85,130,50],null,{base:898,kind:"forme",tag:"Cavalier du Froid",fn:"Cavalier du Froid"}],
+  8062:["Sylveroy Cavalier d’Effroi","Pokémon Roi",8,[14,8],24,536,[100,85,80,165,100,150],null,{base:898,kind:"forme",tag:"Cavalier d’Effroi",fn:"Cavalier d’Effroi"}],
+  8063:["Zacian Épée Suprême","Pokémon Valeureux",8,[18,9],28,3550,[92,150,115,80,115,148],null,{base:888,kind:"forme",tag:"Suprême",fn:"Épée Suprême"}],
+  8064:["Zamazenta Bouclier Suprême","Pokémon Valeureux",8,[2,9],29,7850,[92,120,140,80,140,128],null,{base:889,kind:"forme",tag:"Suprême",fn:"Bouclier Suprême"}],
+  8065:["Primo-Kyogre","Pokémon Bassinmarin",3,[11],98,4300,[100,150,90,180,160,90],null,{base:382,kind:"forme",tag:"Primo",fn:"Primo-Résurgence"}],
+  8066:["Primo-Groudon","Pokémon Continent",3,[5,10],50,9997,[100,180,160,150,90,90],null,{base:383,kind:"forme",tag:"Primo",fn:"Primo-Résurgence"}],
+  8067:["Éthernatos Infinimax","Pokémon Giga",8,[4,16],1000,0,[255,115,250,125,250,130],null,{base:890,kind:"forme",tag:"Infinimax",fn:"Infinimax"}],
+  8068:["Zygarde Forme Parfaite","Pokémon Équilibre",6,[16,5],45,6100,[216,100,121,91,95,85],null,{base:718,kind:"forme",tag:"Parfaite",fn:"Forme Parfaite"}],
+  8069:["Terapagos Forme Téracristal","Téracristal",9,[1],3,160,[95,95,110,105,110,85],null,{base:1024,kind:"forme",tag:"Téracristal",fn:"Forme Téracristal"}],
+  8070:["Terapagos Forme Stellaire","Téracristal",9,[1],17,770,[160,105,110,130,110,85],null,{base:1024,kind:"forme",tag:"Stellaire",fn:"Forme Stellaire"}]
 };
 /* Zarbi (0.8.9) : ses 27 autres formes, B à Z, ! et ?, numéros 7001 à 7027 (Zarbi n° 201 est la forme A).
    Mêmes données et même rareté que Zarbi ; illustrations officielles tirées de PokeAPI. */
@@ -1431,6 +1466,12 @@ EVO[52]=[53];EVO[194]=[195];EVO[215]=[461];EVO[562]=[563];[83,122,211,222,264].f
    Bargantua Motif Blanc, comme dans les jeux ; Gromago aussi depuis Mordudor Forme Marche. */
 delete EVO[550];
 [[744,[8002,8003]],[412,[8015,8016]],[848,[8019]],[206,[8026]],[924,[8027]],[8018,[902]],[8028,[1000]]].forEach(([a,b])=>{EVO[a]=[...(EVO[a]||[]),...b]});
+/* Formes des légendaires et fabuleux (1.1.8) : tirées dans les boosters en Légendaire, et aussi obtenues avec 3 exemplaires
+   du Pokémon de base (choix de Theo). Même rareté que la base : comme les Méga, ces « évolutions » de forme sont une exception
+   à la règle des raretés croissantes. Ultra-Necrozma depuis Crinière du Couchant ou Ailes de l'Aurore, Stellaire depuis Téracristal. */
+[[386,[8036,8037,8038]],[487,[8039]],[492,[8040]],[641,[8041]],[642,[8042]],[645,[8043]],[905,[8044]],[647,[8045]],[648,[8046]],[720,[8047]],
+ [718,[8048,8068]],[801,[8049]],[893,[8050]],[1017,[8051,8052,8053]],[483,[8054]],[484,[8055]],[646,[8056,8057]],[800,[8058,8059]],[8058,[8060]],[8059,[8060]],
+ [898,[8061,8062]],[888,[8063]],[889,[8064]],[382,[8065]],[383,[8066]],[890,[8067]],[1024,[8069]],[8069,[8070]]].forEach(([a,b])=>{EVO[a]=[...(EVO[a]||[]),...b]});
 /* Cartes secrètes (mythiques 2001 et suivantes, transcendantes 3001 et suivantes) : leurs données ne sont PAS dans
    ce fichier, lisible par tous. Le serveur les envoie à la demande (dc_secret_cards), seulement celles que le joueur
    a le droit de voir ; voir « cartes secrètes » plus bas. Liste complète sur le PC de Theo : secret/cartes-secretes.json. */
@@ -1462,7 +1503,7 @@ const MK=SCALE/MYTHIC_ONE_IN, TK=SCALE/TRANS_ONE_IN;
 /* Les 2 % des Méga-évolutions sont pris sur les quatre premières raretés :
    1,2 % aux communes, 0,4 % aux peu communes, 0,3 % aux rares, 0,1 % aux épiques.
    Les mythiques et les transcendantes ne bougent pas. */
-const OTHER_K=[26.6,11.7,4.9,2,1].map(p=>p/100*SCALE); // peu commune, rare, épique, méga, légendaire
+const OTHER_K=[26.6,11.7,4.9,2,1.5].map(p=>p/100*SCALE); // peu commune, rare, épique, méga, légendaire (1,5 % depuis la 1.1.8, 1 % avant)
 const ODDS_K=[SCALE-MK-TK-OTHER_K.reduce((a,b)=>a+b,0),...OTHER_K,MK,TK];
 const ODDS=ODDS_K.map(v=>v*100/SCALE);
 const isSpec=id=>+id>1025;
@@ -1726,7 +1767,7 @@ function wantTile(x){
   return `<button class="pick wp${on?" choice":""}" data-act="wp-toggle" data-id="${x}" aria-pressed="${on}" data-n="${esc(norm2(nm(x))+" "+x)}">
     ${wished(x)?`<span class="pick-tag missing">🔔 Recherchée</span>`:has(S,x)?`<span class="pick-tag ok">Vous l’avez</span>`:""}
     <span class="wp-img${has(S,x)?"":" unk"}">${src?`<img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span>
-    <span class="wp-n">${esc(nm(x))}</span><span class="pick-n"><span style="color:var(--r${r})">${gems(r)}</span> ${RAR[r]}</span></button>`;
+    <span class="wp-n">${esc(nm(x))}</span><span class="pick-n"><span style="color:var(--r${r})">${gems(r)}</span> ${rarName(x)}</span></button>`;
 }
 function wantPickRender(){
   const w=wantPick;if(!w)return;
@@ -1800,14 +1841,14 @@ function cardHTML(id,lg,sh){ // sh : version shiny (1.1.0)
   const label=r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
   const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind==="forme"?ex.fn:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
   return `<div class="card r${r}${lg?" lg":""}${sh?" shiny":""}" style="--c1:${c1};--c2:${c2}">
-  <div class="card-top"><span>${sh?`<b class="sh-mark" title="Shiny">✨</b> `:""}${label}</span><span class="gems" aria-label="${RAR[r]}">${gems(r)}</span></div>
+  <div class="card-top"><span>${sh?`<b class="sh-mark" title="Shiny">✨</b> `:""}${label}</span><span class="gems" aria-label="${rarName(id)}">${gems(r)}</span></div>
   <div class="art">${imgFor(id,sh)?`<img class="art-img" src="${esc(imgFor(id,sh))}" alt="" onerror="this.remove()">`:""}<span class="art-initial" aria-hidden="true">${esc(n[0])}</span><span class="art-no" aria-hidden="true">${r===7?"❖":r===6?"✦":ex&&ex.base?ex.base:id}</span><span class="art-gen">${edition}</span></div>
   <div class="card-name">${esc(n)}</div>
   <div class="genus">${esc(g)}</div>
   <div class="types">${chips}</div>
   ${ex&&ex.lines?`<div class="spec-lines">${ex.lines.map(l=>`<div>${esc(l)}</div>`).join("")}</div>`
     :`<div class="stats">${st.map((v,i)=>`<span>${STATN[i]}</span><i><b style="width:${Math.min(100,v/1.8)}%"></b></i><em>${v}</em>`).join("")}</div>`}
-  <div class="card-foot"><span>${ex&&(ex.foot||ex.lines)?esc(ex.foot||""):ex&&ex.kind==="gmax"?`${(h/10).toLocaleString("fr-FR")} m et plus`:ex&&!ex.kind?"":`${(h/10).toLocaleString("fr-FR")} m, ${(w/10).toLocaleString("fr-FR")} kg`}</span><span>${RAR[r]}</span></div>
+  <div class="card-foot"><span>${ex&&(ex.foot||ex.lines)?esc(ex.foot||""):ex&&ex.kind==="gmax"?`${(h/10).toLocaleString("fr-FR")} m et plus`:ex&&!ex.kind?"":`${(h/10).toLocaleString("fr-FR")} m, ${(w/10).toLocaleString("fr-FR")} kg`}</span><span>${rarName(id)}</span></div>
 </div>`}
 function miniHTML(id,{count=0,missing=false,sel=0,choice=false,act="detail",img=true,sh=false,shOwn=false}={}){ // sh : image shiny ; shOwn : shiny débloqué (badge ✨)
   const fav=S&&S.fav&&S.fav[id];
@@ -1830,7 +1871,7 @@ function imgFor(id,sh){if(isSecretId(id)){const e=SPEC[+id]&&SPEC[+id][8];return
    Pas de shiny pour les mythiques, les transcendantes, ni les cartes sans illustration shiny (SHINY_NONE).
    Affichage : shiny par défaut, forme normale au choix par carte (shinyOff) ou partout (shinyNorm), dc_shiny_view. */
 const SHINY_BASE=4096,SHINY_MAX=100;
-const SHINY_NONE=[]; // cartes sans illustration shiny (vide depuis que Theo a fourni Zarbi A, Méga-Carchacrok Z et Méga-Nigirigon)
+const SHINY_NONE=[8070]; // cartes sans illustration shiny : Terapagos Forme Stellaire (1.1.8, absente de PokeAPI) ; Zarbi A, Méga-Carchacrok Z et Méga-Nigirigon fournies par Theo
 const canShiny=id=>(id=+id)>0&&!isSecretId(id)&&!SHINY_NONE.includes(id);
 const gotN=(id,p=S)=>+((p&&p.got&&p.got[id])||0);
 const hasShiny=(id,p=S)=>!!(p&&p.shiny&&p.shiny[id]);
@@ -1898,6 +1939,14 @@ const BABY_IDS=[172,173,174,175,236,238,239,240,298,360,406,433,438,439,440,446,
 const FOSSIL_IDS=[138,139,140,141,142,345,346,347,348,408,409,410,411,564,565,566,567,696,697,698,699,880,881,882,883];
 // légendaires et fabuleux (PokeAPI, is_legendary et is_mythical) : exclus de « Pierre Stase »
 const LEGEND_IDS=[144,145,146,150,151,243,244,245,249,250,251,377,378,379,380,381,382,383,384,385,386,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,638,639,640,641,642,643,644,645,646,647,648,649,716,717,718,719,720,721,772,773,785,786,787,788,789,790,791,792,800,801,802,807,808,809,888,889,890,891,892,893,894,895,896,897,898,905,1001,1002,1003,1004,1007,1008,1014,1015,1016,1017,1024,1025];
+/* Méga et Gigamax de légendaires et fabuleux (1.1.8, choix de Theo) : rareté Méga (compteurs, titres, défausse, échanges)
+   mais tirées au rythme des légendaires (réserve de tirage des Légendaires, POOLS), et affichées « Légendaire Méga-évolué »
+   ou « Légendaire Gigamax ». Avant, une Méga-Rayquaza sortait plus souvent que Rayquaza. */
+const LEG_SPECIAL=new Set([...MEGA_IDS,...GMAX_IDS].filter(id=>LEGEND_IDS.includes(SPEC[id][8].base)));
+const rarName=id=>LEG_SPECIAL.has(+id)?(MEGA[+id]?"Légendaire Méga-évolué":"Légendaire Gigamax"):RAR[rar(+id)];
+const fxRar=id=>LEG_SPECIAL.has(+id)?5:rar(+id); // animation : scène Légendaire pour ces Méga et Gigamax
+// réserves de tirage (1.1.8) : comme BYR, sauf que les Méga et Gigamax de légendaires sont tirées avec les Légendaires
+const POOLS=BYR.map((b,r)=>r===4?b.filter(id=>!LEG_SPECIAL.has(id)):r===5?[...b,...LEG_SPECIAL]:b);
 /* « Pierre Stase » : Pokémon qui n'évoluent pas et ne viennent d'aucune évolution, y compris par une forme régionale
    (Canarticho, dont seule la forme de Galar évolue, n'en fait pas partie), hors légendaires et fabuleux,
    avec leurs méga-évolutions et formes Gigamax. Calculé depuis EVO : suit tout changement d'évolution. */
@@ -2229,7 +2278,8 @@ function vBooster(){
     <div class="bh-left">${tipHTML()}${giftHTML()}${dailyHTML()}
     <details><summary>Comment ça marche ?</summary><div class="rules">
       <p>Vous recevez un booster toutes les 10 minutes, jusqu’à 10 boosters en réserve. Chaque carte a sa propre rareté :</p>
-      <table><tr><td class="muted">Rareté</td><td class="muted">Chance</td><td class="muted">Défausse</td></tr>${RAR.slice(0,6).map((r,i)=>`<tr><td><span style="color:var(--r${i})">${gems(i)}</span> ${r} (${BYR[i].length} cartes)</td><td>${pct(ODDS[i])}</td><td>${cr(DISCARD[i])}</td></tr>`).join("")}</table>
+      <table><tr><td class="muted">Rareté</td><td class="muted">Chance</td><td class="muted">Défausse</td></tr>${RAR.slice(0,6).map((r,i)=>`<tr><td><span style="color:var(--r${i})">${gems(i)}</span> ${r} (${POOLS[i].length} cartes)</td><td>${pct(ODDS[i])}</td><td>${cr(DISCARD[i])}</td></tr>`).join("")}</table>
+      <p>Les Méga et Gigamax des légendaires et des fabuleux (${LEG_SPECIAL.size} cartes) sortent au rythme des Légendaires et sont comptées avec eux dans ce tableau ; elles restent des Méga et des Gigamax pour la collection, les titres et la défausse.</p>
       <p>Dans votre collection, vous pouvez défausser vos doubles contre des crédits selon leur rareté, ou les proposer à l’échange contre une carte de même rareté.</p>
       <p>✨ <b>Shiny :</b> chaque carte tirée a 1 chance sur ${fmtN(SHINY_BASE)} de sortir en version shiny, plus 1 chance par exemplaire de ce Pokémon déjà obtenu (booster, évolution, échange ou cadeau), jusqu’à ${SHINY_MAX} sur ${fmtN(SHINY_BASE)}. <b>Inutile de garder vos cartes pour augmenter vos chances :</b> chaque exemplaire obtenu compte pour toujours, même si vous l’échangez, le défaussez ou le faites évoluer ensuite. Un shiny se trouve une seule fois par Pokémon et reste à vous pour toujours : il ne s’échange pas et ne se défausse pas.</p>
     </div></details></div>
@@ -2646,7 +2696,7 @@ function vitPickOpen(){
     <input type="search" class="pick-search" data-pick-search placeholder="Rechercher une carte" aria-label="Rechercher une carte">
     <div class="picker" id="picker">${ids.map(id=>{const r=rar(id),src=imgFor(id,showShiny(id));
       return `<button class="pick wp" data-act="vit-pick" data-id="${id}" data-n="${esc(norm2(nm(id))+" "+id)}"><span class="wp-img">${src?`<img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span>
-        <span class="wp-n">${esc(nm(id))}${hasShiny(id)?" ✨":""}</span><span class="pick-n"><span style="color:var(--r${r})">${gems(r)}</span> ${RAR[r]}</span></button>`}).join("")||`<div class="empty" style="grid-column:1/-1">Aucune carte à ajouter.</div>`}</div></div>`,true);
+        <span class="wp-n">${esc(nm(id))}${hasShiny(id)?" ✨":""}</span><span class="pick-n"><span style="color:var(--r${r})">${gems(r)}</span> ${rarName(id)}</span></button>`}).join("")||`<div class="empty" style="grid-column:1/-1">Aucune carte à ajouter.</div>`}</div></div>`,true);
 }
 function vitAdd(id,after){ // forme par défaut : celle affichée dans la collection (shiny s'il est débloqué et pas masqué), shiny forcé sans exemplaire
   const v=vitOf(S);if(v.length>=VIT_MAX||inVit(id))return;
@@ -2883,7 +2933,7 @@ function evolve(from,to){
   run(async()=>{
     let wasNew=false;
     try{wasNew=!!(await rpc("dc_evolve",{p_from:from,p_to:to})).wasNew}catch(e){closeDlg();throw e}
-    const r=rar(to);SFX.flip(r);
+    const r=fxRar(to);SFX.flip(r);
     openDlg(`<div class="evo-result"><p class="muted" style="margin:0">${esc(nm(from))} évolue en…</p>
       <div class="card-holder evo-anim">${wasNew?`<span class="new-tag">Nouvelle</span>`:""}${cardHTML(to,true)}</div>
       <h2>${esc(nm(to))} !</h2>
@@ -3330,9 +3380,9 @@ function missingHTML(id){
   return `<div class="card-holder"><div class="ghost-card r${r}" style="--c1:${c1};--c2:${c2}">
       <div class="gc-top"><span>${num}</span><span class="gc-gems">${gems(r)}</span></div>
       <div class="gc-art">${src?`<img src="${esc(src)}" alt="" onerror="this.remove()">`:""}</div>
-      <div class="gc-name">???</div><div class="gc-rar">${RAR[r]}</div></div></div>
+      <div class="gc-name">???</div><div class="gc-rar">${rarName(id)}</div></div></div>
     <div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
-    <div><h2>${num}</h2><p class="muted">${gotN(id)?`Vous avez déjà eu cette carte (${fmtN(gotN(id))} fois), mais plus aucun exemplaire.`:"Vous n’avez pas encore cette carte."} Rareté : ${RAR[r]}. Ouvrez des boosters, faites évoluer ou échangez pour l’obtenir.</p></div>
+    <div><h2>${num}</h2><p class="muted">${gotN(id)?`Vous avez déjà eu cette carte (${fmtN(gotN(id))} fois), mais plus aucun exemplaire.`:"Vous n’avez pas encore cette carte."} Rareté : ${rarName(id)}. Ouvrez des boosters, faites évoluer ou échangez pour l’obtenir.</p></div>
     ${hasShiny(id)?`<div class="panel sh-panel"><h3>✨ Shiny débloqué</h3><p class="muted" style="margin:4px 0 0">Il s’affichera de nouveau dès que vous aurez un exemplaire de cette carte.</p></div>`:shinyPanelHTML(id)}
     ${online?`<div class="panel"><h3>🔔 Carte recherchée</h3><p class="muted" style="margin:4px 0 10px">${on?"Vous serez prévenu dès qu’un joueur la met à l’échange.":"Touchez la cloche : vous serez prévenu dès qu’un joueur la met à l’échange."}</p>
       <button class="btn wish-btn${on?" on":""}" data-act="toggle-wish" data-id="${id}" aria-pressed="${on}">${on?"🔔 Je la recherche · Arrêter":"🔔 Je la recherche"}</button></div>`:""}
@@ -3386,8 +3436,8 @@ const SHARE_GEM=["#8a8fa8","#2f9e5b","#2f7fe0","#9a4fe6","#0f9c94","#d99a00","#f
 let shareId=0,shareBlob=null,shareData="";
 function shareText(id,fresh,sh){
   const n=nm(id)+(sh?" shiny ✨":""),r=rar(id);
-  return fresh?`Je viens d’obtenir ${n}, une carte ${RAR[r]}, sur DexCraft ! Viens compléter ta collection : ${SITE_URL}`
-    :`Ma carte ${n} (${RAR[r]}) sur DexCraft, le jeu de collection de cartes Pokémon gratuit. Viens jouer : ${SITE_URL}`;
+  return fresh?`Je viens d’obtenir ${n}, une carte ${rarName(id)}, sur DexCraft ! Viens compléter ta collection : ${SITE_URL}`
+    :`Ma carte ${n} (${rarName(id)}) sur DexCraft, le jeu de collection de cartes Pokémon gratuit. Viens jouer : ${SITE_URL}`;
 }
 async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
   const [n,g,gen,ty,h,w,st,r,ex]=D(id);
@@ -3446,7 +3496,7 @@ async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
     rr(62,y-3,186,6,3);x.fillStyle=r===5?"rgba(255,255,255,.55)":"#e5e4ee";x.fill();
     const bw=Math.max(3,186*Math.min(100,v/1.8)/100),sg=x.createLinearGradient(62,0,62+bw,0);sg.addColorStop(0,c1);sg.addColorStop(1,c2);rr(62,y-3,bw,6,3);x.fillStyle=sg;x.fill();
     x.fillStyle=ink;x.textAlign="right";x.fillText(String(v),284,y)});
-  x.font=body(700,11);x.fillStyle=soft;x.textAlign="left";x.fillText(foot,16,400);x.textAlign="right";x.fillText(RAR[r],284,400);
+  x.font=body(700,11);x.fillStyle=soft;x.textAlign="left";x.fillText(foot,16,400);x.textAlign="right";x.fillText(rarName(id),284,400);
   x.restore();
   // signature
   x.textAlign="center";x.textBaseline="alphabetic";x.font=disp(700,22);x.fillStyle="#ffcf3f";x.fillText("◆ DexCraft",CW/2,472);
@@ -3530,7 +3580,7 @@ function shinyFx(el){
 }
 function flipOne(b,c){
   if(c.fx)return;c.fx=true;            // sécurité : une seule animation par carte
-  markShown(b,c);const r=rar(c.id);SFX.flip(r);
+  markShown(b,c);const r=fxRar(c.id);SFX.flip(r);
   if(c.shiny)setTimeout(()=>shinyFx(b),300);
   if(r===1||r===2)setTimeout(()=>smallFx(b,r),380);
   if(r===3)setTimeout(()=>epicFx(b),350);
@@ -3550,7 +3600,7 @@ async function flipAll(){
       const c=reveal[+b.dataset.i];if(!c||c.shown||!b.isConnected)continue;
       centerCard(b);await sleep(RM()?0:300);
       if(stop())return;
-      flipOne(b,c);updateReveal();const r=rar(c.id);
+      flipOne(b,c);updateReveal();const r=fxRar(c.id);
       if(r>=5){await waitLegend();}else await sleep([260,1000,1350,1850,2050][r]+(c.shiny?1500:0)); // un shiny : le temps de le voir
       if(stop())return;
     }
@@ -3890,7 +3940,7 @@ function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
   const app=$("#app");app.classList.remove("shake");void app.offsetWidth;if(!RM())app.classList.add("shake");
   if(navigator.vibrate)try{vib([80,60,160])}catch(e){}
   const ov=document.createElement("div");ov.className="legend";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Carte légendaire obtenue");
-  ov.innerHTML=`<div class="rays"></div><canvas></canvas><div class="lg-title">${sh?"Légendaire shiny !":"Légendaire !"}</div><div class="lg-card">${cardHTML(id,true,sh)}</div><button class="btn lg-share" data-act="share-card" data-id="${id}" data-fresh="1"${sh?' data-sh="1"':""}>📤 Partager</button><div class="lg-sub">Touchez pour continuer</div>`;
+  ov.innerHTML=`<div class="rays"></div><canvas></canvas><div class="lg-title">${LEG_SPECIAL.has(+id)?rarName(id)+(sh?" shiny":"")+" !":sh?"Légendaire shiny !":"Légendaire !"}</div><div class="lg-card">${cardHTML(id,true,sh)}</div><button class="btn lg-share" data-act="share-card" data-id="${id}" data-fresh="1"${sh?' data-sh="1"':""}>📤 Partager</button><div class="lg-sub">Touchez pour continuer</div>`;
   document.body.append(ov);legendSoon=false;
   let alive=true;
   const close=()=>{if(!alive)return;alive=false;ov.remove();$("#app").classList.remove("shake");if(pendingRender){pendingRender=false;updateReveal()}};
@@ -4568,7 +4618,8 @@ function gameConfig(){
     titleKeys:TITLES.map(t=>t.k),titleDefault:TITLE_DEFAULT,titleDefs:Object.fromEntries(TITLES.map(t=>[t.k,titleDef(t)])),
     pgen:POKE_IDS.map(id=>DEX[id-1][2]).join(""),
     ptype:POKE_IDS.map(id=>{const t=DEX[id-1][3];return String.fromCharCode(96+t[0])+(t[1]?String.fromCharCode(96+t[1]):"-")}).join(""),
-    daily:DAILY,shinyBase:SHINY_BASE,shinyMax:SHINY_MAX,shinyNo:SHINY_NONE}; // shiny (1.1.0)
+    daily:DAILY,shinyBase:SHINY_BASE,shinyMax:SHINY_MAX,shinyNo:SHINY_NONE, // shiny (1.1.0)
+    pool:{4:POOLS[4],5:POOLS[5]}}; // réserves de tirage des Mégas et des Légendaires (1.1.8), lues par dc_open à la place de byr
 }
 /* Condition d'un titre, pour que le serveur calcule lui-même les titres affichés (champ shown du profil).
    Un nouveau titre d'un genre inconnu arrête l'export : il faut alors l'ajouter ici et dans dc__stamp. */
@@ -4593,7 +4644,10 @@ function titleDef(t){
     const sec=window.DC_SECRETS;
     if(!sec){document.body.innerHTML=`<pre id="export-error">Cartes secrètes absentes : lancer outils/generer-config.ps1 (fichier secret/cartes-secretes.json).</pre>`;return}
     const ids={6:[],7:[]};for(const [id,d] of Object.entries(sec))ids[d[7]].push(+id);applySecrets({ids,cards:sec});
-    document.body.innerHTML=`<pre id="export-config">${esc(JSON.stringify(gameConfig()))}</pre>`;return}
+    // en deux parties (1.1.8) : l'éditeur SQL de Supabase tronque au-delà d'environ 40 000 caractères ; la 2e partie est ajoutée à la 1re
+    const cfg=gameConfig(),P2=["evo","pool","titleKeys","titleDefault","titleDefs","pgen","ptype"],a={},b={};
+    for(const [k,v] of Object.entries(cfg))(P2.includes(k)?b:a)[k]=v;
+    document.body.innerHTML=`<pre id="export-config">${esc(JSON.stringify(a))}</pre><pre id="export-config-2">${esc(JSON.stringify(b))}</pre>`;return}
   renderHeader();
   if(!window.supabase){showGate(true);gateMsg("Impossible de charger le jeu. Vérifiez votre connexion, puis rechargez la page.");return}
   SB=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);

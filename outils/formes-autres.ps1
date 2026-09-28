@@ -1,5 +1,6 @@
 ﻿# ============================================================
-#  DexCraft — autres formes (1.1.7) : formes alternatives de Pokémon ordinaires et Ursaking Lune Vermeille
+#  DexCraft — autres formes : formes alternatives de Pokémon ordinaires et Ursaking Lune Vermeille (1.1.7, 8001 à 8035),
+#  formes des légendaires et fabuleux (1.1.8, 8036 à 8070 : variantes, transformations, fusions)
 #  Numéros 8001 et suivants, genre « forme ». Depuis PokeAPI : nom français de l'espèce et de la forme, catégorie,
 #  types, taille, poids, statistiques, illustrations officielles normale et shiny.
 #  Écrit outils\formes-autres.js.txt (lignes à coller dans l'objet FORMS d'index.html) et les images :
@@ -52,6 +53,41 @@ minior-green|Vert
 minior-blue|Bleu
 minior-indigo|Indigo
 minior-violet|Violet
+deoxys-attack|Attaque
+deoxys-defense|Défense
+deoxys-speed|Vitesse
+giratina-origin|Originelle
+shaymin-sky|Céleste
+tornadus-therian|Totémique
+thundurus-therian|Totémique
+landorus-therian|Totémique
+enamorus-therian|Totémique
+keldeo-resolute|Décidé
+meloetta-pirouette|Danse
+hoopa-unbound|Déchaîné|Hoopa Déchaîné
+zygarde-10|10 %
+magearna-original|Couleur du Passé
+zarude-dada|Papa
+ogerpon-wellspring-mask|Puits
+ogerpon-hearthflame-mask|Fourneau
+ogerpon-cornerstone-mask|Pierre
+dialga-origin|Originelle
+palkia-origin|Originelle
+kyurem-black|Noir|Kyurem Noir
+kyurem-white|Blanc|Kyurem Blanc
+necrozma-dusk|Couchant
+necrozma-dawn|Aurore
+necrozma-ultra|Ultra|Ultra-Necrozma
+calyrex-ice|Cavalier du Froid
+calyrex-shadow|Cavalier d’Effroi
+zacian-crowned|Suprême
+zamazenta-crowned|Suprême
+kyogre-primal|Primo|Primo-Kyogre
+groudon-primal|Primo|Primo-Groudon
+eternatus-eternamax|Infinimax
+zygarde-complete|Parfaite
+terapagos-terastal|Téracristal
+terapagos-stellar|Stellaire
 "@ -split "`n" | Where-Object { $_.Trim() } | ForEach-Object { $p = $_.Trim().Split("|"); [pscustomobject]@{ nom = $p[0]; tag = $p[1]; affiche = if ($p.Count -gt 2) { $p[2] } else { "" } } }
 
 $TYPE_NUM = @{ normal=1; fighting=2; flying=3; poison=4; ground=5; rock=6; bug=7; ghost=8; steel=9; fire=10; water=11; grass=12; electric=13; psychic=14; ice=15; dragon=16; dark=17; fairy=18 }

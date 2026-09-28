@@ -39,19 +39,37 @@ $m = [regex]::Match($dom, '<pre id="export-config">(.*?)</pre>', "Singleline")
 if (-not $m.Success) { throw "Configuration introuvable dans la page. Vérifiez index.html." }
 $json = [Net.WebUtility]::HtmlDecode($m.Groups[1].Value)
 $null = $json | ConvertFrom-Json   # vérifie que le JSON est valide
+# 2e partie (1.1.8) : évolutions, réserves de tirage, titres… ajoutés à la 1re (l'éditeur SQL de Supabase tronque au-delà de ~40 000 caractères)
+$m2 = [regex]::Match($dom, '<pre id="export-config-2">(.*?)</pre>', "Singleline")
+if (-not $m2.Success) { throw "2e partie de la configuration introuvable dans la page. Vérifiez index.html." }
+$json2 = [Net.WebUtility]::HtmlDecode($m2.Groups[1].Value)
+$null = $json2 | ConvertFrom-Json
 $sql = @"
 -- ============================================================
---  DexCraft — configuration du jeu pour le serveur (générée par outils\generer-config.ps1)
+--  DexCraft — configuration du jeu pour le serveur, PARTIE 1 (générée par outils\generer-config.ps1)
 --  Ne pas modifier à la main : relancer le script après un changement dans index.html.
+--  À lancer, puis TOUT DE SUITE APRÈS dexcraft-config-2.sql (évolutions, tirages, titres) : sans la partie 2,
+--  les évolutions et les titres ne fonctionnent plus.
 -- ============================================================
 create table if not exists public.game_config (id int primary key, data jsonb not null);
 alter table public.game_config enable row level security;
 insert into public.game_config (id, data) values (1, `$cfg`$$json`$cfg`$::jsonb)
 on conflict (id) do update set data = excluded.data;
-select 'configuration OK' as verif, jsonb_array_length(data->'dexOrder') as cartes from public.game_config where id = 1;
+select 'configuration partie 1 OK : lancer maintenant dexcraft-config-2.sql' as verif, jsonb_array_length(data->'dexOrder') as cartes from public.game_config where id = 1;
 "@
 [IO.File]::WriteAllText((Join-Path $racine "dexcraft-config.sql"), $sql, $utf8)
 Write-Host "dexcraft-config.sql écrit ($($json.Length) caractères)."
+$sql2 = @"
+-- ============================================================
+--  DexCraft — configuration du jeu pour le serveur, PARTIE 2 (générée par outils\generer-config.ps1)
+--  À lancer JUSTE APRÈS dexcraft-config.sql : ajoute évolutions, réserves de tirage et titres à la partie 1.
+-- ============================================================
+update public.game_config set data = data || `$cfg`$$json2`$cfg`$::jsonb where id = 1;
+select 'configuration OK' as verif, jsonb_array_length(data->'dexOrder') as cartes,
+  (data ? 'evo') and (data ? 'titleDefs') and (data ? 'pool') as partie_2_presente from public.game_config where id = 1;
+"@
+[IO.File]::WriteAllText((Join-Path $racine "dexcraft-config-2.sql"), $sql2, $utf8)
+Write-Host "dexcraft-config-2.sql écrit ($($json2.Length) caractères)."
 
 # données des cartes secrètes pour le serveur (table secret_cards, créée par dexcraft-serveur-3.sql)
 # une carte par ligne dans le fichier : « "2001": [ ... ], » (texte repris tel quel, PowerShell 5 déforme les tableaux imbriqués)

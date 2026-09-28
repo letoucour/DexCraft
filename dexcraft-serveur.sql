@@ -381,7 +381,7 @@ begin
         if x < (cfg -> 'oddsK' ->> k)::int then r := k; exit; end if;
         x := x - (cfg -> 'oddsK' ->> k)::int;
       end loop;
-      pool := cfg -> 'byr' -> r;
+      pool := coalesce(cfg -> 'pool' -> (r::text), cfg -> 'byr' -> r); -- réserves de tirage (1.1.8) : Méga et Gigamax de légendaires tirées avec les Légendaires
       id := (pool ->> public.dc__rnd(jsonb_array_length(pool)))::int;
       -- shiny (1.1.0) : (1 + fois où la carte a déjà été obtenue) sur 4 096, 100 sur 4 096 au plus ; une fois par carte,
       -- jamais pour une mythique, une transcendante ou une carte sans illustration shiny (shinyNo)
