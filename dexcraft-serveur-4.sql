@@ -6,7 +6,7 @@
 -- Tirage de p_k boosters spéciaux dans le profil d, sans l'enregistrer. Renvoie {d, drawn}.
 --   'gen'  : 5 cartes de la génération p_val (1 à 9) ;
 --   'type' : 5 cartes du type p_val (1 à 18) ;
---   'prem' : 5 cartes Rare ou mieux (chances premK : mythiques et transcendantes à leur taux habituel).
+--   'prem' : 5 cartes Rare ou mieux (chances premK : celles d'un booster normal réparties sur les raretés Rare et plus, depuis la 1.2.4).
 -- Génération et Type : même tirage de rareté qu'un booster normal (oddsK), Pokémon pris seulement dans le choix
 -- (cfg.spCard : génération et types de chaque carte de dexOrder), jamais de mythique ni de transcendante ; une rareté
 -- sans aucune carte du choix est retirée du tirage, pour que le booster respecte toujours ce qui a été acheté.

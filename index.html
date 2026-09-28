@@ -1213,7 +1213,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.2.3";
+const APP_VERSION="1.2.4";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3503,9 +3503,10 @@ function resetAll(full){
    Génération (5 cartes d'une génération), Type (5 cartes d'un type), Premium (5 cartes Rare ou mieux).
    Génération et Type : même tirage de rareté qu'un booster normal, seule la liste des Pokémon change ; une rareté sans
    aucune carte du choix serait retirée du tirage (aucune aujourd'hui). Premium : raretés Rare et plus seulement,
-   mythiques et transcendantes à leur chance habituelle, le reste réparti entre Rare, Épique, Méga et Légendaire. */
-const SPB={gen:{n:"Booster Génération",price:500},type:{n:"Booster Type",price:500},prem:{n:"Booster Premium",price:2000}};
-const PREM_K=(()=>{const rest=SCALE-MK-TK,s=ODDS_K[2]+ODDS_K[3]+ODDS_K[4]+ODDS_K[5],k=[0,0,...[2,3,4,5].map(r=>Math.floor(ODDS_K[r]*rest/s)),MK,TK];k[2]+=SCALE-k.reduce((a,b)=>a+b,0);return k})();
+   chances d’un booster normal réparties sur ces seules raretés (mythiques et transcendantes comprises, 1.2.4). */
+const SPB={gen:{n:"Booster Génération",price:300},type:{n:"Booster Type",price:300},prem:{n:"Booster Premium",price:750}}; // prix revus par Theo (1.2.4) : 500, 500 et 2 000 avant
+// Premium (1.2.4, choix de Theo) : les chances d’un booster normal réparties sur les seules raretés Rare et plus, mythiques et transcendantes comprises
+const PREM_K=(()=>{const s=ODDS_K.slice(2).reduce((a,b)=>a+b,0),k=[0,0,...ODDS_K.slice(2).map(v=>Math.floor(v*SCALE/s))];k[2]+=SCALE-k.reduce((a,b)=>a+b,0);return k})();
 let SP_LISTS=null; // cartes possibles de chaque génération et de chaque type
 const spList=(kind,v)=>{if(!SP_LISTS){SP_LISTS={gen:{},type:{}};for(const id of DEX_ORDER){(SP_LISTS.gen[genOf(id)]=SP_LISTS.gen[genOf(id)]||[]).push(id);for(const t of D(id)[3]||[])(SP_LISTS.type[t]=SP_LISTS.type[t]||[]).push(id)}}return SP_LISTS[kind][v]||[]};
 const spName=(kind,v)=>kind==="gen"?`Booster Génération ${ROMAN[v]}`:kind==="type"?`Booster Type ${TYPES[v][0]}`:"Booster Premium";
