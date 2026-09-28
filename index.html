@@ -15,6 +15,14 @@ try{const t=localStorage.getItem("dc-theme");if(t==="light"||t==="dark")document
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- appli installable (1.1.5) : fiche de l'appli et icônes dans images/app (dossier déjà publié par Cloudflare Pages) -->
+<link rel="manifest" href="images/app/manifest.webmanifest">
+<meta name="theme-color" content="#eef0fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161a33" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DexCraft">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
@@ -116,6 +124,8 @@ h3{font-size:1.1rem}
 @media (max-width:1300px){.dc-lbl{display:none}}
 .discord-cta{display:flex;align-items:center;gap:10px;background:#5865f2;color:#fff;text-decoration:none;margin-top:10px}
 .discord-cta:hover{background:#4752c4}
+.install-cta{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;background:var(--surface-2);border:1px solid var(--gold)} /* installer l’appli (1.1.5) */
+.install-steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
 .rules{margin-top:10px;font-size:.95rem}
 .rules table{border-collapse:collapse;width:100%;margin:8px 0}
 .rules td{padding:4px 8px;border-bottom:1px solid var(--line)}
@@ -1147,7 +1157,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.4";
+const APP_VERSION="1.1.5";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2172,7 +2182,7 @@ function vBooster(){
     <div class="bh-right">
     <button class="btn volto-cta" data-view="volto"><span class="vb-volt" aria-hidden="true"></span>En attendant vos boosters, une petite VoltoBataille ?</button>
     <button class="btn shop-cta" data-view="shop">Acheter des boosters, ${PACK_PRICE} crédits l’unité</button>
-    ${discordHTML()}</div>
+    ${discordHTML()}${installHTML()}</div>
     <div class="bh-main"><div class="pack-wrap"><button class="pack-hit" data-act="open" ${p.n<1&&!S.bonus?"disabled":""} aria-label="Ouvrir un booster"><div class="pack${myLook("sac")?" sk-"+cosCls(myLook("sac")):""}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div><div class="pk-glow"></div></div></button><div class="pack-shadow"></div></div>
     <div class="open-row">${OPEN_OPTS.map(k=>`<button class="btn${available(S)>=k?" primary":""}" data-act="open-n" data-n="${k}" ${available(S)<k?"disabled":""} title="${available(S)<k?`Il faut ${k} booster${k>1?"s":""} disponible${k>1?"s":""}`:`Ouvrir ${k} booster${k>1?"s":""} d’un coup`}">Ouvrir${k>1?" "+k:""}</button>`).join("")}</div>    <div class="stock"><div class="big">${p.n}<span class="of"> / ${MAXP}</span></div><div class="muted">boosters disponibles</div>
       <div class="stock-bar">${Array.from({length:MAXP},(_,i)=>`<i class="${i<p.n?"on":""}"></i>`).join("")}</div>
@@ -2619,6 +2629,8 @@ function vProfile(){
       <label class="pref pref-vol${on?"":" off"}">Volume <input type="range" min="0" max="100" step="5" value="${Math.round(p.vol*100)}" data-pref="vol" aria-label="Volume"${on?"":" disabled"}> <b>${Math.round(p.vol*100)} %</b></label>
       <label class="pref"><input type="checkbox" data-pref="vib"${p.vib?" checked":""}> Vibrations (téléphone)</label></div>
       <p class="muted" style="margin:6px 0 0;font-size:.85rem">Réglages propres à cet appareil.</p>`})()}
+    ${canInstall()?`<h3 class="psub">Appli</h3>
+    <p class="muted" style="margin:4px 0 10px">Installez DexCraft sur cet appareil : une icône sur l'écran d'accueil, en plein écran, sans barre d'adresse.</p>${installHTML()}`:""}
     <h3 class="psub">Shiny</h3>
     <label class="pref"><input type="checkbox" data-act="shiny-norm"${S.shinyNorm?" checked":""}> Toujours afficher les formes normales, même pour les cartes obtenues en shiny</label>
     <p class="muted" style="margin:6px 0 0;font-size:.85rem">Pour une seule carte, utilisez le bouton de sa fiche. Réglage enregistré sur votre compte.</p>
@@ -3845,6 +3857,7 @@ document.addEventListener("click",e=>{
     case"open":SFX.get();openPack(1);break;
     case"open-n":SFX.get();openPack(+b.dataset.n);break;
     case"toggle-theme":toggleTheme();break;
+    case"install-app":installApp();break; // 1.1.5
     case"toggle-sound":{const on=SFX.toggle();b.textContent=on?"🔊":"🔇";b.setAttribute("aria-label",on?"Couper le son":"Activer le son");b.title=on?"Couper le son":"Activer le son";if(on){SFX.flip(1)}break}
     case"flip":{if(dragMoved){dragMoved=false;break}
       if(flipLock)break;flipLock=true;setTimeout(()=>{flipLock=false},320);
@@ -4003,7 +4016,29 @@ document.addEventListener("click",e=>{
    le choix est gardé sur l'appareil (dc-theme) et appliqué dès le haut de la page. */
 const darkNow=()=>(document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"))==="dark";
 function themeBtn(){const b=$("#h-theme");if(!b)return;const d=darkNow(),t=d?"Passer en mode jour":"Passer en mode nuit";b.textContent=d?"☀️":"🌙";b.setAttribute("aria-label",t);b.title=t}
-function toggleTheme(){const t=darkNow()?"light":"dark";document.documentElement.dataset.theme=t;try{localStorage.setItem("dc-theme",t)}catch(e){}themeBtn()}
+function toggleTheme(){const t=darkNow()?"light":"dark";document.documentElement.dataset.theme=t;try{localStorage.setItem("dc-theme",t)}catch(e){}themeBtn();themeBar()}
+/* couleur de la barre du téléphone (et de la fenêtre de l'appli installée) : celle du thème choisi */
+function themeBar(){if(!document.documentElement.dataset.theme)return;document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.content=darkNow()?"#161a33":"#eef0fa")}
+themeBar();
+/* Installer l'appli (1.1.5) : Android et PC (Chrome, Edge…) proposent l'installation quand on la demande
+   (beforeinstallprompt, gardé pour le bouton) ; sur iPhone et iPad, Apple ne le permet pas : le bouton explique
+   « Partager » puis « Sur l'écran d'accueil ». Bouton caché dans l'appli déjà installée et sur les autres navigateurs. */
+let installEvt=null;
+const inApp=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const canInstall=()=>!inApp()&&(!!installEvt||isIOS());
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;if(S&&!dlg.open)renderView()});
+addEventListener("appinstalled",()=>{installEvt=null;toast("DexCraft est installé : retrouvez-le sur votre écran d’accueil ou dans vos applications.");if(S)renderView()});
+function installHTML(){return canInstall()?`<button class="btn install-cta" data-act="install-app"><span aria-hidden="true">📲</span>Installer l’appli DexCraft</button>`:""}
+function installApp(){
+  if(installEvt){const ev=installEvt;installEvt=null;ev.prompt();ev.userChoice.then(()=>{if(S)renderView()}).catch(()=>{});return}
+  if(isIOS())openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
+    <h2>📲 Installer DexCraft</h2><p class="muted" style="margin:0">Sur iPhone et iPad, l’installation se fait depuis le navigateur, en trois gestes :</p>
+    <ol class="install-steps"><li>Touchez le bouton <b>Partager</b> <span aria-hidden="true">(le carré avec une flèche vers le haut)</span>, en bas de l’écran dans Safari ou en haut à droite dans Chrome.</li>
+      <li>Faites défiler et touchez <b>Sur l’écran d’accueil</b>.</li><li>Touchez <b>Ajouter</b>.</li></ol>
+    <p class="muted" style="margin:0">DexCraft s’ouvre ensuite comme une appli, en plein écran, depuis son icône.</p>
+    <div class="actions"><button class="btn primary" data-act="close">Compris</button></div></div>`,true);
+}
 themeBtn();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",themeBtn)}catch(e){}
 document.addEventListener("keydown",e=>{const t=e.target.closest&&e.target.closest(".tag-click,[role=button][data-act]");if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();t.click()}});
 document.addEventListener("input",e=>{

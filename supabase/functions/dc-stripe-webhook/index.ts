@@ -4,7 +4,9 @@
 //  vérifiée, puis dc_pay_grant (SQL, réservée au service Supabase) ajoute les articles au compte, une seule fois.
 //  À déployer SANS vérification de connexion (« Verify JWT » désactivé) : c'est Stripe qui l'appelle.
 //  Secrets : STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET (whsec_…, donné par Stripe à la création du webhook).
-//  Événements à cocher dans Stripe : checkout.session.completed, checkout.session.async_payment_succeeded.
+//  Événements à cocher dans Stripe : checkout.session.completed, checkout.session.async_payment_succeeded,
+//  et depuis la 1.1.5 : charge.refunded (remboursement complet : pack retiré), charge.dispute.created (contestation :
+//  pack retiré) et charge.dispute.closed (contestation gagnée : pack rendu).
 // ============================================================
 import Stripe from "npm:stripe@17";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -34,6 +36,34 @@ Deno.serve(async (req) => {
           p_amount: s.amount_total ?? 0, p_pi: typeof s.payment_intent === "string" ? s.payment_intent : s.payment_intent?.id ?? null,
         });
         if (error) throw error; // Stripe réessaiera plus tard
+      }
+    }
+    // remboursement COMPLET (tableau de bord Stripe) : le pack est retiré (dc_pay_refund, sans effet s'il l'est déjà).
+    // Un remboursement partiel ne retire rien : geste commercial, à décider à la main.
+    if (event.type === "charge.refunded") {
+      const c = event.data.object as Stripe.Charge;
+      const pi = typeof c.payment_intent === "string" ? c.payment_intent : c.payment_intent?.id;
+      if (pi && c.refunded) {
+        const { error } = await admin.rpc("dc_pay_refund", { p_pi: pi });
+        if (error) throw error;
+      }
+    }
+    // contestation bancaire : pack retiré dès l'ouverture (Stripe a déjà repris l'argent) ;
+    // rendu automatiquement si la contestation est gagnée (dc_pay_grant relivre un paiement « refunded »)
+    if (event.type === "charge.dispute.created" || event.type === "charge.dispute.closed") {
+      const dp = event.data.object as Stripe.Dispute;
+      const pi = typeof dp.payment_intent === "string" ? dp.payment_intent : dp.payment_intent?.id;
+      if (pi && event.type === "charge.dispute.created") {
+        const { error } = await admin.rpc("dc_pay_refund", { p_pi: pi });
+        if (error) throw error;
+      }
+      if (pi && event.type === "charge.dispute.closed" && dp.status === "won") {
+        const { data: pay, error: pErr } = await admin.from("payments").select("session_id, uid, offer, amount").eq("payment_intent", pi).maybeSingle();
+        if (pErr) throw pErr;
+        if (pay) {
+          const { error } = await admin.rpc("dc_pay_grant", { p_session: pay.session_id, p_uid: pay.uid, p_offer: pay.offer, p_amount: pay.amount, p_pi: pi });
+          if (error) throw error;
+        }
       }
     }
     return new Response(JSON.stringify({ received: true }), { headers: { "Content-Type": "application/json" } });
