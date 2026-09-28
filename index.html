@@ -1346,7 +1346,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.3";
+const APP_VERSION="1.3.4";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2036,11 +2036,13 @@ function discard(sel){
 }
 
 /* ---------- rendering helpers ---------- */
+/* étiquettes d'une carte spéciale : couleur du fond (c1), ou celle du type du même nom si la carte le demande (tchips, 1.3.4 : fond clair) */
+const chipCol=(ex,x,c1)=>{const t=ex.tchips&&TYPES.find(y=>y&&y[0]===x);return t?t[1]:c1};
 function cardHTML(id,lg,sh){ // sh : version shiny (1.1.0)
   sh=!!sh&&canShiny(id);
   const [n,g,gen,ty,h,w,st,r,ex]=D(id);
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
-  const chips=ex&&ex.chips?ex.chips.map(x=>`<span class="type" style="--t:${c1}">${esc(x)}</span>`).join(""):ty.map(t=>`<span class="type" style="--t:${TYPES[t][1]}">${TYPES[t][0]}</span>`).join("");
+  const chips=ex&&ex.chips?ex.chips.map(x=>`<span class="type" style="--t:${chipCol(ex,x,c1)}">${esc(x)}</span>`).join(""):ty.map(t=>`<span class="type" style="--t:${TYPES[t][1]}">${TYPES[t][0]}</span>`).join("");
   const kind=ex&&ex.base?(ex.kind?formTag(ex):"Méga"):"";
   const label=r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
   const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind==="forme"?ex.fn:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
@@ -3871,7 +3873,7 @@ async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
   const label=r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
   const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind==="forme"?ex.fn:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
   const foot=ex&&(ex.foot||ex.lines)?(ex.foot||""):ex&&ex.kind==="gmax"?`${(h/10).toLocaleString("fr-FR")} m et plus`:ex&&!ex.kind?"":`${(h/10).toLocaleString("fr-FR")} m, ${(w/10).toLocaleString("fr-FR")} kg`;
-  const chips=ex&&ex.chips?ex.chips.map(x=>[x,c1]):ty.map(t=>[TYPES[t][0],TYPES[t][1]]);
+  const chips=ex&&ex.chips?ex.chips.map(x=>[x,chipCol(ex,x,c1)]):ty.map(t=>[TYPES[t][0],TYPES[t][1]]);
   const src=imgFor(id,sh);let img=null;
   if(src){img=new Image();img.src=src;try{await img.decode()}catch(e){img=null}}
   try{await document.fonts.ready}catch(e){}
