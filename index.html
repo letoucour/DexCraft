@@ -335,6 +335,8 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .shake{animation:shake .5s linear}
 @keyframes shake{0%,100%{transform:translate(0)}20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-5px)}60%{transform:translate(-5px,-3px)}80%{transform:translate(4px,5px)}}
 .new-tag{position:absolute;top:-10px;right:-8px;z-index:3;background:var(--gold);color:var(--gold-ink);font-weight:700;font-size:.8rem;padding:2px 10px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.sh-share{position:absolute;top:-10px;right:-8px;z-index:3;background:#ffcf3f;color:#3a2a00;font-weight:800;font-size:.78rem;padding:2px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(255,207,63,.5);cursor:pointer}
+.flip:not(.shown) .sh-share{display:none}
 .sh-tag{position:absolute;top:-10px;left:-8px;z-index:3;background:linear-gradient(100deg,#ffe68a,#ff9fd8,#9fd4ff);color:#2b1a3d;font-weight:800;font-size:.8rem;padding:2px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(255,200,120,.55)}
 .sh-sum{color:var(--gold);font-weight:700}
 .sh-star{position:fixed;z-index:400;pointer-events:none;font-size:20px;color:#ffe27a;text-shadow:0 0 8px #fff,0 0 14px #ffcf3f;transform:translate(-50%,-50%) scale(.3);opacity:0;animation:shStar 1.3s ease-out forwards}
@@ -695,6 +697,99 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .pack.spk .pack-emblem{color:#fff}.pack.spk .pk-name{text-shadow:0 1px 3px rgba(0,0,0,.5)}
 .pack.spk .diamond{background:rgba(0,0,0,.28);border-color:#fff;color:#fff}
 .pack.spk-prem .pack-emblem{color:#ffd35a}.pack.spk-prem .diamond{border-color:#ffd35a;background:#15131c}
+/* Arène (1.3.0) : tout tient dans la hauteur disponible (--ar-h, calculée par arFit) ; --s = case du terrain */
+html.arena-view,html.arena-view body{overflow:hidden}
+@media (max-width:999px){html.arena-view #version{display:none}} /* le numéro de version passait sur les boutons de l’Arène */
+.arena{--s:clamp(36px,calc((var(--ar-h,700px) - 450px) / 4),96px);--b:min(calc(var(--s) * .86),calc((100vw - 64px) / 8));--o:min(calc(var(--s) * 1.02),calc((100vw - 56px) / 5));
+  height:var(--ar-h,auto);display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.ar-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.ar-top h1{font-size:1.35rem;margin:0 4px 0 0}
+.ar-v{font-size:.7rem;vertical-align:middle;background:var(--gold);color:var(--gold-ink);border-radius:999px;padding:2px 8px;font-family:var(--body)}
+.ar-chip{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-weight:700;font-size:.88rem}
+.ar-chip b{font-family:var(--display)}
+.ar-spd{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:2px 4px;font-size:.78rem}
+.ar-spd button{font:inherit;font-weight:700;border:0;background:none;color:var(--ink-soft);border-radius:7px;padding:3px 7px;cursor:pointer}
+.ar-spd button[aria-pressed="true"]{background:var(--gold);color:var(--gold-ink)}
+.ar-small{font-size:.76rem;margin:4px 0 8px}
+.ar-start{max-width:560px;margin:auto;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px}
+.ar-stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.ar-play{min-height:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.ar-field{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px 10px;display:flex;flex-direction:column;gap:4px}
+.ar-side{display:grid;grid-template-columns:repeat(3,var(--s));gap:5px;justify-content:center}
+.ar-lbl{font-size:.66rem;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:3px}
+.ar-sep{height:2px;background:repeating-linear-gradient(90deg,var(--line) 0 8px,transparent 8px 14px)}
+.ar-slot{position:relative;width:100%;aspect-ratio:1;border-radius:10px;border:2px dashed var(--line);background:var(--surface-2);cursor:pointer;min-width:0}
+.ar-slot.drop,.ar-slot.ar-over,.ar-shop.ar-over{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--surface-2))}
+.ar-slot.free{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,var(--surface-2));animation:arFree 1.6s ease-in-out infinite}
+@keyframes arFree{50%{background:color-mix(in srgb,var(--gold) 26%,var(--surface-2))}}
+.ar-slot.closed{opacity:.45;border-style:solid}
+.ar-tag{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.7rem;color:var(--gold);pointer-events:none}
+.ar-slot.closed .ar-tag{color:var(--ink-soft);font-size:1rem}
+.ar-places{border-radius:999px;padding:1px 8px;background:var(--surface-2);text-transform:none;letter-spacing:0}
+.ar-places.free{background:var(--gold);color:var(--gold-ink);animation:arFreeB 1.6s ease-in-out infinite}
+@keyframes arFreeB{50%{transform:scale(1.06)}}
+.ar-unit{position:absolute;inset:0;border-radius:8px;background:linear-gradient(160deg,var(--c1),var(--c2));display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:2px;overflow:hidden;border:2px solid var(--rc);transition:transform .15s,opacity .3s;touch-action:none;user-select:none;-webkit-user-select:none}
+.ar-unit img{position:absolute;top:3%;left:12%;width:76%;height:64%;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));pointer-events:none}
+.ar-un{position:relative;font-size:.56rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ar-star{position:absolute;top:1px;left:3px;color:#ffe35a;font-size:.75rem;text-shadow:0 1px 2px #000}
+.ar-cost{position:absolute;top:2px;right:3px;font-size:.56rem;font-weight:800;color:#fff;background:rgba(0,0,0,.35);border-radius:5px;padding:0 3px}
+.ar-hp{position:relative;width:92%;height:5px;border-radius:4px;background:rgba(0,0,0,.45);margin-top:1px;overflow:hidden}
+.ar-hp i{position:absolute;left:0;top:0;bottom:0;background:#5fd68f;transition:width .25s}
+.ar-unit.enemy .ar-hp i{background:#ff6b81}
+.ar-unit.sel{outline:3px solid var(--gold);outline-offset:1px}
+.ar-unit.dead{opacity:.15;filter:grayscale(1)}
+.ar-unit.hit{animation:arHit .3s}
+.ar-unit.act{transform:scale(1.08);z-index:2}
+.ar-dragging{opacity:.35}
+.ar-ghost{position:fixed!important;z-index:1000;pointer-events:none;opacity:.9;transform:scale(1.08);box-shadow:0 8px 20px rgba(0,0,0,.4)}
+@keyframes arHit{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.ar-dmg{position:absolute;left:50%;top:30%;transform:translateX(-50%);font-family:var(--display);font-weight:700;font-size:1rem;color:#fff;text-shadow:0 0 3px #000,0 1px 2px #000;pointer-events:none;animation:arDmg .7s forwards;z-index:3;white-space:nowrap}
+.ar-dmg.sup{color:#ffe35a;font-size:1.15rem}.ar-dmg.weak{color:#c9d0ff;font-size:.85rem}
+@keyframes arDmg{from{opacity:1;top:30%}to{opacity:0;top:-10%}}
+.ar-log{font-size:.8rem;min-height:1.2em;text-align:center;font-weight:700}
+.ar-dock{display:flex;flex-direction:column;gap:6px;align-items:center;width:100%}
+.ar-bench{display:grid;grid-template-columns:repeat(8,var(--b));gap:4px}
+.ar-shop{display:grid;grid-template-columns:repeat(5,var(--o));gap:5px;border-radius:12px;border:2px solid transparent}
+.ar-shop.locked{border-color:var(--gold)}
+.ar-offer{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:3px 3px 4px;cursor:pointer;font:inherit;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;touch-action:none;user-select:none;-webkit-user-select:none}
+.ar-pic{position:relative;width:100%;aspect-ratio:1.25;border-radius:8px;background:linear-gradient(160deg,var(--c1),var(--c2))}
+.ar-pic img{position:absolute;inset:4%;width:92%;height:92%;object-fit:contain;pointer-events:none}
+.ar-on{font-size:.6rem;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ar-oc{font-size:.66rem;font-weight:800;color:var(--rc)}
+.ar-own{position:absolute;top:3px;left:3px;font-size:.56rem;font-weight:800;background:var(--gold);color:var(--gold-ink);border-radius:5px;padding:0 4px}
+.ar-offer:disabled{opacity:.4;cursor:not-allowed}
+.ar-offer.empty{visibility:hidden}
+.ar-acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center}
+.ar-acts .btn.ar-on{background:var(--ink);color:var(--bg)}
+.ar-sellz[hidden]{display:none}.ar-sellz.ar-over{outline:3px solid var(--gold);transform:scale(1.05)}
+.ar-fight{padding:10px 26px;font-size:1.05rem}
+.ar-synp,.ar-infop{display:none;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:0;overflow:auto;font-size:.8rem}
+.ar-synp h3,.ar-infop h3{font-size:.95rem;margin:0}
+.ar-sy{display:grid;grid-template-columns:72px auto 1fr;align-items:center;gap:7px;padding:4px 0;border-top:1px solid var(--line);font-size:.76rem}
+.ar-syt{font-weight:700;border-radius:999px;padding:2px 6px;text-align:center;background:var(--surface-2);color:var(--ink-soft)}
+.ar-sy.on .ar-syt{background:var(--t);color:#fff}
+.ar-syd{display:flex;gap:3px}.ar-syd i{width:8px;height:8px;border-radius:50%;border:2px solid var(--t);opacity:.6}.ar-syd i.f{background:var(--t);opacity:1}
+.ar-sye{font-weight:700}.ar-sy:not(.on) .ar-sye{font-weight:400;color:var(--ink-soft)}
+.ar-synl{display:flex;gap:5px;overflow-x:auto;max-width:100%;scrollbar-width:none;min-height:24px}
+.ar-synl span{flex:0 0 auto;border-radius:999px;padding:3px 9px;font-size:.7rem;font-weight:700;background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line)}
+.ar-synl span.on{color:#fff;background:var(--t);border-color:transparent}
+.ar-ipart{position:relative;height:100px;border-radius:10px;background:linear-gradient(160deg,var(--c1),var(--c2));margin:6px 0}
+.ar-ipart img{position:absolute;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px);object-fit:contain}
+.ar-tags{display:flex;flex-wrap:wrap;gap:4px;margin:3px 0}
+.ar-tags span{border-radius:999px;padding:1px 8px;font-weight:700;color:#fff;background:var(--t);font-size:.7rem}
+.ar-ipst{display:grid;grid-template-columns:44px 1fr 30px;gap:2px 6px;align-items:center;margin:6px 0}
+.ar-ipst.cmp{grid-template-columns:40px 1fr 28px 34px}
+.ar-ipst i{display:block;height:6px;border-radius:4px;background:linear-gradient(90deg,var(--c1),var(--c2))}
+.ar-ipst .v{text-align:right;font-weight:700}.ar-ipst .up{color:var(--ok);font-weight:800;text-align:right}.ar-ipst .dn{color:var(--danger);font-weight:800;text-align:right}
+.ar-row{margin:5px 0}.ar-row b{display:block;font-size:.7rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em}
+.ar-rules li{margin:5px 0;font-size:.9rem}
+@media (max-width:599px){.ar-wide{display:none}.ar-top h1{font-size:1.05rem}.ar-chip{padding:2px 7px;font-size:.78rem}.ar-spd button{padding:3px 5px}.ar-fight{padding:9px 18px}}
+@media (min-width:1000px){
+  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 290px) / 5.75),104px);--b:min(calc(var(--s) * .86),92px);--o:min(calc(var(--s) * 1.05),112px)}
+  .ar-stage{grid-template-columns:240px minmax(0,1fr) 240px}
+  .ar-stage .ar-synp{display:block;grid-column:1;grid-row:1}.ar-stage .ar-play{grid-column:2;grid-row:1}.ar-stage .ar-infop{display:block;grid-column:3;grid-row:1}
+  .ar-synl{display:none}
+}
 /* boutique (1.2.3) : rubriques plus bas, visibles dès le haut de la page */
 .shop-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:12px 0 4px}
 .shop-nav>.muted{font-size:.9rem}
@@ -943,7 +1038,7 @@ dialog,.modal{overscroll-behavior:contain}
 /* Onglets : icônes seulement sur téléphone, où les onglets passent en barre fixe en bas de l'écran (au pouce) */
 nav.tabs .ti{display:none}
 @media (max-width:700px){
-  nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:200;display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));gap:0!important;
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:200;display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr));gap:0!important;
     background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.18);padding:4px 2px calc(4px + env(safe-area-inset-bottom,0px))}
   nav.tabs button{position:relative;display:flex!important;flex-direction:column;align-items:center;gap:1px;padding:5px 0 3px!important;border-radius:10px!important;font-size:.6rem!important;letter-spacing:-.02em;min-width:0}
   nav.tabs .ti{display:block;font-size:1.25rem;line-height:1.1}
@@ -1187,6 +1282,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
     <button data-view="evolution"><span class="ti" aria-hidden="true">✨</span><span class="tl">Évolutions</span></button>
     <button data-view="trades"><span class="ti" aria-hidden="true">🔄</span><span class="tl">Échanges</span><span class="tab-badge" id="trade-badge" hidden></span></button>
     <button data-view="volto"><span class="ti" aria-hidden="true">⚡</span><span class="tl">Volto<span class="tl-long">Bataille</span></span></button>
+    <button data-view="arena"><span class="ti" aria-hidden="true">⚔️</span><span class="tl">Arène</span></button>
     <button data-view="ranking"><span class="ti" aria-hidden="true">🏆</span><span class="tl">Classement</span></button>
     <button data-view="shop"><span class="ti" aria-hidden="true">🛒</span><span class="tl">Boutique</span></button>
   </nav>
@@ -1233,7 +1329,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.2.6";
+const APP_VERSION="1.3.0";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2240,8 +2336,10 @@ function collAnchor(){
 }
 function renderView(){
   if(!S)return;const app=$("#app");
+  if(view==="arena"&&arFighting)return; // combat de l'Arène en cours d'animation : on ne redessine pas
   const anc=view==="collection"&&$("#coll-grid")?collAnchor():null;
-  keepInputs(()=>{fillApp(app,({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto})[view]())});
+  keepInputs(()=>{fillApp(app,({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto,arena:vArena})[view]())});
+  document.documentElement.classList.toggle("arena-view",view==="arena");if(view==="arena")arFit(); // Arène : la page ne défile pas
   if(anc){ // après le calcul des vignettes hors de l'écran (image suivante), puis une seconde fois par sécurité
     const fix=()=>{const el=document.querySelector(`#coll-grid .mini[data-id="${anc.id}"]`);if(el){const dy=el.getBoundingClientRect().top-anc.t;if(Math.abs(dy)>1)window.scrollBy(0,dy)}};
     requestAnimationFrame(()=>{fix();requestAnimationFrame(fix)})}
@@ -2374,7 +2472,7 @@ function vBooster(){
     <div class="reveal-bar" id="reveal-head">${revealHeadHTML()}</div>
     <div class="hand-wrap"><button class="hand-nav prev" data-act="hand-prev" aria-label="Carte précédente">‹</button>
     <div class="hand" id="hand">${reveal.map((c,i)=>hitsMode&&!isHit(c)?"":`<button class="flip${c.shown?" shown":""}" data-act="flip" data-i="${i}" aria-label="${c.shown?esc(nm(c.id)):"Retourner la carte "+(i+1)}"><div class="flip-in">
-      <div class="face back${dosCls}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div><div class="face front">${c.shown&&c.isNew?`<span class="new-tag">Nouvelle</span>`:""}${c.shown&&c.shiny?SH_TAG:""}${cardHTML(c.id,false,c.shiny)}</div></div></button>`).join("")}</div>
+      <div class="face back${dosCls}"><span class="bk-gem"><b>DC</b></span><span class="bk-name">DexCraft</span></div><div class="face front">${c.shown&&c.isNew?`<span class="new-tag">Nouvelle</span>`:""}${c.shown&&c.shiny?shTag(c.id):""}${cardHTML(c.id,false,c.shiny)}</div></div></button>`).join("")}</div>
     <button class="hand-nav next" data-act="hand-next" aria-label="Carte suivante">›</button></div>
     <div class="hand-count" id="hand-count"></div>
     ${hitsMode&&!reveal.some(isHit)?`<div class="empty" style="margin:24px auto;max-width:520px">Aucune carte Épique ou mieux dans ce tirage.</div>`:""}
@@ -3149,7 +3247,20 @@ function evolve(from,to){
 /* Comme au casino de Johto : 5 × 5 cartes (1, 2, 3 ou Voltorbe), indicateurs de points et de Voltorbe
    par ligne et par colonne. Gains = produit des cartes retournées, versés en crédits dans la limite
    de VB_CAP par jour (remise à zéro à minuit, heure du joueur). Niveau gardé dans le profil (volto). */
-const VB_CAP=2000;
+const VB_CAP=3000; // 2 000 avant la 1.3.0
+/* ---------- Arène (1.3.0) : règles, exportées dans la configuration (cfg.arena) et appliquées par le serveur (partie 5) ----------
+   odds : chances de rareté de la boutique (Commune, Peu commune, Rare, Épique, Légendaire) par bandes de 2 manches ;
+   slot : chance qu'une case repropose un Pokémon de l'équipe ; typeW : poids des types joués, en part de la réserve ;
+   ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
+const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,winBase:60,winStep:20,startGold:6,incBase:6,
+  odds:[[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]],cost:{0:1,1:2,2:3,3:4,5:5},
+  aiEvo:.04,aiPow0:.65,aiPowK:.03,slot:.25,typeW:1/60};
+const AR_CHART={1:{6:.5,9:.5,8:0},2:{1:2,6:2,9:2,15:2,17:2,3:.5,4:.5,7:.5,14:.5,18:.5,8:0},3:{2:2,7:2,12:2,6:.5,9:.5,13:.5},
+  4:{12:2,18:2,4:.5,5:.5,6:.5,8:.5,9:0},5:{4:2,6:2,9:2,10:2,13:2,7:.5,12:.5,3:0},6:{3:2,7:2,10:2,15:2,2:.5,5:.5,9:.5},
+  7:{12:2,14:2,17:2,2:.5,3:.5,4:.5,8:.5,9:.5,10:.5,18:.5},8:{8:2,14:2,17:.5,1:0},9:{6:2,15:2,18:2,9:.5,10:.5,11:.5,13:.5},
+  10:{7:2,9:2,12:2,15:2,6:.5,10:.5,11:.5,16:.5},11:{5:2,6:2,10:2,11:.5,12:.5,16:.5},12:{5:2,6:2,11:2,3:.5,4:.5,7:.5,9:.5,10:.5,12:.5,16:.5},
+  13:{3:2,11:2,13:.5,12:.5,16:.5,5:0},14:{2:2,4:2,9:.5,14:.5,17:0},15:{3:2,5:2,12:2,16:2,9:.5,10:.5,11:.5,15:.5},
+  16:{16:2,9:.5,18:0},17:{8:2,14:2,2:.5,17:.5,18:.5},18:{2:2,16:2,17:2,4:.5,9:.5,10:.5}}; // table des types (attaquant → défenseur)
 const VB_LEVELS=[null, // [nombre de 2, nombre de 3, nombre de Voltorbe]
   [[3,1,6],[0,3,6],[5,0,6],[2,2,6],[4,1,6]],
   [[1,3,7],[6,0,7],[3,2,7],[0,4,7],[5,1,7]],
@@ -3852,8 +3963,9 @@ let pendingRender=false;
 function markShown(b,c){c.shown=true;saveReveal();
   if(RM())b.classList.add("shown");
   else{b.classList.add("flipping");void b.offsetWidth;b.classList.add("shown");clearTimeout(b._flipT);b._flipT=setTimeout(()=>b.classList.remove("flipping"),650)}const fr=b.querySelector(".front");if(c.isNew&&fr&&!fr.querySelector(".new-tag"))fr.insertAdjacentHTML("afterbegin",`<span class="new-tag">Nouvelle</span>`)
-  if(c.shiny&&fr&&!fr.querySelector(".sh-tag"))fr.insertAdjacentHTML("afterbegin",SH_TAG)}
-const SH_TAG=`<span class="sh-tag">✨ Shiny !</span>`;
+  if(c.shiny&&fr&&!fr.querySelector(".sh-tag"))fr.insertAdjacentHTML("afterbegin",shTag(c.id))}
+/* étiquette d’un shiny retourné, avec son bouton de partage (1.3.0, comme dans la scène d’une Légendaire) */
+const shTag=id=>`<span class="sh-tag">✨ Shiny !</span><span class="sh-share" role="button" tabindex="0" data-act="share-card" data-id="${id}" data-fresh="1" data-sh="1" title="Partager ce shiny">📤 Partager</span>`;
 /* Shiny (1.1.0) : pluie d'étoiles autour de la carte retournée, puis elles s'éteignent (rien de permanent dans la main) */
 function shinyFx(el){
   if(RM()||!el||!el.isConnected)return;
@@ -4250,6 +4362,233 @@ function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
     requestAnimationFrame(loop)})(last);
 }
 
+/* ---------- Arène (1.3.0, v1) : combat automatique façon Teamfight Tactics, en simplifié ----------
+   Le serveur arbitre tout (partie 5 : dc_ar_*) : boutique tirée dans la collection, or, évolutions par 3 exemplaires,
+   adversaires, combat et crédits (AR.cap par jour). La page affiche la partie (AR_V.run), gère le placement
+   (toucher puis case, ou glisser-déposer ; envoyé au serveur avec chaque action) et anime le combat renvoyé. */
+let AR_V=null,arSel=null,arHover=null,arFighting=false,arLoading=false,arLayoutT=0,arNoClick=false,arDrag=null;
+let arSpeed=(()=>{try{return +localStorage.getItem("dc-ar-speed")||1}catch(e){return 1}})();
+const AR_SPEEDS=[[1,"×1"],[2,"×2"],[4,"×4"],[9,"Instantané"]],AR_RARN={0:"Commune",1:"Peu commune",2:"Rare",3:"Épique",5:"Légendaire"};
+const arRun=()=>AR_V&&AR_V.run;
+const arMax=r=>Math.min(6,3+Math.floor((r-1)/2));
+const arCost=u=>AR.cost[rar(u.i)]*(u.s?3:1);
+const arUnits=()=>{const r=arRun();return r?[...r.board,...r.bench].filter(Boolean):[]};
+const arFind=uid=>arUnits().find(u=>u.u===uid);
+const arLayout=()=>{const r=arRun();return {p_board:r.board.map(u=>u?u.u:null),p_bench:r.bench.map(u=>u?u.u:null)}};
+function arSet(v){ // réponse du serveur : partie, crédits du jour, message d'évolution
+  AR_V={run:v.run||null,gained:v.gained||0,cap:v.cap||AR.cap};
+  if(typeof v.msg==="string"){const [k,a,b]=v.msg.split(":");toast(k==="evo"?`✨ ${nm(+a)} évolue en ${nm(+b)} !`:`⭐ ${nm(+a)} passe à une étoile !`)}
+}
+function arLoad(){if(arLoading)return;arLoading=true;rpc("dc_ar_state",{},{render:false}).then(v=>{arSet(v);renderView()}).catch(e=>toast(e.message)).finally(()=>{arLoading=false})}
+function arAct(name,args){ // action sur le serveur, avec le placement actuel
+  clearTimeout(arLayoutT);
+  return run(async()=>{const v=await rpc(name,Object.assign(arLayout(),args||{}),{render:false});arSet(v);arSel=null;renderView()});
+}
+function arSaveLayout(){clearTimeout(arLayoutT);arLayoutT=setTimeout(()=>{if(arRun()&&!arRun().over)rpc("dc_ar_layout",arLayout(),{render:false}).catch(()=>arLoad())},700)}
+/* déplacer une unité vers une case (échange si la case est prise) */
+function arMove(uid,zone,i){
+  const r=arRun(),u=arFind(uid);if(!u||arFighting)return false;
+  const from=r.board.includes(u)?"board":"bench",fi=r[from].indexOf(u),dest=r[zone][i];
+  if(zone==="board"&&from==="bench"&&!dest&&r.board.filter(Boolean).length>=arMax(r.round)){toast(`${arMax(r.round)} Pokémon au plus sur le terrain pour cette manche.`);return false}
+  r[from][fi]=dest||null;r[zone][i]=u;arSel=null;renderView();arSaveLayout();return true;
+}
+function arBuy(i,zone,slot){
+  const r=arRun(),id=r.shop[i];if(!id||arFighting)return;
+  if(r.gold<AR.cost[rar(id)]){toast("Pas assez d’or.");return}
+  const before=new Set(arUnits().map(u=>u.u));
+  arAct("dc_ar_buy",{p_slot:i}).then(()=>{ // lâché sur une case libre (terrain ou banc) : le nouveau Pokémon y va
+    const nu=arUnits().find(u=>!before.has(u.u)),r=arRun();if(!nu||!r.bench.includes(nu)||(zone!=="board"&&zone!=="bench")||r[zone][slot])return;arMove(nu.u,zone,slot)});
+}
+function arSell(uid){if(!arFind(uid)||arFighting)return;arAct("dc_ar_sell",{p_u:uid})}
+/* ---------- synergies et fiche ---------- */
+function arSyn(units){const c={};for(const id of new Set(units.map(u=>u.i)))for(const t of D(id)[3])c[t]=(c[t]||0)+1;return c}
+function arSynPanel(){
+  const r=arRun(),on=arSyn(r.board.filter(Boolean)),bn=arSyn(r.bench.filter(Boolean));
+  const ts=[...new Set([...Object.keys(on),...Object.keys(bn)])].map(Number).sort((a,b)=>(on[b]||0)-(on[a]||0)||(bn[b]||0)-(bn[a]||0));
+  return `<aside class="ar-synp"><h3>Synergies</h3><p class="muted ar-small">Pokémon différents d’un même type sur le terrain : <b>2</b> = +15 % PV et Attaque pour ce type, <b>4</b> = +30 %.</p>
+    ${ts.length?ts.map(t=>{const n=on[t]||0,b=bn[t]||0;return `<div class="ar-sy${n>=2?" on":""}" style="--t:${TYPES[t][1]}"><span class="ar-syt">${TYPES[t][0]}</span><span class="ar-syd">${[1,2,3,4].map(k=>`<i class="${k<=n?"f":""}"></i>`).join("")}</span>
+      <span class="ar-sye">${n>=4?"+30 %":n>=2?"+15 % · 4 : +30 %":n?"encore 1 : +15 %":"sur le banc"}${b&&n<4?` <span class="muted">(${b} au banc)</span>`:""}</span></div>`}).join("")
+      :`<p class="muted ar-small">Placez des Pokémon sur le terrain pour voir leurs synergies.</p>`}</aside>`;
+}
+function arSynLine(){const r=arRun(),on=arSyn(r.board.filter(Boolean)),l=Object.keys(on).map(Number).sort((a,b)=>on[b]-on[a]);
+  return `<div class="ar-synl">${l.length?l.map(t=>`<span class="${on[t]>=2?"on":""}" style="--t:${TYPES[t][1]}">${TYPES[t][0]} ${on[t]}${on[t]>=4?" · +30 %":on[t]>=2?" · +15 %":"/2"}</span>`).join(""):`<span>Synergies : 2 Pokémon d’un même type = +15 %</span>`}</div>`}
+const AR_STN=["PV","Atq","Déf","A.Spé","D.Spé","Vit"];
+function arInfoInner(u,ref){ // u : {i, s} ; ref : Pokémon sélectionné, comparé (vert : mieux, rouge : moins bien)
+  if(!u)return `<h3>Fiche</h3><p class="muted ar-small">Touchez un de vos Pokémon, ou passez sur une offre de la boutique ou un adversaire, pour voir sa fiche. Un Pokémon choisi puis un autre survolé : leurs statistiques sont comparées.</p>`;
+  const [n,cat,,ty,,,st,r]=D(u.i),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,k=u.s?1.6:1,all=Array.from({length:18},(_,i)=>i+1);
+  const strong=all.filter(t=>ty.some(a=>(AR_CHART[a]||{})[t]===2)),weak=all.filter(t=>ty.reduce((m,d)=>m*((AR_CHART[t]||{})[d]??1),1)>=2);
+  const chips=l=>l.length?`<span class="ar-tags">${l.map(t=>`<span style="--t:${TYPES[t][1]}">${TYPES[t][0]}</span>`).join("")}</span>`:`<span class="muted">aucun</span>`;
+  const evo=(EVO[u.i]||[]).filter(x=>x<=1025);
+  return `<h3>${esc(n)}${u.s?" ⭐":""}</h3><div class="muted ar-small">${esc(cat)} · ${AR_RARN[r]} · 🪙 ${AR.cost[r]}</div>
+    <div class="ar-ipart" style="--c1:${c1};--c2:${c2}">${imgFor(u.i)?`<img src="${esc(imgFor(u.i))}" alt="">`:""}</div>
+    <span class="ar-tags">${ty.map(t=>`<span style="--t:${TYPES[t][1]}">${TYPES[t][0]}</span>`).join("")}</span>
+    ${ref?`<p class="ar-small muted" style="margin:4px 0 0">Comparé à ${ref.shop?"":"votre "}${esc(nm(ref.i))}${ref.s?" ⭐":""}${ref.shop?" de la boutique":""} :</p>`:""}
+    <div class="ar-ipst${ref?" cmp":""}" style="--c1:${c1};--c2:${c2}">${st.map((v,i)=>{const val=Math.round(v*k),d=ref?val-Math.round(D(ref.i)[6][i]*(ref.s?1.6:1)):0;
+      return `<span>${AR_STN[i]}</span><i style="width:${Math.min(100,v*k/1.6)}%"></i><span class="v">${val}</span>${ref?`<span class="${d>0?"up":d<0?"dn":"muted"}">${d>0?"+":d<0?"−":"="}${d?Math.abs(d):""}</span>`:""}`}).join("")}</div>
+    <div class="ar-row"><b>Fort contre</b>${chips(strong)}</div><div class="ar-row"><b>Faible contre</b>${chips(weak)}</div>
+    <div class="ar-row"><b>Avec 3 exemplaires</b>${evo.length?evo.map(e=>esc(nm(e))).join(" ou "):"passe à une étoile ⭐"}</div>`;
+}
+function arInfoShow(u){arHover=u;const p=$(".ar-infop"),s=arSel&&arFind(arSel);if(p)p.innerHTML=arInfoInner(arHover||s,arHover&&s&&arHover!==s?s:null)}
+/* ---------- affichage ---------- */
+function arUnitHTML(u,enemy){
+  if(!u)return "";const [n,,,ty,,,,r]=D(u.i),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(u.i);
+  return `<div class="ar-unit${enemy?" enemy":""}${arSel===u.u?" sel":""}" data-uid="${u.u}"${enemy?"":` data-ar-drag="u:${u.u}"`} style="--c1:${c1};--c2:${c2};--rc:var(--r${r})">
+    ${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${u.s?`<span class="ar-star">★</span>`:""}${enemy?"":`<span class="ar-cost">${arCost(u)}</span>`}
+    <span class="ar-un">${esc(n)}</span><span class="ar-hp"><i style="width:100%"></i></span></div>`;
+}
+function vArena(){
+  if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
+  const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v1</span></h1>
+    ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip">🪙 <b>${r.gold}</b> or</span>`:""}
+    <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
+    <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
+    <button class="btn small" data-ar="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${r&&!r.over?`<button class="btn small" data-ar="new" title="Nouvelle partie">↻<span class="ar-wide"> Nouvelle partie</span></button>`:""}</div>`;
+  if(!r||r.over)return `<div class="arena ar-intro">${top}<div class="ar-start">
+    <p>Composez une équipe avec les Pokémon de <b>votre collection</b>, faites-les évoluer en réunissant 3 exemplaires, et affrontez l’ordinateur sur ${AR.rounds} manches. Chaque manche gagnée rapporte des crédits (${fmtN(AR.cap)} par jour au plus).</p>
+    ${r&&r.over?`<p class="muted">Dernière partie : ${r.wins} manche${r.wins>1?"s":""} gagnée${r.wins>1?"s":""}, +${fmtN(r.credits)} crédits.</p>`:""}
+    <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:"Plafond du jour atteint : vous pouvez jouer, sans gagner de crédits jusqu’à minuit."}</p>
+    <button class="btn primary ar-fight" data-ar="start">⚔️ ${r?"Nouvelle partie":"Lancer une partie"}</button></div></div>`;
+  const on=r.board.filter(Boolean).length,max=arMax(r.round),counts={};arUnits().forEach(u=>{if(!u.s)counts[u.i]=(counts[u.i]||0)+1});
+  const empt=[0,1,2,3,4,5].filter(i=>!r.board[i]).slice(0,Math.max(0,max-on)),sel=arSel&&arFind(arSel);
+  return `<div class="arena">${top}
+  <div class="ar-stage">${arSynPanel()}<div class="ar-play">
+    <div class="ar-field">
+      <div class="ar-lbl"><span>Adversaire</span><span>manche ${r.round}</span></div>
+      <div class="ar-side">${[3,4,5,0,1,2].map(i=>`<div class="ar-slot">${arUnitHTML(r.enemy.board[i],true)}</div>`).join("")}</div>
+      <div class="ar-sep"></div>
+      <div class="ar-lbl"><span>Votre équipe ${on}/${max}</span><span class="ar-places${on<max?" free":""}">${on<max?`${max-on} place${max-on>1?"s":""} libre${max-on>1?"s":""}`:"Équipe complète"}</span></div>
+      <div class="ar-side">${[0,1,2,3,4,5].map(i=>{const u=r.board[i],free=empt.includes(i);return `<div class="ar-slot${free?" free":""}${!u&&on>=max?" closed":""}${sel&&!u&&(on<max||r.board.includes(sel))?" drop":""}" data-ar="slot" data-zone="board" data-i="${i}" data-ar-drop="board:${i}">${arUnitHTML(u)}${free?`<span class="ar-tag">+ libre</span>`:!u&&on>=max?`<span class="ar-tag">🔒</span>`:""}</div>`}).join("")}</div>
+    </div>
+    ${arSynLine()}
+    <div class="ar-log" id="ar-log">${sel?`${esc(nm(sel.i))} choisi : touchez une case, ou glissez-le.`:`Touchez ou glissez un Pokémon pour le placer<span class="ar-wide"> ; glissez-le sur la boutique pour le vendre</span>.`}</div>
+    <div class="ar-dock">
+      <div><div class="ar-lbl">Banc</div><div class="ar-bench">${r.bench.map((u,i)=>`<div class="ar-slot${sel&&!u?" drop":""}" data-ar="slot" data-zone="bench" data-i="${i}" data-ar-drop="bench:${i}">${arUnitHTML(u)}</div>`).join("")}</div></div>
+      <div><div class="ar-lbl">Boutique · vos Pokémon</div>
+        <div class="ar-shop${r.locked?" locked":""}" data-ar-drop="shop">${r.shop.map((id,i)=>{if(!id)return `<button class="ar-offer empty" disabled></button>`;const [n,,,ty,,,,rr]=D(id),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(id);
+          return `<button class="ar-offer" data-ar="buy" data-i="${i}" data-ar-drag="s:${i}" style="--c1:${c1};--c2:${c2};--rc:var(--r${rr})" ${r.gold<AR.cost[rr]?"disabled":""} title="${esc(n)} · ${AR_RARN[rr]}">
+            <span class="ar-pic">${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${counts[id]?`<span class="ar-own">${counts[id]}/3</span>`:""}</span><span class="ar-on">${esc(n)}</span><span class="ar-oc">🪙 ${AR.cost[rr]}</span></button>`}).join("")}</div></div>
+      <div class="ar-acts">
+        <button class="btn" data-ar="reroll" ${r.gold<AR.reroll?"disabled":""}>🔄<span class="ar-wide"> Relancer</span> (${AR.reroll} or)</button>
+        <button class="btn${r.locked?" ar-on":""}" data-ar="lock" title="La boutique reste la même à la manche suivante">${r.locked?`🔒<span class="ar-wide"> Boutique verrouillée</span>`:`🔓<span class="ar-wide"> Verrouiller</span>`}</button>
+        <button class="btn danger ar-sellz" data-ar="sell"${sel?"":" hidden"}>${sel?`Vendre ${esc(nm(sel.i))} (+${arCost(sel)} or)`:"Vendre"}</button>
+        <button class="btn primary ar-fight" data-ar="fight">⚔️ Combattre</button></div>
+    </div>
+  </div><aside class="ar-infop">${arInfoInner(arHover||sel,arHover&&sel&&arHover!==sel?sel:null)}</aside></div></div>`;
+}
+/* hauteur disponible sous l'en-tête (et au-dessus de la barre d'onglets sur téléphone) : tout tient sans défiler */
+function arFit(){
+  if(view!=="arena")return;const a=$(".arena"),nav=$("#tabs"),fixed=nav&&getComputedStyle(nav).position==="fixed";if(!a)return;
+  document.documentElement.style.setProperty("--ar-h",Math.max(420,innerHeight-(a.getBoundingClientRect().top+scrollY)-(fixed?nav.offsetHeight:0)-10)+"px");
+}
+addEventListener("resize",arFit);
+/* ---------- combat : le serveur a tout calculé, la page anime le déroulé ---------- */
+async function arFight(){
+  if(arFighting)return;clearTimeout(arLayoutT);
+  let res;
+  try{res=await rpc("dc_ar_fight",arLayout(),{render:false})}catch(e){toast(e.message);return}
+  const r=arRun();Object.assign(r,{board:res.before.board,bench:res.before.bench,enemy:res.before.enemy});arSel=null;arHover=null;
+  arFighting=false;renderView();arFighting=true;
+  if(res.auto&&res.auto.length)$("#ar-log").textContent=`Placé${res.auto.length>1?"s":""} d’office : ${res.auto.map(nm).join(", ")}.`;
+  for(const [a,t,dmg,m,hp,mx] of res.log||[]){
+    if(view!=="arena")break;
+    const ea=document.querySelector(`.ar-unit[data-uid="${a}"]`),et=document.querySelector(`.ar-unit[data-uid="${t}"]`);
+    if(arSpeed<9){ea&&ea.classList.add("act");await sleep(140/arSpeed)}
+    if(et){const bar=et.querySelector(".ar-hp i");if(bar)bar.style.width=Math.max(0,hp*100/mx)+"%";
+      if(arSpeed<9){et.classList.remove("hit");void et.offsetWidth;et.classList.add("hit");
+        const n=document.createElement("span");n.className="ar-dmg"+(m>1?" sup":m<1?" weak":"");n.textContent=m===0?"Aucun effet":m>1?`${dmg} !`:dmg;et.parentElement.append(n);setTimeout(()=>n.remove(),700)}
+      if(hp<=0)et.classList.add("dead")}
+    if(arSpeed<9){await sleep(260/arSpeed);ea&&ea.classList.remove("act")}
+  }
+  await sleep(arSpeed<9?500:150);
+  arFighting=false;arSet(res);renderAll();
+  const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits.`:" (plafond du jour atteint)"}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` +${AR.lossGold} or pour vous relancer.`}`;
+  if(nr.over){
+    openDlg(`<div class="side" style="align-items:center;text-align:center"><div style="font-size:3rem" aria-hidden="true">${nr.hp>0?"🏆":"💥"}</div>
+      <h2>${nr.hp>0?"Arène terminée !":"Plus de vies"}</h2><p>${msg}</p>
+      <p>${nr.hp>0?`Vous avez tenu les ${AR.rounds} manches.`:`Partie finie à la manche ${res.round}.`} ${nr.wins} manche${nr.wins>1?"s":""} gagnée${nr.wins>1?"s":""}.</p>
+      <p style="font-size:1.3rem"><b>+${fmtN(nr.credits)} crédits</b>${res.bonus?` <span class="muted">(dont ${fmtN(res.bonus)} de bonus final)</span>`:""}</p>
+      <p class="muted" style="font-size:.85rem">Les crédits gagnés pendant la partie sont à vous. Aujourd’hui : ${fmtN(AR_V.gained)} / ${fmtN(AR_V.cap)}.</p>
+      <div class="actions"><button class="btn primary" data-ar="start">Rejouer</button><button class="btn" data-act="close">Fermer</button></div></div>`,true);
+  }else{const l=$("#ar-log");if(l)l.textContent=msg;toast(msg)}
+}
+function arRules(){
+  openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Règles de l’Arène</h2><ul class="ar-rules">
+    <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort. ${AR.lives} vies : une manche perdue coûte une vie, et la partie continue à la manche suivante avec ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
+    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche, et ${AR.finish} de bonus en finissant les ${AR.rounds} manches. Ils restent acquis, même en cas de défaite. ${fmtN(AR.cap)} par jour au plus.</li>
+    <li>Or : ${AR.startGold} au départ, puis ${AR.incBase} en manche 1 jusqu’à ${AR.incBase+Math.floor(AR.rounds/2)} en manche ${AR.rounds}, +1 par victoire, +1 d’intérêt par tranche de 10 or gardés (3 au plus).</li>
+    <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon que vous avez déjà revient plus souvent, et les Pokémon des types de votre équipe aussi. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante.</li>
+    <li>3 exemplaires du même Pokémon : il évolue (ou gagne une étoile ⭐ en fin de lignée).</li>
+    <li>Terrain : 3 Pokémon en manche 1, un de plus toutes les 2 manches (6 au plus). Les places libres sont remplies d’office au combat avec les plus forts du banc. Les Pokémon de devant encaissent en premier.</li>
+    <li>Synergies : 2 Pokémon différents d’un même type = +15 % PV et Attaque pour ce type, 4 = +30 %. Faiblesses et résistances des types comptent.</li>
+    <li>Déplacer : touchez un Pokémon puis une case, ou glissez-le. Vendre : glissez-le sur la boutique, ou « Vendre ». Acheter : touchez une offre, ou glissez-la sur le banc ou le terrain.</li></ul></div>`,true);
+}
+document.addEventListener("click",e=>{
+  if(arNoClick){arNoClick=false;if(e.target.closest(".arena")){e.stopPropagation();e.preventDefault();return}}
+  const b=e.target.closest("[data-ar]");if(!b||!e.target.closest(".arena,#dlg"))return;
+  const a=b.dataset.ar,r=arRun();
+  if(a==="speed"){arSpeed=+b.dataset.v;try{localStorage.setItem("dc-ar-speed",arSpeed)}catch(x){}document.querySelectorAll('[data-ar="speed"]').forEach(x=>x.setAttribute("aria-pressed",+x.dataset.v===arSpeed));return}
+  if(a==="rules"){arRules();return}
+  if(a==="start"){closeDlg();run(async()=>{arSet(await rpc("dc_ar_start",{p_new:true},{render:false}));arSel=null;renderView()});return}
+  if(arFighting||!r||r.over)return;
+  if(a==="new"){if(confirm("Abandonner la partie en cours et en commencer une nouvelle ?"))run(async()=>{arSet(await rpc("dc_ar_start",{p_new:true},{render:false}));arSel=null;renderView()});return}
+  if(a==="buy"){arBuy(+b.dataset.i);return}
+  if(a==="reroll"){arAct("dc_ar_reroll");return}
+  if(a==="lock"){arAct("dc_ar_lock",{p_on:!r.locked});return}
+  if(a==="sell"){arSell(arSel);return}
+  if(a==="fight"){arFight();return}
+  if(a==="slot"){const z=b.dataset.zone,i=+b.dataset.i,u=r[z][i];
+    if(!arSel){if(u){arSel=u.u;renderView()}return}
+    if(u&&u.u===arSel){arSel=null;renderView();return}
+    arMove(arSel,z,i)}
+},true);
+document.addEventListener("mouseover",e=>{
+  if(view!=="arena"||!arRun()||arDrag)return;
+  const o=e.target.closest(".ar-offer[data-i]"),un=e.target.closest(".ar-unit");
+  if(o){const id=arRun().shop[+o.dataset.i];if(id){arInfoShow({i:id,s:0});return}}
+  if(un){const r=arRun(),x=[...r.board,...r.bench,...r.enemy.board].find(v=>v&&v.u===+un.dataset.uid);if(x){arInfoShow(x);return}}
+  if(arHover&&!e.target.closest(".ar-infop"))arInfoShow(null);
+});
+/* ---------- glisser-déposer (souris et doigt, 1.3.0) ----------
+   Pokémon de l'équipe : lâché sur « Vendre » il est vendu, sur une case où il peut aller il y va, ailleurs il revient à sa place.
+   Offre de la boutique : lâchée n'importe où elle est achetée (sur une case libre, elle y va), sur la boutique elle y reste.
+   Pendant le glisser, survoler un autre Pokémon compare leurs statistiques dans la fiche. */
+document.addEventListener("pointerdown",e=>{
+  if(view!=="arena"||arFighting||e.button>0)return;const src=e.target.closest("[data-ar-drag]");if(!src||src.disabled)return;
+  const [kind,v]=src.dataset.arDrag.split(":"),r=arRun();
+  arDrag={src,kind,v:+v,unit:kind==="u"?arFind(+v):{i:r.shop[+v],s:0},x:e.clientX,y:e.clientY,on:false,ghost:null,over:null};
+});
+function arSellZone(u){ // bouton « Vendre » : visible pendant qu'on glisse un Pokémon de l'équipe, pour l'y lâcher
+  const z=$(".ar-sellz");if(!z)return;
+  if(u){z.hidden=false;z.textContent=`Vendre ${nm(u.i)} (+${arCost(u)} or)`}else if(!arSel)z.hidden=true;
+}
+document.addEventListener("pointermove",e=>{
+  const g=arDrag;if(!g)return;
+  if(!g.on){if(Math.hypot(e.clientX-g.x,e.clientY-g.y)<8)return;g.on=true;
+    const r=g.src.getBoundingClientRect();g.ghost=g.src.cloneNode(true);g.ghost.classList.add("ar-ghost");
+    Object.assign(g.ghost.style,{width:r.width+"px",height:r.height+"px",left:r.left+"px",top:r.top+"px"});g.dx=e.clientX-r.left;g.dy=e.clientY-r.top;
+    document.body.append(g.ghost);g.src.classList.add("ar-dragging");if(g.kind==="u")arSellZone(g.unit)}
+  g.ghost.style.left=e.clientX-g.dx+"px";g.ghost.style.top=e.clientY-g.dy+"px";
+  const t=document.elementFromPoint(e.clientX,e.clientY),d=t&&t.closest(g.kind==="u"?".ar-slot[data-ar-drop],.ar-sellz":".ar-slot[data-ar-drop],.ar-shop");
+  if(g.over!==d){if(g.over)g.over.classList.remove("ar-over");g.over=d;if(d)d.classList.add("ar-over")}
+  // comparaison : le Pokémon survolé, avec les écarts par rapport à celui qu'on glisse
+  const un=t&&t.closest(".ar-unit:not(.ar-ghost)"),r=arRun();
+  const x=un&&[...r.board,...r.bench,...r.enemy.board].find(v=>v&&v.u===+un.dataset.uid);
+  const p=$(".ar-infop");if(p)p.innerHTML=x&&x!==g.unit?arInfoInner(x,g.kind==="s"?Object.assign({shop:1},g.unit):g.unit):arInfoInner(g.unit);
+});
+function arDragEnd(g){g.ghost.remove();g.src.classList.remove("ar-dragging");if(g.over)g.over.classList.remove("ar-over");arSellZone(null);arInfoShow(null)}
+function arDrop(e){
+  const g=arDrag;arDrag=null;if(!g||!g.on)return;
+  arNoClick=true;setTimeout(()=>{arNoClick=false},80);arDragEnd(g);
+  const d=g.over,drop=d&&d.dataset.arDrop,[zone,i]=(drop||"").split(":");
+  if(g.kind==="u"){
+    if(d&&d.classList.contains("ar-sellz"))arSell(g.v);        // sur « Vendre »
+    else if(zone==="board"||zone==="bench")arMove(g.v,zone,+i); // sur une case (refusé si le terrain est complet)
+    // ailleurs : il reste à sa place
+  }else if(!(d&&d.classList.contains("ar-shop")))arBuy(g.v,zone,+i); // offre : achetée, sauf si relâchée sur la boutique
+}
+document.addEventListener("pointerup",arDrop);
+document.addEventListener("pointercancel",()=>{const g=arDrag;arDrag=null;if(g&&g.on)arDragEnd(g)});
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-act],[data-view]");if(!b)return;
@@ -4936,7 +5275,12 @@ function gameConfig(){
     // boosters spéciaux (1.2.3) : prix, chances du Premium, et pour chaque carte de dexOrder (3 caractères, même ordre)
     // sa génération (chiffre) et ses deux types (a = 1… r = 18, « - » sans second type)
     spb:Object.fromEntries(Object.entries(SPB).map(([k,v])=>[k,{price:v.price}])),premK:PREM_K,
-    spCard:DEX_ORDER.map(id=>{const t=D(id)[3]||[];return genOf(id)+String.fromCharCode(96+t[0])+(t[1]?String.fromCharCode(96+t[1]):"-")}).join("")};
+    spCard:DEX_ORDER.map(id=>{const t=D(id)[3]||[];return genOf(id)+String.fromCharCode(96+t[0])+(t[1]?String.fromCharCode(96+t[1]):"-")}).join(""),
+    // Arène (1.3.0) : règles, statistiques des Pokémon 1 à 1025 (6 × 2 caractères en base 36), table des types (18 × 18 :
+    // 2 super efficace, h peu efficace, 0 sans effet, 1 normal), Pokémon de base par rareté (adversaires)
+    arena:AR,arStat:POKE_IDS.map(id=>DEX[id-1][6].map(v=>Math.min(1295,v).toString(36).padStart(2,"0")).join("")).join(""),
+    arChart:Array.from({length:324},(_,k)=>{const m=((AR_CHART[Math.floor(k/18)+1]||{})[k%18+1]);return m===2?"2":m===.5?"h":m===0?"0":"1"}).join(""),
+    arBase:(()=>{const ev=new Set(Object.values(EVO).flat()),b={};POKE_IDS.filter(id=>!ev.has(id)).forEach(id=>(b[DEX[id-1][7]]=b[DEX[id-1][7]]||[]).push(id));return b})()};
 }
 /* Condition d'un titre, pour que le serveur calcule lui-même les titres affichés (champ shown du profil).
    Un nouveau titre d'un genre inconnu arrête l'export : il faut alors l'ajouter ici et dans dc__stamp. */
@@ -4962,9 +5306,9 @@ function titleDef(t){
     if(!sec){document.body.innerHTML=`<pre id="export-error">Cartes secrètes absentes : lancer outils/generer-config.ps1 (fichier secret/cartes-secretes.json).</pre>`;return}
     const ids={6:[],7:[]};for(const [id,d] of Object.entries(sec))ids[d[7]].push(+id);applySecrets({ids,cards:sec});
     // en deux parties (1.1.8) : l'éditeur SQL de Supabase tronque au-delà d'environ 40 000 caractères ; la 2e partie est ajoutée à la 1re
-    const cfg=gameConfig(),P2=["evo","pool","titleKeys","titleDefault","titleDefs","pgen","ptype","spCard"],a={},b={};
-    for(const [k,v] of Object.entries(cfg))(P2.includes(k)?b:a)[k]=v;
-    document.body.innerHTML=`<pre id="export-config">${esc(JSON.stringify(a))}</pre><pre id="export-config-2">${esc(JSON.stringify(b))}</pre>`;return}
+    const cfg=gameConfig(),P2=["evo","pool","titleKeys","titleDefault","titleDefs","pgen","ptype","spCard"],P3=["arena","arStat","arChart","arBase"],a={},b={},c={};
+    for(const [k,v] of Object.entries(cfg))(P3.includes(k)?c:P2.includes(k)?b:a)[k]=v; // partie 3 (1.3.0) : données de l'Arène
+    document.body.innerHTML=`<pre id="export-config">${esc(JSON.stringify(a))}</pre><pre id="export-config-2">${esc(JSON.stringify(b))}</pre><pre id="export-config-3">${esc(JSON.stringify(c))}</pre>`;return}
   renderHeader();
   if(!window.supabase){showGate(true);gateMsg("Impossible de charger le jeu. Vérifiez votre connexion, puis rechargez la page.");return}
   SB=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);

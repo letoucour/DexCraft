@@ -16,6 +16,24 @@ function setup(scene){
     if(n==="dc_set_vitrine"){d.vitrine=a.p_slots;return {data:{profile:stamp(d)},error:null}}
     if(n==="dc_shiny_view"){if(a.p_id==null)d.shinyNorm=!d.shinyNorm;else{d.shinyOff=d.shinyOff||{};if(d.shinyOff[a.p_id])delete d.shinyOff[a.p_id];else d.shinyOff[a.p_id]=1}return {data:{profile:stamp(d)},error:null}}
     if(n==="dc_secret_cards")return {data:{ids:{6:[],7:[]},cards:{}},error:null};
+    // Arène : faux serveur minimal (la vraie logique est dans dexcraft-serveur-5.sql)
+    if(/^dc_ar_/.test(n)){const W=window;let A=W.__ar;const U=(i,s=0)=>({u:++W.__arN,i,s});W.__arN=W.__arN||100;
+      const shop=()=>[1,4,7,25,133].map(x=>x+Math.floor(Math.random()*3));
+      const view=()=>({data:{run:A,gained:W.__arG||0,cap:3000},error:null});
+      const lay=()=>{if(a.p_board){const all=[...A.board,...A.bench].filter(Boolean),f=x=>x==null?null:all.find(u=>u.u===x);A.board=a.p_board.map(f);A.bench=a.p_bench.map(f)}};
+      if(n==="dc_ar_state")return view();
+      if(n==="dc_ar_start"){A=W.__ar={round:1,hp:3,gold:6,wins:0,credits:0,locked:false,over:false,board:Array(6).fill(null),bench:[U(4),U(7),null,null,null,null,null,null],shop:shop(),enemy:{board:[U(19),U(16),U(10),null,null,null],power:.7}};return view()}
+      lay();
+      if(n==="dc_ar_buy"){const id=A.shop[a.p_slot];A.gold-=AR.cost[rar(id)];A.shop[a.p_slot]=null;A.bench[A.bench.indexOf(null)]=U(id);return view()}
+      if(n==="dc_ar_sell"){["board","bench"].forEach(z=>A[z]=A[z].map(u=>u&&u.u===a.p_u?(A.gold+=AR.cost[rar(u.i)],null):u));return view()}
+      if(n==="dc_ar_reroll"){A.gold-=2;A.shop=shop();return view()}
+      if(n==="dc_ar_lock"){A.locked=a.p_on;return view()}
+      if(n==="dc_ar_layout")return {data:{ok:true},error:null};
+      if(n==="dc_ar_fight"){const before={board:A.board.map(x=>x),bench:A.bench.map(x=>x),enemy:A.enemy};const mine=A.board.filter(Boolean),en=A.enemy.board.filter(Boolean),log=[];
+        const hp={};[...mine,...en].forEach(u=>hp[u.u]=100);for(let k=0;k<12;k++){const a1=mine[k%mine.length],t=en[k%en.length];if(!a1||!t)break;hp[t.u]=Math.max(0,hp[t.u]-40);log.push([a1.u,t.u,40,k%3?1:2,hp[t.u],100])}
+        const r=A.round;A.wins++;A.credits+=80;W.__arG=(W.__arG||0)+80;A.round++;A.gold+=7;A.enemy={board:[U(21),U(23),U(27),null,null,null],power:.7};if(!A.locked)A.shop=shop();
+        return {data:Object.assign(view().data,{before,log,win:true,added:80,bonus:0,auto:[],round:r,profile:stamp(d)}),error:null}}
+    }
     if(n==="dc_buy_special"){const k=spKey(a.p_kind,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)+a.p_q;return {data:{profile:stamp(d)},error:null}}
     if(n==="dc_open_special"){const k=spKey(a.p_kind,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)-a.p_k;if(d.spInv[k]<=0)delete d.spInv[k];
       const l=a.p_kind==="prem"?DEX_ORDER.filter(id=>rar(id)>=2):spList(a.p_kind,a.p_val),drawn=Array.from({length:5*a.p_k},()=>({id:l[Math.floor(Math.random()*l.length)],isNew:true}));
@@ -38,6 +56,7 @@ function setup(scene){
   showGate(false);if(new URLSearchParams(parent.location.search).get("theme"))document.documentElement.dataset.theme=new URLSearchParams(parent.location.search).get("theme");
   if(scene==="shop"||scene==="buy"||scene==="packs"){view="shop";renderAll();if(scene==="buy")buyOffer("cosmos");if(scene==="packs")setTimeout(()=>document.querySelectorAll("#app h2")[2].scrollIntoView(),50)}
   if(scene==="look"){profOpen.look=true;view="profile";renderAll();setTimeout(()=>document.querySelector('[data-sec="look"]').scrollIntoView(),50)}
+  if(scene==="arena"){view="arena";renderAll()}
   if(scene==="booster"){view="booster";if(new URLSearchParams(parent.location.search).get("inv"))S.spInv={prem:2,"gen:1":3,"type:10":1,"type:16":12};renderAll()}
   if(scene==="special"){OWNER=false;S.credits=12500;view="shop";renderAll();setTimeout(()=>{const h=document.querySelector("#shop-special");window.scrollTo(0,h.getBoundingClientRect().top+scrollY-70)},50)}
   if(scene==="hand"){view="booster";reveal=[1,4,7,25,6].map(id=>({id,isNew:false,shown:false}));renderAll()}

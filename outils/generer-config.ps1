@@ -70,6 +70,21 @@ select 'configuration OK' as verif, jsonb_array_length(data->'dexOrder') as cart
 "@
 [IO.File]::WriteAllText((Join-Path $racine "dexcraft-config-2.sql"), $sql2, $utf8)
 Write-Host "dexcraft-config-2.sql écrit ($($json2.Length) caractères)."
+# 3e partie (1.3.0) : données de l'Arène (règles, statistiques, table des types, Pokémon de base)
+$m3 = [regex]::Match($dom, '<pre id="export-config-3">(.*?)</pre>', "Singleline")
+if (-not $m3.Success) { throw "3e partie de la configuration introuvable dans la page. Vérifiez index.html." }
+$json3 = [Net.WebUtility]::HtmlDecode($m3.Groups[1].Value)
+$null = $json3 | ConvertFrom-Json
+$sql3 = @"
+-- ============================================================
+--  DexCraft — configuration du jeu pour le serveur, PARTIE 3 (générée par outils\generer-config.ps1)
+--  À lancer JUSTE APRÈS dexcraft-config-2.sql : ajoute les données de l'Arène.
+-- ============================================================
+update public.game_config set data = data || `$cfg`$$json3`$cfg`$::jsonb where id = 1;
+select 'configuration partie 3 OK' as verif, (data ? 'arena') and (data ? 'arStat') and (data ? 'arChart') as arene_presente from public.game_config where id = 1;
+"@
+[IO.File]::WriteAllText((Join-Path $racine "dexcraft-config-3.sql"), $sql3, $utf8)
+Write-Host "dexcraft-config-3.sql écrit ($($json3.Length) caractères)."
 
 # données des cartes secrètes pour le serveur (table secret_cards, créée par dexcraft-serveur-3.sql)
 # une carte par ligne dans le fichier : « "2001": [ ... ], » (texte repris tel quel, PowerShell 5 déforme les tableaux imbriqués)
