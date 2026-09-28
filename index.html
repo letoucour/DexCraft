@@ -1128,7 +1128,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
   </nav>
   <div class="chips">
     <button class="chip me-chip" data-view="profile" id="h-me" aria-label="Mon profil"><span class="ava ava-none" style="--s:28px">◆</span><span>Profil</span></button>
-    <div class="chip" title="Crédits"><span class="gold">◆</span><b id="h-credits">…</b> crédits</div>
+    <button class="chip" data-view="shop" title="Acheter des boosters avec vos crédits" aria-label="Crédits : acheter des boosters"><span class="gold">◆</span><b id="h-credits">…</b> crédits</button>
     <button class="chip" data-act="packs-info" title="Mes boosters" aria-label="Mes boosters : détail"><span aria-hidden="true">📦</span><b id="h-packs">…</b>/10<span id="h-bonus"></span></button>
     <a class="chip discord-chip" id="h-discord" href="#" data-act="discord-soon" aria-label="Rejoindre le Discord de DexCraft" title="Rejoindre le Discord de DexCraft"></a>
     <button class="chip snd-chip" id="h-snd" data-act="toggle-sound" aria-label="Couper le son" title="Couper le son">🔊</button>
@@ -1169,7 +1169,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.6";
+const APP_VERSION="1.1.7";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1282,7 +1282,9 @@ const MEGA={
 };
 /* Formes régionales (Alola, Galar, Hisui, Paldea) : numéros 5001 et suivants, rareté du Pokémon d'origine.
    Gigamax : numéros 6001 et suivants, même rareté que les méga-évolutions (4). Champ base = Pokémon d'origine,
-   kind = alola, galar, hisui, paldea ou gmax. Données et images tirées de PokeAPI (outils/formes-pokeapi.ps1). */
+   kind = alola, galar, hisui, paldea ou gmax. Données et images tirées de PokeAPI (outils/formes-pokeapi.ps1).
+   Autres formes (1.1.7) : numéros 8001 et suivants, kind = forme (Ursaking Lune Vermeille, Motisma, Lougaroc…),
+   rareté du Pokémon d’origine ; tag = étiquette courte, fn = nom de la forme (outils/formes-autres.ps1). */
 const FORMS={
   5001:["Rattata d’Alola","Pokémon Souris",7,[17,1],3,38,[30,56,35,25,35,72],null,{base:19,kind:"alola"}],
   5002:["Rattatac d’Alola","Pokémon Souris",7,[17,1],7,255,[75,71,70,40,80,77],null,{base:20,kind:"alola"}],
@@ -1373,7 +1375,42 @@ const FORMS={
   6030:["Pachyradjah Gigamax","Pokémon Pachycuivre",8,[9],230,0,[122,130,69,80,69,30],4,{base:879,kind:"gmax"}],
   6031:["Duralugon Gigamax","Pokémon Alliage",8,[9,16],430,0,[70,95,115,120,50,85],4,{base:884,kind:"gmax"}],
   6032:["Shifours Gigamax (Style Poing Final)","Pokémon Kung-fu",8,[2,17],290,0,[100,130,100,63,60,97],4,{base:892,kind:"gmax"}],
-  6033:["Shifours Gigamax (Style Mille Poings)","Pokémon Kung-fu",8,[2,11],260,0,[100,130,100,63,60,97],4,{base:892,kind:"gmax"}]
+  6033:["Shifours Gigamax (Style Mille Poings)","Pokémon Kung-fu",8,[2,11],260,0,[100,130,100,63,60,97],4,{base:892,kind:"gmax"}],
+  8001:["Ursaking Lune Vermeille","Pokémon Tourbe",8,[5,1],24,2900,[113,70,120,135,65,52],null,{base:901,kind:"forme",tag:"Lune Vermeille",fn:"Lune Vermeille"}],
+  8002:["Lougaroc Forme Nocturne","Pokémon Loup",7,[6],11,250,[85,115,75,55,75,82],null,{base:745,kind:"forme",tag:"Nocturne",fn:"Forme Nocturne"}],
+  8003:["Lougaroc Forme Crépusculaire","Pokémon Loup",7,[6],8,250,[75,117,65,55,65,110],null,{base:745,kind:"forme",tag:"Crépusculaire",fn:"Forme Crépusculaire"}],
+  8004:["Plumeline Style Pom-Pom","Pokémon Danse",7,[13,3],6,34,[75,70,70,98,70,93],null,{base:741,kind:"forme",tag:"Pom-Pom",fn:"Style Pom-Pom"}],
+  8005:["Plumeline Style Hula","Pokémon Danse",7,[14,3],6,34,[75,70,70,98,70,93],null,{base:741,kind:"forme",tag:"Hula",fn:"Style Hula"}],
+  8006:["Plumeline Style Buyō","Pokémon Danse",7,[8,3],6,34,[75,70,70,98,70,93],null,{base:741,kind:"forme",tag:"Buyō",fn:"Style Buyō"}],
+  8007:["Motisma Chaleur","Pokémon Plasma",4,[13,10],3,3,[50,65,107,105,107,86],null,{base:479,kind:"forme",tag:"Chaleur",fn:"Motisma Chaleur"}],
+  8008:["Motisma Lavage","Pokémon Plasma",4,[13,11],3,3,[50,65,107,105,107,86],null,{base:479,kind:"forme",tag:"Lavage",fn:"Motisma Lavage"}],
+  8009:["Motisma Froid","Pokémon Plasma",4,[13,15],3,3,[50,65,107,105,107,86],null,{base:479,kind:"forme",tag:"Froid",fn:"Motisma Froid"}],
+  8010:["Motisma Hélice","Pokémon Plasma",4,[13,3],3,3,[50,65,107,105,107,86],null,{base:479,kind:"forme",tag:"Hélice",fn:"Motisma Hélice"}],
+  8011:["Motisma Tonte","Pokémon Plasma",4,[13,12],3,3,[50,65,107,105,107,86],null,{base:479,kind:"forme",tag:"Tonte",fn:"Motisma Tonte"}],
+  8012:["Morphéo Forme Solaire","Pokémon Climat",3,[10],3,8,[70,70,70,70,70,70],null,{base:351,kind:"forme",tag:"Solaire",fn:"Forme Solaire"}],
+  8013:["Morphéo Forme Eau de Pluie","Pokémon Climat",3,[11],3,8,[70,70,70,70,70,70],null,{base:351,kind:"forme",tag:"Eau de Pluie",fn:"Forme Eau de Pluie"}],
+  8014:["Morphéo Forme Blizzard","Pokémon Climat",3,[15],3,8,[70,70,70,70,70,70],null,{base:351,kind:"forme",tag:"Blizzard",fn:"Forme Blizzard"}],
+  8015:["Cheniselle Cape Sable","Pokémon Ver Caché",4,[7,5],5,65,[60,79,105,59,85,36],null,{base:413,kind:"forme",tag:"Sable",fn:"Cape Sable"}],
+  8016:["Cheniselle Cape Déchet","Pokémon Ver Caché",4,[7,9],5,65,[60,69,95,69,95,36],null,{base:413,kind:"forme",tag:"Déchet",fn:"Cape Déchet"}],
+  8017:["Bargantua Motif Bleu","Pokémon Violent",5,[11],10,180,[70,92,65,80,55,98],null,{base:550,kind:"forme",tag:"Bleu",fn:"Motif Bleu"}],
+  8018:["Bargantua Motif Blanc","Pokémon Violent",5,[11],10,180,[70,92,65,80,55,98],null,{base:550,kind:"forme",tag:"Blanc",fn:"Motif Blanc"}],
+  8019:["Salarsen Forme Grave","Pokémon Punk",8,[13,4],16,400,[75,98,70,114,70,75],null,{base:849,kind:"forme",tag:"Grave",fn:"Forme Grave"}],
+  8020:["Floette Fleur Éternelle","Pokémon Uniflore",6,[18],2,9,[74,65,67,125,128,92],null,{base:670,kind:"forme",tag:"Éternelle",fn:"Fleur Éternelle"}],
+  8021:["Tapatoès Plumage Bleu","Perroquet",9,[1,3],6,24,[82,96,51,45,51,92],null,{base:931,kind:"forme",tag:"Bleu",fn:"Plumage Bleu"}],
+  8022:["Tapatoès Plumage Jaune","Perroquet",9,[1,3],6,24,[82,96,51,45,51,92],null,{base:931,kind:"forme",tag:"Jaune",fn:"Plumage Jaune"}],
+  8023:["Tapatoès Plumage Blanc","Perroquet",9,[1,3],6,24,[82,96,51,45,51,92],null,{base:931,kind:"forme",tag:"Blanc",fn:"Plumage Blanc"}],
+  8024:["Nigirigon Forme Affalée","Mimétisme",9,[16,11],3,80,[68,50,60,120,95,82],null,{base:978,kind:"forme",tag:"Affalée",fn:"Forme Affalée"}],
+  8025:["Nigirigon Forme Raide","Mimétisme",9,[16,11],3,80,[68,50,60,120,95,82],null,{base:978,kind:"forme",tag:"Raide",fn:"Forme Raide"}],
+  8026:["Deusolourdo Forme Triple","Serpent",9,[1],45,474,[125,100,80,85,75,55],null,{base:982,kind:"forme",tag:"Triple",fn:"Forme Triple"}],
+  8027:["Famignol Famille de Trois","Famille",9,[1],3,23,[74,75,70,65,75,111],null,{base:925,kind:"forme",tag:"Trois",fn:"Famille de Trois"}],
+  8028:["Mordudor Forme Marche","Coffrotrésor/Chassotrésor",9,[8],1,10,[45,30,25,75,45,80],null,{base:999,kind:"forme",tag:"Marche",fn:"Forme Marche"}],
+  8029:["Météno Noyau Rouge","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Rouge",fn:"Noyau Rouge"}],
+  8030:["Météno Noyau Orange","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Orange",fn:"Noyau Orange"}],
+  8031:["Météno Noyau Jaune","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Jaune",fn:"Noyau Jaune"}],
+  8032:["Météno Noyau Vert","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Vert",fn:"Noyau Vert"}],
+  8033:["Météno Noyau Bleu","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Bleu",fn:"Noyau Bleu"}],
+  8034:["Météno Noyau Indigo","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Indigo",fn:"Noyau Indigo"}],
+  8035:["Météno Noyau Violet","Pokémon Météore",7,[6,3],3,3,[60,100,60,100,60,120],null,{base:774,kind:"forme",tag:"Violet",fn:"Noyau Violet"}]
 };
 /* Zarbi (0.8.9) : ses 27 autres formes, B à Z, ! et ?, numéros 7001 à 7027 (Zarbi n° 201 est la forme A).
    Mêmes données et même rareté que Zarbi ; illustrations officielles tirées de PokeAPI. */
@@ -1390,6 +1427,10 @@ EVO[52]=[53];EVO[194]=[195];EVO[215]=[461];EVO[562]=[563];[83,122,211,222,264].f
  [5019,[863]],[5020,[5021]],[5022,[5023,5030]],[5024,[865]],[109,[5025]],[439,[5026]],[5026,[866]],[5031,[864]],[5032,[5033]],[5033,[862]],[5034,[5035]],[5036,[867]],
  [5038,[5039]],[5040,[5041]],[156,[5042]],[5043,[904]],[5044,[903]],[502,[5045]],[548,[5046]],[5047,[5048]],[627,[5049]],[704,[5050]],[5050,[5051]],[712,[5052]],[723,[5053]],
  [5054,[980]]].forEach(([a,b])=>{EVO[a]=[...(EVO[a]||[]),...b]});
+/* Autres formes (1.1.7) : évolutions officielles. Paragruel ne s'obtient plus depuis Bargantua (motif rouge), mais depuis
+   Bargantua Motif Blanc, comme dans les jeux ; Gromago aussi depuis Mordudor Forme Marche. */
+delete EVO[550];
+[[744,[8002,8003]],[412,[8015,8016]],[848,[8019]],[206,[8026]],[924,[8027]],[8018,[902]],[8028,[1000]]].forEach(([a,b])=>{EVO[a]=[...(EVO[a]||[]),...b]});
 /* Cartes secrètes (mythiques 2001 et suivantes, transcendantes 3001 et suivantes) : leurs données ne sont PAS dans
    ce fichier, lisible par tous. Le serveur les envoie à la demande (dc_secret_cards), seulement celles que le joueur
    a le droit de voir ; voir « cartes secrètes » plus bas. Liste complète sur le PC de Theo : secret/cartes-secretes.json. */
@@ -1402,16 +1443,17 @@ const MEGA_BY_BASE={};MEGA_IDS.forEach(id=>{const b=MEGA[id][8].base;(MEGA_BY_BA
 const REG_IDS=Object.keys(FORMS).map(Number).filter(id=>["alola","galar","hisui","paldea"].includes(FORMS[id][8].kind)); // formes régionales
 const GMAX_IDS=Object.keys(FORMS).map(Number).filter(id=>FORMS[id][8].kind==="gmax"); // Gigamax
 const UNOWN_IDS=Object.keys(FORMS).map(Number).filter(id=>FORMS[id][8].kind==="zarbi"); // formes de Zarbi (B à ?)
+const ALT_IDS=Object.keys(FORMS).map(Number).filter(id=>FORMS[id][8].kind==="forme"); // autres formes (1.1.7) : Motisma, Lougaroc, Ursaking Lune Vermeille…
 const byBase=ids=>{const o={};ids.forEach(id=>{const b=FORMS[id][8].base;(o[b]=o[b]||[]).push(id)});return o};
-const REG_BY_BASE=byBase(REG_IDS),GMAX_BY_BASE=byBase(GMAX_IDS),UNOWN_BY_BASE=byBase(UNOWN_IDS);
-/* ordre d'affichage : après chaque Pokémon, ses formes régionales, ses méga-évolutions puis sa forme Gigamax */
-const DEX_ORDER=[];for(let i=1;i<=1025;i++){DEX_ORDER.push(i,...(REG_BY_BASE[i]||[]),...(UNOWN_BY_BASE[i]||[]),...(MEGA_BY_BASE[i]||[]),...(GMAX_BY_BASE[i]||[]))}
-const SPEC_IDS=[...MEGA_IDS,...REG_IDS,...UNOWN_IDS,...GMAX_IDS,...HIDDEN_IDS];
+const REG_BY_BASE=byBase(REG_IDS),GMAX_BY_BASE=byBase(GMAX_IDS),UNOWN_BY_BASE=byBase(UNOWN_IDS),ALT_BY_BASE=byBase(ALT_IDS);
+/* ordre d'affichage : après chaque Pokémon, ses formes régionales, ses autres formes, ses méga-évolutions puis sa forme Gigamax */
+const DEX_ORDER=[];for(let i=1;i<=1025;i++){DEX_ORDER.push(i,...(REG_BY_BASE[i]||[]),...(UNOWN_BY_BASE[i]||[]),...(ALT_BY_BASE[i]||[]),...(MEGA_BY_BASE[i]||[]),...(GMAX_BY_BASE[i]||[]))}
+const SPEC_IDS=[...MEGA_IDS,...REG_IDS,...UNOWN_IDS,...ALT_IDS,...GMAX_IDS,...HIDDEN_IDS];
 /* filtre par génération : méga-évolutions et Gigamax rangées avec leur Pokémon d'origine (Méga-Dracaufeu en 1re génération) */
 const genOf=id=>{const s=MEGA[id]||(GMAX_IDS.includes(+id)&&FORMS[id]);return s?DEX[s[8].base-1][2]:D(id)[2]};
-const FORM_KIND={alola:"Alola",galar:"Galar",hisui:"Hisui",paldea:"Paldea",gmax:"Gigamax",zarbi:"Zarbi"};
+const FORM_KIND={alola:"Alola",galar:"Galar",hisui:"Hisui",paldea:"Paldea",gmax:"Gigamax",zarbi:"Zarbi",forme:"Forme"};
 /* petite étiquette d’une forme à côté du numéro : « Alola », « Gigamax »… ; la lettre pour Zarbi */
-const formTag=ex=>ex.kind==="zarbi"?ex.letter:FORM_KIND[ex.kind];
+const formTag=ex=>ex.kind==="zarbi"?ex.letter:ex.kind==="forme"?ex.tag:FORM_KIND[ex.kind]; // autre forme : « Nocturne », « Chaleur »…
 /* Mythiques : exactement 1 carte sur 4096. Transcendantes : 1 sur 8192.
    Le tirage se fait sur SCALE = 8192 x 1000, donc chaque rareté tombe juste.
    La différence est toujours prise sur les Communes. */
@@ -1756,7 +1798,7 @@ function cardHTML(id,lg,sh){ // sh : version shiny (1.1.0)
   const chips=ex&&ex.chips?ex.chips.map(x=>`<span class="type" style="--t:${c1}">${esc(x)}</span>`).join(""):ty.map(t=>`<span class="type" style="--t:${TYPES[t][1]}">${TYPES[t][0]}</span>`).join("");
   const kind=ex&&ex.base?(ex.kind?formTag(ex):"Méga"):"";
   const label=r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
-  const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
+  const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind==="forme"?ex.fn:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
   return `<div class="card r${r}${lg?" lg":""}${sh?" shiny":""}" style="--c1:${c1};--c2:${c2}">
   <div class="card-top"><span>${sh?`<b class="sh-mark" title="Shiny">✨</b> `:""}${label}</span><span class="gems" aria-label="${RAR[r]}">${gems(r)}</span></div>
   <div class="art">${imgFor(id,sh)?`<img class="art-img" src="${esc(imgFor(id,sh))}" alt="" onerror="this.remove()">`:""}<span class="art-initial" aria-hidden="true">${esc(n[0])}</span><span class="art-no" aria-hidden="true">${r===7?"❖":r===6?"✦":ex&&ex.base?ex.base:id}</span><span class="art-gen">${edition}</span></div>
@@ -1885,7 +1927,7 @@ const TITLES=[
   {k:"transcendant",n:"Transcendant",ic:"❖",g:"Spéciaux",cls:"trans",d:"Possède toutes les cartes transcendantes",ids:TRANS_IDS,hidden:true},
   {k:"lord",n:"Lord",ic:"🐋",g:"Spéciaux",cls:"lord",d:"A acheté le Pack Baleine assumée",test:p=>owns(p,"titre.lord")}, // titre de la boutique (0.9.0)
   ...DEX_TIERS.map(([need,n,k])=>({k,n,ic:"★",g:"Pokédex",cls:"tier",d:`A obtenu ${fmtN(need)} cartes différentes, toutes formes comprises`,ids:DEX_ORDER,need})),
-  {k:"maitre",n:"Maître",ic:"♛",g:"Pokédex",cls:"master",d:"Possède toutes les cartes du jeu : Pokémon, formes régionales, formes de Zarbi, méga-évolutions et Gigamax",ids:DEX_ORDER},
+  {k:"maitre",n:"Maître",ic:"♛",g:"Pokédex",cls:"master",d:"Possède toutes les cartes du jeu : Pokémon, formes régionales, formes de Zarbi, autres formes, méga-évolutions et Gigamax",ids:DEX_ORDER},
   {k:"starters",n:"Starters",ic:"✿",g:"Collections",cls:"tc",c:"#e0782a",d:"A obtenu tous les starters des 9 générations",ids:STARTER_IDS},
   ...[0,1,2,3,4,5].map(r=>({k:"rar"+r,n:["Commun","Peu commun","Rare","Épique","Méga","Légendaire"][r],ic:gems(r),g:"Collections",cls:"tc",c:["#7d8196","#2f9e5b","#2f7fe0","#9a4fe6","#0f9c94","#c98a00"][r],
     d:r===4?"Possède toutes les méga-évolutions":`Possède toutes les cartes ${RAR[r].toLowerCase()}s`,ids:r===4?MEGA_IDS:BYR[r]})),
@@ -2318,7 +2360,7 @@ function vCollection(){
   const ids=filtered();const selN=discardSel?Object.values(discardSel).reduce((a,b)=>a+b,0):0;
   const opt=(k,v,l)=>`<option value="${v}"${String(filt[k])===String(v)?" selected":""}>${l}</option>`;
   return `<div class="col-head"><div><h1>Collection</h1>
-    <div class="col-stat">${nDex}<span> / ${fmtN(LB_TOTAL)} cartes différentes (${uniq} / 1025 Pokémon, ${own(REG_IDS)} / ${REG_IDS.length} formes régionales, ${own(UNOWN_IDS)} / ${UNOWN_IDS.length} formes de Zarbi, ${own(MEGA_IDS)} / ${MEGA_IDS.length} méga-évolutions, ${own(GMAX_IDS)} / ${GMAX_IDS.length} Gigamax)${myth?`, <b class="myth-txt">${myth} mythique${myth>1?"s":""}</b>`:""}${trans?`, <b class="trans-txt">${trans} transcendante${trans>1?"s":""}</b>`:""}, ${fmtN(total)} cartes au total${S.shinyN?`, <b class="sh-sum">✨ ${fmtN(S.shinyN)} shiny</b>`:""}</span></div>
+    <div class="col-stat">${nDex}<span> / ${fmtN(LB_TOTAL)} cartes différentes (${uniq} / 1025 Pokémon, ${own(REG_IDS)} / ${REG_IDS.length} formes régionales, ${own(UNOWN_IDS)} / ${UNOWN_IDS.length} formes de Zarbi, ${own(ALT_IDS)} / ${ALT_IDS.length} autres formes, ${own(MEGA_IDS)} / ${MEGA_IDS.length} méga-évolutions, ${own(GMAX_IDS)} / ${GMAX_IDS.length} Gigamax)${myth?`, <b class="myth-txt">${myth} mythique${myth>1?"s":""}</b>`:""}${trans?`, <b class="trans-txt">${trans} transcendante${trans>1?"s":""}</b>`:""}, ${fmtN(total)} cartes au total${S.shinyN?`, <b class="sh-sum">✨ ${fmtN(S.shinyN)} shiny</b>`:""}</span></div>
     <div class="rar-counts">${RAR.slice(0,shownR).map((r,i)=>i>=6?`<span class="${i===7?"trans-txt":"myth-txt"}">${gems(i)} <b>${per[i]}</b></span>`:`<span><span style="color:var(--r${i})">${gems(i)}</span> <b>${per[i]}</b>/${BYR[i].length}</span>`).join("")}</div></div>
     <div class="actions">${discardSel?`<button class="btn small" data-act="discard-cancel">Quitter la défausse</button>`:tradeSel?`<button class="btn small" data-act="trade-cancel">Quitter la sélection</button>`:`<button class="btn" data-act="trade-mode">Mettre à l’échange</button><button class="btn" data-act="discard-mode">Défausser des cartes</button>`}</div></div>
   <div class="progress" style="margin-top:12px"><b style="width:${nDex*100/LB_TOTAL}%"></b></div>
@@ -3352,7 +3394,7 @@ async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
   const kind=ex&&ex.base?(ex.kind?formTag(ex):"Méga"):"";
   const label=r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
-  const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
+  const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind==="forme"?ex.fn:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
   const foot=ex&&(ex.foot||ex.lines)?(ex.foot||""):ex&&ex.kind==="gmax"?`${(h/10).toLocaleString("fr-FR")} m et plus`:ex&&!ex.kind?"":`${(h/10).toLocaleString("fr-FR")} m, ${(w/10).toLocaleString("fr-FR")} kg`;
   const chips=ex&&ex.chips?ex.chips.map(x=>[x,c1]):ty.map(t=>[TYPES[t][0],TYPES[t][1]]);
   const src=imgFor(id,sh);let img=null;
