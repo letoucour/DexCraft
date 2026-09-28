@@ -1346,7 +1346,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.5";
+const APP_VERSION="1.3.6";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2202,7 +2202,6 @@ const TITLES=[
   /* Activité : compteurs du profil (stats), sans rétroactivité */
   ...[["packs",100,"Déballeur","A ouvert {n} boosters"],["packs",1000,"Ouvre-boosters","A ouvert {n} boosters"],["packs",5000,"Accro aux boosters","A ouvert {n} boosters"],
     ["evos",50,"Éleveur","A réalisé {n} évolutions"],["evos",250,"Évolutionniste","A réalisé {n} évolutions"],
-    ["trades",20,"Négociant","A conclu {n} échanges"],["trades",80,"Diplomate","A conclu {n} échanges"],["trades",200,"Charismatique","A conclu {n} échanges"],
     ["discards",500,"Recycleur","A défaussé {n} cartes"],
     ["maxCr",50000,"Fortuné","A possédé {n} crédits en même temps"],["maxCr",250000,"Magnat","A possédé {n} crédits en même temps"],
     ["days",30,"Fidèle","A joué {n} jours différents"],["days",100,"Vétéran","A joué {n} jours différents"],
@@ -2214,6 +2213,14 @@ const TITLES=[
   {k:"shinyAll",n:"Dormir n’est pas une option",ic:"✨",g:"Shiny",cls:"tc",c:"#c9a227",d:"A trouvé tous les shiny du jeu",stat:"shinyN",need:shinyTotal()},
   {k:"luck",n:"Chanceux",ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:"A obtenu 2 Légendaires dans un même booster",test:p=>!!(p.stats&&p.stats.luck)},
   {k:"vbL8",n:"Démineur",ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:"A gagné une manche de VoltoBataille au niveau 8",test:p=>!!(p.stats&&p.stats.vbL8)},
+  /* Échanges (1.3.6) : paliers et noms choisis par Theo (avant : Négociant 20, Diplomate 80, Charismatique 200) */
+  ...[[20,"Négociant"],[80,"Baron"],[150,"Comte"],[250,"Diplomate"],[500,"Charismatique"],[750,"Duc"],[1000,"Empereur"]]
+    .map(([need,n])=>({k:"trades"+need,n,ic:"⚜",g:"Échanges",cls:"tc",c:"#a0701c",d:`A conclu ${fmtN(need)} échanges`,stat:"trades",need})),
+  /* Arène (1.3.6) : compteurs tenus depuis l'ouverture de l'Arène (1.3.0), donc rétroactifs */
+  ...[["arWins",25,"Gladiateur","A gagné 25 manches dans l’Arène"],["arWins",150,"Centurion","A gagné 150 manches dans l’Arène"],["arWins",500,"Imperator","A gagné 500 manches dans l’Arène"],
+    ["arDone",1,"Vainqueur de l’Arène","A terminé les 10 manches d’une partie de l’Arène"],["arDone",25,"Conquérant","A terminé 25 parties de l’Arène, les 10 manches à chaque fois"]]
+    .map(([stat,need,n,d])=>({k:stat+need,n,ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d,stat,need})),
+  {k:"arPerf",n:"Invaincu",ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d:"A terminé les 10 manches d’une partie de l’Arène sans perdre une vie",test:p=>!!(p.stats&&p.stats.arPerf)},
 ];
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
 const TITLE_MAX=3,TITLE_DEFAULT=["maitre"]; // Alpha et Bêta testeur : badges à côté du pseudo depuis la 1.0.1, plus des titres
@@ -3281,7 +3288,7 @@ const VB_CAP=3000; // 2 000 avant la 1.3.0
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
 const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,winBase:60,winStep:20,startGold:6,incBase:6,
   odds:[[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]],cost:{0:1,1:2,2:3,3:4,5:5},
-  aiEvo:.048,aiPow0:.69,aiPowK:.033,slot:.2,typeW:1/75}; // 1.3.2 : slot .25 → .2 et typeW 1/60 → 1/75 ; 1.3.5 : ordinateur un peu plus fort (aiEvo .04, aiPow0 .65, aiPowK .03 avant ; « un poil simple », avis de Theo)
+  aiEvo:.056,aiPow0:.74,aiPowK:.036,slot:.2,typeW:1/75}; // 1.3.2 : slot .25 → .2 et typeW 1/60 → 1/75 ; 1.3.5 : ordinateur un peu plus fort (aiEvo .04, aiPow0 .65, aiPowK .03 avant ; « un poil simple », avis de Theo) ; 1.3.6 : encore un cran (.048, .69, .033 avant ; « encore trop simple »)
 const AR_CHART={1:{6:.5,9:.5,8:0},2:{1:2,6:2,9:2,15:2,17:2,3:.5,4:.5,7:.5,14:.5,18:.5,8:0},3:{2:2,7:2,12:2,6:.5,9:.5,13:.5},
   4:{12:2,18:2,4:.5,5:.5,6:.5,8:.5,9:0},5:{4:2,6:2,9:2,10:2,13:2,7:.5,12:.5,3:0},6:{3:2,7:2,10:2,15:2,2:.5,5:.5,9:.5},
   7:{12:2,14:2,17:2,2:.5,3:.5,4:.5,8:.5,9:.5,10:.5,18:.5},8:{8:2,14:2,17:.5,1:0},9:{6:2,15:2,18:2,9:.5,10:.5,11:.5,13:.5},
@@ -4466,7 +4473,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v1.4</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v1.5</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip">🪙 <b>${r.gold}</b> or</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -5325,7 +5332,7 @@ function gameConfig(){
 function titleDef(t){
   const same=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
   if(t.stat)return {c:"stat",s:t.stat,n:t.need};
-  const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},lord:{c:"cos",i:"titre.lord"}};
+  const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},arPerf:{c:"sflag",s:"arPerf"},lord:{c:"cos",i:"titre.lord"}};
   if(fixed[t.k])return fixed[t.k];
   if(t.k==="darwin")return {c:"evo",n:t.ids.length}; // cibles de cfg.evo, comptées par le serveur (1.1.3)
   if(t.ids&&same(t.ids,DEX_ORDER))return {c:"dex",n:t.need||DEX_ORDER.length};

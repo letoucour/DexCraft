@@ -376,6 +376,8 @@ begin
   if (st ->> 'hp')::int <= 0 or rd >= (a ->> 'rounds')::int then
     st := jsonb_set(st, '{over}', 'true');
     if (st ->> 'hp')::int > 0 then bonus := least((a ->> 'finish')::int, greatest(0, cap - gained - added)); d := public.dc__bump(d, 'arDone'); end if;
+    -- titre Invaincu (1.3.6) : les 10 manches sans perdre une vie
+    if (st ->> 'hp')::int >= (a ->> 'lives')::int then d := jsonb_set(d, '{stats,arPerf}', '1'); end if;
   else
     st := st || jsonb_build_object('round', rd + 1);
     st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + (rd + 1) / 2 + least(3, (st ->> 'gold')::int / 10)));
