@@ -1354,7 +1354,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.9";
+const APP_VERSION="1.3.10";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1841,7 +1841,7 @@ async function rpc(name,args,{render=true}={}){
     :error.message);
   if(data&&data.profile){const miss=secretMissing(data.profile);if(miss.length)await loadSecrets(miss); // carte secrète reçue : ses données avant l’affichage
     S=norm(data.profile);if(render)renderAll();else renderHeader()}
-  if(/^dc_trade|^dc_admin_(clear_market|reset)/.test(name))loadMarket(); // le marché à jour tout de suite, sans attendre le temps réel
+  if(/^dc_trade|^dc_admin_(clear_market|reset)/.test(name))loadMarket(/^dc_admin/.test(name),[args&&args.p_mid,...(args&&Array.isArray(args.p_mids)?args.p_mids:[])]); // le marché à jour tout de suite, sans attendre le temps réel
   return data||{};
 }
 
@@ -1920,7 +1920,7 @@ function tradeManyGo(){
       const n=r.n||0,sk=(r.skipped||[]).map(id=>nm(id));
       dlgLocked=false;closeDlg();renderAll();
       const cap=r.capped||0,nl=(r.nolist||[]).length;
-      toast(n?`${n} annonce${n>1?"s":""} d’échange publiée${n>1?"s":""}.${cap?` ${cap} non publiée${cap>1?"s":""} : 1 000 annonces au maximum.`:""}${nl?` ${nl} non publiée${nl>1?"s":""} : aucune carte demandée de leur rareté.`:""}${sk.length?` Plus en votre possession : ${sk.slice(0,5).join(", ")}${sk.length>5?"…":""}.`:""}`:nl?"Aucune annonce publiée : aucune des cartes demandées n’a la même rareté que les cartes proposées.":"Aucune annonce publiée : vous ne possédez plus ces cartes.");
+      toast(n?`${n} annonce${n>1?"s":""} d’échange publiée${n>1?"s":""}.${cap?` ${cap} non publiée${cap>1?"s":""} : 2 000 annonces au maximum.`:""}${nl?` ${nl} non publiée${nl>1?"s":""} : aucune carte demandée de leur rareté.`:""}${sk.length?` Plus en votre possession : ${sk.slice(0,5).join(", ")}${sk.length>5?"…":""}.`:""}`:nl?"Aucune annonce publiée : aucune des cartes demandées n’a la même rareté que les cartes proposées.":"Aucune annonce publiée : vous ne possédez plus ces cartes.");
     }finally{tradeManyBusy=false;dlgLocked=false;closeDlg();renderAll()}
   });
 }
@@ -2794,7 +2794,8 @@ function vTrades(){
   <button class="my-trades${pendMine?" alert":""}" data-act="my-trades" aria-expanded="${showMyTrades}">
     <span>${showMyTrades?"Masquer":"Voir"} mes annonces <b>(${mine.length})</b></span>
     ${pendMine?`<span class="mt-pend">${pendMine} proposition${pendMine>1?"s":""} à traiter</span>`:""}<span class="mt-arrow" aria-hidden="true">${showMyTrades?"▲":"▼"}</span></button>
-  ${showMyTrades?`<div style="margin-top:10px">${mine.length?myTradesTools(mine):""}${grid(mine,"Ouvrez une carte de votre collection pour la proposer à l’échange.")}</div>`:""}
+  ${showMyTrades?`<div style="margin-top:10px">${mine.length?myTradesTools(mine):""}${grid(mine.slice(0,myLimit),"Ouvrez une carte de votre collection pour la proposer à l’échange.")}
+    ${mine.length>myLimit?`<div class="actions" style="margin-top:10px"><button class="btn" data-act="my-more">Afficher les suivantes (${fmtN(mine.length-myLimit)} de plus)</button></div>`:""}</div>`:""}
   <button class="my-trades" data-act="my-offers" aria-expanded="${showMyOffers}" style="margin-top:10px">
     <span>${showMyOffers?"Masquer":"Voir"} mes propositions en cours <b>(${myOffers.length})</b></span><span class="mt-arrow" aria-hidden="true">${showMyOffers?"▲":"▼"}</span></button>
   ${showMyOffers?`<div style="margin-top:10px">${myOffers.length?`<p class="muted" style="margin:0 0 8px;font-size:.9rem">Les cartes que vous avez proposées chez les autres joueurs, en attente de leur réponse. Touchez une annonce pour retirer votre proposition.</p>`:""}${grid(myOffers,"Vous n’avez aucune proposition en attente.")}</div>`:""}
@@ -2809,7 +2810,7 @@ function vTrades(){
     :`<div class="empty">${trdDbl?"Aucune annonce pour laquelle vous avez un double à proposer.":trdMissing?"Aucune carte qui vous manque n’est proposée pour l’instant.":"Aucune annonce pour l’instant."}</div>`}</section>
   ${mySel&&showMyTrades?myTradesBar():""}`;
 }
-let showMyTrades=false,showMyOffers=false,trdR="all",mySel=null; // mySel : annonces choisies pour une action groupée
+let showMyTrades=false,showMyOffers=false,trdR="all",mySel=null,myLimit=120; // mySel : annonces choisies pour une action groupée ; myLimit : « Mes annonces » par paquets (1.3.10)
 /* Outils de « Mes annonces » : sélection (une par une ou par rareté), puis action groupée */
 function myTradesTools(mine){
   if(!mySel)return `<div class="actions" style="margin-bottom:10px"><button class="btn small" data-act="my-sel">Sélectionner pour modifier ou retirer</button></div>`;
@@ -4880,7 +4881,8 @@ document.addEventListener("click",e=>{
     case"offer-no":closeDlg();answerOffer(mid,b.dataset.oid,false);break;
     case"offer-cancel":closeDlg();withdrawOffer(mid,b.dataset.oid);break;
     case"trade-open":tradeOpen(mid);break;
-    case"my-trades":showMyTrades=!showMyTrades;renderView();break;
+    case"my-trades":showMyTrades=!showMyTrades;myLimit=120;renderView();break;
+    case"my-more":myLimit+=240;renderView();break;
     case"none":break;
   }
 });
@@ -4972,7 +4974,7 @@ let SB=null,signup=false;
    - collections : seulement celles des auteurs d'annonces d'échange (« Il l'a déjà », « Manquante »),
      les nouveaux auteurs tout de suite, toutes relues au plus toutes les 5 minutes. */
 const PL_FIELDS=["pseudo","avatar","alpha","beta","shown","unique","total","credits","myth","trans","byr","byrV","masterTs","vis","shinyN","avaS"]; // vis : cosmétiques visibles (0.9.0) ; shinyN, avaS : shiny (1.1.0)
-let OWNER_COLL={},ownerCollTs=0,marketT=0,rpcBusy=0,MARKET_TS={},playersTs=0,hiddenAt=0;
+let OWNER_COLL={},OWNER_UPD={},ownerCollTs=0,marketT=0,rpcBusy=0,MARKET_TS={},playersTs=0,hiddenAt=0;
 /* lecture paginée : Supabase renvoie 1 000 lignes au plus par requête */
 async function selectAll(make){
   const out=[];
@@ -4988,18 +4990,35 @@ async function loadPlayers(){
   const p={};data.forEach(r=>{const o={};PL_FIELDS.forEach(f=>{if(r[f]!=null)o[f]=r[f]});p[r.path.slice(8)]=o});
   PLAYERS=p;playersTs=Date.now();renderHeader();if(view==="ranking"&&!dlg.open)renderView();
 }
-async function loadMarket(){
-  const {data,error}=await selectAll(()=>SB.from("docs").select("path,updated_at").eq("coll","market").order("path"));
+/* Marché (1.3.10, trafic de Supabase) : la liste légère complète (toutes les annonces) seulement au démarrage, au retour
+   après 5 minutes d'absence et toutes les 15 minutes ; entre-temps, seulement les annonces modifiées depuis la dernière
+   lecture (avec 2 minutes de marge pour les écritures en cours). Les annonces retirées arrivent par le temps réel,
+   et celles touchées par ses propres actions sont vérifiées tout de suite (touched). */
+let marketFullTs=0,marketSince=null;
+async function loadMarket(full,touched){
+  full=full||!marketSince||Date.now()-marketFullTs>900000;
+  const since=marketSince;
+  const {data,error}=await selectAll(()=>{let q=SB.from("docs").select("path,updated_at").eq("coll","market");if(!full)q=q.gte("updated_at",since);return q.order("path")});
   if(error){console.warn(error);return}
-  const live=new Set(),need=[],got={};
+  if(full)marketFullTs=Date.now();
+  let mx=0;data.forEach(r=>{const t=Date.parse(r.updated_at);if(t>mx)mx=t});
+  if(mx&&(!marketSince||mx-120000>Date.parse(marketSince)))marketSince=new Date(mx-120000).toISOString();
+  const live=new Set(),need=[],got={},gone=new Set();
   data.forEach(r=>{const id=r.path.slice(7);live.add(id);if(!MARKET[id]||MARKET_TS[id]!==r.updated_at)need.push(r.path)});
+  // annonces touchées par sa propre action : celles qui n'existent plus disparaissent sans attendre la liste complète
+  const tc=full?[]:[...new Set((touched||[]).filter(id=>id&&MARKET[id]&&!live.has(id)))];
+  for(let i=0;i<tc.length;i+=100){
+    const part=tc.slice(i,i+100),{data:ex,error:e3}=await SB.from("docs").select("path").in("path",part.map(id=>"market/"+id));
+    if(e3){console.warn(e3);break}
+    const ok=new Set((ex||[]).map(r=>r.path.slice(7)));part.forEach(id=>{if(!ok.has(id))gone.add(id);else need.push("market/"+id)});
+  }
   for(let i=0;i<need.length;i+=100){
     const {data:rows,error:e2}=await SB.from("docs").select("path,data,updated_at").in("path",need.slice(i,i+100));
     if(e2){console.warn(e2);return}
     (rows||[]).forEach(r=>got[r.path.slice(7)]=r);
   }
   const m=Object.assign({},MARKET);let changed=!marketReady;
-  for(const id in m)if(!live.has(id)){delete m[id];delete MARKET_TS[id];changed=true}
+  for(const id in m)if(full?!live.has(id):gone.has(id)){delete m[id];delete MARKET_TS[id];changed=true}
   for(const id in got){m[id]=got[id].data;MARKET_TS[id]=got[id].updated_at;changed=true}
   if(changed){MARKET=m;marketChanged()}
 }
@@ -5057,16 +5076,24 @@ async function tradeOutcomes(){
 async function loadOwnerColls(){
   const ids=[...new Set(Object.values(MARKET).filter(m=>m.kind==="t"&&m.status==="open"&&m.owner!==ME).map(m=>m.owner))];
   if(document.hidden)return;
-  const all=Date.now()-ownerCollTs>300000,todo=all?ids:ids.filter(id=>!OWNER_COLL[id]);
+  const all=Date.now()-ownerCollTs>300000,todo=ids.filter(id=>!OWNER_COLL[id]);
+  // toutes les 5 minutes : d'abord la date de chaque profil (quelques octets), la collection seulement si elle a pu changer (1.3.10)
+  if(all){const known=ids.filter(id=>OWNER_COLL[id]);
+    for(let i=0;i<known.length;i+=100){
+      const part=known.slice(i,i+100),{data,error}=await SB.from("docs").select("path,upd:data->updated").in("path",part.map(id=>"players/"+id));
+      if(error){console.warn(error);return}
+      (data||[]).forEach(r=>{const id=r.path.slice(8);if((+r.upd||0)!==OWNER_UPD[id])todo.push(id)});
+    }
+    ownerCollTs=Date.now();
+  }
   if(!todo.length)return;
   for(let i=0;i<todo.length;i+=100){
     const part=todo.slice(i,i+100);
-    const {data,error}=await SB.from("docs").select("path,coll:data->coll").in("path",part.map(id=>"players/"+id));
+    const {data,error}=await SB.from("docs").select("path,upd:data->updated,coll:data->coll").in("path",part.map(id=>"players/"+id));
     if(error){console.warn(error);return}
     part.forEach(id=>OWNER_COLL[id]=OWNER_COLL[id]||{}); // profil introuvable : ne pas le redemander à chaque fois
-    (data||[]).forEach(r=>OWNER_COLL[r.path.slice(8)]=r.coll||{});
+    (data||[]).forEach(r=>{const id=r.path.slice(8);OWNER_COLL[id]=r.coll||{};OWNER_UPD[id]=+r.upd||0});
   }
-  if(all)ownerCollTs=Date.now();
   return true; // de nouvelles collections ont été lues
 }
 /* Son profil : d'abord sa seule date de mise à jour (quelques octets), le profil entier seulement s'il a changé */
@@ -5087,7 +5114,7 @@ function pollShared(){
 document.addEventListener("visibilitychange",()=>{
   if(!SB||!ME)return;
   if(document.hidden){hiddenAt=Date.now();return}
-  if(hiddenAt&&Date.now()-hiddenAt>30000){loadMe();loadMarket().then(loadOwnerColls);if(Date.now()-playersTs>60000)loadPlayers()}
+  if(hiddenAt&&Date.now()-hiddenAt>30000){loadMe();loadMarket(Date.now()-hiddenAt>300000).then(loadOwnerColls);if(Date.now()-playersTs>60000)loadPlayers()}
   hiddenAt=0;
 });
 /* profil modifié par le serveur à la suite d'un autre joueur (échange accepté, proposition rendue…) */

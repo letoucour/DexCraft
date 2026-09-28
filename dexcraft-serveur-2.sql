@@ -18,7 +18,7 @@ drop function if exists public.dc_auction_settle(text);
 create index if not exists docs_market_owner_idx on public.docs ((data ->> 'owner')) where coll = 'market';
 create or replace function public.dc__open_listings(u uuid) returns int language sql stable as
 $$ select count(*)::int from public.docs where coll = 'market' and data ->> 'owner' = u::text and data ->> 'status' = 'open' $$;
-create or replace function public.dc__listing_cap() returns int language sql immutable as $$ select 1000 $$;
+create or replace function public.dc__listing_cap() returns int language sql immutable as $$ select 2000 $$; -- 1 000 avant la 1.3.10
 
 -- ---------- Dresseur d'origine (1.1.13) ----------
 -- ot = {n° de carte: {uid: nombre}} : exemplaires venus d'autres dresseurs ; tous les autres sont au nom du joueur
