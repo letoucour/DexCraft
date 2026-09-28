@@ -479,7 +479,10 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .col-stat{font-family:var(--display);font-weight:700;font-size:1.6rem}
 .col-stat span{color:var(--ink-soft);font-size:1.1rem}
 .rar-counts{display:flex;flex-wrap:wrap;gap:12px;font-size:.9rem;margin-top:6px}
-.rar-counts span b{font-family:var(--display)}
+.rar-counts span b,.rar-counts b{font-family:var(--display)}
+.rar-counts .rc{border:1px solid transparent;background:none;color:inherit;padding:2px 8px;border-radius:999px;font:inherit;cursor:pointer} /* compteurs cliquables : filtre de la collection (1.1.10) */
+.rar-counts .rc:hover{border-color:var(--line)}
+.rar-counts .rc.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,transparent)}
 
 .discard-help{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:6px 0 12px}
 .rar-picks{display:flex;flex-wrap:wrap;gap:8px}
@@ -1171,7 +1174,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.9";
+const APP_VERSION="1.1.10";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2436,8 +2439,9 @@ function vCollection(){
   const ids=filtered();const selN=discardSel?Object.values(discardSel).reduce((a,b)=>a+b,0):0;
   const opt=(k,v,l)=>`<option value="${v}"${String(filt[k])===String(v)?" selected":""}>${l}</option>`;
   return `<div class="col-head"><div><h1>Collection</h1>
-    <div class="col-stat">${nDex}<span> / ${fmtN(LB_TOTAL)} cartes différentes (${uniq} / 1025 Pokémon, ${own(REG_IDS)} / ${REG_IDS.length} formes régionales, ${own(UNOWN_IDS)} / ${UNOWN_IDS.length} formes de Zarbi, ${own(ALT_IDS)} / ${ALT_IDS.length} autres formes, ${own(MEGA_IDS)} / ${MEGA_IDS.length} méga-évolutions, ${own(GMAX_IDS)} / ${GMAX_IDS.length} Gigamax)${myth?`, <b class="myth-txt">${myth} mythique${myth>1?"s":""}</b>`:""}${trans?`, <b class="trans-txt">${trans} transcendante${trans>1?"s":""}</b>`:""}, ${fmtN(total)} cartes au total${S.shinyN?`, <b class="sh-sum">✨ ${fmtN(S.shinyN)} shiny</b>`:""}</span></div>
-    <div class="rar-counts">${RAR.slice(0,shownR).map((r,i)=>i>=6?`<span class="${i===7?"trans-txt":"myth-txt"}">${gems(i)} <b>${per[i]}</b></span>`:`<span><span style="color:var(--r${i})">${gems(i)}</span> <b>${per[i]}</b>/${BYR[i].length}</span>`).join("")}</div></div>
+    <div class="rar-counts">${RAR.slice(0,shownR).map((r,i)=>{const on=filt.r===String(i),b=`<button type="button" class="rc${on?" on":""}" data-act="rc-filter" data-r="${i}" aria-pressed="${on}" title="${on?"Toutes les raretés":"Voir seulement : "+r}">`;
+      const c=i>=6?`${b}<span class="${i===7?"trans-txt":"myth-txt"}">${gems(i)} <b>${per[i]}</b></span></button>`:`${b}<span style="color:var(--r${i})">${gems(i)}</span> <b>${per[i]}</b>/${BYR[i].length}</button>`;
+      return i===5?c+`<button type="button" class="rc${filt.own==="shiny"?" on":""}" data-act="rc-filter" data-r="shiny" aria-pressed="${filt.own==="shiny"}" title="${filt.own==="shiny"?"Toutes les cartes":"Voir seulement mes shiny"}"><span class="sh-sum">✨</span> <b>${fmtN(S.shinyN||0)}</b></button>`:c}).join("")}</div></div>
     <div class="actions">${discardSel?`<button class="btn small" data-act="discard-cancel">Quitter la défausse</button>`:tradeSel?`<button class="btn small" data-act="trade-cancel">Quitter la sélection</button>`:`<button class="btn" data-act="trade-mode">Mettre à l’échange</button><button class="btn" data-act="discard-mode">Défausser des cartes</button>`}</div></div>
   <div class="progress" style="margin-top:12px"><b style="width:${nDex*100/LB_TOTAL}%"></b></div>
   <div class="toolbar">
@@ -4018,6 +4022,7 @@ document.addEventListener("click",e=>{
     case"look":run(async()=>{await rpc("dc_set_look",{p_slot:b.dataset.slot,p_item:b.dataset.item||null})});break;
     case"open":SFX.get();openPack(1);break;
     case"open-n":SFX.get();openPack(+b.dataset.n);break;
+    case"rc-filter":{const r=b.dataset.r;if(r==="shiny")filt.own=filt.own==="shiny"?"all":"shiny";else filt.r=filt.r===r?"all":r;renderView();break} // compteurs de rareté cliquables (1.1.10)
     case"toggle-theme":toggleTheme();break;
     case"install-app":installApp();break; // 1.1.5
     case"toggle-sound":{const on=SFX.toggle();b.textContent=on?"🔊":"🔇";b.setAttribute("aria-label",on?"Couper le son":"Activer le son");b.title=on?"Couper le son":"Activer le son";if(on){SFX.flip(1)}break}
