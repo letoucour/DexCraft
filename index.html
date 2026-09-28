@@ -1346,7 +1346,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.4";
+const APP_VERSION="1.3.5";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3281,7 +3281,7 @@ const VB_CAP=3000; // 2 000 avant la 1.3.0
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
 const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,winBase:60,winStep:20,startGold:6,incBase:6,
   odds:[[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]],cost:{0:1,1:2,2:3,3:4,5:5},
-  aiEvo:.04,aiPow0:.65,aiPowK:.03,slot:.2,typeW:1/75}; // 1.3.2 : slot .25 → .2 et typeW 1/60 → 1/75 (trop facile, avis de Theo)
+  aiEvo:.048,aiPow0:.69,aiPowK:.033,slot:.2,typeW:1/75}; // 1.3.2 : slot .25 → .2 et typeW 1/60 → 1/75 ; 1.3.5 : ordinateur un peu plus fort (aiEvo .04, aiPow0 .65, aiPowK .03 avant ; « un poil simple », avis de Theo)
 const AR_CHART={1:{6:.5,9:.5,8:0},2:{1:2,6:2,9:2,15:2,17:2,3:.5,4:.5,7:.5,14:.5,18:.5,8:0},3:{2:2,7:2,12:2,6:.5,9:.5,13:.5},
   4:{12:2,18:2,4:.5,5:.5,6:.5,8:.5,9:0},5:{4:2,6:2,9:2,10:2,13:2,7:.5,12:.5,3:0},6:{3:2,7:2,10:2,15:2,2:.5,5:.5,9:.5},
   7:{12:2,14:2,17:2,2:.5,3:.5,4:.5,8:.5,9:.5,10:.5,18:.5},8:{8:2,14:2,17:.5,1:0},9:{6:2,15:2,18:2,9:.5,10:.5,11:.5,13:.5},
@@ -4466,7 +4466,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v1.3</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v1.4</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip">🪙 <b>${r.gold}</b> or</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
