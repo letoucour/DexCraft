@@ -1192,7 +1192,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.2.1";
+const APP_VERSION="1.2.2";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2366,7 +2366,7 @@ function vBooster(){
 const recentCards=()=>{const r=Array.isArray(S.recent)?S.recent:S.lastOpen&&Array.isArray(S.lastOpen.drawn)?S.lastOpen.drawn:[];return r.filter(c=>c&&D(c.id)).slice(0,50)};
 function recentHTML(){
   const rc=recentCards();if(!rc.length)return "";
-  return `<button class="recent-box" data-act="recent"><span class="rb-t">🕘 Dernières cartes tirées</span><span class="rb-imgs" aria-hidden="true">${rc.slice(0,8).map(c=>{const src=imgFor(c.id,c.shiny);return src?`<img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()">`:""}).join("")}</span></button>`;
+  return `<button class="recent-box" data-act="recent"><span class="rb-t">🕘 Dernières cartes tirées</span><span class="rb-imgs" aria-hidden="true">›</span></button>`; // aucune illustration ici : elles se mettaient à jour avant la fin de l’ouverture et dévoilaient le tirage (1.2.2)
 }
 function recentDlg(){
   const rc=recentCards();
