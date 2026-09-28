@@ -88,29 +88,38 @@ end $$;
 -- chaque case a une chance (slot) de reproposer un Pokémon de l'équipe (pour réunir 3 exemplaires) ; sinon rareté selon la
 -- manche, puis un Pokémon de cette rareté, les types joués par l'équipe pesant plus lourd (typeW, en part de la réserve)
 create or replace function public.dc__ar_shop(cfg jsonb, st jsonb, coll jsonb) returns jsonb language plpgsql volatile as $$
-declare a jsonb := cfg -> 'arena'; pt text := cfg ->> 'ptype'; owned int[]; mine int[]; tc int[] := array_fill(0, array[18]);
-  shop jsonb := '[]'; k int; r int; av boolean[]; pick int; t int; u jsonb; wt numeric;
+-- 1.3.1 : réserve lue une seule fois dans des tableaux (rareté et poids de chaque Pokémon possédé). Avant, la table des
+-- raretés de la configuration était recopiée à chaque Pokémon examiné : plusieurs secondes par boutique sur Supabase.
+declare a jsonb := cfg -> 'arena'; rarm jsonb := cfg -> 'rar'; pt text := cfg ->> 'ptype'; tc int[] := array_fill(0, array[18]);
+  ids int[]; rs int[]; ws numeric[]; mine int[]; cnt int[] := array[0, 0, 0, 0, 0, 0]; av boolean[]; shop jsonb := '[]';
+  k int; j int; r int; t int; u jsonb; wt numeric; tot numeric; x numeric; pick int; slot numeric := (a ->> 'slot')::numeric;
 begin
-  select coalesce(array_agg(key::int), '{}') into owned from jsonb_each(coll) where key ~ '^\d+$' and key::int between 1 and 1025 and value::text::int > 0;
-  select coalesce(array_agg((v ->> 'i')::int), '{}') into mine from public.dc__ar_units(st) v where (v ->> 's')::int = 0 and (v ->> 'i')::int = any(owned);
   for u in select * from public.dc__ar_units(st) loop
     foreach t in array public.dc__ar_types(pt, (u ->> 'i')::int) loop tc[t] := tc[t] + 1; end loop;
   end loop;
+  -- réserve : Pokémon 1 à 1025 de la collection, leur rareté, et combien de Pokémon de l'équipe partagent un de leurs types
+  select coalesce(array_agg(o order by o), '{}'), coalesce(array_agg(q.rr order by o), '{}'),
+         coalesce(array_agg(least(6, tc[t1] + coalesce(tc[t2], 0)) order by o), '{}')
+    into ids, rs, ws
+    from (select key::int o, (rarm ->> key)::int rr, ascii(substr(pt, 2 * key::int - 1, 1)) - 96 t1,
+                 case when substr(pt, 2 * key::int, 1) = '-' then null else ascii(substr(pt, 2 * key::int, 1)) - 96 end t2
+          from jsonb_each(coll) where key ~ '^\d+$' and key::int between 1 and 1025 and value::text::int > 0) q;
+  for j in 1 .. coalesce(array_length(ids, 1), 0) loop cnt[rs[j] + 1] := cnt[rs[j] + 1] + 1; end loop;   -- nombre par rareté (0 à 5)
+  av := array[cnt[1] > 0, cnt[2] > 0, cnt[3] > 0, cnt[4] > 0, cnt[6] > 0];
+  select coalesce(array_agg((v ->> 'i')::int), '{}') into mine from public.dc__ar_units(st) v where (v ->> 's')::int = 0 and (v ->> 'i')::int = any(ids);
   for k in 1 .. 5 loop
-    if coalesce(array_length(mine, 1), 0) > 0 and random() < (a ->> 'slot')::numeric then
+    if coalesce(array_length(mine, 1), 0) > 0 and random() < slot then
       shop := shop || to_jsonb(mine[1 + floor(random() * array_length(mine, 1))::int]); continue;
     end if;
-    select array_agg(exists (select 1 from unnest(owned) o where public.dc__ar_rar(cfg, o) = rr) order by ord) into av
-      from unnest(array[0, 1, 2, 3, 5]) with ordinality x(rr, ord);
     r := public.dc__ar_pick_rar(cfg, (st ->> 'round')::int, av);
     if r < 0 then shop := shop || 'null'::jsonb; continue; end if;
-    select count(*) into t from unnest(owned) o where public.dc__ar_rar(cfg, o) = r;
-    wt := greatest(.3, t * (a ->> 'typeW')::numeric);
-    select o into pick from (
-      select o, sum(w) over (order by o) c, sum(w) over () tot from (
-        select o, 1 + least(6, (select coalesce(sum(tc[x]), 0) from unnest(public.dc__ar_types(pt, o)) x)) * wt w
-        from unnest(owned) o where public.dc__ar_rar(cfg, o) = r) q) q2
-      where c >= random() * tot order by c limit 1;
+    wt := greatest(.3, cnt[r + 1] * (a ->> 'typeW')::numeric);
+    tot := 0;
+    for j in 1 .. array_length(ids, 1) loop if rs[j] = r then tot := tot + 1 + ws[j] * wt; end if; end loop;
+    x := random() * tot; pick := null;
+    for j in 1 .. array_length(ids, 1) loop
+      if rs[j] = r then x := x - (1 + ws[j] * wt); pick := ids[j]; exit when x < 0; end if;
+    end loop;
     shop := shop || to_jsonb(pick);
   end loop;
   return shop;
