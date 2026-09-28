@@ -48,13 +48,13 @@ $sql = @"
 -- ============================================================
 --  DexCraft — configuration du jeu pour le serveur, PARTIE 1 (générée par outils\generer-config.ps1)
 --  Ne pas modifier à la main : relancer le script après un changement dans index.html.
---  À lancer, puis TOUT DE SUITE APRÈS dexcraft-config-2.sql (évolutions, tirages, titres) : sans la partie 2,
---  les évolutions et les titres ne fonctionnent plus.
+--  À lancer, puis dexcraft-config-2.sql et dexcraft-config-3.sql. Depuis la 1.3.7, la partie 1 complète la configuration
+--  au lieu de la remplacer : lancée seule, elle garde évolutions, titres et Arène (avant, ils disparaissaient).
 -- ============================================================
 create table if not exists public.game_config (id int primary key, data jsonb not null);
 alter table public.game_config enable row level security;
 insert into public.game_config (id, data) values (1, `$cfg`$$json`$cfg`$::jsonb)
-on conflict (id) do update set data = excluded.data;
+on conflict (id) do update set data = public.game_config.data || excluded.data; -- 1.3.7 : fusion, les clés des parties 2 et 3 restent en place si on lance la partie 1 seule
 select 'configuration partie 1 OK : lancer maintenant dexcraft-config-2.sql' as verif, jsonb_array_length(data->'dexOrder') as cartes from public.game_config where id = 1;
 "@
 [IO.File]::WriteAllText((Join-Path $racine "dexcraft-config.sql"), $sql, $utf8)
