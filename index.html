@@ -1192,7 +1192,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.2.0";
+const APP_VERSION="1.2.1";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2462,6 +2462,7 @@ function filtered(){
   const q=filt.q.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const out=[];
   const pool=[...HIDDEN_IDS.filter(id=>S.coll[id]),...DEX_ORDER];
+  const fam=q?evoFamily(q):null; // recherche (1.2.1) : le Pokémon et toute sa lignée, les cartes manquantes en « ??? »
   for(const id of pool){
     const d=D(id),c=S.coll[id]||0;
     if(filt.own==="fav"&&!(S.fav&&S.fav[id]))continue;
@@ -2470,7 +2471,7 @@ function filtered(){
     if(filt.own==="own"&&!c)continue;if(filt.own==="missing"&&c)continue;if(filt.own==="dup"&&c<2)continue;
     if(filt.r!=="all"&&d[7]!=+filt.r)continue;if(filt.g!=="all"&&genOf(id)!=+filt.g)continue;
     if(filt.t!=="all"&&!(d[3]||[]).includes(+filt.t))continue;
-    if(q){const n=d[0].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");if(!(c&&n.includes(q))&&String(id)!==q)continue}
+    if(q){const n=d[0].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");if(!(c&&n.includes(q))&&String(id)!==q&&!fam.has(id))continue}
     out.push(id);
   }
   // tri choisi (par défaut : ordre du Pokédex, méga-évolutions après leur Pokémon)
@@ -2960,11 +2961,13 @@ const nameOrHidden=id=>has(S,id)?nm(id):"???";
 /* Recherche (1.2.0) : les Pokémon dont le nom ou le numéro correspond, avec toute leur lignée (ceux dont ils viennent
    et leurs évolutions), pour retrouver vite le Pokémon à faire évoluer avant un autre. */
 let evoQ="",EVO_PRE=null;
+let evoFamQ=null,evoFamS=null; // dernière recherche gardée : la collection la relit à chaque paquet de vignettes
 function evoFamily(q){
+  if(q===evoFamQ)return evoFamS;
   if(!EVO_PRE){EVO_PRE={};for(const id of DEX_ORDER)for(const to of evoTargets(id))(EVO_PRE[to]=EVO_PRE[to]||[]).push(id)}
   const up=new Set(),down=new Set(),walk=(id,next,seen)=>{for(const x of next(id)||[])if(!seen.has(x)){seen.add(x);walk(x,next,seen)}};
   for(const id of DEX_ORDER)if(norm2(nm(id)).includes(q)||String(id)===q){up.add(id);down.add(id);walk(id,x=>EVO_PRE[x],up);walk(id,evoTargets,down)}
-  return new Set([...up,...down]);
+  evoFamQ=q;return evoFamS=new Set([...up,...down]);
 }
 function vEvolution(){
   const missingTarget=id=>evoTargets(id).some(to=>!has(S,to));
