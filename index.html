@@ -698,8 +698,9 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .pack.spk .diamond{background:rgba(0,0,0,.28);border-color:#fff;color:#fff}
 .pack.spk-prem .pack-emblem{color:#ffd35a}.pack.spk-prem .diamond{border-color:#ffd35a;background:#15131c}
 /* Arène (1.3.0) : tout tient dans la hauteur disponible (--ar-h, calculée par arFit) ; --s = case du terrain */
-html.arena-view,html.arena-view body{overflow:hidden}
-@media (max-width:999px){html.arena-view #version{display:none}} /* le numéro de version passait sur les boutons de l’Arène */
+html.arena-view:not(.arena-scroll),html.arena-view:not(.arena-scroll) body{overflow:hidden}
+html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12px}
+@media (max-width:999px){html.arena-view #version,html.arena-view #cgu-link{display:none}} /* le numéro de version passait sur les boutons de l’Arène */
 .arena{--s:clamp(36px,calc((var(--ar-h,700px) - 450px) / 4),96px);--b:min(calc(var(--s) * .86),calc((100vw - 64px) / 8));--o:min(calc(var(--s) * 1.02),calc((100vw - 56px) / 5));
   height:var(--ar-h,auto);display:flex;flex-direction:column;gap:6px;overflow:hidden}
 .ar-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
@@ -783,7 +784,10 @@ html.arena-view,html.arena-view body{overflow:hidden}
 .ar-ipst .v{text-align:right;font-weight:700}.ar-ipst .up{color:var(--ok);font-weight:800;text-align:right}.ar-ipst .dn{color:var(--danger);font-weight:800;text-align:right}
 .ar-row{margin:5px 0}.ar-row b{display:block;font-size:.7rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em}
 .ar-rules li{margin:5px 0;font-size:.9rem}
-@media (max-width:599px){.ar-wide{display:none}.ar-top h1{font-size:1.05rem}.ar-chip{padding:2px 7px;font-size:.78rem}.ar-spd button{padding:3px 5px}.ar-fight{padding:9px 18px}}
+.ar-narrow{display:none}
+@media (max-width:599px){.ar-wide{display:none}.ar-narrow{display:inline}.ar-top{gap:4px 6px}.ar-top h1{font-size:1rem}.ar-chip{padding:2px 7px;font-size:.76rem}.ar-spd{font-size:.74rem}.ar-spd button{padding:3px 6px}.ar-top .btn.small{padding:4px 9px}.ar-fight{padding:9px 18px}}
+/* téléphone (1.3.2) : dans l'Arène, l'en-tête du site ne garde que le logo (pastilles profil, crédits, boosters… masquées) pour laisser la place au jeu */
+@media (max-width:999px){html.arena-view header.top .chips{display:none}.ar-log{font-size:.74rem;min-height:0}}
 @media (min-width:1000px){
   .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 290px) / 5.75),104px);--b:min(calc(var(--s) * .86),92px);--o:min(calc(var(--s) * 1.05),112px)}
   .ar-stage{grid-template-columns:240px minmax(0,1fr) 240px}
@@ -1329,7 +1333,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.1";
+const APP_VERSION="1.3.2";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2339,7 +2343,7 @@ function renderView(){
   if(view==="arena"&&arFighting)return; // combat de l'Arène en cours d'animation : on ne redessine pas
   const anc=view==="collection"&&$("#coll-grid")?collAnchor():null;
   keepInputs(()=>{fillApp(app,({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto,arena:vArena})[view]())});
-  document.documentElement.classList.toggle("arena-view",view==="arena");if(view==="arena")arFit(); // Arène : la page ne défile pas
+  document.documentElement.classList.toggle("arena-view",view==="arena");if(view==="arena")arFit();else document.documentElement.classList.remove("arena-scroll"); // Arène : la page ne défile pas
   if(anc){ // après le calcul des vignettes hors de l'écran (image suivante), puis une seconde fois par sécurité
     const fix=()=>{const el=document.querySelector(`#coll-grid .mini[data-id="${anc.id}"]`);if(el){const dy=el.getBoundingClientRect().top-anc.t;if(Math.abs(dy)>1)window.scrollBy(0,dy)}};
     requestAnimationFrame(()=>{fix();requestAnimationFrame(fix)})}
@@ -2701,7 +2705,7 @@ function vCollection(){
     <button class="btn small" data-act="sel-clear" ${selN?"":"disabled"}>Vider</button>
     <button class="btn primary go" data-act="discard-go" ${selN?"":"disabled"}><span aria-hidden="true">◆</span> Défausser et gagner ${cr(selValue(discardSel))}</button></div>`:""}`;
 }
-let trdMissing=false,trdDbl=false,trdQ=""; // trdDbl : seulement les annonces où l'on a un double à proposer (1.2.0)
+let trdMissing=false,trdDbl=false,wishDbl=false,trdQ=""; // trdDbl : seulement les annonces où l'on a un double à proposer (1.2.0)
 const norm2=s=>String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 function cardMatches(id,q){
   q=norm2(q).trim();if(!q)return true;
@@ -2748,7 +2752,10 @@ function vTrades(){
   const wl=wishListings();wishSeenAll(); // cartes recherchées disponibles : vues, la bulle s’éteint
   return `<h1>Échanges</h1><p class="muted">Un échange se fait toujours entre deux cartes de même rareté. Touchez une annonce pour voir la demande et proposer une carte : c’est le propriétaire qui accepte ou refuse.</p>
   ${searchBar("trd",trdQ,"Rechercher un Pokémon, un numéro ou une rareté")}
-  ${wl.length?`<section class="wish-box"><h2>🔔 Cartes que vous recherchez</h2><p class="muted">${wl.length} annonce${wl.length>1?"s":""} pour des cartes que vous avez marquées d’une cloche.</p>${grid(wl,"")}</section>`:""}
+  ${wl.length?(()=>{const wd=wl.filter(([,m])=>hasDbl(m)); // filtre « J’ai un double à proposer » de l’encadré (1.3.2)
+    return `<section class="wish-box"><h2>🔔 Cartes que vous recherchez</h2><p class="muted">${wl.length} annonce${wl.length>1?"s":""} pour des cartes que vous avez marquées d’une cloche.</p>
+    <div class="trd-filters"><div class="qty"><button data-act="wish-dbl" aria-pressed="${wishDbl}" title="Seulement les annonces pour lesquelles vous avez un double à proposer">🔁 J’ai un double à proposer (${wd.length})</button></div></div>
+    ${grid(wishDbl?wd:wl,"Aucune de ces annonces n’accepte un de vos doubles pour l’instant.")}</section>`})():""}
   <button class="my-trades${pendMine?" alert":""}" data-act="my-trades" aria-expanded="${showMyTrades}">
     <span>${showMyTrades?"Masquer":"Voir"} mes annonces <b>(${mine.length})</b></span>
     ${pendMine?`<span class="mt-pend">${pendMine} proposition${pendMine>1?"s":""} à traiter</span>`:""}<span class="mt-arrow" aria-hidden="true">${showMyTrades?"▲":"▼"}</span></button>
@@ -3254,7 +3261,7 @@ const VB_CAP=3000; // 2 000 avant la 1.3.0
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
 const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,winBase:60,winStep:20,startGold:6,incBase:6,
   odds:[[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]],cost:{0:1,1:2,2:3,3:4,5:5},
-  aiEvo:.04,aiPow0:.65,aiPowK:.03,slot:.25,typeW:1/60};
+  aiEvo:.04,aiPow0:.65,aiPowK:.03,slot:.2,typeW:1/75}; // 1.3.2 : slot .25 → .2 et typeW 1/60 → 1/75 (trop facile, avis de Theo)
 const AR_CHART={1:{6:.5,9:.5,8:0},2:{1:2,6:2,9:2,15:2,17:2,3:.5,4:.5,7:.5,14:.5,18:.5,8:0},3:{2:2,7:2,12:2,6:.5,9:.5,13:.5},
   4:{12:2,18:2,4:.5,5:.5,6:.5,8:.5,9:0},5:{4:2,6:2,9:2,10:2,13:2,7:.5,12:.5,3:0},6:{3:2,7:2,10:2,15:2,2:.5,5:.5,9:.5},
   7:{12:2,14:2,17:2,2:.5,3:.5,4:.5,8:.5,9:.5,10:.5,18:.5},8:{8:2,14:2,17:.5,1:0},9:{6:2,15:2,18:2,9:.5,10:.5,11:.5,13:.5},
@@ -3303,14 +3310,14 @@ function vbTile(i,closed){
     <span class="face front v${v===null?"":v}">${v===null?"":v?v:vbVolt()}</span></span></button>`;
 }
 function vVolto(){
-  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille</h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
+  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.2</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
   const s=VB.srv,g=vbGained(S),left=Math.max(0,VB_CAP-g);vbMid=nextMidnight();
   VB.level=s.level;VB.score=s.state==="lost"?0:s.score;VB.state=s.state;
   let board="";
   for(let r=0;r<5;r++){for(let c=0;c<5;c++)board+=vbTile(r*5+c);board+=vbClue(s.rows[r],VB_COLORS[r])}
   for(let c=0;c<5;c++)board+=vbClue(s.cols[c],VB_COLORS[c]);
   board+=`<span></span>`;
-  return `<div class="vb"><h1>VoltoBataille</h1>
+  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.2</span></h1>
     <p class="muted" style="margin:4px 0 0">Retournez les cartes, multipliez vos gains… et évitez les Voltorbe !</p>
     <div class="vb-day">
       <div class="vb-day-top"><span><b>${fmtN(g)} / ${fmtN(VB_CAP)}</b> crédits gagnés aujourd’hui</span><span class="muted">Remise à zéro dans <b data-countdown="${vbMid}">${fmtLeft(vbMid-Date.now())}</b></span></div>
@@ -4368,7 +4375,7 @@ function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
    (toucher puis case, ou glisser-déposer ; envoyé au serveur avec chaque action) et anime le combat renvoyé. */
 let AR_V=null,arSel=null,arHover=null,arFighting=false,arLoading=false,arLayoutT=0,arNoClick=false,arDrag=null;
 let arSpeed=(()=>{try{return +localStorage.getItem("dc-ar-speed")||1}catch(e){return 1}})();
-const AR_SPEEDS=[[1,"×1"],[2,"×2"],[4,"×4"],[9,"Instantané"]],AR_RARN={0:"Commune",1:"Peu commune",2:"Rare",3:"Épique",5:"Légendaire"};
+const AR_SPEEDS=[[1,"×1"],[2,"×2"],[4,"×4"],[9,`<span class="ar-wide">Instantané</span><span class="ar-narrow" title="Instantané">⏩</span>`]],AR_RARN={0:"Commune",1:"Peu commune",2:"Rare",3:"Épique",5:"Légendaire"};
 const arRun=()=>AR_V&&AR_V.run;
 const arMax=r=>Math.min(6,3+Math.floor((r-1)/2));
 const arCost=u=>AR.cost[rar(u.i)]*(u.s?3:1);
@@ -4479,7 +4486,10 @@ function vArena(){
 /* hauteur disponible sous l'en-tête (et au-dessus de la barre d'onglets sur téléphone) : tout tient sans défiler */
 function arFit(){
   if(view!=="arena")return;const a=$(".arena"),nav=$("#tabs"),fixed=nav&&getComputedStyle(nav).position==="fixed";if(!a)return;
-  document.documentElement.style.setProperty("--ar-h",Math.max(420,innerHeight-(a.getBoundingClientRect().top+scrollY)-(fixed?nav.offsetHeight:0)-10)+"px");
+  const h=Math.max(420,innerHeight-(a.getBoundingClientRect().top+scrollY)-(fixed?nav.offsetHeight:0)-10);
+  document.documentElement.style.setProperty("--ar-h",h+"px");
+  // petit téléphone (1.3.2) : plutôt que des cases minuscules, des cases lisibles et la page qui défile
+  document.documentElement.classList.toggle("arena-scroll",innerWidth<1000&&(h-450)/4<54);
 }
 addEventListener("resize",arFit);
 /* ---------- combat : le serveur a tout calculé, la page anime le déroulé ---------- */
@@ -4788,6 +4798,7 @@ document.addEventListener("click",e=>{
     case"trade":tradeDlg(mid);break;
     case"trd-filter":trdMissing=b.dataset.v==="1";renderView();break;
     case"trd-dbl":trdDbl=!trdDbl;renderView();break;
+    case"wish-dbl":wishDbl=!wishDbl;renderView();break;
     case"give":tradeGive=id;document.querySelectorAll("#picker .pick").forEach(x=>x.classList.toggle("choice",+x.dataset.id===id));{const g=$("#give-go");g.disabled=false;g.textContent=`Proposer ${nm(id)}`}break;
     case"give-go":if(tradeGive)proposeTrade(mid,tradeGive);break;
     case"offer-yes":closeDlg();answerOffer(mid,b.dataset.oid,true);break;

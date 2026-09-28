@@ -285,10 +285,11 @@ begin
   return public.dc__ar_view(d, st);
 end $$;
 
-create or replace function public.dc_ar_lock(p_on boolean) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+drop function if exists public.dc_ar_lock(boolean);   -- 1.3.2 : la page envoie aussi le placement, comme pour les autres actions
+create or replace function public.dc_ar_lock(p_on boolean, p_board jsonb default null, p_bench jsonb default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, false); st jsonb := public.dc__ar_get(u);
 begin
-  st := jsonb_set(st - 'msg', '{locked}', to_jsonb(coalesce(p_on, false)));
+  st := jsonb_set(public.dc__ar_layout(st, p_board, p_bench) - 'msg', '{locked}', to_jsonb(coalesce(p_on, false)));
   perform public.dc__ar_put(u, st);
   return public.dc__ar_view(d, st);
 end $$;
