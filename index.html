@@ -471,6 +471,8 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
 .toolbar input,.toolbar select,.field input,.field select{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
 .toolbar input[type=search]{flex:1 1 200px}
+.coll-more{height:40px} /* collection par paquets (1.1.9) : repère qui déclenche le paquet suivant */
+#coll-grid .mini{content-visibility:auto;contain-intrinsic-size:auto 170px} /* vignettes hors de l’écran non dessinées : moins de mémoire sur téléphone */
 .progress{height:10px;background:var(--surface-2);border-radius:999px;overflow:hidden}
 .progress b{display:block;height:100%;background:var(--gold)}
 .col-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px}
@@ -1169,7 +1171,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.8";
+const APP_VERSION="1.1.9";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2149,6 +2151,7 @@ function renderView(){
   lastPackN=packInfo(S).n;
   document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal); // pas de « tirer pour actualiser » pendant une ouverture
   if(view==="booster"&&reveal)setupHand();
+  if(view==="collection")collWatch(); // paquets suivants de la collection (1.1.9)
 }
 /* « Aller aux Hits » (1.1.4, remis à la demande de Theo ; retiré en 1.0.6) : seulement à l'ouverture de 10 boosters
    d'un coup. Les cartes Épique et au-dessus, et les shiny (même une Commune), restent à retourner dans la main ;
@@ -2401,6 +2404,29 @@ function filtered(){
   else if(filt.sort==="name")out.sort((a,b)=>(c(b)>0)-(c(a)>0)||(c(a)?nm(a).localeCompare(nm(b),"fr"):pos.get(a)-pos.get(b))); // les manquantes restent dans l'ordre, sans trahir leur nom
   return out;
 }
+/* Collection par paquets (1.1.9) : 150 cartes à la fois, les suivantes en approchant du bas (#coll-more).
+   Les 1 305 vignettes d'un coup, images comprises, saturaient la mémoire des iPhone : la page plantait en boucle
+   (« Un problème récurrent est survenu ») quand le clavier s'ouvrait sur la recherche. */
+const COLL_STEP=150;let collLimit=COLL_STEP,collSig="",collObs=null;
+const collSigNow=()=>JSON.stringify([filt.q,filt.own,filt.r,filt.t,filt.g,filt.sort]);
+const collTile=id=>{const c=S.coll[id]||0;return miniHTML(id,{count:c,missing:!c,sel:discardSel?discardSel[id]||0:0,choice:!!(tradeSel&&tradeSel.has(id)),act:discardSel?"pick":tradeSel?"tpick":"detail",sh:showShiny(id),shOwn:hasShiny(id)})};
+function collLimitFor(ids){ // nouveaux filtres : on repart du premier paquet
+  const sig=collSigNow();
+  if(sig!==collSig){collSig=sig;collLimit=COLL_STEP}
+  return collLimit;
+}
+function collMore(){ // ajoute le paquet suivant ; le repère est réobservé : s'il est encore proche, le paquet d'après suit
+  const g=$("#coll-grid"),m=$("#coll-more");if(!g||!m)return;
+  const ids=filtered(),next=ids.slice(collLimit,collLimit+COLL_STEP);collLimit+=COLL_STEP;
+  g.insertAdjacentHTML("beforeend",next.map(collTile).join(""));
+  if(collObs)collObs.unobserve(m);
+  if(collLimit>=ids.length)m.remove();else if(collObs)collObs.observe(m);
+}
+function collWatch(){ // après chaque affichage de la collection : charge le paquet suivant quand le bas approche
+  const s=$("#coll-more");if(!s)return;
+  if(!collObs)collObs=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))collMore()},{rootMargin:"900px 0px"});
+  collObs.disconnect();collObs.observe(s);
+}
 function vCollection(){
   const uniq=Object.keys(S.coll).filter(k=>!isSpec(k)).length,total=Object.values(S.coll).reduce((a,b)=>a+b,0);
   const per=[0,0,0,0,0,0,0,0];for(const id of Object.keys(S.coll))per[rar(+id)]++;
@@ -2436,7 +2462,7 @@ function vCollection(){
   ${tradeSel?`<div class="discard-help">
       <p class="muted" style="margin:0 0 8px">Touchez les cartes à proposer à l’échange : une annonce par carte, un exemplaire chacune. Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
       <div class="actions"><button class="btn small" data-act="tsel-dups">Tous mes doubles</button><button class="btn small" data-act="tsel-clear">Tout désélectionner</button></div></div>`:""}
-  ${ids.length?`<div class="grid">${ids.map(id=>{const c=S.coll[id]||0;return miniHTML(id,{count:c,missing:!c,sel:discardSel?discardSel[id]||0:0,choice:!!(tradeSel&&tradeSel.has(id)),act:discardSel?"pick":tradeSel?"tpick":"detail",sh:showShiny(id),shOwn:hasShiny(id)})}).join("")}</div>`:`<div class="empty">Aucune carte ne correspond à ces filtres.</div>`}
+  ${ids.length?`<div class="grid" id="coll-grid">${ids.slice(0,collLimitFor(ids)).map(collTile).join("")}</div>${ids.length>collLimit?`<div id="coll-more" class="coll-more" aria-hidden="true"></div>`:""}`:`<div class="empty">Aucune carte ne correspond à ces filtres.</div>`}
   ${tradeSel?`<div class="discard-bar trade-bar${tradeSel.size?"":" empty"}">
     <div class="sum"><b>${tradeSel.size} carte${tradeSel.size>1?"s":""} sélectionnée${tradeSel.size>1?"s":""}</b><span>${tradeSel.size?"une annonce par carte":"touchez les cartes à proposer"}</span></div>
     <label class="field tb-want">Demande<select id="ts-want" data-keep="ts-want"><option value="missing">N’importe quelle carte de même rareté qui me manque</option><option value="any">N’importe quelle carte de même rareté</option><option value="list">Plusieurs cartes précises…</option></select></label>
@@ -4595,6 +4621,7 @@ async function startOnline(session){
   watchShared();
   let y=restorePlace(); // page rechargée : même écran qu'avant (0.8.14)
   const back=restoreReveal();if(back)y=0; // booster pas fini d'ouvrir (1.1.1) : on le reprend
+  if(y&&view==="collection"){collSig=collSigNow();collLimit=Math.max(COLL_STEP,Math.ceil((y+innerHeight*2)/170)*Math.max(3,Math.floor(innerWidth/115)))} // assez de cartes pour retrouver la position
   renderAll();
   if(y)requestAnimationFrame(()=>window.scrollTo(0,y));
   if(back){
