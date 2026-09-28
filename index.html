@@ -1174,7 +1174,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.10";
+const APP_VERSION="1.1.11";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1875,7 +1875,7 @@ function imgFor(id,sh){if(isSecretId(id)){const e=SPEC[+id]&&SPEC[+id][8];return
    got = fois où chaque carte a été obtenue (booster, évolution, échange, cadeau), compteur qui ne baisse jamais.
    Pas de shiny pour les mythiques, les transcendantes, ni les cartes sans illustration shiny (SHINY_NONE).
    Affichage : shiny par défaut, forme normale au choix par carte (shinyOff) ou partout (shinyNorm), dc_shiny_view. */
-const SHINY_BASE=4096,SHINY_MAX=100;
+const SHINY_BASE=4096,SHINY_MAX=SHINY_BASE; // plus de plafond depuis la 1.1.11 (100 sur 4 096 avant) : on peut chasser un shiny précis sans limite
 const SHINY_NONE=[8070]; // cartes sans illustration shiny : Terapagos Forme Stellaire (1.1.8, absente de PokeAPI) ; Zarbi A, Méga-Carchacrok Z et Méga-Nigirigon fournies par Theo
 const canShiny=id=>(id=+id)>0&&!isSecretId(id)&&!SHINY_NONE.includes(id);
 const gotN=(id,p=S)=>+((p&&p.got&&p.got[id])||0);
@@ -2155,6 +2155,8 @@ function renderView(){
   document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal); // pas de « tirer pour actualiser » pendant une ouverture
   if(view==="booster"&&reveal)setupHand();
   if(view==="collection")collWatch(); // paquets suivants de la collection (1.1.9)
+  { // barre de sélection (échange, défausse) fixée en bas : place réservée sous la liste, les dernières cartes restent touchables (1.1.11)
+    const bar=document.querySelector(".discard-bar");app.style.paddingBottom=bar?Math.ceil(innerHeight-bar.getBoundingClientRect().top+24)+"px":""}
 }
 /* « Aller aux Hits » (1.1.4, remis à la demande de Theo ; retiré en 1.0.6) : seulement à l'ouverture de 10 boosters
    d'un coup. Les cartes Épique et au-dessus, et les shiny (même une Commune), restent à retourner dans la main ;
@@ -2287,7 +2289,7 @@ function vBooster(){
       <table><tr><td class="muted">Rareté</td><td class="muted">Chance</td><td class="muted">Défausse</td></tr>${RAR.slice(0,6).map((r,i)=>`<tr><td><span style="color:var(--r${i})">${gems(i)}</span> ${r} (${POOLS[i].length} cartes)</td><td>${pct(ODDS[i])}</td><td>${cr(DISCARD[i])}</td></tr>`).join("")}</table>
       <p>Les Méga et Gigamax des légendaires et des fabuleux (${LEG_SPECIAL.size} cartes) sortent au rythme des Légendaires et sont comptées avec eux dans ce tableau ; elles restent des Méga et des Gigamax pour la collection, les titres et la défausse.</p>
       <p>Dans votre collection, vous pouvez défausser vos doubles contre des crédits selon leur rareté, ou les proposer à l’échange contre une carte de même rareté.</p>
-      <p>✨ <b>Shiny :</b> chaque carte tirée a 1 chance sur ${fmtN(SHINY_BASE)} de sortir en version shiny, plus 1 chance par exemplaire de ce Pokémon déjà obtenu (booster, évolution, échange ou cadeau), jusqu’à ${SHINY_MAX} sur ${fmtN(SHINY_BASE)}. <b>Inutile de garder vos cartes pour augmenter vos chances :</b> chaque exemplaire obtenu compte pour toujours, même si vous l’échangez, le défaussez ou le faites évoluer ensuite. Un shiny se trouve une seule fois par Pokémon et reste à vous pour toujours : il ne s’échange pas et ne se défausse pas.</p>
+      <p>✨ <b>Shiny :</b> chaque carte tirée a 1 chance sur ${fmtN(SHINY_BASE)} de sortir en version shiny, plus 1 chance par exemplaire de ce Pokémon déjà obtenu (booster, évolution, échange ou cadeau), sans limite. <b>Inutile de garder vos cartes pour augmenter vos chances :</b> chaque exemplaire obtenu compte pour toujours, même si vous l’échangez, le défaussez ou le faites évoluer ensuite. Un shiny se trouve une seule fois par Pokémon et reste à vous pour toujours : il ne s’échange pas et ne se défausse pas.</p>
     </div></details></div>
     <div class="bh-right">
     <button class="btn volto-cta" data-view="volto"><span class="vb-volt" aria-hidden="true"></span>En attendant vos boosters, une petite VoltoBataille ?</button>
@@ -3428,7 +3430,8 @@ function shinyPanelHTML(id){
     return `<div class="panel sh-panel"><h3>✨ Shiny</h3><p class="muted" style="margin:4px 0 10px">Obtenu le ${dt}.${S.shinyNorm?" Les formes normales sont affichées partout : réglage « Toujours afficher les formes normales » du profil.":""}</p>
       ${S.shinyNorm?"":`<button class="btn small" data-act="shiny-view" data-id="${id}">${on?"Afficher la forme normale":"✨ Afficher le shiny"}</button>`}</div>`;
   }
-  return `<div class="panel sh-panel"><h3>✨ Shiny</h3><p class="muted" style="margin:4px 0 0">Chance de le trouver en shiny dans un booster : <b>${shinyChance(id)} sur ${fmtN(SHINY_BASE)}</b>. Elle augmente à chaque exemplaire obtenu, jusqu’à ${SHINY_MAX} sur ${fmtN(SHINY_BASE)}. Inutile de les garder : un exemplaire obtenu compte pour toujours, même échangé, défaussé ou utilisé pour une évolution.</p></div>`;
+  const n=shinyChance(id),pc=(n*100/SHINY_BASE).toLocaleString("fr-FR",{maximumFractionDigits:2}); // texte court (1.1.11)
+  return `<div class="panel sh-panel"><h3>✨ Shiny</h3><p class="muted" style="margin:4px 0 0">Vous avez eu cette carte un total de <b>${fmtN(gotN(id))} fois</b>, ce qui porte votre chance de trouver ce Pokémon en shiny à <b>${n}/${fmtN(SHINY_BASE)}</b>, soit ${pc} %.</p></div>`;
 }
 function detail(id){
   const c=S.coll[id]||0;
