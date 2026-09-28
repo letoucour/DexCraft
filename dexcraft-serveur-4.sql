@@ -1,5 +1,5 @@
 -- ============================================================
---  DexCraft — fonctions du serveur, PARTIE 4 (1.2.3) : boosters spéciaux (inventaire depuis la 1.2.5).
+--  DexCraft — fonctions du serveur, PARTIE 4 (1.2.3) : boosters spéciaux (inventaire depuis la 1.2.5) ; marché lu par morceaux (1.3.12).
 --  À lancer après dexcraft-serveur.sql, dexcraft-serveur-2.sql et dexcraft-serveur-3.sql (et la configuration).
 -- ============================================================
 
@@ -123,8 +123,59 @@ begin
 end $$;
 
 -- ============================================================
+--  Marché sans diffusion à tous (1.3.12) : avant, chaque changement d'une annonce partait en temps réel vers
+--  TOUS les joueurs connectés (messages temps réel en joueurs × changements). Désormais :
+--  - chaque joueur relit toutes les 2 minutes les annonces modifiées depuis sa dernière lecture (dc_market_since),
+--    y compris celles supprimées, gardées 2 jours dans market_gone par un déclencheur ;
+--  - seul le propriétaire d'une annonce est prévenu en direct quand ses propositions changent (table pings,
+--    une ligne par joueur, lisible par lui seul, suivie en temps réel) ; les autres joueurs concernés le sont
+--    déjà par leur propre profil (carte rendue ou reçue).
+--  Les fonctions d'échange ne changent pas : tout passe par des déclencheurs sur docs.
+-- ============================================================
+create table if not exists public.market_gone (path text primary key, at timestamptz not null default now());
+create index if not exists market_gone_at_idx on public.market_gone (at);
+alter table public.market_gone enable row level security;
+revoke all on public.market_gone from anon, authenticated;
+
+create table if not exists public.pings (uid uuid primary key, at bigint not null);
+alter table public.pings enable row level security;
+revoke all on public.pings from anon, authenticated;
+grant select on public.pings to authenticated;
+drop policy if exists pings_self on public.pings;
+create policy pings_self on public.pings for select to authenticated using (uid = auth.uid());
+do $$ begin alter publication supabase_realtime add table public.pings; exception when others then null; end $$;
+
+create or replace function public.dc__market_trg() returns trigger language plpgsql security definer set search_path = public, extensions as $$
+begin
+  if tg_op = 'DELETE' then
+    if old.coll = 'market' then
+      insert into public.market_gone (path) values (old.path) on conflict (path) do update set at = now();
+      if random() < .02 then delete from public.market_gone where at < now() - interval '2 days'; end if;
+    end if;
+    return null;
+  end if;
+  if new.coll = 'market' and new.data ->> 'owner' is not null and (old.data -> 'offers') is distinct from (new.data -> 'offers') then
+    insert into public.pings (uid, at) values ((new.data ->> 'owner')::uuid, public.dc__now()) on conflict (uid) do update set at = excluded.at;
+  end if;
+  return null;
+end $$;
+drop trigger if exists dc_market_trg on public.docs;
+create trigger dc_market_trg after update or delete on public.docs for each row execute function public.dc__market_trg();
+
+-- annonces modifiées ou supprimées depuis p_since (la page garde 2 minutes de marge pour les écritures en cours)
+create or replace function public.dc_market_since(p_since timestamptz) returns jsonb language sql stable security definer set search_path = public, extensions as $$
+  select jsonb_build_object(
+    'rows', coalesce((select jsonb_agg(jsonb_build_object('path', path, 'updated_at', updated_at, 'data', data)) from public.docs
+                      where coll = 'market' and updated_at >= p_since), '[]'),
+    'gone', coalesce((select jsonb_agg(path) from public.market_gone where at >= p_since), '[]'),
+    'now', now()) $$;
+
+-- ============================================================
 --  Droits d'exécution des fonctions de cette partie
 -- ============================================================
+revoke all on function public.dc__market_trg() from public, anon, authenticated;
+revoke all on function public.dc_market_since(timestamptz) from public, anon;
+grant execute on function public.dc_market_since(timestamptz) to authenticated;
 revoke all on function public.dc__open_special(jsonb,jsonb,text,integer,integer) from public, anon, authenticated;
 revoke all on function public.dc_open_special(text,integer,integer) from public, anon;
 grant execute on function public.dc_open_special(text,integer,integer) to authenticated;
