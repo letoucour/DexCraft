@@ -20,6 +20,41 @@ create or replace function public.dc__open_listings(u uuid) returns int language
 $$ select count(*)::int from public.docs where coll = 'market' and data ->> 'owner' = u::text and data ->> 'status' = 'open' $$;
 create or replace function public.dc__listing_cap() returns int language sql immutable as $$ select 1000 $$;
 
+-- ---------- Dresseur d'origine (1.1.13) ----------
+-- ot = {n° de carte: {uid: nombre}} : exemplaires venus d'autres dresseurs ; tous les autres sont au nom du joueur
+-- (les cartes acquises avant la 1.1.13 comprises). Une carte garde son dresseur d'origine à chaque échange, et ce
+-- dresseur ne peut jamais la récupérer : plus d'allers-retours pour gonfler la chance de shiny.
+create or replace function public.dc__ot_n(d jsonb, id int) returns int language sql immutable as
+$$ select coalesce((select sum((value #>> '{}')::int) from jsonb_each(case when jsonb_typeof(d -> 'ot' -> id::text) = 'object' then d -> 'ot' -> id::text else '{}' end)), 0)::int $$;
+
+-- met un exemplaire en jeu (annonce, proposition) : d'abord un exemplaire à son nom, sinon un autre dont le dresseur
+-- d'origine n'est pas p_avoid (le destinataire, quand il est connu). Renvoie {d, ot}.
+create or replace function public.dc__ot_take(d jsonb, u uuid, id int, p_avoid text) returns jsonb language plpgsql immutable as $$
+declare k text := id::text; o text; n int;
+begin
+  if public.dc__count(d, id) < 1 then raise exception 'Vous ne possédez plus cette carte.'; end if;
+  if public.dc__count(d, id) > public.dc__ot_n(d, id) and u::text is distinct from p_avoid then o := u::text;
+  else
+    select key into o from jsonb_each(d -> 'ot' -> k) where (value #>> '{}')::int > 0 and key is distinct from p_avoid limit 1;
+    if o is null then raise exception 'Votre exemplaire de cette carte vient de ce dresseur : il ne peut pas le récupérer.'; end if;
+    n := (d -> 'ot' -> k ->> o)::int;
+    d := jsonb_set(d, array['ot', k], case when n <= 1 then (d -> 'ot' -> k) - o else jsonb_set(d -> 'ot' -> k, array[o], to_jsonb(n - 1)) end);
+  end if;
+  return jsonb_build_object('d', public.dc__add(d, id, -1), 'ot', o);
+end $$;
+
+-- reçoit ou récupère un exemplaire avec son dresseur d'origine o ; p_gain : échange conclu (compté dans got)
+create or replace function public.dc__ot_give(d jsonb, u uuid, id int, o text, p_gain boolean) returns jsonb language plpgsql immutable as $$
+declare k text := id::text;
+begin
+  d := case when p_gain then public.dc__gain(d, id, 1) else public.dc__add(d, id, 1) end;
+  if o is not null and o <> u::text then
+    d := jsonb_set(d, '{ot}', coalesce(d -> 'ot', '{}') || jsonb_build_object(k,
+      coalesce(d -> 'ot' -> k, '{}') || jsonb_build_object(o, coalesce((d -> 'ot' -> k ->> o)::int, 0) + 1)));
+  end if;
+  return d;
+end $$;
+
 -- Liste de cartes demandées (1.0.3) : l'annonce accepte seulement une de ces cartes. Gardées : cartes du Pokédex
 -- (jamais une mythique ou une transcendante) de la rareté r, sans doublon, 50 au plus. Tableau vide si aucune ne convient.
 create or replace function public.dc__want_list(cfg jsonb, p_wants int[], r int) returns jsonb language sql stable as $$
@@ -29,7 +64,7 @@ create or replace function public.dc__want_list(cfg jsonb, p_wants int[], r int)
 
 drop function if exists public.dc_trade_create(int, int, text);   -- remplacée par la version avec p_wants (1.0.3)
 create or replace function public.dc_trade_create(p_card int, p_want int, p_mode text, p_wants int[] default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); mid text := public.dc__mid(); wl jsonb;
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); mid text := public.dc__mid(); wl jsonb; t jsonb;
 begin
   if public.dc__count(d, p_card) < 1 then raise exception 'Vous ne possédez plus cette carte.'; end if;
   if public.dc__open_listings(u) >= public.dc__listing_cap() then
@@ -40,19 +75,20 @@ begin
     if jsonb_array_length(wl) = 1 then p_want := (wl ->> 0)::int; wl := null; else p_want := null; end if;
   end if;
   if p_want is not null and public.dc__rar(cfg, p_want) is distinct from public.dc__rar(cfg, p_card) then raise exception 'La carte demandée doit être de la même rareté.'; end if;
-  d := public.dc__add(d, p_card, -1);
+  t := public.dc__ot_take(d, u, p_card, null); d := t -> 'd';   -- dresseur d'origine de l'exemplaire mis en jeu (1.1.13)
   insert into public.docs (path, coll, data) values ('market/' || mid, 'market', jsonb_build_object(
-    'kind', 't', 'owner', u, 'card', p_card, 'rarity', public.dc__rar(cfg, p_card), 'want', p_want,
+    'kind', 't', 'owner', u, 'card', p_card, 'ot', t ->> 'ot', 'rarity', public.dc__rar(cfg, p_card), 'want', p_want,
     'wantMode', case when p_want is null and wl is null and p_mode = 'missing' then 'missing' end, 'wantList', wl,
     'status', 'open', 'offers', '{}'::jsonb, 'created', public.dc__now()));
   return jsonb_build_object('profile', public.dc__save(u, d), 'mid', mid);
 end $$;
 
 create or replace function public.dc_trade_propose(p_mid text, p_card int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); m jsonb := public.dc__market(p_mid); cfg jsonb := public.dc__cfg(); d jsonb; ow jsonb; oid text := public.dc__mid();
+declare u uuid := public.dc__uid(); m jsonb := public.dc__market(p_mid); cfg jsonb := public.dc__cfg(); d jsonb; ow jsonb; oid text := public.dc__mid(); t jsonb;
 begin
   if m is null or m ->> 'kind' <> 't' or m ->> 'status' <> 'open' then raise exception 'Cet échange n’est plus disponible.'; end if;
   if m ->> 'owner' = u::text then raise exception 'C’est votre propre annonce.'; end if;
+  if m ->> 'ot' = u::text then raise exception 'Cette carte vient de vous : vous ne pouvez pas la récupérer.'; end if;   -- dresseur d'origine (1.1.13)
   if public.dc__rar(cfg, p_card) is distinct from public.dc__rar(cfg, public.dc__int(m, 'card')::int) then raise exception 'Cette carte ne correspond pas à la demande.'; end if;
   if m ->> 'want' is not null and public.dc__int(m, 'want') <> p_card then raise exception 'Cette carte ne correspond pas à la demande.'; end if;
   if jsonb_typeof(m -> 'wantList') = 'array' and not (m -> 'wantList') @> to_jsonb(p_card) then raise exception 'Cette carte ne correspond pas à la demande.'; end if;
@@ -68,10 +104,9 @@ begin
     raise exception 'Vous avez déjà une proposition en attente sur cet échange.';
   end if;
   d := public.dc__lock(u, true);
-  if public.dc__count(d, p_card) < 1 then raise exception 'Vous ne possédez plus cette carte.'; end if;
-  d := public.dc__add(d, p_card, -1);
+  t := public.dc__ot_take(d, u, p_card, m ->> 'owner'); d := t -> 'd';   -- jamais un exemplaire dont le propriétaire de l'annonce est le dresseur d'origine
   update public.docs set data = jsonb_set(m, '{offers}', (m -> 'offers') || jsonb_build_object(oid,
-      jsonb_build_object('by', u, 'card', p_card, 'at', public.dc__now(), 'status', 'pending'))), updated_at = now()
+      jsonb_build_object('by', u, 'card', p_card, 'ot', t ->> 'ot', 'at', public.dc__now(), 'status', 'pending'))), updated_at = now()
     where path = 'market/' || p_mid;
   d := public.dc__save(u, d);
   if coalesce(m ->> 'auto', '') = 'true' then     -- acceptation automatique : l'échange se conclut tout de suite (0.7.1)
@@ -88,7 +123,7 @@ begin
   if o is null or o ->> 'by' <> u::text or o ->> 'status' <> 'pending' then raise exception 'Cette proposition a déjà été traitée.'; end if;
   d := public.dc__lock(u, true);
   update public.docs set data = jsonb_set(m, '{offers}', (m -> 'offers') - p_oid), updated_at = now() where path = 'market/' || p_mid;
-  return jsonb_build_object('profile', public.dc__save(u, public.dc__add(d, public.dc__int(o, 'card')::int, 1)));
+  return jsonb_build_object('profile', public.dc__save(u, public.dc__ot_give(d, u, public.dc__int(o, 'card')::int, o ->> 'ot', false)));
 end $$;
 
 -- rend les cartes des propositions en attente (sauf celle gardée) à leurs auteurs
@@ -97,7 +132,7 @@ declare r record; o jsonb;
 begin
   for r in select key, value from jsonb_each(m -> 'offers') where value ->> 'status' = 'pending' and key is distinct from keep loop
     o := public.dc__lock((r.value ->> 'by')::uuid);
-    perform public.dc__save((r.value ->> 'by')::uuid, public.dc__add(o, public.dc__int(r.value, 'card')::int, 1), false);
+    perform public.dc__save((r.value ->> 'by')::uuid, public.dc__ot_give(o, (r.value ->> 'by')::uuid, public.dc__int(r.value, 'card')::int, r.value ->> 'ot', false), false);
   end loop;
 end $$;
 
@@ -111,7 +146,7 @@ begin
   by_ := (o ->> 'by')::uuid;
   if not p_accept then
     p := public.dc__lock(by_);
-    perform public.dc__save(by_, public.dc__add(p, public.dc__int(o, 'card')::int, 1), false);
+    perform public.dc__save(by_, public.dc__ot_give(p, by_, public.dc__int(o, 'card')::int, o ->> 'ot', false), false);
     update public.docs set data = jsonb_set(m, '{offers}', (m -> 'offers') - p_oid), updated_at = now() where path = 'market/' || p_mid;
     return jsonb_build_object('profile', public.dc__save(u, public.dc__lock(u, true), false), 'accepted', false);
   end if;
@@ -132,9 +167,9 @@ begin
   perform public.dc__lock_many(coalesce(us, '{}') || own);
   perform public.dc__return_offers(m, p_oid);
   p := public.dc__lock(by_);
-  perform public.dc__save(by_, public.dc__bump(public.dc__gain(p, public.dc__int(m, 'card')::int, 1), 'trades'), false);
+  perform public.dc__save(by_, public.dc__bump(public.dc__ot_give(p, by_, public.dc__int(m, 'card')::int, coalesce(m ->> 'ot', m ->> 'owner'), true), 'trades'), false);
   d := public.dc__lock(own);
-  perform public.dc__save(own, public.dc__bump(public.dc__gain(d, public.dc__int(o, 'card')::int, 1), 'trades'), false);
+  perform public.dc__save(own, public.dc__bump(public.dc__ot_give(d, own, public.dc__int(o, 'card')::int, coalesce(o ->> 'ot', o ->> 'by'), true), 'trades'), false);
   delete from public.docs where path = 'market/' || p_mid;
   -- historique : le propriétaire a donné m.card et reçu o.card
   insert into public.trade_log (owner, owner_card, taker, taker_card) values (own, public.dc__int(m, 'card')::int, by_, public.dc__int(o, 'card')::int);
@@ -150,7 +185,7 @@ begin
   perform public.dc__return_offers(m, null);
   d := public.dc__lock(u, true);
   delete from public.docs where path = 'market/' || p_mid;
-  return jsonb_build_object('profile', public.dc__save(u, public.dc__add(d, public.dc__int(m, 'card')::int, 1)));
+  return jsonb_build_object('profile', public.dc__save(u, public.dc__ot_give(d, u, public.dc__int(m, 'card')::int, m ->> 'ot', false)));
 end $$;
 
 -- ============================================================
@@ -348,7 +383,7 @@ begin
     else
       perform public.dc__return_offers(m.data, null);
       o := public.dc__lock((m.data ->> 'owner')::uuid);
-      perform public.dc__save((m.data ->> 'owner')::uuid, public.dc__add(o, public.dc__int(m.data, 'card')::int, 1), false);
+      perform public.dc__save((m.data ->> 'owner')::uuid, public.dc__ot_give(o, (m.data ->> 'owner')::uuid, public.dc__int(m.data, 'card')::int, m.data ->> 'ot', false), false);
     end if;
     delete from public.docs where path = m.path; n := n + 1;
   end loop;
@@ -391,6 +426,9 @@ end $$;
 --  les fonctions dc__* restent internes.
 -- ============================================================
 revoke all on function public.dc__add(jsonb,integer,integer) from public, anon, authenticated;
+revoke all on function public.dc__ot_give(jsonb,uuid,integer,text,boolean) from public, anon, authenticated;
+revoke all on function public.dc__ot_take(jsonb,uuid,integer,text) from public, anon, authenticated;
+revoke all on function public.dc__ot_n(jsonb,integer) from public, anon, authenticated;
 revoke all on function public.dc__admin() from public, anon, authenticated;
 revoke all on function public.dc__open_listings(uuid) from public, anon, authenticated;
 revoke all on function public.dc__listing_cap() from public, anon, authenticated;

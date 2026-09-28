@@ -120,7 +120,7 @@ declare
   now_ms bigint := public.dc__now(); tk jsonb; id int; t int;
   gencnt int[] := array_fill(0, array[9]); typecnt int[] := array_fill(0, array[18]);
   pgen text := cfg ->> 'pgen'; ptype text := cfg ->> 'ptype'; def jsonb; ok boolean; shown jsonb := '[]';
-  vis jsonb;
+  vis jsonb; ot jsonb; o2 jsonb; q record;
 begin
   d := public.dc__norm(d) - 'listings' - 'escrow';
   for r in select key, value from jsonb_each(d -> 'coll') loop
@@ -167,6 +167,20 @@ begin
     d := jsonb_set(d, '{vitrine}', coalesce((select jsonb_agg(v order by o) from jsonb_array_elements(d -> 'vitrine') with ordinality x(v, o)
       where jsonb_typeof(v) = 'object' and case when v ->> 's' = '1' then d -> 'shiny' ? (v ->> 'i') else newcoll ? (v ->> 'i') end), '[]'));
   elsif d ? 'vitrine' then d := d - 'vitrine'; end if;
+  -- dresseur d'origine (1.1.13) : jamais plus d'exemplaires venus d'autres dresseurs que d'exemplaires possédés ;
+  -- une défausse ou une évolution consomme donc d'abord les exemplaires au nom du joueur
+  if jsonb_typeof(d -> 'ot') = 'object' then
+    ot := '{}';
+    for r in select key, value from jsonb_each(d -> 'ot') loop
+      n := coalesce((newcoll ->> r.key)::int, 0); o2 := '{}';
+      for q in select key, (value #>> '{}')::int v from jsonb_each(case when jsonb_typeof(r.value) = 'object' then r.value else '{}' end) order by key loop
+        exit when n <= 0;
+        if q.v > 0 then o2 := o2 || jsonb_build_object(q.key, least(q.v, n)); n := n - least(q.v, n); end if;
+      end loop;
+      if o2 <> '{}' then ot := ot || jsonb_build_object(r.key, o2); end if;
+    end loop;
+    d := case when ot = '{}' then d - 'ot' else jsonb_set(d, '{ot}', ot) end;
+  elsif d ? 'ot' then d := d - 'ot'; end if;
   -- cosmétiques (0.9.0) : articles possédés (cos) ; portés (look), seulement s'ils sont possédés ;
   -- partie visible par les autres joueurs (vis : cadre, couleur du pseudo, badges), lue par le classement
   if d ? 'cos' and jsonb_typeof(d -> 'cos') <> 'object' then d := d - 'cos'; end if;

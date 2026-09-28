@@ -221,7 +221,7 @@ drop function if exists public.dc_trade_create_many(integer[], text);   -- rempl
 drop function if exists public.dc_trade_create_many(integer[], text, boolean);   -- remplacée par la version avec p_wants (1.0.3)
 create or replace function public.dc_trade_create_many(p_cards int[], p_mode text, p_auto boolean default false, p_wants int[] default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); c int; n int := 0; skipped int[] := '{}';
-  room int := public.dc__listing_cap() - public.dc__open_listings(u); capped int := 0; wl jsonb; w int; nolist int[] := '{}';
+  room int := public.dc__listing_cap() - public.dc__open_listings(u); capped int := 0; wl jsonb; w int; nolist int[] := '{}'; t jsonb;
 begin
   if coalesce(array_length(p_cards, 1), 0) = 0 then raise exception 'Aucune carte choisie.'; end if;
   if array_length(p_cards, 1) > 500 then raise exception 'Trop de cartes d’un coup : 500 au maximum.'; end if;
@@ -235,9 +235,9 @@ begin
       if jsonb_array_length(wl) = 0 then nolist := nolist || c; continue; end if;
       if jsonb_array_length(wl) = 1 then w := (wl ->> 0)::int; wl := null; end if;
     end if;
-    d := public.dc__add(d, c, -1);
+    t := public.dc__ot_take(d, u, c, null); d := t -> 'd';   -- dresseur d'origine de l'exemplaire (1.1.13)
     insert into public.docs (path, coll, data) values ('market/' || public.dc__mid(), 'market', jsonb_build_object(
-      'kind', 't', 'owner', u, 'card', c, 'rarity', public.dc__rar(cfg, c), 'want', w, 'wantList', wl,
+      'kind', 't', 'owner', u, 'card', c, 'ot', t ->> 'ot', 'rarity', public.dc__rar(cfg, c), 'want', w, 'wantList', wl,
       'wantMode', case when p_wants is null and p_mode = 'missing' then 'missing' end,
       'status', 'open', 'offers', '{}'::jsonb, 'created', public.dc__now(), 'auto', coalesce(p_auto, false)));
     n := n + 1;
@@ -270,7 +270,7 @@ begin
              and data ->> 'kind' = 't' and data ->> 'owner' = u::text for update loop
     if p_action = 'cancel' then
       perform public.dc__return_offers(m.data, null);
-      d := public.dc__add(d, public.dc__int(m.data, 'card')::int, 1);
+      d := public.dc__ot_give(d, u, public.dc__int(m.data, 'card')::int, m.data ->> 'ot', false);
       delete from public.docs where path = m.path;
     elsif p_action = 'auto' then
       -- acceptation automatique (0.7.1) : la première proposition valide est acceptée d'office ;

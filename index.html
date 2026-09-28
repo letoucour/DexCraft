@@ -1174,7 +1174,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.12";
+const APP_VERSION="1.1.13";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1752,8 +1752,17 @@ function tradeWants(m){
   if(m.wantMode==="missing"&&!ownerHasAll(m.owner,r))return `n’importe quelle carte ${RAR[r].toLowerCase()} manquante`;
   return `n’importe quelle carte ${RAR[r].toLowerCase()}`;
 }
+/* Dresseur d'origine (1.1.13) : ot = {n°: {uid: nombre}} dans le profil, exemplaires venus d'autres dresseurs (le reste est à
+   son nom). Une carte ne peut jamais revenir à son dresseur d'origine (règles dans dc__ot_take, partie 2 du serveur). */
+const otFrom=(id,uid,p=S)=>+((p&&p.ot&&p.ot[id]&&p.ot[id][uid])||0);
+function otLine(id,c){ // fiche d'une carte : d'où viennent ses exemplaires
+  const o=S.ot&&S.ot[id];if(!o||!Object.keys(o).length)return "";
+  const autres=Object.entries(o).filter(([,n])=>n>0),mien=c-autres.reduce((a,[,n])=>a+n,0);
+  return `<p class="muted" style="margin:2px 0 0;font-size:.85rem"><abbr title="Dresseur d’origine">DO</abbr> : ${[mien>0?`vous ×${mien}`:"",...autres.map(([u,n])=>`${esc(nameOf(u))} ×${n}`)].filter(Boolean).join(" · ")}</p>`;
+}
 function canOffer(m,c){
   if(rar(c)!==rar(m.card))return false;
+  if((S.coll[c]||0)-otFrom(c,m.owner)<1)return false; // seul exemplaire venu du propriétaire de l'annonce : il ne peut pas le récupérer
   if(Array.isArray(m.wantList)&&m.wantList.length)return m.wantList.includes(c); // liste de cartes demandées (1.0.3)
   if(m.want)return m.want===c;
   if(m.wantMode==="missing"&&!ownerHasAll(m.owner,rar(c)))return !ownerHas(m.owner,c);
@@ -2585,7 +2594,7 @@ function tradeTile(id,m){
   const [n,,,ty,,,,r,ex]=D(m.card),mine=m.owner===ME,have=has(S,m.card),pend=offersOf(m).length,mo=!mine&&myOffer(id,m);
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1),src=imgFor(m.card);
   const tag=mine?(pend?`<span class="tt-tag gold">${pend} proposition${pend>1?"s":""}</span>`:"")
-    :mo?`<span class="tt-tag">Proposée</span>`:wished(m.card)?`<span class="tt-tag gold">🔔 Recherchée</span>`:!have?`<span class="tt-tag gold">Manquante</span>`:"";
+    :m.ot===ME&&m.owner!==ME?`<span class="tt-tag">Vient de vous</span>`:mo?`<span class="tt-tag">Proposée</span>`:wished(m.card)?`<span class="tt-tag gold">🔔 Recherchée</span>`:!have?`<span class="tt-tag gold">Manquante</span>`:"";
   const pick=mine&&mySel;
   return `<button class="trade-tile r${r}${pick&&mySel.has(id)?" sel":""}" data-act="${pick?"my-pick":"trade-open"}" data-mid="${id}" style="--c1:${c1};--c2:${c2}" aria-label="${esc(n)}, ${RAR[r]}">
     <span class="tt-art">${src?`<img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()">`:""}<b aria-hidden="true">${esc(n[0])}</b></span>
@@ -2598,10 +2607,11 @@ function tradeOpen(id){
 }
 function tradeInfoHTML(id,m){
     const isMine=m.owner===ME,mo=myOffer(id,m),pend=offersOf(m);
-    const canGive=Object.keys(S.coll).map(Number).filter(c=>canOffer(m,c)).length;
+    const canGive=m.ot===ME?0:Object.keys(S.coll).map(Number).filter(c=>canOffer(m,c)).length; // carte dont on est le dresseur d'origine : jamais récupérable (1.1.13)
     return `<div class="info trade-info">
       <h2>${esc(nm(m.card))}</h2><span class="tag" style="color:var(--r${rar(m.card)})">${RAR[rar(m.card)]}</span>
       ${isMine?"":`<div class="tag-row">${haveTag(m.card)}</div><div class="by">${playerAva(m.owner,20)} Proposée par ${m.owner===ME?"vous":playerName(m.owner)}${badgeTag(m.owner,true)}</div>`}
+${m.ot&&m.ot!==m.owner?`<div class="by"><abbr title="Dresseur d’origine">DO</abbr> : ${m.ot===ME?"<b>vous</b> (vous ne pouvez pas la récupérer)":playerName(m.ot)}</div>`:""}
       <div class="by">Demande : ${tradeWants(m)}</div>${m.auto?`<div class="by"><b>⚡ Acceptation automatique</b> : ${isMine?"la première proposition valide est acceptée d’office.":"proposez une carte qui correspond et l’échange se fait tout de suite."}</div>`:""}
       ${isMine?(pend.length?`<div class="offers-in">${pend.map(([oid,o])=>{const have=S.coll[o.card]||0;
         return `<div class="offer-in"><div class="mini-wrap">${miniHTML(o.card,{count:have,act:"none"})}</div>
@@ -2615,7 +2625,7 @@ function tradeInfoHTML(id,m){
         :`<div class="by">${pend.length} proposition${pend.length>1?"s":""} en attente</div>`}
       <div class="row">${isMine?`<button class="btn small danger" data-act="cancel" data-mid="${id}">Retirer l’annonce</button>`
         :mo?`<button class="btn small danger" data-act="offer-cancel" data-mid="${id}" data-oid="${mo[0]}">Retirer ma proposition</button>`
-        :`<button class="btn small primary" data-act="trade" data-mid="${id}" ${canGive?"":"disabled"}>${canGive?"Proposer une carte":"Aucune carte à proposer"}</button>`}</div>
+        :`<button class="btn small primary" data-act="trade" data-mid="${id}" ${canGive?"":"disabled"}>${canGive?"Proposer une carte":m.ot===ME?"Cette carte vient de vous":"Aucune carte à proposer"}</button>`}</div>
     </div>`;
 }
 const BYR_V=2; // change quand l'ordre des raretés change
@@ -3444,7 +3454,7 @@ function detail(id){
   const navBtns=detailNav?`<div class="dnav-bar"><button class="dnav" data-act="detail" data-id="${detailNav.prev||""}" aria-label="Carte précédente" ${detailNav.prev?"":"disabled"}>‹</button><span class="dnav-pos">${at+1} / ${nav.length}</span><button class="dnav" data-act="detail" data-id="${detailNav.next||""}" aria-label="Carte suivante" ${detailNav.next?"":"disabled"}>›</button></div>`:"";
   openDlg(`${navBtns}<div class="card-holder">${cardHTML(id,true,showShiny(id))}</div><div class="side">
     <button class="close-x" data-act="close" aria-label="Fermer">×</button>
-    <div><h2>${esc(nm(id))}</h2><p class="muted">${c} exemplaire${c>1?"s":""} dans votre collection${r<6?`, obtenue ${fmtN(Math.max(gotN(id),c))} fois au total`:""}</p>
+    <div><h2>${esc(nm(id))}</h2><p class="muted">${c} exemplaire${c>1?"s":""} dans votre collection${r<6?`, obtenue ${fmtN(Math.max(gotN(id),c))} fois au total`:""}</p>${otLine(id,c)}
       <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button>${r>=6?"":`<button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>`}${r>=6||mode!=="online"?"":`<button class="btn small wish-btn${wished(id)?" on":""}" data-act="toggle-wish" data-id="${id}" aria-pressed="${wished(id)}" title="Être prévenu quand un joueur la met à l’échange">${wished(id)?"🔔 Je la recherche · Arrêter":"🔔 Je la recherche"}</button>`}${online&&(inVit(id)||vitOf(S).length<VIT_MAX)?`<button class="btn small" data-act="vit-card" data-id="${id}">${inVit(id)?"🏆 Retirer de la vitrine":"🏆 Mettre en vitrine"}</button>`:""}</div></div>
     ${shinyPanelHTML(id)}
     ${online?`<div class="panel"><h3>Proposer à l’échange</h3>
