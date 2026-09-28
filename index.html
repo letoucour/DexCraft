@@ -663,6 +663,27 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .coin{width:64px;height:64px;transform:rotate(45deg);background:linear-gradient(135deg,#fff4c2,#ffcf3f 45%,#d99a00);border:4px solid #7a5300;box-shadow:4px 4px 0 rgba(0,0,0,.25)}
 .coin:nth-child(2){width:84px;height:84px;margin:0 -8px}
 .mini-pack{width:62px;height:88px;border-radius:5px;background:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 2px,transparent 2px 10px),linear-gradient(160deg,#ffe27a,#f2a900 38%,#e7621e 72%,#a5307a);box-shadow:0 6px 14px rgba(0,0,0,.3)}
+/* boosters spéciaux (1.2.3) : sachets aux couleurs de la génération, du type, ou noir et or pour le Premium */
+.mini-pack[class*="sp-"]{display:flex;align-items:center;justify-content:center}
+.mini-pack[class*="sp-"] b{font-family:var(--display);font-size:.95rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);background:rgba(0,0,0,.22);border-radius:6px;padding:1px 6px;max-width:92%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini-pack.sp-gen{background:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 2px,transparent 2px 10px),linear-gradient(160deg,#9fe7ff,#3f8cff 45%,#5a3fd8)}
+.mini-pack.sp-type{background:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 2px,transparent 2px 10px),linear-gradient(160deg,color-mix(in srgb,var(--t) 55%,#fff),var(--t) 50%,color-mix(in srgb,var(--t) 60%,#000))}
+.mini-pack.sp-gen b{font-size:1.25rem;background:none}
+.mini-pack.sp-type b{font-size:.62rem}
+.mini-pack.sp-prem{background:repeating-linear-gradient(135deg,rgba(255,215,90,.22) 0 2px,transparent 2px 10px),linear-gradient(160deg,#3a2f14,#15131c 55%,#2b2208);border:1px solid #e0b43a}
+.mini-pack.sp-prem b{color:#ffd35a;background:none;font-size:1.3rem}
+.offer-visual.sp-vis-gen{background:radial-gradient(circle at 50% 120%,rgba(79,160,255,.55),transparent 60%),var(--surface-2)}
+.offer-visual.sp-vis-type{background:radial-gradient(circle at 50% 120%,rgba(255,255,255,.18),transparent 60%),var(--surface-2)}
+.offer-visual.sp-vis-prem{background:radial-gradient(circle at 50% 120%,rgba(255,207,63,.6),transparent 60%),var(--surface-2)}
+/* boutique (1.2.3) : rubriques plus bas, visibles dès le haut de la page */
+.shop-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:12px 0 4px}
+.shop-nav>.muted{font-size:.9rem}
+.shop-nav button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:7px 14px;font:inherit;cursor:pointer;text-align:left}
+.shop-nav button:hover{border-color:var(--gold)}
+.shop-nav button b{font-size:.95rem}.shop-nav button span{font-size:.8rem;color:var(--ink-soft)}
+.sp-odds{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 10px;font-weight:700;font-size:.85rem}
+.sp-odds i{font-style:normal}.sp-odds span{white-space:nowrap}
+.sp-offer select{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;font-weight:700;width:100%}
 .mini-pack:nth-child(1){transform:rotate(-10deg) translateX(14px)}
 .mini-pack:nth-child(2){transform:translateY(-6px);z-index:1;width:70px;height:98px}
 .mini-pack:nth-child(3){transform:rotate(10deg) translateX(-14px)}
@@ -1192,7 +1213,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.2.2";
+const APP_VERSION="1.2.3";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1694,7 +1715,7 @@ const nextOpenK=()=>{const a=S?available(S):0;return a>=lastOpenK?lastOpenK:a>=1
 function openPack(k=1){
   if(opening||!OPEN_OPTS.includes(k))return;
   if(available(S)<k){toast(k>1?`Il vous faut ${k} boosters disponibles pour en ouvrir ${k} d’un coup.`:"Aucun booster disponible. Attendez le prochain ou passez par la boutique.");return}
-  lastOpenK=k;
+  lastOpenK=k;lastSpecial=null;
   opening=true;document.documentElement.classList.add("revealing"); // pas de « tirer pour actualiser » pendant l'ouverture
   const before=(S.stats&&S.stats.packs)||0;
   run(async()=>{
@@ -2245,6 +2266,8 @@ function revealHeadHTML(){
 }
 function revealActionsHTML(){
   if(reveal.every(c=>c.shown)){ // fin de l’ouverture (1.1.15) : retour à l’écran des boosters, ou booster suivant s’il en reste
+    if(lastSpecial&&!revealGift){const L=lastSpecial,cost=SPB[L.kind].price*L.k,can=devOn()||S.credits>=cost; // booster spécial : le racheter (1.2.3)
+      return `<button class="btn" data-act="done-reveal">Retour</button><button class="btn primary" data-act="sp-again" ${can?"":"disabled"}>${L.k>1?`Encore ${L.k} boosters`:"Encore un booster"} (${fmtN(cost)} crédits)</button>`}
     const k=revealGift?0:nextOpenK();
     return `<button class="btn" data-act="done-reveal">Retour</button>${k?`<button class="btn primary" data-act="next-pack" data-n="${k}">${k>1?`${k} boosters suivants`:"Booster suivant"}</button>`:""}`;
   }
@@ -2326,7 +2349,7 @@ function vBooster(){
   if(reveal){
     const all=reveal.every(c=>c.shown);
     const multi=reveal.length>CARDS,dosCls=myLook("dos")?" bk-"+cosCls(myLook("dos")):""; // dos de carte équipé (boutique)
-    return `<div class="booster"><h1>${revealGift?`Votre cadeau`:multi?`Vos ${reveal.length/CARDS} boosters`:"Votre booster"}</h1>
+    return `<div class="booster"><h1>${revealGift?`Votre cadeau`:lastSpecial?`${spName(lastSpecial.kind,lastSpecial.v)}${multi?` × ${reveal.length/CARDS}`:""}`:multi?`Vos ${reveal.length/CARDS} boosters`:"Votre booster"}</h1>
     <div class="reveal-bar" id="reveal-head">${revealHeadHTML()}</div>
     <div class="hand-wrap"><button class="hand-nav prev" data-act="hand-prev" aria-label="Carte précédente">‹</button>
     <div class="hand" id="hand">${reveal.map((c,i)=>hitsMode&&!isHit(c)?"":`<button class="flip${c.shown?" shown":""}" data-act="flip" data-i="${i}" aria-label="${c.shown?esc(nm(c.id)):"Retourner la carte "+(i+1)}"><div class="flip-in">
@@ -2353,6 +2376,7 @@ function vBooster(){
     <div class="bh-right">
     <button class="btn volto-cta" data-view="volto"><span class="vb-volt" aria-hidden="true"></span>En attendant vos boosters, une petite VoltoBataille ?</button>
     <button class="btn shop-cta" data-view="shop">Acheter des boosters, ${PACK_PRICE} crédits l’unité</button>
+    <button class="btn shop-cta sp-cta" data-act="goto-special">✨ Boosters spéciaux : génération, type ou Premium</button>
     ${discordHTML()}${installHTML()}</div>
     <div class="bh-main"><div class="pack-wrap"><button class="pack-hit" data-act="open" ${p.n<1&&!S.bonus?"disabled":""} aria-label="Ouvrir un booster"><div class="pack${myLook("sac")?" sk-"+cosCls(myLook("sac")):""}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div><div class="pk-glow"></div></div></button><div class="pack-shadow"></div></div>
     <div class="open-row">${OPEN_OPTS.map(k=>`<button class="btn${available(S)>=k?" primary":""}" data-act="open-n" data-n="${k}" ${available(S)<k?"disabled":""} title="${available(S)<k?`Il faut ${k} booster${k>1?"s":""} disponible${k>1?"s":""}`:`Ouvrir ${k} booster${k>1?"s":""} d’un coup`}">Ouvrir${k>1?" "+k:""}</button>`).join("")}</div>    <div class="stock"><div class="big">${p.n}<span class="of"> / ${MAXP}</span></div><div class="muted">boosters disponibles</div>
@@ -2411,7 +2435,7 @@ function openGift(){
   run(async()=>{
     const res=await rpc("dc_gift_open",{},{render:false});
     const box=$(".gift-box");if(box&&!RM()){box.classList.add("open");SFX.open(false);await sleep(750)}
-    const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shown:false}));
+    const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shiny:!!c.shiny,shown:false})); // shiny : boosters spéciaux offerts (1.2.3)
     if(drawn.length){revealKey=Date.now();saveReveal(drawn,true)}
     const extra=[res.credits?`+${cr(res.credits)}`:"",res.packs?`+${res.packs} booster${res.packs>1?"s":""}`:""].filter(Boolean);
     if(drawn.length){ // des cartes : on les retourne comme un booster
@@ -2510,11 +2534,11 @@ function vCollection(){
   const per=[0,0,0,0,0,0,0,0];for(const id of Object.keys(S.coll))per[rar(+id)]++;
   const own=ids=>ids.filter(x=>(S.coll[x]||0)>0).length,nDex=masterCount(S.coll); // cartes différentes du Pokédex, par famille
   const myth=per[6],trans=per[7];
-  const shownR=trans?8:myth?7:6;
+  const showR=i=>i<6||(i===6&&myth>0)||(i===7&&trans>0); // mythiques et transcendantes : chacune seulement une fois découverte (1.2.3 : l’une ne dévoile plus l’autre)
   const ids=filtered();const selN=discardSel?Object.values(discardSel).reduce((a,b)=>a+b,0):0;
   const opt=(k,v,l)=>`<option value="${v}"${String(filt[k])===String(v)?" selected":""}>${l}</option>`;
   return `<div class="col-head"><div><h1>Collection</h1>
-    <div class="rar-counts">${RAR.slice(0,shownR).map((r,i)=>{const on=filt.r===String(i),b=`<button type="button" class="rc${on?" on":""}" data-act="rc-filter" data-r="${i}" aria-pressed="${on}" title="${on?"Toutes les raretés":"Voir seulement : "+r}">`;
+    <div class="rar-counts">${RAR.map((r,i)=>{if(!showR(i))return "";const on=filt.r===String(i),b=`<button type="button" class="rc${on?" on":""}" data-act="rc-filter" data-r="${i}" aria-pressed="${on}" title="${on?"Toutes les raretés":"Voir seulement : "+r}">`;
       const c=i>=6?`${b}<span class="${i===7?"trans-txt":"myth-txt"}">${gems(i)} <b>${per[i]}</b>/${BYR[i].length}</span></button>`:`${b}<span style="color:var(--r${i})">${gems(i)}</span> <b>${per[i]}</b>/${BYR[i].length}</button>`;
       return i===5?c+`<button type="button" class="rc${filt.own==="shiny"?" on":""}" data-act="rc-filter" data-r="shiny" aria-pressed="${filt.own==="shiny"}" title="${filt.own==="shiny"?"Toutes les cartes":"Voir seulement mes shiny"}"><span class="sh-sum">✨</span> <b>${fmtN(S.shinyN||0)}</b>/${fmtN(shinyTotal())}</button>`:c}).join("")}</div></div>
     <div class="actions">${discardSel?`<button class="btn small" data-act="discard-cancel">Quitter la défausse</button>`:tradeSel?`<button class="btn small" data-act="trade-cancel">Quitter la sélection</button>`:`<button class="btn" data-act="trade-mode">Mettre à l’échange</button><button class="btn" data-act="discard-mode">Défausser des cartes</button>`}</div></div>
@@ -2522,7 +2546,7 @@ function vCollection(){
   <div class="toolbar">
     <input type="search" placeholder="Rechercher un nom ou un numéro" data-keep="q" data-f="q" value="${esc(filt.q)}" aria-label="Rechercher">
     <select data-f="own" aria-label="Filtrer">${opt("own","all","Toutes")}${opt("own","fav","Favoris")}${opt("own","wish","Recherchées 🔔")}${opt("own","shiny","Shiny ✨")}${opt("own","own","Possédées")}${opt("own","dup","Doubles")}${opt("own","missing","Manquantes")}</select>
-    <select data-f="r" aria-label="Rareté">${opt("r","all","Toutes raretés")}${RAR.slice(0,shownR).map((r,i)=>opt("r",i,r)).join("")}</select>
+    <select data-f="r" aria-label="Rareté">${opt("r","all","Toutes raretés")}${RAR.map((r,i)=>showR(i)?opt("r",i,r):"").join("")}</select>
     <select data-f="t" aria-label="Type">${opt("t","all","Tous types")}${TYPES.slice(1).map((t,i)=>opt("t",i+1,t[0])).join("")}</select>
     <select data-f="sort" aria-label="Trier">${opt("sort","num","Tri : numéro")}${opt("sort","rar","Tri : rareté")}${opt("sort","count","Tri : exemplaires")}${opt("sort","got","Tri : fois obtenue")}${opt("sort","name","Tri : nom")}</select>
     <select data-f="g" aria-label="Génération">${opt("g","all","Toutes générations")}${ROMAN.slice(1).map((r,i)=>opt("g",i+1,"Génération "+r)).join("")}</select>
@@ -2907,6 +2931,11 @@ function vProfile(){
       <label class="field">Crédits<input type="number" id="gr-cred" data-keep="gr-cred" value="0" step="100" style="width:120px"></label>
       <label class="field">Boosters<input type="number" id="gr-packs" data-keep="gr-packs" value="0" style="width:110px"></label>
       <button class="btn primary" data-act="grant">Appliquer</button></div>
+    <div class="actions" style="margin-top:12px;align-items:end">
+      <label class="field" style="flex:1;min-width:200px">Booster à offrir<select id="gb-kind" data-keep="gb-kind"><option value="pk:0">Booster normal</option><option value="prem:0">Booster Premium</option>${ROMAN.slice(1).map((r,i)=>`<option value="gen:${i+1}">Booster Génération ${r}</option>`).join("")}${TYPES.slice(1).map((t,i)=>`<option value="type:${i+1}">Booster Type ${t[0]}</option>`).join("")}</select></label>
+      <label class="field">Nombre<input type="number" id="gb-n" data-keep="gb-n" value="1" min="1" max="100" style="width:100px"></label>
+      <button class="btn primary" data-act="give-booster">Offrir</button></div>
+    <p class="muted" style="margin:6px 0 0;font-size:.85rem">Au joueur choisi ci-dessus, dans sa boîte cadeau : les boosters spéciaux s’ouvrent avec le cadeau, les normaux vont dans sa réserve.</p>
     <div class="actions" style="margin-top:12px">
       <button class="btn" data-act="badge" data-on="1">Donner le badge Alpha testeur</button>
       <button class="btn" data-act="badge" data-on="0">Retirer le badge</button></div>
@@ -3225,6 +3254,7 @@ function vShop(){
   const pay=`<p class="pay-once">🔒 Paiement sécurisé par Stripe · carte bancaire ou PayPal</p>`;
   return `<h1>Boutique</h1><p class="muted">Vous avez <b>${fmtN(S.credits)} crédits</b>. Les crédits se gagnent gratuitement en jouant et servent à acheter des boosters.</p>
   <div class="f2p-note"><b>DexCraft se joue entièrement gratuitement.</b> Les cartes, les boosters et les crédits ne s’achètent pas avec de l’argent. Les articles payants sont uniquement décoratifs : n’achetez que si vous pouvez vraiment vous le permettre.</div>
+  <nav class="shop-nav" aria-label="Plus bas dans la boutique"><span class="muted">Plus bas :</span><button data-act="shop-go" data-to="shop-special"><b>✨ Boosters spéciaux</b><span>génération, type ou Premium</span></button><button data-act="shop-go" data-to="shop-packs"><b>🎨 Packs cosmétiques</b><span>dos de carte, sachets, cadres, fonds…</span></button></nav>
   ${dev?`<div class="dev-banner"><b>Mode développeur actif :</b> boosters gratuits, et bouton « Obtenir (mode dev) » sur les packs. Désactivez-le depuis votre profil.</div>`:""}
   <div class="shop cols3">
     <div class="offer-big">
@@ -3237,6 +3267,9 @@ function vShop(){
     ${offerHTML(OFFER_BY.soutien,dev)}
     ${launchHTML()}
   </div>
+  <h2 style="margin-top:26px" id="shop-special">Boosters spéciaux</h2>
+  <p class="muted" style="margin:0">Payés en crédits et ouverts tout de suite. Choisissez une génération, un type, ou des cartes Rares garanties.</p>
+  <div class="shop cols3">${["gen","type","prem"].map(k=>spOfferHTML(k,dev)).join("")}</div>
   <h2 style="margin-top:26px" id="shop-packs">Packs cosmétiques</h2>
   <p class="muted" style="margin:0">Chaque pack s’achète une fois. Vous pourrez ensuite changer de look à volonté en mélangeant les articles dans votre profil.</p>${pay}
   <div class="shop cols3">${OFFERS.filter(o=>o.k!=="soutien").map(o=>offerHTML(o,dev)).join("")}</div>
@@ -3464,6 +3497,53 @@ function resetAll(full){
     VB=null;reveal=null;hitsMode=false;discardSel=null;tradeSel=null;view=full?"profile":"booster";renderAll();
     toast(full?"Profil entièrement réinitialisé.":"Collection réinitialisée.");
   });
+}
+/* ---------- boosters spéciaux (1.2.3) ----------
+   Payés en crédits et ouverts aussitôt (dc_open_special, partie 4 du serveur), par 1, 5 ou 10 :
+   Génération (5 cartes d'une génération), Type (5 cartes d'un type), Premium (5 cartes Rare ou mieux).
+   Génération et Type : même tirage de rareté qu'un booster normal, seule la liste des Pokémon change ; une rareté sans
+   aucune carte du choix serait retirée du tirage (aucune aujourd'hui). Premium : raretés Rare et plus seulement,
+   mythiques et transcendantes à leur chance habituelle, le reste réparti entre Rare, Épique, Méga et Légendaire. */
+const SPB={gen:{n:"Booster Génération",price:500},type:{n:"Booster Type",price:500},prem:{n:"Booster Premium",price:2000}};
+const PREM_K=(()=>{const rest=SCALE-MK-TK,s=ODDS_K[2]+ODDS_K[3]+ODDS_K[4]+ODDS_K[5],k=[0,0,...[2,3,4,5].map(r=>Math.floor(ODDS_K[r]*rest/s)),MK,TK];k[2]+=SCALE-k.reduce((a,b)=>a+b,0);return k})();
+let SP_LISTS=null; // cartes possibles de chaque génération et de chaque type
+const spList=(kind,v)=>{if(!SP_LISTS){SP_LISTS={gen:{},type:{}};for(const id of DEX_ORDER){(SP_LISTS.gen[genOf(id)]=SP_LISTS.gen[genOf(id)]||[]).push(id);for(const t of D(id)[3]||[])(SP_LISTS.type[t]=SP_LISTS.type[t]||[]).push(id)}}return SP_LISTS[kind][v]||[]};
+const spName=(kind,v)=>kind==="gen"?`Booster Génération ${ROMAN[v]}`:kind==="type"?`Booster Type ${TYPES[v][0]}`:"Booster Premium";
+let spSel={gen:1,type:10,q:{gen:1,type:1,prem:1}},lastSpecial=null; // lastSpecial : dernier booster spécial ouvert (bouton « Racheter »)
+function spPackHTML(kind,v){ // petit sachet de la boutique
+  const lbl=kind==="gen"?ROMAN[v]:kind==="type"?TYPES[v][0]:"★";
+  return `<span class="mini-pack sp-${kind}"${kind==="type"?` style="--t:${TYPES[v][1]}"`:""}><b>${lbl}</b></span>`;
+}
+function spOfferHTML(kind,dev){
+  const sp=SPB[kind],v=spSel[kind],q=spSel.q[kind],cost=sp.price*q,can=dev||S.credits>=cost;
+  const pick=kind==="gen"?`<select data-spsel="gen" aria-label="Génération">${ROMAN.slice(1).map((r,i)=>`<option value="${i+1}"${i+1===v?" selected":""}>Génération ${r} (${REGIONS[i+1]})</option>`).join("")}</select>`
+    :kind==="type"?`<select data-spsel="type" aria-label="Type">${TYPES.slice(1).map((t,i)=>[t[0],i+1]).sort((a,b)=>a[0].localeCompare(b[0],"fr")).map(([n,i])=>`<option value="${i}"${i===v?" selected":""}>${n}</option>`).join("")}</select>`
+    :`<div class="sp-odds" aria-label="Chances par carte">${[2,3,4,5].map(r=>`<span><i style="color:var(--r${r})">${gems(r)}</i> ${["","","Rare","Épique","Méga","Légendaire"][r]} <b>${(PREM_K[r]*100/SCALE).toLocaleString("fr-FR",{maximumFractionDigits:1})} %</b></span>`).join("")}</div>`;
+  const txt=kind==="prem"?`5 cartes, toutes <b>Rares ou mieux</b>. Chances pour chaque carte :`
+    :`5 cartes, toutes ${kind==="gen"?"de la génération choisie":"du type choisi"} (${spList(kind,v).length} cartes possibles). Mêmes chances de rareté qu’un booster normal.`;
+  return `<div class="offer-big sp-offer">
+    <div class="offer-visual sp-vis-${kind}" aria-hidden="true">${[0,1,2].map(()=>spPackHTML(kind,v)).join("")}</div>
+    <div><div class="amount">${sp.n}</div><p class="muted" style="margin:6px 0 0">${txt}</p></div>
+    ${pick}
+    <div class="qty" role="group" aria-label="Quantité">${OPEN_OPTS.map(n=>`<button data-act="sp-qty" data-kind="${kind}" data-q="${n}" aria-pressed="${n===q}">${n} booster${n>1?"s":""}</button>`).join("")}</div>
+    <div class="price">${dev?`<s>${fmtN(cost)} crédits</s>Gratuit`:`${fmtN(cost)} crédits`}</div>
+    <button class="btn primary" data-act="sp-buy" data-kind="${kind}" ${can?"":"disabled"}>${can?`Acheter et ouvrir ${q>1?q+" boosters":"le booster"}`:`Il vous manque ${fmtN(cost-S.credits)} crédits`}</button>
+  </div>`;
+}
+/* rubrique de la boutique, juste sous l’en-tête fixe */
+function shopGo(id){const h=document.getElementById(id),top=$("header.top");if(h)window.scrollTo({top:h.getBoundingClientRect().top+scrollY-(top?top.offsetHeight:0)-12,behavior:"smooth"})}
+function openSpecial(kind,v,k){
+  const sp=SPB[kind];if(!sp||opening||!OPEN_OPTS.includes(k))return;
+  if(!devOn()&&S.credits<sp.price*k){toast("Vous n’avez pas assez de crédits.");return}
+  opening=true;document.documentElement.classList.add("revealing");
+  run(async()=>{
+    const res=await rpc("dc_open_special",{p_kind:kind,p_val:kind==="prem"?0:v,p_k:k},{render:false});
+    const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shiny:!!c.shiny,shown:false}));
+    revealKey=(S.lastOpen&&S.lastOpen.t)||0;saveReveal(drawn,false);
+    SFX.open(k>1);lastSpecial={kind,v,k};
+    reveal=drawn;revealGift=false;hitsMode=false;handScroll=0;view="booster";
+    renderAll();window.scrollTo(0,0);
+  }).finally(()=>{opening=false;document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal)});
 }
 function buyPacks(q){
   const dev=devOn();
@@ -4108,7 +4188,7 @@ document.addEventListener("click",e=>{
     case"cgu":openCgu();break;
     case"cgv":openCgv();break;
     case"look-news":try{localStorage.setItem("dc-look-news","1")}catch(e){}view="profile";renderAll();window.scrollTo(0,0);break; // « votre pseudo » : le message ne revient plus
-    case"goto-packs":view="shop";renderAll();window.scrollTo(0,0);setTimeout(()=>{const h=$("#shop-packs");if(h)h.scrollIntoView({block:"start"})});break; // « Mon look » → packs de la boutique (1.0.4)
+    case"goto-packs":view="shop";renderAll();window.scrollTo(0,0);setTimeout(()=>shopGo("shop-packs"));break; // « Mon look » → packs de la boutique (1.0.4)
     case"claim-launch":run(async()=>{await rpc("dc_buy_once",{p_key:LAUNCH.k});toast(`Pack de lancement récupéré : +${fmtN(LAUNCH.credits)} crédits et +${LAUNCH.packs} boosters !`)});break;
     case"badge-info":e.stopPropagation();{const B=BADGES[b.dataset.k];if(B)toast(`${B.ic} ${B.t}`)}break;
     case"discord-soon":e.preventDefault();toast("Le serveur Discord ouvre très bientôt !");break;
@@ -4205,6 +4285,16 @@ document.addEventListener("click",e=>{
       closeDlg();resetEveryone();break}
     case"reset-once":if(devOn())run(async()=>{await rpc("dc_admin_reset_once");toast("Offres uniques réinitialisées pour votre compte.")});break;
     case"buy-packs":buyPacks(shopQty);break;
+    case"sp-qty":spSel.q[b.dataset.kind]=+b.dataset.q;renderView();break;
+    case"sp-buy":{const k=b.dataset.kind;openSpecial(k,spSel[k],spSel.q[k]);break}
+    case"sp-again":{const L=lastSpecial;if(!L)break;reveal=null;hitsMode=false;handScroll=0;openSpecial(L.kind,L.v,L.k);break}
+    case"shop-go":shopGo(b.dataset.to);break; // rubriques de la boutique (1.2.3)
+    case"goto-special":view="shop";renderAll();window.scrollTo(0,0);setTimeout(()=>shopGo("shop-special"));break;
+    case"give-booster":{if(!devOn()||mode!=="online")break;
+      const uid=$("#gr-user").value,[kind,v]=$("#gb-kind").value.split(":"),n=Math.round(+$("#gb-n").value||0);
+      if(!uid||n<1){toast("Indiquez un nombre de boosters.");break}
+      run(async()=>{await rpc("dc_admin_give_booster",{p_uid:uid,p_kind:kind,p_val:+v||0,p_n:n});
+        toast(`Cadeau envoyé à ${nameOf(uid)} : ${n} × ${kind==="pk"?"booster normal":spName(kind,+v)}. Il le découvrira dans sa boîte cadeau.`)});break}
     case"qty":shopQty=+b.dataset.q;renderView();break;
     case"toggle-dev":if(!OWNER)break;run(async()=>{await rpc("dc_admin_toggle_dev");toast(S.dev?"Mode développeur activé.":"Mode développeur désactivé.")});break;
     case"logout":if(SB)SB.auth.signOut();break;
@@ -4324,6 +4414,7 @@ document.addEventListener("input",e=>{
   if(sk){trdQ=e.target.value;clearTimeout(window.__srchT);window.__srchT=setTimeout(renderView,180);return}
   if(e.target.id==="ts-auto"){tradeAuto=e.target.checked;return}
   if(e.target.dataset&&e.target.dataset.trdr!==undefined){trdR=e.target.value;renderView();return}
+  if(e.target.dataset&&e.target.dataset.spsel){spSel[e.target.dataset.spsel]=+e.target.value;renderView();return} // boosters spéciaux (1.2.3)
   if(e.target.dataset&&e.target.dataset.pickSearch!==undefined){const q=norm2(e.target.value).trim();document.querySelectorAll("#picker .pick").forEach(p=>p.hidden=!!q&&!p.dataset.n.includes(q));return} // recherche dans « Proposer une carte »
   {const pr=e.target.dataset&&e.target.dataset.pref;if(pr){ // réglages son et vibrations
     if(pr==="vol"){setPrefs({vol:+e.target.value/100});const lb=e.target.parentElement.querySelector("b");if(lb)lb.textContent=e.target.value+" %";clearTimeout(window.__volT);window.__volT=setTimeout(()=>SFX.flip(1),120)}
@@ -4759,7 +4850,11 @@ function gameConfig(){
     pgen:POKE_IDS.map(id=>DEX[id-1][2]).join(""),
     ptype:POKE_IDS.map(id=>{const t=DEX[id-1][3];return String.fromCharCode(96+t[0])+(t[1]?String.fromCharCode(96+t[1]):"-")}).join(""),
     daily:DAILY,shinyBase:SHINY_BASE,shinyMax:SHINY_MAX,shinyNo:SHINY_NONE, // shiny (1.1.0)
-    pool:{4:POOLS[4],5:POOLS[5]}}; // réserves de tirage des Mégas et des Légendaires (1.1.8), lues par dc_open à la place de byr
+    pool:{4:POOLS[4],5:POOLS[5]}, // réserves de tirage des Mégas et des Légendaires (1.1.8), lues par dc_open à la place de byr
+    // boosters spéciaux (1.2.3) : prix, chances du Premium, et pour chaque carte de dexOrder (3 caractères, même ordre)
+    // sa génération (chiffre) et ses deux types (a = 1… r = 18, « - » sans second type)
+    spb:Object.fromEntries(Object.entries(SPB).map(([k,v])=>[k,{price:v.price}])),premK:PREM_K,
+    spCard:DEX_ORDER.map(id=>{const t=D(id)[3]||[];return genOf(id)+String.fromCharCode(96+t[0])+(t[1]?String.fromCharCode(96+t[1]):"-")}).join("")};
 }
 /* Condition d'un titre, pour que le serveur calcule lui-même les titres affichés (champ shown du profil).
    Un nouveau titre d'un genre inconnu arrête l'export : il faut alors l'ajouter ici et dans dc__stamp. */
@@ -4785,7 +4880,7 @@ function titleDef(t){
     if(!sec){document.body.innerHTML=`<pre id="export-error">Cartes secrètes absentes : lancer outils/generer-config.ps1 (fichier secret/cartes-secretes.json).</pre>`;return}
     const ids={6:[],7:[]};for(const [id,d] of Object.entries(sec))ids[d[7]].push(+id);applySecrets({ids,cards:sec});
     // en deux parties (1.1.8) : l'éditeur SQL de Supabase tronque au-delà d'environ 40 000 caractères ; la 2e partie est ajoutée à la 1re
-    const cfg=gameConfig(),P2=["evo","pool","titleKeys","titleDefault","titleDefs","pgen","ptype"],a={},b={};
+    const cfg=gameConfig(),P2=["evo","pool","titleKeys","titleDefault","titleDefs","pgen","ptype","spCard"],a={},b={};
     for(const [k,v] of Object.entries(cfg))(P2.includes(k)?b:a)[k]=v;
     document.body.innerHTML=`<pre id="export-config">${esc(JSON.stringify(a))}</pre><pre id="export-config-2">${esc(JSON.stringify(b))}</pre>`;return}
   renderHeader();
