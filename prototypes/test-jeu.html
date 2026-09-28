@@ -16,7 +16,9 @@ function setup(scene){
     if(n==="dc_set_vitrine"){d.vitrine=a.p_slots;return {data:{profile:stamp(d)},error:null}}
     if(n==="dc_shiny_view"){if(a.p_id==null)d.shinyNorm=!d.shinyNorm;else{d.shinyOff=d.shinyOff||{};if(d.shinyOff[a.p_id])delete d.shinyOff[a.p_id];else d.shinyOff[a.p_id]=1}return {data:{profile:stamp(d)},error:null}}
     if(n==="dc_secret_cards")return {data:{ids:{6:[],7:[]},cards:{}},error:null};
-    if(n==="dc_open_special"){const l=a.p_kind==="prem"?DEX_ORDER.filter(id=>rar(id)>=2):spList(a.p_kind,a.p_val),drawn=Array.from({length:5*a.p_k},()=>({id:l[Math.floor(Math.random()*l.length)],isNew:true}));
+    if(n==="dc_buy_special"){const k=spKey(a.p_kind,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)+a.p_q;return {data:{profile:stamp(d)},error:null}}
+    if(n==="dc_open_special"){const k=spKey(a.p_kind,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)-a.p_k;if(d.spInv[k]<=0)delete d.spInv[k];
+      const l=a.p_kind==="prem"?DEX_ORDER.filter(id=>rar(id)>=2):spList(a.p_kind,a.p_val),drawn=Array.from({length:5*a.p_k},()=>({id:l[Math.floor(Math.random()*l.length)],isNew:true}));
       drawn.forEach(c=>d.coll[c.id]=(d.coll[c.id]||0)+1);d.lastOpen={t:Date.now(),drawn};return {data:{profile:stamp(d),drawn},error:null}}
     if(/^dc_trade_(create|create_many|bulk)$/.test(n)){window.__last={n,a};return {data:{profile:stamp(d),mid:"m1",n:2,nolist:[4]},error:null}}
     if(n==="dc_vb_state")return {data:{profile:stamp(d),vb:{level:3,score:0,state:"play",rows:[[5,1],[6,0],[4,2],[7,1],[5,1]],cols:[[5,1],[6,1],[5,1],[6,1],[5,1]],vals:Array(25).fill(null),opened:Array(25).fill(false)}},error:null};
@@ -36,7 +38,7 @@ function setup(scene){
   showGate(false);if(new URLSearchParams(parent.location.search).get("theme"))document.documentElement.dataset.theme=new URLSearchParams(parent.location.search).get("theme");
   if(scene==="shop"||scene==="buy"||scene==="packs"){view="shop";renderAll();if(scene==="buy")buyOffer("cosmos");if(scene==="packs")setTimeout(()=>document.querySelectorAll("#app h2")[2].scrollIntoView(),50)}
   if(scene==="look"){profOpen.look=true;view="profile";renderAll();setTimeout(()=>document.querySelector('[data-sec="look"]').scrollIntoView(),50)}
-  if(scene==="booster"){view="booster";renderAll()}
+  if(scene==="booster"){view="booster";if(new URLSearchParams(parent.location.search).get("inv"))S.spInv={prem:2,"gen:1":3,"type:10":1,"type:16":12};renderAll()}
   if(scene==="special"){OWNER=false;S.credits=12500;view="shop";renderAll();setTimeout(()=>{const h=document.querySelector("#shop-special");window.scrollTo(0,h.getBoundingClientRect().top+scrollY-70)},50)}
   if(scene==="hand"){view="booster";reveal=[1,4,7,25,6].map(id=>({id,isNew:false,shown:false}));renderAll()}
   if(scene==="ranking"){view="ranking";renderAll()}

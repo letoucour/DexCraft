@@ -675,6 +675,26 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .offer-visual.sp-vis-gen{background:radial-gradient(circle at 50% 120%,rgba(79,160,255,.55),transparent 60%),var(--surface-2)}
 .offer-visual.sp-vis-type{background:radial-gradient(circle at 50% 120%,rgba(255,255,255,.18),transparent 60%),var(--surface-2)}
 .offer-visual.sp-vis-prem{background:radial-gradient(circle at 50% 120%,rgba(255,207,63,.6),transparent 60%),var(--surface-2)}
+/* inventaire des boosters spéciaux sur l'écran des boosters (1.2.5) */
+.sp-inv{width:100%;max-width:340px;margin:10px auto 0;text-align:center}
+.si-t{font-weight:700;font-size:.9rem;color:var(--ink-soft);margin-bottom:6px}
+.si-list{display:flex;gap:10px 8px;justify-content:center;flex-wrap:wrap;padding-top:6px}
+.si-item{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:8px 8px 6px;min-width:78px;font:inherit;cursor:pointer}
+.si-item:hover{border-color:var(--gold)}
+.si-item>.mini-pack.mini-pack{width:34px;height:48px;transform:none}
+.si-item .mini-pack b{font-size:.62rem;padding:0 3px}.si-item .mini-pack.sp-gen b{font-size:.8rem}.si-item .mini-pack.sp-prem b{font-size:.85rem}.si-item .mini-pack.sp-type b{font-size:.45rem}
+.si-n{font-size:.72rem;font-weight:700;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.si-c{position:absolute;top:-6px;right:-6px;background:var(--gold);color:var(--gold-ink);font-weight:800;font-size:.72rem;border-radius:999px;padding:1px 7px}
+.si-item[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.sp-sel-line{font-size:.85rem;color:var(--ink-soft);text-align:center;margin-top:2px}
+/* booster spécial à la place du booster de base (1.2.5) : mêmes couleurs que ses petits sachets */
+.pack.spk .pk-skin{background:linear-gradient(100deg,transparent,rgba(255,255,255,.35) 30%,transparent 45%),repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 3px,transparent 3px 16px),var(--spk)}
+.pack.spk-gen{--spk:linear-gradient(160deg,#9fe7ff,#3f8cff 45%,#5a3fd8)}
+.pack.spk-type{--spk:linear-gradient(160deg,color-mix(in srgb,var(--t) 55%,#fff),var(--t) 50%,color-mix(in srgb,var(--t) 60%,#000))}
+.pack.spk-prem{--spk:linear-gradient(160deg,#3a2f14,#15131c 55%,#2b2208)}
+.pack.spk .pack-emblem{color:#fff}.pack.spk .pk-name{text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.pack.spk .diamond{background:rgba(0,0,0,.28);border-color:#fff;color:#fff}
+.pack.spk-prem .pack-emblem{color:#ffd35a}.pack.spk-prem .diamond{border-color:#ffd35a;background:#15131c}
 /* boutique (1.2.3) : rubriques plus bas, visibles dès le haut de la page */
 .shop-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:12px 0 4px}
 .shop-nav>.muted{font-size:.9rem}
@@ -1213,7 +1233,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.2.4";
+const APP_VERSION="1.2.5";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2232,6 +2252,7 @@ function renderView(){
   document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal); // pas de « tirer pour actualiser » pendant une ouverture
   if(view==="booster"&&reveal)setupHand();
   if(view==="collection")collWatch(); // paquets suivants de la collection (1.1.9)
+  if(view==="trades")trdWatch(); // annonces suivantes (1.2.5)
   { // barre de sélection (échange, défausse) fixée en bas : place réservée sous la liste, les dernières cartes restent touchables (1.1.11)
     const bar=document.querySelector(".discard-bar");app.style.paddingBottom=bar?Math.ceil(innerHeight-bar.getBoundingClientRect().top+24)+"px":""}
 }
@@ -2266,8 +2287,8 @@ function revealHeadHTML(){
 }
 function revealActionsHTML(){
   if(reveal.every(c=>c.shown)){ // fin de l’ouverture (1.1.15) : retour à l’écran des boosters, ou booster suivant s’il en reste
-    if(lastSpecial&&!revealGift){const L=lastSpecial,cost=SPB[L.kind].price*L.k,can=devOn()||S.credits>=cost; // booster spécial : le racheter (1.2.3)
-      return `<button class="btn" data-act="done-reveal">Retour</button><button class="btn primary" data-act="sp-again" ${can?"":"disabled"}>${L.k>1?`Encore ${L.k} boosters`:"Encore un booster"} (${fmtN(cost)} crédits)</button>`}
+    if(lastSpecial&&!revealGift){const L=lastSpecial,left=spInvN(spKey(L.kind,L.v)),n=Math.min(L.k,left); // booster spécial : le suivant de l’inventaire (1.2.5)
+      return `<button class="btn" data-act="done-reveal">Retour</button>${n?`<button class="btn primary" data-act="sp-again">${n>1?`${n} boosters suivants`:"Booster suivant"} (${left} en stock)</button>`:""}`}
     const k=revealGift?0:nextOpenK();
     return `<button class="btn" data-act="done-reveal">Retour</button>${k?`<button class="btn primary" data-act="next-pack" data-n="${k}">${k>1?`${k} boosters suivants`:"Booster suivant"}</button>`:""}`;
   }
@@ -2378,11 +2399,15 @@ function vBooster(){
     <button class="btn shop-cta" data-view="shop">Acheter des boosters, ${PACK_PRICE} crédits l’unité</button>
     <button class="btn shop-cta sp-cta" data-act="goto-special">✨ Boosters spéciaux : génération, type ou Premium</button>
     ${discordHTML()}${installHTML()}</div>
-    <div class="bh-main"><div class="pack-wrap"><button class="pack-hit" data-act="open" ${p.n<1&&!S.bonus?"disabled":""} aria-label="Ouvrir un booster"><div class="pack${myLook("sac")?" sk-"+cosCls(myLook("sac")):""}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div><div class="pk-glow"></div></div></button><div class="pack-shadow"></div></div>
-    <div class="open-row">${OPEN_OPTS.map(k=>`<button class="btn${available(S)>=k?" primary":""}" data-act="open-n" data-n="${k}" ${available(S)<k?"disabled":""} title="${available(S)<k?`Il faut ${k} booster${k>1?"s":""} disponible${k>1?"s":""}`:`Ouvrir ${k} booster${k>1?"s":""} d’un coup`}">Ouvrir${k>1?" "+k:""}</button>`).join("")}</div>    <div class="stock"><div class="big">${p.n}<span class="of"> / ${MAXP}</span></div><div class="muted">boosters disponibles</div>
+    <div class="bh-main">${(()=>{const A=spActiveNow(); // booster spécial choisi dans l'inventaire : à la place du booster de base (1.2.5)
+      return A?`<div class="pack-wrap"><button class="pack-hit" data-act="sp-open" data-key="${esc(A.k)}" data-n="1" aria-label="Ouvrir un ${esc(spName(A.kind,A.v))}"><div class="pack spk spk-${A.kind}"${A.kind==="type"?` style="--t:${TYPES[A.v][1]}"`:""}><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>${A.kind==="gen"?ROMAN[A.v]:A.kind==="prem"?"★":"DC"}</span></div><strong class="pk-name">${esc(spShort(A.kind,A.v))}</strong><small>${A.kind==="prem"?"5 cartes rares +":"5 cartes"}</small></div><div class="pk-cut"></div><div class="pk-glow"></div></div></button><div class="pack-shadow"></div></div>
+    <div class="open-row">${OPEN_OPTS.map(k=>`<button class="btn${A.n>=k?" primary":""}" data-act="sp-open" data-key="${esc(A.k)}" data-n="${k}" ${A.n<k?"disabled":""}>Ouvrir${k>1?" "+k:""}</button>`).join("")}</div>
+    <div class="sp-sel-line"><b>${esc(spName(A.kind,A.v))}</b> : ${A.n} en stock · <button class="linkish" data-act="sp-sel" data-key="">Revenir au booster normal</button></div>`
+      :`<div class="pack-wrap"><button class="pack-hit" data-act="open" ${p.n<1&&!S.bonus?"disabled":""} aria-label="Ouvrir un booster"><div class="pack${myLook("sac")?" sk-"+cosCls(myLook("sac")):""}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div><div class="pk-glow"></div></div></button><div class="pack-shadow"></div></div>
+    <div class="open-row">${OPEN_OPTS.map(k=>`<button class="btn${available(S)>=k?" primary":""}" data-act="open-n" data-n="${k}" ${available(S)<k?"disabled":""} title="${available(S)<k?`Il faut ${k} booster${k>1?"s":""} disponible${k>1?"s":""}`:`Ouvrir ${k} booster${k>1?"s":""} d’un coup`}">Ouvrir${k>1?" "+k:""}</button>`).join("")}</div>`})()}    <div class="stock"><div class="big">${p.n}<span class="of"> / ${MAXP}</span></div><div class="muted">boosters disponibles</div>
       <div class="stock-bar">${Array.from({length:MAXP},(_,i)=>`<i class="${i<p.n?"on":""}"></i>`).join("")}</div>
       <div class="muted">${p.next?`Prochain dans <b data-countdown="${p.next}">${fmtLeft(p.next-Date.now())}</b>`:"Réserve pleine"}</div>
-      ${S.bonus?`<div class="bonus-line"><b>+ ${S.bonus}</b> booster${S.bonus>1?"s":""} acheté${S.bonus>1?"s":""}, ouvert${S.bonus>1?"s":""} une fois la réserve gratuite vide</div>`:""}</div></div>
+      ${S.bonus?`<div class="bonus-line"><b>+ ${S.bonus}</b> booster${S.bonus>1?"s":""} acheté${S.bonus>1?"s":""}, ouvert${S.bonus>1?"s":""} une fois la réserve gratuite vide</div>`:""}</div>${spInvHTML()}</div>
   </div>`;
 }
 /* 50 dernières cartes tirées (1.2.0), les plus récentes d'abord : gardées par le serveur (recent, dc_open), pour revoir
@@ -2437,7 +2462,8 @@ function openGift(){
     const box=$(".gift-box");if(box&&!RM()){box.classList.add("open");SFX.open(false);await sleep(750)}
     const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shiny:!!c.shiny,shown:false})); // shiny : boosters spéciaux offerts (1.2.3)
     if(drawn.length){revealKey=Date.now();saveReveal(drawn,true)}
-    const extra=[res.credits?`+${cr(res.credits)}`:"",res.packs?`+${res.packs} booster${res.packs>1?"s":""}`:""].filter(Boolean);
+    const extra=[res.credits?`+${cr(res.credits)}`:"",res.packs?`+${res.packs} booster${res.packs>1?"s":""}`:"",
+      ...(res.spec||[]).map(s=>{const {kind,v}=spParse(s.k);return SPB[kind]?`+${s.n} ${spName(kind,v)}`:""})].filter(Boolean); // boosters spéciaux : dans l’inventaire (1.2.5)
     if(drawn.length){ // des cartes : on les retourne comme un booster
       reveal=drawn;revealGift=true;hitsMode=false;handScroll=0;
       renderAll();window.scrollTo(0,0);
@@ -2458,6 +2484,7 @@ function packsInfo(){
     <div class="pl-stats"><div><b>${p.n} / ${MAXP}</b><span class="muted">boosters gratuits</span></div><div><b>${b}</b><span class="muted">boosters achetés ou offerts</span></div></div>
     <p style="margin:0">${p.next?`Prochain booster gratuit dans <b data-countdown="${p.next}">${fmtLeft(p.next-Date.now())}</b>.`:"Votre réserve de boosters gratuits est pleine : ouvrez-en pour qu’elle se remplisse de nouveau."}</p>
     <p class="muted" style="margin:0;font-size:.9rem">Un booster gratuit arrive toutes les 10 minutes, jusqu’à ${MAXP} en réserve. Les boosters achetés ou offerts n’ont pas de limite et s’ouvrent après les gratuits.${done?"":" Votre récompense du jour vous attend sur l’écran des boosters !"}</p>
+    ${spInvList().length?`<div><h3 style="margin:0 0 6px;font-size:1rem">🎒 Boosters spéciaux</h3><p style="margin:0">${spInvList().map(x=>`${esc(spName(x.kind,x.v))} ×${x.n}`).join(" · ")}</p></div>`:""}
     <div class="actions"><button class="btn primary" data-act="packs-go">Ouvrir des boosters</button><button class="btn" data-act="close">Fermer</button></div></div>`,true);
 }
 /* ---------- récompense de connexion quotidienne ---------- */
@@ -2589,6 +2616,22 @@ function cardMatches(id,q){
 function searchBar(act,val,ph){
   return `<div class="toolbar"><input type="search" data-keep="${act}" data-search="${act}" placeholder="${ph}" value="${esc(val)}" aria-label="Rechercher"></div>`;
 }
+/* Annonces des autres joueurs par paquets (1.2.5), comme la collection : il peut y en avoir des milliers, et toute la
+   page se redessine à chaque changement du marché. Les suivantes arrivent quand le bas approche (trdWatch). */
+const TRD_STEP=120;let trdLimit=TRD_STEP,trdSig="",trdObs=null,trdList=[];
+function trdLimitFor(){const sig=JSON.stringify([trdQ,trdMissing,trdDbl,trdR]);if(sig!==trdSig){trdSig=sig;trdLimit=TRD_STEP}return trdLimit}
+function trdMore(){
+  const g=$("#trd-grid"),m=$("#trd-more");if(!g||!m)return;
+  const next=trdList.slice(trdLimit,trdLimit+TRD_STEP);trdLimit+=TRD_STEP;
+  g.insertAdjacentHTML("beforeend",next.map(([id,x])=>tradeTile(id,x)).join(""));
+  if(trdObs)trdObs.unobserve(m);
+  if(trdLimit>=trdList.length)m.remove();else if(trdObs)trdObs.observe(m);
+}
+function trdWatch(){
+  const s=$("#trd-more");if(!s)return;
+  if(!trdObs)trdObs=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))trdMore()},{rootMargin:"900px 0px"});
+  trdObs.disconnect();trdObs.observe(s);
+}
 function vTrades(){
   const open=Object.entries(MARKET).filter(([,m])=>m.kind==="t"&&m.status==="open").sort((a,b)=>b[1].created-a[1].created);
   const mine=open.filter(([,m])=>m.owner===ME).filter(([,m])=>cardMatches(m.card,trdQ)).sort((a,b)=>offersOf(b[1]).length-offersOf(a[1]).length), // annonces avec des propositions à traiter en premier
@@ -2598,7 +2641,7 @@ function vTrades(){
   // annonces pour lesquelles on a un double à proposer (1.2.0) : une carte en 2 exemplaires ou plus que l'annonce accepte
   const dblR={};for(const [k,v] of Object.entries(S.coll))if(v>=2)(dblR[rar(+k)]=dblR[rar(+k)]||[]).push(+k);
   const hasDbl=m=>(dblR[rar(m.card)]||[]).some(c=>canOffer(m,c));
-  const withDbl=(trdMissing?missing:all).filter(([,m])=>hasDbl(m)),others=byR(trdDbl?withDbl:trdMissing?missing:all);
+  const withDbl=(trdMissing?missing:all).filter(([,m])=>hasDbl(m)),others=byR(trdDbl?withDbl:trdMissing?missing:all);trdList=others;
   const myOffers=all.filter(([id,m])=>myOffer(id,m)); // mes propositions en attente chez les autres
   const pendMine=mine.reduce((n,[,m])=>n+offersOf(m).length,0);
   if(mySel)for(const id of [...mySel])if(!MARKET[id])mySel.delete(id); // annonces disparues entre-temps
@@ -2622,7 +2665,8 @@ function vTrades(){
   <div class="trd-filters"><div class="qty"><button data-act="trd-filter" data-v="0" aria-pressed="${!trdMissing}">Toutes les cartes (${all.length})</button><button data-act="trd-filter" data-v="1" aria-pressed="${trdMissing}">Seulement celles qui me manquent (${missing.length})</button></div>
     <select data-trdr aria-label="Rareté"><option value="all"${trdR==="all"?" selected":""}>Toutes les raretés</option>${rars.map(r=>`<option value="${r}"${String(r)===trdR?" selected":""}>${RAR[r]} (${all.filter(([,m])=>rar(m.card)===r).length})</option>`).join("")}</select>
     <div class="qty"><button data-act="trd-dbl" aria-pressed="${trdDbl}" title="Seulement les annonces pour lesquelles vous avez un double à proposer">🔁 J’ai un double à proposer (${withDbl.length})</button></div></div>
-  ${grid(others,trdDbl?"Aucune annonce pour laquelle vous avez un double à proposer.":trdMissing?"Aucune carte qui vous manque n’est proposée pour l’instant.":"Aucune annonce pour l’instant.")}</section>
+  ${others.length?`<div class="trade-grid" id="trd-grid">${others.slice(0,trdLimitFor()).map(([id,m])=>tradeTile(id,m)).join("")}</div>${others.length>trdLimit?`<div id="trd-more" class="coll-more" aria-hidden="true"></div>`:""}`
+    :`<div class="empty">${trdDbl?"Aucune annonce pour laquelle vous avez un double à proposer.":trdMissing?"Aucune carte qui vous manque n’est proposée pour l’instant.":"Aucune annonce pour l’instant."}</div>`}</section>
   ${mySel&&showMyTrades?myTradesBar():""}`;
 }
 let showMyTrades=false,showMyOffers=false,trdR="all",mySel=null; // mySel : annonces choisies pour une action groupée
@@ -3268,7 +3312,7 @@ function vShop(){
     ${launchHTML()}
   </div>
   <h2 style="margin-top:26px" id="shop-special">Boosters spéciaux</h2>
-  <p class="muted" style="margin:0">Payés en crédits et ouverts tout de suite. Choisissez une génération, un type, ou des cartes Rares garanties.</p>
+  <p class="muted" style="margin:0">Payés en crédits et rangés dans vos boosters spéciaux, sur l’écran des boosters : ouvrez-les quand vous voulez. Choisissez une génération, un type, ou des cartes Rares garanties.</p>
   <div class="shop cols3">${["gen","type","prem"].map(k=>spOfferHTML(k,dev)).join("")}</div>
   <h2 style="margin-top:26px" id="shop-packs">Packs cosmétiques</h2>
   <p class="muted" style="margin:0">Chaque pack s’achète une fois. Vous pourrez ensuite changer de look à volonté en mélangeant les articles dans votre profil.</p>${pay}
@@ -3528,20 +3572,51 @@ function spOfferHTML(kind,dev){
     ${pick}
     <div class="qty" role="group" aria-label="Quantité">${OPEN_OPTS.map(n=>`<button data-act="sp-qty" data-kind="${kind}" data-q="${n}" aria-pressed="${n===q}">${n} booster${n>1?"s":""}</button>`).join("")}</div>
     <div class="price">${dev?`<s>${fmtN(cost)} crédits</s>Gratuit`:`${fmtN(cost)} crédits`}</div>
-    <button class="btn primary" data-act="sp-buy" data-kind="${kind}" ${can?"":"disabled"}>${can?`Acheter et ouvrir ${q>1?q+" boosters":"le booster"}`:`Il vous manque ${fmtN(cost-S.credits)} crédits`}</button>
+    <button class="btn primary" data-act="sp-buy" data-kind="${kind}" ${can?"":"disabled"}>${can?`Acheter ${q>1?q+" boosters":"1 booster"}`:`Il vous manque ${fmtN(cost-S.credits)} crédits`}</button>
   </div>`;
 }
 /* rubrique de la boutique, juste sous l’en-tête fixe */
 function shopGo(id){const h=document.getElementById(id),top=$("header.top");if(h)window.scrollTo({top:h.getBoundingClientRect().top+scrollY-(top?top.offsetHeight:0)-12,behavior:"smooth"})}
+/* Inventaire des boosters spéciaux (1.2.5) : achetés ou offerts, rangés dans le profil (spInv = {"prem": n, "gen:3": n,
+   "type:10": n}) et ouverts quand on veut depuis l'écran des boosters (spInvHTML, spActive). */
+const spKey=(kind,v)=>kind==="prem"?"prem":kind+":"+v;
+const spParse=k=>{const [kind,v]=String(k).split(":");return {kind,v:+v||0}};
+const spInvN=k=>{const n=S&&S.spInv&&+S.spInv[k];return n>0?n:0};
+function spInvList(){ // Premium, puis générations, puis types par nom
+  const ord=({kind,v})=>kind==="prem"?"0":kind==="gen"?"1"+v:"2"+TYPES[v][0];
+  return Object.keys((S&&S.spInv)||{}).map(k=>({k,...spParse(k),n:spInvN(k)})).filter(x=>x.n&&SPB[x.kind]&&(x.kind!=="type"||TYPES[x.v])).sort((a,b)=>ord(a).localeCompare(ord(b),"fr"));
+}
+const spShort=(kind,v)=>kind==="gen"?`Génération ${ROMAN[v]}`:kind==="type"?TYPES[v][0]:"Premium";
+/* Booster choisi dans l'inventaire (1.2.5) : il prend la place du booster de base au centre de l'écran, avec ses propres
+   boutons d'ouverture ; une fois le stock épuisé, le booster de base revient (sa réserve gratuite continue de se remplir). */
+let spActive=null;
+function spActiveNow(){
+  if(spActive&&spInvN(spActive)>0){const {kind,v}=spParse(spActive);if(SPB[kind])return {k:spActive,kind,v,n:spInvN(spActive)}}
+  spActive=null;return null;
+}
+function spInvHTML(){
+  const l=spInvList();if(!l.length)return "";
+  return `<div class="sp-inv"><div class="si-t" title="Touchez-en un pour le mettre à la place du booster">🎒 Mes boosters spéciaux</div><div class="si-list">${l.map(x=>`<button class="si-item" data-act="sp-sel" data-key="${esc(x.k)}" aria-pressed="${spActive===x.k}" aria-label="${esc(spName(x.kind,x.v))} : ${x.n}">
+    ${spPackHTML(x.kind,x.v)}<span class="si-n">${esc(spShort(x.kind,x.v))}</span><span class="si-c">×${x.n}</span></button>`).join("")}</div></div>`;
+}
+function buySpecial(kind,v,q){
+  const sp=SPB[kind];if(!sp)return;
+  if(!devOn()&&S.credits<sp.price*q){toast("Vous n’avez pas assez de crédits.");return}
+  run(async()=>{
+    const r=await rpc("dc_buy_special",{p_kind:kind,p_val:kind==="prem"?0:v,p_q:q});
+    toast(`${q>1?q+" × ":""}${spName(kind,v)} ${q>1?"rangés":"rangé"} dans vos boosters spéciaux, sur l’écran des boosters${r.free?" (mode développeur)":""}.`);
+  });
+}
 function openSpecial(kind,v,k){
-  const sp=SPB[kind];if(!sp||opening||!OPEN_OPTS.includes(k))return;
-  if(!devOn()&&S.credits<sp.price*k){toast("Vous n’avez pas assez de crédits.");return}
+  const sp=SPB[kind];if(!sp||opening||k<1||k>10)return;
+  if(spInvN(spKey(kind,v))<k){toast("Vous n’avez plus assez de ces boosters.");return}
   opening=true;document.documentElement.classList.add("revealing");
   run(async()=>{
     const res=await rpc("dc_open_special",{p_kind:kind,p_val:kind==="prem"?0:v,p_k:k},{render:false});
     const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shiny:!!c.shiny,shown:false}));
     revealKey=(S.lastOpen&&S.lastOpen.t)||0;saveReveal(drawn,false);
-    SFX.open(k>1);lastSpecial={kind,v,k};
+    SFX.open(k>1);lastSpecial={kind,v,k};closeDlg();
+    const pk=$(".pack");if(pk&&view==="booster"&&!reveal&&!RM()){pk.classList.add("tear");await sleep(950)} // même déchirure que le booster de base
     reveal=drawn;revealGift=false;hitsMode=false;handScroll=0;view="booster";
     renderAll();window.scrollTo(0,0);
   }).finally(()=>{opening=false;document.documentElement.classList.toggle("revealing",view==="booster"&&!!reveal)});
@@ -4287,8 +4362,10 @@ document.addEventListener("click",e=>{
     case"reset-once":if(devOn())run(async()=>{await rpc("dc_admin_reset_once");toast("Offres uniques réinitialisées pour votre compte.")});break;
     case"buy-packs":buyPacks(shopQty);break;
     case"sp-qty":spSel.q[b.dataset.kind]=+b.dataset.q;renderView();break;
-    case"sp-buy":{const k=b.dataset.kind;openSpecial(k,spSel[k],spSel.q[k]);break}
-    case"sp-again":{const L=lastSpecial;if(!L)break;reveal=null;hitsMode=false;handScroll=0;openSpecial(L.kind,L.v,L.k);break}
+    case"sp-buy":{const k=b.dataset.kind;buySpecial(k,spSel[k],spSel.q[k]);break}
+    case"sp-sel":{const k=b.dataset.key;spActive=k&&spActive!==k?k:null;renderView();if(spActive)window.scrollTo({top:0,behavior:"smooth"});break} // inventaire : choisir le booster du centre (1.2.5)
+    case"sp-open":{const {kind,v}=spParse(b.dataset.key);openSpecial(kind,v,+b.dataset.n||1);break}
+    case"sp-again":{const L=lastSpecial;if(!L)break;const n=Math.min(L.k,spInvN(spKey(L.kind,L.v)));if(!n)break;reveal=null;hitsMode=false;handScroll=0;openSpecial(L.kind,L.v,n);break}
     case"shop-go":shopGo(b.dataset.to);break; // rubriques de la boutique (1.2.3)
     case"goto-special":view="shop";renderAll();window.scrollTo(0,0);setTimeout(()=>shopGo("shop-special"));break;
     case"give-booster":{if(!devOn()||mode!=="online")break;
@@ -4502,7 +4579,9 @@ async function loadMarket(){
 }
 function marketChanged(){
   marketReady=true;renderHeader(); // bulle des propositions reçues
-  clearTimeout(marketT);marketT=setTimeout(async()=>{tradeOutcomes();await loadOwnerColls();if(view==="trades"){if(showHist)await loadHist();renderView()}},150);
+  // la page s'affiche tout de suite ; les collections des nouveaux auteurs d'annonces suivent, sans la bloquer (1.2.5)
+  clearTimeout(marketT);marketT=setTimeout(async()=>{tradeOutcomes();if(view==="trades")renderView();
+    const got=await loadOwnerColls();if(view==="trades"){if(showHist)await loadHist();if(got||showHist)renderView()}},150);
 }
 /* Issue des échanges, avec un message clair :
    - mes propositions chez les autres : acceptée, refusée, ou annonce retirée (ma carte revient) ;
@@ -4562,6 +4641,7 @@ async function loadOwnerColls(){
     (data||[]).forEach(r=>OWNER_COLL[r.path.slice(8)]=r.coll||{});
   }
   if(all)ownerCollTs=Date.now();
+  return true; // de nouvelles collections ont été lues
 }
 /* Son profil : d'abord sa seule date de mise à jour (quelques octets), le profil entier seulement s'il a changé */
 async function loadMe(){

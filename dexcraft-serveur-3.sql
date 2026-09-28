@@ -405,7 +405,7 @@ end $$;
 -- une à une comme un booster (50 cartes affichées au plus, les suivantes sont ajoutées sans animation).
 create or replace function public.dc_gift_open() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); g record; k int;
-  shown jsonb := '[]'; nshown int := 0; total int := 0; cr bigint := 0; pk int := 0; o jsonb; c jsonb;
+  shown jsonb := '[]'; nshown int := 0; total int := 0; cr bigint := 0; pk int := 0; o jsonb; c jsonb; spec jsonb := '[]';
 begin
   if coalesce(jsonb_typeof(d -> 'gifts'), '') <> 'array' or jsonb_array_length(d -> 'gifts') = 0 then raise exception 'Aucun cadeau à ouvrir.'; end if;
   for g in select (x ->> 'c')::int as c, greatest(coalesce((x ->> 'n')::int, 1), 1) as n,
@@ -413,12 +413,11 @@ begin
                   x ->> 'sp' as sp, (x ->> 'v')::int as v
            from jsonb_array_elements(d -> 'gifts') x loop
     cr := cr + g.cr; pk := pk + g.pk;                              -- crédits et boosters offerts
-    if g.sp is not null then                                       -- boosters spéciaux offerts (1.2.3, partie 4) : ouverts ici
-      o := public.dc__open_special(d, cfg, g.sp, g.v, least(g.n, 100)); d := o -> 'd';
-      for c in select value from jsonb_array_elements(o -> 'drawn') loop
-        if nshown < 50 then shown := shown || jsonb_build_array(c); nshown := nshown + 1; end if;
-        total := total + 1;
-      end loop;
+    if g.sp is not null then                                       -- boosters spéciaux offerts (1.2.3) : dans l'inventaire (spInv, 1.2.5)
+      o := case when jsonb_typeof(d -> 'spInv') = 'object' then d -> 'spInv' else '{}' end;
+      c := to_jsonb(case when g.sp = 'prem' then 'prem' else g.sp || ':' || coalesce(g.v, 0) end);
+      d := d || jsonb_build_object('spInv', o || jsonb_build_object(c #>> '{}', coalesce((o ->> (c #>> '{}'))::int, 0) + g.n));
+      spec := spec || jsonb_build_array(jsonb_build_object('k', c, 'n', g.n));
       continue;
     end if;
     if g.c is null or public.dc__rar(cfg, g.c) is null then continue; end if;
@@ -431,7 +430,7 @@ begin
     end loop;
   end loop;
   d := (d - 'gifts') || jsonb_build_object('credits', public.dc__int(d, 'credits') + cr, 'bonus', public.dc__int(d, 'bonus') + pk);
-  return jsonb_build_object('profile', public.dc__save(u, d), 'drawn', shown, 'total', total, 'credits', cr, 'packs', pk);
+  return jsonb_build_object('profile', public.dc__save(u, d), 'drawn', shown, 'total', total, 'credits', cr, 'packs', pk, 'spec', spec);
 end $$;
 
 -- ---------- suppression d'un joueur ----------
