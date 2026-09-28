@@ -161,6 +161,12 @@ begin
   if d ->> 'avatar' is not null and d -> 'shiny' ? (d ->> 'avatar') and not coalesce(d -> 'shinyOff', '{}') ? (d ->> 'avatar')
      and coalesce(d ->> 'shinyNorm', '') <> 'true' then d := jsonb_set(d, '{avaS}', 'true');
   else d := d - 'avaS'; end if;
+  -- vitrine (1.1.6) : 6 cartes au plus, [{i: n°, s: 1 si montrée en shiny}] ; une carte montrée normale sort de la
+  -- vitrine quand elle quitte la collection, une carte montrée en shiny reste (le shiny est acquis pour toujours)
+  if jsonb_typeof(d -> 'vitrine') = 'array' then
+    d := jsonb_set(d, '{vitrine}', coalesce((select jsonb_agg(v order by o) from jsonb_array_elements(d -> 'vitrine') with ordinality x(v, o)
+      where jsonb_typeof(v) = 'object' and case when v ->> 's' = '1' then d -> 'shiny' ? (v ->> 'i') else newcoll ? (v ->> 'i') end), '[]'));
+  elsif d ? 'vitrine' then d := d - 'vitrine'; end if;
   -- cosmétiques (0.9.0) : articles possédés (cos) ; portés (look), seulement s'ils sont possédés ;
   -- partie visible par les autres joueurs (vis : cadre, couleur du pseudo, badges), lue par le classement
   if d ? 'cos' and jsonb_typeof(d -> 'cos') <> 'object' then d := d - 'cos'; end if;

@@ -332,6 +332,28 @@ begin
   return jsonb_build_object('profile', public.dc__save(u, d));
 end $$;
 
+-- Vitrine (1.1.6) : 6 cartes mises en avant, montrées aux autres joueurs dans la fiche du classement, dans l'ordre choisi.
+-- p_slots = [{i: n°, s: 1 pour la forme shiny}] ; une carte normale doit être possédée, une carte shiny débloquée.
+create or replace function public.dc_set_vitrine(p_slots jsonb) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); v jsonb := '[]'; x jsonb; k text; seen text[] := '{}';
+begin
+  if jsonb_typeof(p_slots) is distinct from 'array' or jsonb_array_length(p_slots) > 6 then raise exception 'La vitrine contient 6 cartes au plus.'; end if;
+  for x in select value from jsonb_array_elements(p_slots) loop
+    k := (x ->> 'i')::int::text;
+    if k is null then raise exception 'Carte inconnue.'; end if;
+    if k = any(seen) then continue; end if;
+    seen := seen || k;
+    if x ->> 's' = '1' then
+      if not (d -> 'shiny' ? k) then raise exception 'Vous n’avez pas cette carte en shiny.'; end if;
+      v := v || jsonb_build_array(jsonb_build_object('i', k::int, 's', 1));
+    else
+      if public.dc__count(d, k::int) = 0 then raise exception 'Cette carte n’est plus dans votre collection.'; end if;
+      v := v || jsonb_build_array(jsonb_build_object('i', k::int));
+    end if;
+  end loop;
+  return jsonb_build_object('profile', public.dc__save(u, jsonb_set(d, '{vitrine}', v)));
+end $$;
+
 create or replace function public.dc_tip_done(p_key text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true);
 begin
@@ -474,6 +496,8 @@ revoke all on function public.dc_toggle_wish(integer) from public, anon;
 grant execute on function public.dc_toggle_wish(integer) to authenticated;
 revoke all on function public.dc_shiny_view(integer) from public, anon;
 grant execute on function public.dc_shiny_view(integer) to authenticated;
+revoke all on function public.dc_set_vitrine(jsonb) from public, anon;
+grant execute on function public.dc_set_vitrine(jsonb) to authenticated;
 revoke all on function public.dc_tip_done(text) from public, anon;
 grant execute on function public.dc_tip_done(text) to authenticated;
 revoke all on function public.dc_trade_bulk(text[],text,text,integer[]) from public, anon;

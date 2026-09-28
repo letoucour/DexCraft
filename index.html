@@ -937,7 +937,19 @@ nav.tabs .ti{display:none}
 .pl-rar{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;font-size:.85rem}
 .pl-rar .bar{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
 .pl-rar .bar i{display:block;height:100%}
-.pl-favs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+/* vitrine (1.1.6) : 6 grandes cartes dans la fiche d’un joueur, emplacements dans le profil */
+.vit-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.vit-card .card{font-size:clamp(8px,1.6vw,11px)}
+.vit-ghost{aspect-ratio:5/7;border-radius:14px;border:2px dashed var(--line);background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:1.6rem;color:var(--ink-soft)}
+.vit-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.vit-slot{display:flex;flex-direction:column;gap:6px}
+.vit-slot .mini{width:100%}
+.vit-btns{display:flex;flex-direction:column;gap:4px}
+.vit-btns .btn{padding:4px 8px;font-size:.78rem}
+.vit-empty{min-height:150px;border:2px dashed var(--line);border-radius:12px;background:none;color:var(--ink-soft);font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.vit-empty span{font-size:1.6rem;line-height:1}
+.vit-empty:hover{border-color:var(--gold);color:var(--gold)}
+@media (max-width:560px){.vit-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.vit-card .card{font-size:clamp(8px,2.6vw,11px)}}
 /* Historique des échanges */
 .hist{display:flex;flex-direction:column;gap:6px;margin-top:10px}
 .hist-row{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:.9rem}
@@ -1157,7 +1169,7 @@ body[data-fond] main .booster{position:relative;z-index:1;background:var(--veil-
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.1.5";
+const APP_VERSION="1.1.6";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2517,8 +2529,7 @@ function playerDlg(uid){
     if(!p||!p.coll){toast("Ce joueur n’existe plus.");return}
     const c=p.coll,per=[0,0,0,0,0,0,0,0];for(const k of Object.keys(c))per[rar(+k)]++;
     const since=p.created?new Date(p.created).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):"";
-    const seen=id=>rar(id)<6||has(S,id);
-    const favs=Object.keys(p.fav||{}).map(Number).filter(id=>c[id]&&D(id)&&seen(id)).sort((a,b)=>rar(b)-rar(a)||a-b);
+    const vit=vitOf(p); // vitrine (1.1.6) : remplace les favoris dans la fiche des autres joueurs
     const earned=TITLES.filter(t=>titleEarned(t,p)&&(!t.hidden||titleEarned(t,S)));
     openDlg(`<div class="side" style="gap:14px"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
       <div class="pl-head">${playerAva(uid,72)}<div><h2 style="margin:0">${playerName(uid)}</h2>
@@ -2530,7 +2541,7 @@ function playerDlg(uid){
         <div><b>✨ ${fmtN(p.shinyN||0)}</b><span class="muted">shiny</span></div>
         ${per[6]||per[7]?`<div><b>${per[6]?`<span class="myth-txt">✦${per[6]}</span> `:""}${per[7]?`<span class="trans-txt">❖${per[7]}</span>`:""}</b><span class="muted">trophées</span></div>`:""}</div>
       <div class="pl-rar">${[0,1,2,3,4,5].map(i=>`<span style="color:var(--r${i})">${gems(i)} ${RAR[i]}</span><span class="bar"><i style="width:${per[i]*100/BYR[i].length}%;background:var(--r${i})"></i></span><span>${per[i]} / ${BYR[i].length}</span>`).join("")}</div>
-      ${favs.length?`<div><h3 style="margin:0 0 8px">Cartes favorites</h3><div class="pl-favs">${favs.slice(0,24).map(id=>miniHTML(id,{count:c[id],act:"none",sh:showShiny(id,p),shOwn:hasShiny(id,p)})).join("")}</div></div>`:""}
+      ${vit.length?`<div><h3 style="margin:0 0 8px">🏆 Vitrine</h3><div class="vit-cards">${vit.map(v=>{const id=+v.i;return isSecretId(id)&&!has(S,id)&&uid!==ME?`<div class="vit-ghost" aria-label="Carte inconnue"><span>???</span></div>`:`<div class="vit-card">${cardHTML(id,false,!!v.s&&hasShiny(id,p))}</div>`}).join("")}</div></div>`:""}
     </div>`,true);
   });
 }
@@ -2569,6 +2580,36 @@ function lookHTML(){
     ${bd.length?`<h3 class="look-h">Badges</h3><p class="muted" style="margin:0">${bd.map(b=>{const B=BADGES[cosCls(b)];return B?`<span class="bdg bdg-${cosCls(b)}">${B.ic}</span> ${esc(cosName(b).replace(/^\S+\s/,""))}`:""}).join(" · ")} : affichés à côté de votre pseudo.</p>`:""}
     ${tl.length?`<p class="muted" style="margin:8px 0 0">Titre ${tl.map(t=>esc(cosName(t))).join(", ")} : à choisir dans la section Titres.</p>`:""}`;
 }
+/* ---------- Vitrine (1.1.6) ----------
+   6 cartes choisies par le joueur, dans l'ordre, montrées aux autres joueurs dans sa fiche du classement (à la place
+   des favoris). Chaque emplacement a sa forme : normale, ou shiny si le shiny est débloqué (s: 1). Serveur :
+   dc_set_vitrine (partie 3) ; dc__stamp retire une carte montrée normale qui quitte la collection (un shiny reste). */
+const VIT_MAX=6;
+const vitOf=p=>Array.isArray(p&&p.vitrine)?p.vitrine.filter(v=>v&&+v.i>0):[]; // sans D() : une carte secrète d’un autre joueur ne doit pas être demandée au serveur
+const inVit=id=>vitOf(S).some(v=>+v.i===+id);
+function vitSave(list,msg,after){return run(async()=>{await rpc("dc_set_vitrine",{p_slots:list.map(v=>v.s?{i:+v.i,s:1}:{i:+v.i})});if(msg)toast(msg);if(after)after()})}
+function vitrineHTML(){
+  const v=vitOf(S);
+  return `<p class="muted" style="margin:4px 0 12px">Les 6 cartes que les autres joueurs voient quand ils cliquent sur votre pseudo au classement. Pour une carte que vous avez en shiny, choisissez la forme montrée.</p>
+    <div class="vit-slots">${Array.from({length:VIT_MAX},(_,i)=>{const s=v[i];if(!s)return `<button class="vit-slot vit-empty" data-act="vit-add"><span aria-hidden="true">＋</span>Ajouter</button>`;
+      const id=+s.i,sh=!!s.s;
+      return `<div class="vit-slot">${miniHTML(id,{act:"none",sh,shOwn:hasShiny(id)})}<div class="vit-btns">${hasShiny(id)&&has(S,id)?`<button class="btn small" data-act="vit-sh" data-i="${i}" title="Forme montrée">${sh?"Montrer la normale":"✨ Montrer le shiny"}</button>`:""}<button class="btn small" data-act="vit-del" data-i="${i}">Retirer</button></div></div>`}).join("")}</div>`;
+}
+/* choix d'une carte : toute la collection, plus les shiny débloqués (même sans exemplaire), sauf celles déjà en vitrine */
+function vitPickOpen(){
+  if(vitOf(S).length>=VIT_MAX){toast("Votre vitrine est pleine : retirez d’abord une carte.");return}
+  const ids=[...new Set([...HIDDEN_IDS.filter(id=>has(S,id)),...DEX_ORDER.filter(id=>has(S,id)||hasShiny(id))])].filter(id=>!inVit(id));
+  openDlg(`<div class="side pick-dlg" style="gap:12px"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
+    <div><h2>🏆 Ajouter à la vitrine</h2><p class="muted" style="margin:0">Touchez une carte de votre collection.</p></div>
+    <input type="search" class="pick-search" data-pick-search placeholder="Rechercher une carte" aria-label="Rechercher une carte">
+    <div class="picker" id="picker">${ids.map(id=>{const r=rar(id),src=imgFor(id,showShiny(id));
+      return `<button class="pick wp" data-act="vit-pick" data-id="${id}" data-n="${esc(norm2(nm(id))+" "+id)}"><span class="wp-img">${src?`<img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()">`:""}</span>
+        <span class="wp-n">${esc(nm(id))}${hasShiny(id)?" ✨":""}</span><span class="pick-n"><span style="color:var(--r${r})">${gems(r)}</span> ${RAR[r]}</span></button>`}).join("")||`<div class="empty" style="grid-column:1/-1">Aucune carte à ajouter.</div>`}</div></div>`,true);
+}
+function vitAdd(id,after){ // forme par défaut : celle affichée dans la collection (shiny s'il est débloqué et pas masqué), shiny forcé sans exemplaire
+  const v=vitOf(S);if(v.length>=VIT_MAX||inVit(id))return;
+  return vitSave([...v,{i:id,s:hasShiny(id)&&(showShiny(id)||!has(S,id))?1:0}],`${nm(id)} est dans votre vitrine.`,after);
+}
 function psec(key,ic,title,sum){
   return `<details class="psec" data-sec="${key}"${profOpen[key]?" open":""}><summary><span class="ps-ic" aria-hidden="true">${ic}</span>
     <span class="ps-tt"><b>${title}</b><span>${sum}</span></span><span class="ps-chev" aria-hidden="true">▼</span></summary><div class="psec-body">`;
@@ -2606,6 +2647,9 @@ function vProfile(){
     :recent.length?`<h3 style="margin:14px 0 8px;font-size:1rem">Dernières images utilisées</h3><div class="ava-grid">${recent.map(pick).join("")}</div>`
     :`<p class="muted" style="font-size:.85rem">Tapez le nom ou le numéro d’un Pokémon de votre collection.</p>`}`
     :`<div class="empty">Ouvrez votre premier booster pour débloquer des images de profil.</div>`}
+  </div></details>
+  ${psec("vitrine","🏆","Vitrine",vitOf(S).length?`${vitOf(S).length} / ${VIT_MAX} cartes montrées aux autres joueurs`:"Choisissez 6 cartes à montrer aux autres joueurs")}
+    ${vitrineHTML()}
   </div></details>
   ${psec("look","✨","Mon look",sumLook)}
     ${lookHTML()}
@@ -3276,7 +3320,7 @@ function detail(id){
   openDlg(`${navBtns}<div class="card-holder">${cardHTML(id,true,showShiny(id))}</div><div class="side">
     <button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <div><h2>${esc(nm(id))}</h2><p class="muted">${c} exemplaire${c>1?"s":""} dans votre collection${r<6?`, obtenue ${fmtN(Math.max(gotN(id),c))} fois au total`:""}</p>
-      <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button>${r>=6?"":`<button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>`}${r>=6||mode!=="online"?"":`<button class="btn small wish-btn${wished(id)?" on":""}" data-act="toggle-wish" data-id="${id}" aria-pressed="${wished(id)}" title="Être prévenu quand un joueur la met à l’échange">${wished(id)?"🔔 Je la recherche · Arrêter":"🔔 Je la recherche"}</button>`}</div></div>
+      <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button>${r>=6?"":`<button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>`}${r>=6||mode!=="online"?"":`<button class="btn small wish-btn${wished(id)?" on":""}" data-act="toggle-wish" data-id="${id}" aria-pressed="${wished(id)}" title="Être prévenu quand un joueur la met à l’échange">${wished(id)?"🔔 Je la recherche · Arrêter":"🔔 Je la recherche"}</button>`}${online&&(inVit(id)||vitOf(S).length<VIT_MAX)?`<button class="btn small" data-act="vit-card" data-id="${id}">${inVit(id)?"🏆 Retirer de la vitrine":"🏆 Mettre en vitrine"}</button>`:""}</div></div>
     ${shinyPanelHTML(id)}
     ${online?`<div class="panel"><h3>Proposer à l’échange</h3>
       <div class="actions" style="margin-top:10px;align-items:end">
@@ -3938,6 +3982,11 @@ document.addEventListener("click",e=>{
     case"toggle-dev":if(!OWNER)break;run(async()=>{await rpc("dc_admin_toggle_dev");toast(S.dev?"Mode développeur activé.":"Mode développeur désactivé.")});break;
     case"logout":if(SB)SB.auth.signOut();break;
     case"toggle-wish":run(async()=>{const r=await rpc("dc_toggle_wish",{p_id:id});wishSync();toast(r.on?`🔔 Vous serez prévenu dès que cette carte sera mise à l’échange.`:`Vous ne recherchez plus cette carte.`);if(dlg.open)detail(id);else renderView()});break;
+    case"vit-add":vitPickOpen();break; // vitrine (1.1.6)
+    case"vit-pick":closeDlg();vitAdd(id);break;
+    case"vit-del":{const v=vitOf(S);v.splice(+b.dataset.i,1);vitSave(v);break}
+    case"vit-sh":{const v=vitOf(S).map(x=>({...x})),s=v[+b.dataset.i];if(s){s.s=s.s?0:1;vitSave(v)}break}
+    case"vit-card":if(inVit(id))vitSave(vitOf(S).filter(v=>+v.i!==id),`${nm(id)} a quitté votre vitrine.`,()=>{if(dlg.open)detail(id)});else vitAdd(id,()=>{if(dlg.open)detail(id)});break;
     case"shiny-view":run(async()=>{await rpc("dc_shiny_view",{p_id:id});if(dlg.open)detail(id);else renderView()});break; // forme shiny ou normale d'une carte (1.1.0)
     case"shiny-norm":run(async()=>{await rpc("dc_shiny_view",{p_id:null});toast(S.shinyNorm?"Les formes normales sont maintenant affichées partout.":"Vos shiny sont de nouveau affichés.")});break;
     case"toggle-fav":run(async()=>{const r=await rpc("dc_toggle_fav",{p_id:id});toast(r.on?`${nm(id)} ajouté à vos favoris.`:`${nm(id)} retiré de vos favoris.`);if(dlg.open)detail(id)});break;
