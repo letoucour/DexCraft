@@ -1354,7 +1354,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.10";
+const APP_VERSION="1.3.11";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -4994,8 +4994,9 @@ async function loadPlayers(){
    après 5 minutes d'absence et toutes les 15 minutes ; entre-temps, seulement les annonces modifiées depuis la dernière
    lecture (avec 2 minutes de marge pour les écritures en cours). Les annonces retirées arrivent par le temps réel,
    et celles touchées par ses propres actions sont vérifiées tout de suite (touched). */
-let marketFullTs=0,marketSince=null;
+let marketFullTs=0,marketSince=null,rtMe=false,rtMarket=false,meTs=0,marketTs=0; // rt… : temps réel connecté (1.3.11, voir pollShared)
 async function loadMarket(full,touched){
+  marketTs=Date.now();
   full=full||!marketSince||Date.now()-marketFullTs>900000;
   const since=marketSince;
   const {data,error}=await selectAll(()=>{let q=SB.from("docs").select("path,updated_at").eq("coll","market");if(!full)q=q.gte("updated_at",since);return q.order("path")});
@@ -5098,7 +5099,7 @@ async function loadOwnerColls(){
 }
 /* Son profil : d'abord sa seule date de mise à jour (quelques octets), le profil entier seulement s'il a changé */
 async function loadMe(){
-  if(!S)return;
+  if(!S)return;meTs=Date.now();
   const {data:h,error:e1}=await SB.from("docs").select("upd:data->updated").eq("path","players/"+ME).maybeSingle();
   if(e1||!h||(+h.upd||0)<=(S.updated||0))return;
   const {data,error}=await SB.from("docs").select("data").eq("path","players/"+ME).maybeSingle();
@@ -5106,9 +5107,13 @@ async function loadMe(){
 }
 /* Relectures régulières, filet de sécurité du temps réel. Rien quand l'onglet est caché ;
    au retour après plus de 30 s, tout est relu d'un coup. */
+/* 1.3.11 (journal des requêtes de Supabase, 1 Go par mois) : tant que le temps réel est connecté (rtMe, rtMarket),
+   il prévient déjà de chaque changement, et les relectures de secours passent à toutes les 5 minutes ;
+   s'il décroche, elles reprennent aussitôt leur rythme d'avant (profil chaque minute, marché toutes les 2 minutes). */
 function pollShared(){
   if(document.hidden)return;
-  loadMe();
+  if(!rtMe||Date.now()-meTs>=290000)loadMe();
+  if(!rtMarket?Date.now()-marketTs>=110000:Date.now()-marketTs>=290000)loadMarket();
   if(view==="ranking"||Date.now()-playersTs>300000)loadPlayers();
 }
 document.addEventListener("visibilitychange",()=>{
@@ -5132,7 +5137,7 @@ function onMine(mine){
 }
 function watchShared(){
   loadPlayers();loadMarket();
-  setInterval(pollShared,60000);setInterval(()=>{if(!document.hidden)loadMarket()},120000);
+  setInterval(pollShared,60000); // marché aussi, depuis la 1.3.11
   try{
     SB.channel("dc-market").on("postgres_changes",{event:"*",schema:"public",table:"docs",filter:"coll=eq.market"},pl=>{
       const row=pl.new&&pl.new.path?pl.new:pl.old;if(!row||!row.path)return;
@@ -5145,10 +5150,10 @@ function watchShared(){
     .on("postgres_changes",{event:"DELETE",schema:"public",table:"docs"},pl=>{
       const p=pl.old&&pl.old.path;if(!p||!p.startsWith("market/")||!MARKET[p.slice(7)])return;
       const m=Object.assign({},MARKET);delete m[p.slice(7)];MARKET=m;marketChanged();
-    }).subscribe();
+    }).subscribe(st=>{const was=rtMarket;rtMarket=st==="SUBSCRIBED";if(rtMarket&&!was&&marketTs)loadMarket()}); // reconnecté : rattrape la coupure
     SB.channel("dc-me").on("postgres_changes",{event:"UPDATE",schema:"public",table:"docs",filter:"path=eq.players/"+ME},pl=>{
       if(pl.new&&pl.new.data)onMine(pl.new.data);
-    }).subscribe();
+    }).subscribe(st=>{const was=rtMe;rtMe=st==="SUBSCRIBED";if(rtMe&&!was&&meTs)loadMe()});
   }catch(e){console.warn(e)}
 }
 /* Profil complet d'un autre joueur, lu seulement quand on l'ouvre depuis le classement */
