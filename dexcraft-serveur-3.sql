@@ -19,6 +19,8 @@ create table if not exists public.promo_redemptions (   -- un code ne sert qu'un
   at   timestamptz not null default now(),
   primary key (code, uid)
 );
+-- boosters spéciaux offerts par le code (1.2.6), rangés dans l'inventaire : {"prem": 1, "gen:3": 2, "type:10": 5}
+alter table public.promo_codes add column if not exists spec jsonb not null default '{}';
 alter table public.promo_codes enable row level security;
 alter table public.promo_redemptions enable row level security;
 -- essais de codes (0.8.7) : 10 codes inconnus par heure et par joueur au plus, pour qu'un script ne puisse pas deviner les codes
@@ -49,7 +51,11 @@ begin
   insert into public.promo_redemptions (code, uid) values (k, u);
   update public.promo_codes set uses = uses + 1 where code = k;
   d := d || jsonb_build_object('credits', public.dc__int(d, 'credits') + c.credits, 'bonus', public.dc__int(d, 'bonus') + c.packs);
-  return jsonb_build_object('profile', public.dc__save(u, d), 'code', k, 'credits', c.credits, 'packs', c.packs);
+  if jsonb_typeof(c.spec) = 'object' and c.spec <> '{}' then   -- boosters spéciaux : ajoutés à l'inventaire (1.2.6)
+    d := d || jsonb_build_object('spInv', coalesce((select jsonb_object_agg(key, coalesce((d -> 'spInv' ->> key)::int, 0) + coalesce((c.spec ->> key)::int, 0))
+      from (select jsonb_object_keys(coalesce(d -> 'spInv', '{}')) as key union select jsonb_object_keys(c.spec)) s), '{}'));
+  end if;
+  return jsonb_build_object('profile', public.dc__save(u, d), 'code', k, 'credits', c.credits, 'packs', c.packs, 'spec', c.spec);
 end $$;
 
 -- ---------- cartes secrètes (0.8.7) ----------

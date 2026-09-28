@@ -1233,7 +1233,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.2.5";
+const APP_VERSION="1.2.6";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -4344,6 +4344,7 @@ document.addEventListener("click",e=>{
     case"redeem-code":{const inp=$("#promo-code"),v=(inp&&inp.value||"").trim();if(!v){toast("Entrez un code.");break}
       run(async()=>{const r=await rpc("dc_redeem_code",{p_code:v});if(r.error){toast(r.error);return}const i2=$("#promo-code");if(i2)i2.value="";
         const parts=[];if(r.credits)parts.push(`+${cr(r.credits)}`);if(r.packs)parts.push(`+${r.packs} booster${r.packs>1?"s":""}`);
+        for(const [k,n] of Object.entries(r.spec||{})){const {kind,v}=spParse(k);if(SPB[kind]&&n>0)parts.push(`+${n} ${spName(kind,v)} (dans vos boosters spéciaux)`)} // 1.2.6
         toast(`Code ${r.code} validé : ${parts.join(" et ")||"merci !"}`)});break}
     case"vb-flip":vbFlip(+b.dataset.i);break;
     case"vb-memo":if(VB){VB.memo=!VB.memo;renderView()}break;
