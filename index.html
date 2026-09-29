@@ -781,6 +781,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ar-log{font-size:.8rem;min-height:1.2em;text-align:center;font-weight:700}
 .ar-dock{display:flex;flex-direction:column;gap:6px;align-items:center;width:100%}
 .ar-colL{display:none}
+.ar-purse{display:none} /* téléphone : vies et or restent dans la barre du haut */
 .ar-fieldrow{display:contents}.ar-syncol,.ar-frsp{display:none}
 .ar-bench{display:grid;grid-template-columns:repeat(8,var(--b));gap:4px}
 .ar-shop{display:grid;grid-template-columns:repeat(5,var(--o));gap:5px;border-radius:12px;border:2px solid transparent}
@@ -822,7 +823,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
      puis la boutique encadrée des boutons (Relancer et Verrouiller à gauche, Vendre et Combattre à droite) sur une
      seule rangée, pour laisser au terrain la hauteur d'une rangée de boutons */
   html.arena-view main{max-width:1680px}
-  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 310px) / 4.72),150px);--b:min(calc(var(--s) * .72),calc((100vw - 600px) / 8),86px)}
+  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 324px) / 4.72),150px);--b:min(calc(var(--s) * .72),calc((100vw - 600px) / 8),86px)}
   .ar-play{justify-content:safe center;container-type:inline-size}
   .ar-stage{grid-template-columns:220px minmax(0,1fr) 250px}
   .ar-colL{display:block;min-height:0;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px}
@@ -838,7 +839,9 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
   .ar-dock{display:grid;grid-template-columns:auto auto auto;grid-template-areas:"bench bench bench" "blabel shop lock" "reroll shop fight";justify-content:center;column-gap:12px;row-gap:6px}
   .ar-benchw{grid-area:bench;justify-self:center}.ar-dock .ar-shopw{display:contents}
   .ar-dock .ar-shop{grid-area:shop;--o:min(100px,calc((100cqw - 340px) / 5))}
-  .ar-dock .ar-shoplbl{grid-area:blabel;align-self:end;justify-content:center;font-size:.8rem;margin:0;padding-bottom:4px}
+  .ar-dock .ar-shoplbl,.ar-purse-top{display:none} /* v2.4 : vies et or à gauche de la boutique, à la place du mot « Boutique » */
+  .ar-dock .ar-purse{grid-area:blabel;align-self:end;display:flex;gap:6px;justify-content:center}
+  .ar-dock .ar-purse .ar-chip{text-align:center;font-size:.95rem;padding:4px 9px;white-space:nowrap}
   .ar-dock .ar-acts{display:contents}
   .ar-dock [data-ar="reroll"]{grid-area:reroll}.ar-dock [data-ar="lock"],.ar-dock .ar-sellz{grid-area:lock}.ar-dock .ar-fight{grid-area:fight}
   .ar-dock .ar-acts:has(.ar-sellz:not([hidden])) [data-ar="lock"]{display:none}
@@ -1283,16 +1286,12 @@ body[data-fond="palais"],.fsw-palais{background:linear-gradient(45deg,transparen
 body[data-fond="palais"]::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;mix-blend-mode:overlay;background:linear-gradient(115deg,transparent 25%,rgba(255,150,230,.55) 40%,rgba(150,230,255,.55) 50%,rgba(255,245,150,.5) 60%,transparent 75%);background-size:300% 100%;animation:pkHolo 7s ease-in-out infinite}
 html.revealing body[data-fond="palais"]::after{animation:none;opacity:.5}
 /* voile derrière la colonne des boosters, teinté selon le fond ; les couleurs du jeu restent celles du thème du joueur */
-body[data-fond="papierpeint"]{--veil-d:rgba(58,42,18,.8);--veil-l:rgba(250,243,222,.86)}
-body[data-fond="volcan"]{--veil-d:rgba(42,11,5,.74);--veil-l:rgba(255,236,226,.86)}
-body[data-fond="abysses"]{--veil-d:rgba(4,37,68,.72);--veil-l:rgba(226,243,255,.86)}
-body[data-fond="cosmos"]{--veil-d:rgba(20,11,51,.72);--veil-l:rgba(240,235,255,.86)}
-body[data-fond="tresor"]{--veil-d:rgba(40,28,6,.76);--veil-l:rgba(255,246,222,.86)}
-body[data-fond="palais"]{--veil-d:rgba(38,38,50,.74);--veil-l:rgba(255,255,255,.8)}
 body[data-fond] main .booster{position:relative;z-index:1}
-body[data-fond] main .booster.home{background:var(--veil-l);border-radius:24px;padding:14px 12px 18px}
-:root[data-theme="dark"] body[data-fond] main .booster.home{background:var(--veil-d)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-fond] main .booster.home{background:var(--veil-d)}}
+/* 1.3.17 (demande de Theo) : plus de voile gris entre le contenu et le fond sur l'écran des boosters ; les textes posés
+   directement sur le fond passent en blanc ombré, comme pendant l'ouverture (encadrés et boutons gardent leur fond) */
+body[data-fond] main .booster.home :is(.bh-head h1,.bh-head>.muted,.bh-main .big,.bh-main .big .of,.bh-main .muted,.bh-main .muted b){color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 12px rgba(0,0,0,.55)}
+body:is([data-fond="palais"],[data-fond="papierpeint"]) main .booster.home :is(.bh-head h1,.bh-head>.muted,.bh-main .big,.bh-main .big .of,.bh-main .muted,.bh-main .muted b){color:#1c2042;text-shadow:0 0 3px #fff,0 0 10px rgba(255,255,255,.9)} /* fonds clairs : texte foncé */
+body[data-fond] main .booster.home .shop-cta{background:var(--surface)} /* boutons transparents : lisibles sur les fonds clairs */
 /* tirage : plus de voile entre les cartes et le fond (1.2.0), les textes restent lisibles en clair et ombrés */
 body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.reveal-sum){color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)}
 /* --- Mon look (profil) --- */
@@ -1426,7 +1425,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.16";
+const APP_VERSION="1.3.17";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -4634,8 +4633,8 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.3</span></h1>
-    ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip">🪙 <b>${r.gold}</b> or</span>`:""}
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.4</span></h1>
+    ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top">🪙 <b>${r.gold}</b> or</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
     <button class="btn small" data-ar="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${r&&!r.over?`<button class="btn small" data-ar="new" title="Nouvelle partie">↻<span class="ar-wide"> Nouvelle partie</span></button>`:""}</div>`;
@@ -4659,7 +4658,7 @@ function vArena(){
     <div class="ar-log" id="ar-log">${sel?`${esc(nm(sel.i))} choisi : touchez une case, ou glissez-le.`:`Touchez ou glissez un Pokémon pour le placer<span class="ar-wide"> ; glissez-le sur la boutique pour le vendre</span>.`}</div>
     <div class="ar-dock">
       <div class="ar-benchw"><div class="ar-lbl">Banc</div><div class="ar-bench">${r.bench.map((u,i)=>`<div class="ar-slot${sel&&!u?" drop":""}" data-ar="slot" data-zone="bench" data-i="${i}" data-ar-drop="bench:${i}">${arUnitHTML(u)}</div>`).join("")}</div></div>
-      <div class="ar-shopw"><div class="ar-lbl ar-shoplbl">Boutique</div>
+      <div class="ar-shopw"><div class="ar-lbl ar-shoplbl">Boutique</div><div class="ar-purse"><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip">🪙 <b>${r.gold}</b> or</span></div>
         <div class="ar-shop${r.locked?" locked":""}" data-ar-drop="shop">${r.shop.map((id,i)=>{if(!id)return `<button class="ar-offer empty" disabled></button>`;const [n,,,ty,,,,rr]=D(id),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(id);
           return `<button class="ar-offer" data-ar="buy" data-i="${i}" data-ar-drag="s:${i}" style="--c1:${c1};--c2:${c2};--rc:var(--r${rr})" ${r.gold<AR.cost[rr]?"disabled":""} title="${esc(n)} · ${AR_RARN[rr]}">
             <span class="ar-pic">${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${counts[id]?`<span class="ar-own">${counts[id]}/3</span>`:""}</span><span class="ar-on">${esc(n)}</span><span class="ar-oc">🪙 ${AR.cost[rr]}</span></button>`}).join("")}</div></div>
