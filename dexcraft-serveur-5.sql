@@ -396,7 +396,7 @@ end $$;
 -- simulation, crédits (dans la limite du jour), puis manche suivante ou fin de partie
 create or replace function public.dc_ar_fight(p_board jsonb default null, p_bench jsonb default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); a jsonb := cfg -> 'arena';
-  st jsonb := public.dc__ar_get(u); rd int; res jsonb; auto_ jsonb := '[]'; v jsonb; k int; before jsonb; day text := public.dc__day();
+  st jsonb := public.dc__ar_get(u); rd int; res jsonb; auto_ jsonb := '[]'; v jsonb; k int; before jsonb; oe jsonb; day text := public.dc__day();
   gained bigint; added bigint := 0; bonus bigint := 0; post bigint := 0; cap bigint := (a ->> 'cap')::bigint; win boolean; nr int;
 begin
   st := public.dc__ar_layout(st, p_board, p_bench) - 'msg'; rd := (st ->> 'round')::int;
@@ -444,12 +444,15 @@ begin
     -- 1.4.2 (demande de Theo) : une manche perdue se rejoue (nouvel adversaire), avec lossGold en plus de l'or de la manche
     nr := case when win then rd + 1 else rd end;
     st := st || jsonb_build_object('round', nr);
-    -- or de la manche : base + moitié de la manche, moins incLate à partir de la manche 5, plus les intérêts
+    -- or de la manche : base + incStep × manche (1.4.8 : 1, la moitié avant), moins incLate à partir de la manche 5, plus les intérêts
     -- (1.4.0 : 10 or gardés = +1, 20 = +3, 30 et plus = +5, table interest de la config)
-    st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + nr / 2
+    st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + floor(nr * coalesce((a ->> 'incStep')::numeric, .5))::int
       - case when nr >= 5 then coalesce((a ->> 'incLate')::int, 0) else 0 end
       + coalesce((a -> 'interest' ->> least(3, (st ->> 'gold')::int / 10))::int, least(3, (st ->> 'gold')::int / 10))));
+    oe := st -> 'enemy';
     st := public.dc__ar_round(cfg, st, d -> 'coll');
+    -- 1.4.8 (demande de Theo) : une manche perdue se rejoue contre la même équipe (nouvel adversaire de la 1.4.2 à la 1.4.7)
+    if not win then st := jsonb_set(st, '{enemy}', oe); end if;
   end if;
   st := jsonb_set(st, '{credits}', to_jsonb((st ->> 'credits')::int + added + bonus + post));
   d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') + added + bonus + post));
