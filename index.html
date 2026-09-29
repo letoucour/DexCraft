@@ -64,7 +64,7 @@ try{const t=localStorage.getItem("dc-theme");if(t==="light"||t==="dark")document
   --line:#363e72; --gold:#ffcf3f; --gold-ink:#2b1f00; --danger:#ff6b81; --ok:#5fd68f;
   --r0:#a4a9c6; --r1:#5fd68f; --r2:#6fb0ff; --r3:#c38bff; --r4:#3ee3d6; --r5:#ffcf3f;
 }
-html{overflow-x:clip;height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:clip;height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
 [hidden]{display:none!important}
 body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
@@ -600,6 +600,8 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
   background:repeating-radial-gradient(circle at 70% 30%,rgba(255,255,255,.2) 0 2px,transparent 2px 8px),linear-gradient(135deg,var(--c1),var(--c2));
   color:#fff;font-family:var(--display);font-weight:700;font-size:calc(var(--s)*.5);box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--line);vertical-align:middle}
 .ava img{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain;z-index:1}
+.ava{min-width:var(--s);min-height:var(--s);max-width:var(--s);max-height:var(--s);box-sizing:border-box;line-height:1;contain:layout paint} /* 1.4.13 : rond décalé sur certains téléphones */
+.ava b{position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--s)*.5);line-height:1}
 .ava img+b{visibility:hidden}
 .ava-none{background:var(--surface-2);color:var(--gold)}
 .art-img{position:absolute;inset:4% 20%;width:60%;height:92%;object-fit:contain;z-index:1}
@@ -732,7 +734,7 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 html.arena-view:not(.arena-scroll),html.arena-view:not(.arena-scroll) body{overflow:hidden}
 html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12px}
 @media (max-width:999px){html.arena-view #version,html.arena-view #cgu-link{display:none}} /* le numéro de version passait sur les boutons de l’Arène */
-.arena{--s:clamp(36px,calc((var(--ar-h,700px) - 450px) / 4),96px);--b:min(calc(var(--s) * .86),calc((100vw - 64px) / 8),64px);--o:min(calc(var(--s) * 1.02),calc((100vw - 56px) / 5),80px);
+.arena{--s:clamp(36px,calc((var(--ar-h,700px) - 450px) / 4),96px);--b:min(calc(var(--s) * .86),calc((100vw - 68px) / 9),64px);--o:min(calc(var(--s) * 1.02),calc((100vw - 56px) / 5),80px);
   height:var(--ar-h,auto);display:flex;flex-direction:column;gap:6px;overflow:hidden}
 .ar-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 .ar-top h1{font-size:1.35rem;margin:0 4px 0 0}
@@ -790,7 +792,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ar-colL{display:none}
 .ar-purse{display:none} /* téléphone : vies et or restent dans la barre du haut */
 .ar-fieldrow{display:contents}.ar-syncol,.ar-frsp{display:none}
-.ar-bench{display:grid;grid-template-columns:repeat(8,var(--b));gap:4px}
+.ar-bench{display:grid;grid-template-columns:repeat(9,var(--b));gap:4px}
 .ar-shop{display:grid;grid-template-columns:repeat(5,var(--o));gap:5px;border-radius:12px;border:2px solid transparent}
 .ar-shop.locked{border-color:var(--gold)}
 .ar-offer{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:3px 3px 4px;cursor:pointer;font:inherit;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -831,7 +833,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
      puis la boutique encadrée des boutons (Relancer et Verrouiller à gauche, Vendre et Combattre à droite) sur une
      seule rangée, pour laisser au terrain la hauteur d'une rangée de boutons */
   html.arena-view main{max-width:1680px}
-  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 324px) / 4.72),150px);--b:min(calc(var(--s) * .72),calc((100vw - 600px) / 8),86px)}
+  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 324px) / 4.72),150px);--b:min(calc(var(--s) * .72),calc((100vw - 600px) / 9),86px)}
   .ar-play{justify-content:safe center;container-type:inline-size}
   .ar-stage{grid-template-columns:220px minmax(0,1fr) 250px}
   .ar-colL{display:block;min-height:0;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px}
@@ -1145,7 +1147,10 @@ nav.tabs .ti{display:none}
   nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:200;display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));gap:0!important;
     background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.18);padding:4px 2px calc(4px + env(safe-area-inset-bottom,0px))}
   nav.tabs button{position:relative;display:flex!important;flex-direction:column;align-items:center;gap:1px;padding:5px 0 3px!important;border-radius:10px!important;font-size:.6rem!important;letter-spacing:-.02em;min-width:0}
-  nav.tabs .ti{display:block;font-size:1.25rem;line-height:1.1}
+  nav.tabs .ti{display:block;line-height:0;color:var(--ink-soft)} /* 1.4.13 : pictogrammes au trait à la place des émojis (demande de Theo) */
+  nav.tabs .ti svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  nav.tabs button[aria-current="page"] .ti,nav.tabs .tab-games>button[aria-expanded="true"] .ti{color:var(--gold)}
+  nav.tabs button[aria-current="page"] .ti svg{fill:color-mix(in srgb,var(--gold) 18%,transparent)}
   nav.tabs .tl{max-width:100%;overflow:hidden;text-overflow:ellipsis}
   nav.tabs .tl-long{display:none}
   .tab-games{display:flex;min-width:0}nav.tabs .tab-games>button{flex:1 1 auto;min-width:0}.tg-arrow{display:none}
@@ -1392,15 +1397,15 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 <header class="top"><div class="top-in">
   <button class="brand" data-view="booster" title="Retour aux boosters" aria-label="DexCraft : retour aux boosters"><span class="gem">◆</span>DexCraft</button>
   <nav class="tabs" id="tabs">
-    <button data-view="booster"><span class="ti" aria-hidden="true">📦</span><span class="tl">Boosters</span><span class="tab-badge" id="boost-badge" hidden>!</span></button>
-    <button data-view="collection"><span class="ti" aria-hidden="true">🗂️</span><span class="tl">Collection</span></button>
-    <button data-view="evolution"><span class="ti" aria-hidden="true">✨</span><span class="tl">Évolutions</span></button>
-    <button data-view="trades"><span class="ti" aria-hidden="true">🔄</span><span class="tl">Échanges</span><span class="tab-badge" id="trade-badge" hidden></span></button>
-    <div class="tab-games"><button type="button" id="tab-games" aria-haspopup="true" aria-expanded="false"><span class="ti" aria-hidden="true">🎮</span><span class="tl">Jeux<span class="tg-arrow" aria-hidden="true"> ▾</span></span></button>
+    <button data-view="booster"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6l2-2 2 2 2-2 2 2 2-2 2 2 2-2v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M12 10.5l2.2 2.8-2.2 2.8-2.2-2.8z"/></svg></span><span class="tl">Boosters</span><span class="tab-badge" id="boost-badge" hidden>!</span></button>
+    <button data-view="collection"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="8.5" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="8.5" rx="1.6"/><rect x="3.5" y="15" width="7" height="5.5" rx="1.6"/><rect x="13.5" y="15" width="7" height="5.5" rx="1.6"/></svg></span><span class="tl">Collection</span></button>
+    <button data-view="evolution"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l6-6 6 6"/><path d="M6 19l6-6 6 6"/></svg></span><span class="tl">Évolutions</span></button>
+    <button data-view="trades"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h13"/><path d="M13.5 4.5L17 8l-3.5 3.5"/><path d="M20 16H7"/><path d="M10.5 12.5L7 16l3.5 3.5"/></svg></span><span class="tl">Échanges</span><span class="tab-badge" id="trade-badge" hidden></span></button>
+    <div class="tab-games"><button type="button" id="tab-games" aria-haspopup="true" aria-expanded="false"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 7h9A4.5 4.5 0 0 1 21 11.5v2.3a2.7 2.7 0 0 1-4.8 1.7L14.6 13.6H9.4l-1.6 1.9A2.7 2.7 0 0 1 3 13.8v-2.3A4.5 4.5 0 0 1 7.5 7z"/><path d="M8 9.3v3.4M6.3 11h3.4"/><path d="M15.5 10h.01M17.5 12h.01"/></svg></span><span class="tl">Jeux<span class="tg-arrow" aria-hidden="true"> ▾</span></span></button>
       <div class="games-pop" id="games-pop" hidden><button data-view="volto"><span class="gp-ic" aria-hidden="true">⚡</span><span class="gp-t"><b>VoltoBataille</b><small id="gp-volto">Retournez les cartes sans réveiller de Voltorbe</small></span></button>
         <button data-view="arena"><span class="gp-ic" aria-hidden="true">⚔️</span><span class="gp-t"><b>Arène</b><small id="gp-arena">Combat automatique avec vos Pokémon</small></span></button></div></div>
-    <button data-view="ranking"><span class="ti" aria-hidden="true">🏆</span><span class="tl">Classement</span></button>
-    <button data-view="shop"><span class="ti" aria-hidden="true">🛒</span><span class="tl">Boutique</span></button>
+    <button data-view="ranking"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4h8v5.5a4 4 0 0 1-8 0z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 4.4M16 6h2.5a2.5 2.5 0 0 1-2.6 4.4"/><path d="M12 13.5V17M8.5 20.5h7M9.5 17h5v3.5h-5z"/></svg></span><span class="tl">Classement</span></button>
+    <button data-view="shop"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8.5h14l-1.1 11a1.5 1.5 0 0 1-1.5 1.4H7.6a1.5 1.5 0 0 1-1.5-1.4z"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/></svg></span><span class="tl">Boutique</span></button>
   </nav>
   <div class="chips">
     <button class="chip me-chip" data-view="profile" id="h-me" aria-label="Mon profil"><span class="ava ava-none" style="--s:28px">◆</span><span>Profil</span></button>
@@ -1445,7 +1450,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.12";
+const APP_VERSION="1.4.13";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2448,6 +2453,7 @@ function renderHeader(){
   {const bb=$("#boost-badge"),w=[hasGift()?"un cadeau":"",dailyState().done?"":"la récompense du jour"].filter(Boolean);if(bb){bb.hidden=!w.length;bb.title=w.length?`À récupérer : ${w.join(" et ")}`:""}}
   {const tb=$("#trade-badge"),n=pendingOffers(),w=wishUnseen(),t=n+w;if(tb){tb.hidden=!t;tb.textContent=t?(t>99?"99+":t):"";tb.title=[n?`${n} proposition${n>1?"s":""} à traiter`:"",w?`${w} carte${w>1?"s":""} recherchée${w>1?"s":""} à l’échange`:""].filter(Boolean).join(", ")}}
   document.querySelectorAll("#tabs button,#h-me").forEach(b=>b.setAttribute("aria-current",b.dataset.view===view?"page":"false"));
+  {const g=$("#tab-games");if(g)g.setAttribute("aria-current",view==="volto"||view==="arena"?"page":"false")} // 1.4.13 : onglet Jeux allumé dans les deux jeux
   { // menu « Jeux » (1.3.3) : allumé sur la VoltoBataille et l'Arène, avec les crédits gagnés aujourd'hui dans chaque jeu
     const g=$("#tab-games");if(g)g.setAttribute("aria-current",view==="volto"||view==="arena"?"page":"false");
     const gv=$("#gp-volto"),ga=$("#gp-arena"),arG=S&&S.arena&&S.arena.day===dayKey()?S.arena.gained||0:0;
@@ -3463,11 +3469,11 @@ const VB_AFTER=10; // 1.3.14 : plafond atteint, une manche gagnée rapporte enco
    (poids, pas forcément sur 100 ; par bandes de 2 manches avant) ; slot : chance qu'une case repropose un Pokémon de l'équipe
    (depuis la 1.4.9 : chaque Pokémon différent de l'équipe à 0 ou 1 étoile a la même chance, slot 0,3) ; typeW : poids des types joués, en part de la réserve ;
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
-const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,afterCap:100,afterCapPerfect:150,winBase:60,winStep:20,startGold:8,incBase:6,incStep:1, // 1.4.8 (demande de Theo, économie trop juste) : or de la manche = incBase + incStep × manche (6 + manche/2 avant, startGold 6, incLate 1)
+const AR={rounds:10,lives:3,lossGold:3,bench:9,reroll:2,cap:3000,finish:400,afterCap:100,afterCapPerfect:150,winBase:60,winStep:20,startGold:8,incBase:6,incStep:1, // 1.4.8 (demande de Theo, économie trop juste) : or de la manche = incBase + incStep × manche (6 + manche/2 avant, startGold 6, incLate 1)
   // 1.4.7 (Arène v3.3, table de Theo) : avant, par bandes de 2 manches [[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]]
   odds:[[70,20,10,0,0],[60,30,15,5,0],[50,30,20,9,1],[50,30,20,9,1],[20,30,30,15,5],[20,30,30,15,5],[15,25,30,20,10],[15,25,30,20,10],[10,20,25,30,15],[0,10,20,40,30]],
   cost:{0:1,1:2,2:3,3:4,5:5},
-  aiEvo:.07,aiPow0:.82,aiPowK:.042,slot:.3,typeW:1/75, // 1.4.2 : aiPow0 .83 → .82 (« très très légèrement » plus facile, demande de Theo)
+  aiEvo:.07,aiPow0:.83,aiPowK:.042,slot:.3,typeW:1/75, // 1.4.13 : banc de 9 places (8 avant) et aiPow0 .82 → .83 en contrepartie (demande de Theo) ;1.4.2 : aiPow0 .83 → .82 (« très très légèrement » plus facile, demande de Theo)
   // 1.4.0 (Arène v3.0, demande de Theo) : ordinateur un peu plus faible en manches 1 et 2 (aiEarly), plus fort à partir de la 5e (aiLate par manche) et
   // surtout à la dernière (aiLast) ; intérêts 10 or = +1, 20 = +3, 30 et plus = +5 (interest) ; 1 or de moins par manche à partir de la 5e (incLate) ;
   // coefficient des statistiques selon les étoiles (starK : 2 étoiles = 3 Pokémon à une étoile)
@@ -4750,7 +4756,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.6</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.7</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>

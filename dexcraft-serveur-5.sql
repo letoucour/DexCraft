@@ -235,7 +235,7 @@ begin
   if not exists (select 1 from jsonb_each(d -> 'coll') where key ~ '^\d+$' and key::int between 1 and 1025 and value::text::int > 0) then
     raise exception 'Ouvrez d’abord des boosters : la boutique de l’Arène propose les Pokémon de votre collection.'; end if;
   st := jsonb_build_object('round', 1, 'hp', (a ->> 'lives')::int, 'gold', (a ->> 'startGold')::int, 'wins', 0, 'credits', 0, 'n', 0,
-    'board', '[null,null,null,null,null,null]'::jsonb, 'bench', '[null,null,null,null,null,null,null,null]'::jsonb,
+    'board', '[null,null,null,null,null,null]'::jsonb, 'bench', (select jsonb_agg('null'::jsonb) from generate_series(1, public.dc__ar_bench())),
     'locked', false, 'over', false, 'shop', '[]'::jsonb);
   st := public.dc__ar_round(cfg, st, d -> 'coll');
   insert into public.ar_runs (uid, data) values (u, st) on conflict (uid) do update set data = excluded.data, updated_at = now();
@@ -249,17 +249,23 @@ declare st jsonb;
 begin
   select data into st from public.ar_runs where uid = u for update;
   if st is null or coalesce((st ->> 'over')::boolean, false) then raise exception 'Aucune partie en cours : lancez-en une nouvelle.'; end if;
+  -- 1.4.13 : banc de 9 places (8 avant) ; une partie commencée avant reçoit la place en plus
+  if jsonb_array_length(st -> 'bench') < public.dc__ar_bench() then
+    st := jsonb_set(st, '{bench}', (st -> 'bench') || (select jsonb_agg('null'::jsonb) from generate_series(1, public.dc__ar_bench() - jsonb_array_length(st -> 'bench'))));
+  end if;
   return st;
 end $$;
 create or replace function public.dc__ar_put(u uuid, st jsonb) returns void language sql volatile as $$
   update public.ar_runs set data = st, updated_at = now() where uid = u $$;
 
--- placement (glisser-déposer, ou toucher puis case) : p_board (6) et p_bench (8), numéros d'unités ou null
+create or replace function public.dc__ar_bench() returns int language sql immutable as $$ select 9 $$;   -- places du banc (8 avant la 1.4.13)
+-- placement (glisser-déposer, ou toucher puis case) : p_board (6) et p_bench (places du banc ; plus court : complété de places vides,
+-- pour une page pas encore rechargée), numéros d'unités ou null
 create or replace function public.dc__ar_layout(st jsonb, p_board jsonb, p_bench jsonb) returns jsonb language plpgsql immutable as $$
 declare units jsonb := '{}'; v jsonb; nb jsonb := '[]'; nc jsonb := '[]'; seen int := 0; k int;
 begin
   if p_board is null or p_bench is null then return st; end if;
-  if jsonb_array_length(p_board) <> 6 or jsonb_array_length(p_bench) <> 8 then raise exception 'Placement invalide.'; end if;
+  if jsonb_array_length(p_board) <> 6 or jsonb_array_length(p_bench) > public.dc__ar_bench() then raise exception 'Placement invalide.'; end if;
   for v in select * from public.dc__ar_units(st) loop units := units || jsonb_build_object(v ->> 'u', v); end loop;
   for k in 0 .. 5 loop
     v := p_board -> k;
@@ -268,8 +274,8 @@ begin
       nb := nb || (units -> (v #>> '{}')); units := units - (v #>> '{}'); seen := seen + 1; end if;
   end loop;
   if seen > public.dc__ar_max((st ->> 'round')::int) then raise exception 'Trop de Pokémon sur le terrain pour cette manche.'; end if;
-  for k in 0 .. 7 loop
-    v := p_bench -> k;
+  for k in 0 .. public.dc__ar_bench() - 1 loop
+    v := coalesce(p_bench -> k, 'null');
     if v = 'null' then nc := nc || 'null'::jsonb; else
       if not units ? (v #>> '{}') then raise exception 'Placement invalide.'; end if;
       nc := nc || (units -> (v #>> '{}')); units := units - (v #>> '{}'); end if;
@@ -303,7 +309,7 @@ begin
   if free_ is not null then st := jsonb_set(st, array['bench', free_::text], jsonb_build_object('u', nu, 'i', id, 's', 0));
   else st := jsonb_set(st, '{bench}', (st -> 'bench') || jsonb_build_array(jsonb_build_object('u', nu, 'i', id, 's', 0))); end if;
   st := public.dc__ar_merge(cfg, st, id);
-  st := jsonb_set(st, '{bench}', (select jsonb_agg(v order by k) from jsonb_array_elements(st -> 'bench') with ordinality e(v, k) where k <= 8));
+  st := jsonb_set(st, '{bench}', (select jsonb_agg(v order by k) from jsonb_array_elements(st -> 'bench') with ordinality e(v, k) where k <= public.dc__ar_bench()));
   perform public.dc__ar_put(u, st - 'msg');
   return public.dc__ar_view(d, st);
 end $$;
