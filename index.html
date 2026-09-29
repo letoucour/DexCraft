@@ -1054,6 +1054,8 @@ dialog,.modal{overscroll-behavior:contain}
 .vb-rules{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
 .vb-rules summary{cursor:pointer;font-weight:700;color:var(--gold)}
 .vb-rules li{margin:4px 0}
+.vb-music{margin-top:10px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 14px;font-weight:700;color:var(--gold)} /* 1.3.18 */
+.vb-music input{flex:1;accent-color:var(--gold)}.vb-music span{min-width:44px;text-align:right;color:var(--ink-soft);font-size:.85rem}
 /* VoltoBataille sur grand écran (1.0.0) : plateau à gauche, calé sur la hauteur de la fenêtre ; le reste à droite, sans défiler */
 @media (min-width:1000px){
   .vb{max-width:1180px;display:grid;grid-template-columns:auto minmax(320px,440px);column-gap:32px;justify-content:center;align-content:start}
@@ -1425,7 +1427,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.17";
+const APP_VERSION="1.3.18";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2473,6 +2475,7 @@ function renderView(){
   if(view==="arena"&&arFighting)return; // combat de l'Arène en cours d'animation : on ne redessine pas
   const anc=view==="collection"&&$("#coll-grid")?collAnchor():null;
   keepInputs(()=>{fillApp(app,({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto,arena:vArena})[view]())});
+  vbMusicSync(); // musique de la VoltoBataille (1.3.18) : seulement sur sa page
   document.documentElement.classList.toggle("arena-view",view==="arena");if(view==="arena")arFit();else document.documentElement.classList.remove("arena-scroll"); // Arène : la page ne défile pas
   if(anc){ // après le calcul des vignettes hors de l'écran (image suivante), puis une seconde fois par sécurité
     const fix=()=>{const el=document.querySelector(`#coll-grid .mini[data-id="${anc.id}"]`);if(el){const dy=el.getBoundingClientRect().top-anc.t;if(Math.abs(dy)>1)window.scrollBy(0,dy)}};
@@ -3449,14 +3452,14 @@ function vbTile(i,closed){
     <span class="face front v${v===null?"":v}">${v===null?"":v?v:vbVolt()}</span></span></button>`;
 }
 function vVolto(){
-  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.4</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
+  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.5</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
   const s=VB.srv,g=vbGained(S),left=Math.max(0,VB_CAP-g);vbMid=nextMidnight();
   VB.level=s.level;VB.score=s.state==="lost"?0:s.score;VB.state=s.state;
   let board="";
   for(let r=0;r<5;r++){for(let c=0;c<5;c++)board+=vbTile(r*5+c);board+=vbClue(s.rows[r],VB_COLORS[r])}
   for(let c=0;c<5;c++)board+=vbClue(s.cols[c],VB_COLORS[c]);
   board+=`<span></span>`;
-  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.4</span></h1>
+  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.5</span></h1>
     <p class="muted" style="margin:4px 0 0">Retournez les cartes, multipliez vos gains… et évitez les Voltorbe !</p>
     <div class="vb-day">
       <div class="vb-day-top"><span><b>${fmtN(g)} / ${fmtN(VB_CAP)}</b> crédits gagnés aujourd’hui</span><span class="muted">Remise à zéro dans <b data-countdown="${vbMid}">${fmtLeft(vbMid-Date.now())}</b></span></div>
@@ -3483,7 +3486,8 @@ function vVolto(){
       <li><b>Encaisser et arrêter</b> : gardez les gains déjà obtenus et passez à une nouvelle manche.</li>
       <li>Chaque manche gagnée fait monter d’un niveau, jusqu’au niveau 8. Après une défaite ou un encaissement, le niveau redescend au nombre de cartes retournées.</li>
       <li>Vous gagnez au plus <b>${fmtN(VB_CAP)} crédits par jour</b>. Le compteur repart de zéro chaque nuit à minuit. Une fois le plafond atteint, chaque manche gagnée rapporte encore ${VB_AFTER} crédits par niveau (${VB_AFTER*8} au niveau 8).</li>
-    </ul></details></div>`;
+    </ul></details>
+    <label class="vb-music">🎵 Musique <input type="range" min="0" max="100" step="5" value="${Math.round(vbMusicVol()*100)}" data-keep="vbvol" data-vbvol aria-label="Volume de la musique"><span id="vb-vol-n">${Math.round(vbMusicVol()*100)} %</span></label></div>`;
 }
 /* Retourne une carte : le serveur donne sa valeur (et tout le plateau si la manche se termine) */
 function vbFlip(i){
@@ -4126,6 +4130,21 @@ function shinyFx(el){
 }
 /* Son du shiny (1.3.9) : fichier fourni par Theo, sinon le son synthétisé d'une Épique */
 const SHINY_SND="images/sons/shiny.mp3";
+/* Musique de la VoltoBataille (1.3.18) : fichier fourni par Theo, en boucle tant que la page est ouverte et visible ;
+   volume propre au joueur (curseur sous « Comment jouer ? », gardé sur l'appareil), multiplié par le volume général,
+   coupée avec le son du jeu. Chargée seulement à la première visite de la page (preload none). */
+const VB_MUSIC="images/sons/voltobataille.mp3";
+let vbMusic=null;
+function vbMusicVol(){try{const v=parseFloat(localStorage.getItem("dc-vb-music"));return isNaN(v)?.4:Math.min(1,Math.max(0,v))}catch(e){return .4}}
+function vbMusicSync(){
+  let muted=false;try{muted=localStorage.getItem("dc-mute")==="1"}catch(e){}
+  const on=view==="volto"&&!document.hidden&&!muted&&vbMusicVol()>0;
+  if(!on){if(vbMusic&&!vbMusic.paused)vbMusic.pause();return}
+  if(!vbMusic){vbMusic=new Audio(VB_MUSIC);vbMusic.loop=true;vbMusic.preload="none"}
+  vbMusic.volume=Math.min(1,vbMusicVol()*prefs().vol);
+  if(vbMusic.paused)vbMusic.play().catch(()=>{ // lecture refusée sans geste du joueur : au premier toucher
+    addEventListener("pointerdown",vbMusicSync,{once:true})});
+}
 function shinySound(){
   try{if(localStorage.getItem("dc-mute")==="1")return}catch(e){}
   try{const a=new Audio(SHINY_SND);a.volume=prefs().vol;a.play().catch(()=>SFX.flip(3))}catch(e){SFX.flip(3)}
@@ -4834,7 +4853,7 @@ document.addEventListener("click",e=>{
     case"rc-filter":{const r=b.dataset.r;if(r==="shiny")filt.own=filt.own==="shiny"?"all":"shiny";else filt.r=filt.r===r?"all":r;renderView();break} // compteurs de rareté cliquables (1.1.10)
     case"toggle-theme":toggleTheme();break;
     case"install-app":installApp();break; // 1.1.5
-    case"toggle-sound":{const on=SFX.toggle();b.textContent=on?"🔊":"🔇";b.setAttribute("aria-label",on?"Couper le son":"Activer le son");b.title=on?"Couper le son":"Activer le son";if(on){SFX.flip(1)}break}
+    case"toggle-sound":{const on=SFX.toggle();vbMusicSync();b.textContent=on?"🔊":"🔇";b.setAttribute("aria-label",on?"Couper le son":"Activer le son");b.title=on?"Couper le son":"Activer le son";if(on){SFX.flip(1)}break}
     case"flip":{if(dragMoved){dragMoved=false;break}
       if(flipLock)break;flipLock=true;setTimeout(()=>{flipLock=false},320);
       const c=reveal[+b.dataset.i];if(!b.classList.contains("current"))centerCard(b);if(c.shown)break;flipOne(b,c);updateReveal();break}
@@ -5042,6 +5061,9 @@ function installApp(){
 themeBtn();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",themeBtn)}catch(e){}
 document.addEventListener("keydown",e=>{const t=e.target.closest&&e.target.closest(".tag-click,[role=button][data-act]");if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();t.click()}});
 document.addEventListener("input",e=>{
+  if(e.target.matches&&e.target.matches("[data-vbvol]")){ // volume de la musique de la VoltoBataille (1.3.18)
+    const v=(+e.target.value||0)/100;try{localStorage.setItem("dc-vb-music",String(v))}catch(err){}
+    const n=$("#vb-vol-n");if(n)n.textContent=Math.round(v*100)+" %";vbMusicSync();return}
   const sk=e.target.dataset&&e.target.dataset.search;
   if(sk){trdQ=e.target.value;clearTimeout(window.__srchT);window.__srchT=setTimeout(renderView,180);return}
   if(e.target.id==="ts-auto"){tradeAuto=e.target.checked;return}
@@ -5049,9 +5071,9 @@ document.addEventListener("input",e=>{
   if(e.target.dataset&&e.target.dataset.spsel){spSel[e.target.dataset.spsel]=+e.target.value;renderView();return} // boosters spéciaux (1.2.3)
   if(e.target.dataset&&e.target.dataset.pickSearch!==undefined){const q=norm2(e.target.value).trim();document.querySelectorAll("#picker .pick").forEach(p=>p.hidden=!!q&&!p.dataset.n.includes(q));return} // recherche dans « Proposer une carte »
   {const pr=e.target.dataset&&e.target.dataset.pref;if(pr){ // réglages son et vibrations
-    if(pr==="vol"){setPrefs({vol:+e.target.value/100});const lb=e.target.parentElement.querySelector("b");if(lb)lb.textContent=e.target.value+" %";clearTimeout(window.__volT);window.__volT=setTimeout(()=>SFX.flip(1),120)}
+    if(pr==="vol"){setPrefs({vol:+e.target.value/100});if(vbMusic)vbMusic.volume=Math.min(1,vbMusicVol()*prefs().vol);const lb=e.target.parentElement.querySelector("b");if(lb)lb.textContent=e.target.value+" %";clearTimeout(window.__volT);window.__volT=setTimeout(()=>SFX.flip(1),120)}
     else if(pr==="vib"){setPrefs({vib:e.target.checked});if(e.target.checked)vib(40)}
-    else if(pr==="snd"){if(e.target.checked===SFX.muted())SFX.toggle();renderHeader();renderView()}
+    else if(pr==="snd"){if(e.target.checked===SFX.muted())SFX.toggle();renderHeader();renderView();vbMusicSync()}
     return}}
   if(e.target.dataset&&e.target.dataset.avaq!==undefined){avaQ=e.target.value;clearTimeout(window.__avaT);window.__avaT=setTimeout(renderView,150);return}
   if(e.target.dataset&&e.target.dataset.evoq!==undefined){evoQ=e.target.value;clearTimeout(window.__evoT);window.__evoT=setTimeout(renderView,150);return} // recherche des évolutions (1.2.0)
@@ -5255,6 +5277,7 @@ function pollShared(){
   if(view==="ranking"||Date.now()-playersTs>300000)loadPlayers();
 }
 document.addEventListener("visibilitychange",()=>{
+  vbMusicSync(); // onglet caché : musique en pause, reprise au retour
   if(!SB||!ME)return;
   if(document.hidden){hiddenAt=Date.now();return}
   if(hiddenAt&&Date.now()-hiddenAt>30000){loadMe();loadMarket(Date.now()-hiddenAt>300000).then(loadOwnerColls);if(Date.now()-playersTs>60000)loadPlayers()}
