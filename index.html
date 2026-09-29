@@ -1439,7 +1439,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.2";
+const APP_VERSION="1.4.3";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -5230,6 +5230,12 @@ async function loadMarket(full,touched){
       if(changed){MARKET=m;marketChanged()}
       return;
     } // fonction absente du serveur : lecture d'avant
+  }
+  if(full&&!marketReady){ // 1.4.3 : premier chargement, tout d'un coup par paquets de 1 000 (3 requêtes au lieu de la liste puis 28 paquets de 100)
+    const {data:all,error:e0}=await selectAll(()=>SB.from("docs").select("path,updated_at,data").eq("coll","market").order("path"));
+    if(!e0){const m={};MARKET_TS={};for(const r of all){const id=r.path.slice(7);m[id]=r.data;MARKET_TS[id]=r.updated_at}
+      marketFullTs=Date.now();let mx=0;all.forEach(r=>{const t=Date.parse(r.updated_at);if(t>mx)mx=t});
+      marketSince=new Date((mx||Date.now())-120000).toISOString();MARKET=m;marketChanged();return}
   }
   const {data,error}=await selectAll(()=>{let q=SB.from("docs").select("path,updated_at").eq("coll","market");if(!full)q=q.gte("updated_at",since);return q.order("path")});
   if(error){console.warn(error);return}

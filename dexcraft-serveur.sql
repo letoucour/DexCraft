@@ -120,15 +120,18 @@ declare
   now_ms bigint := public.dc__now(); tk jsonb; id int; t int;
   gencnt int[] := array_fill(0, array[9]); typecnt int[] := array_fill(0, array[18]);
   pgen text := cfg ->> 'pgen'; ptype text := cfg ->> 'ptype'; def jsonb; ok boolean; shown jsonb := '[]';
-  vis jsonb; ot jsonb; o2 jsonb; q record;
+  vis jsonb; ot jsonb; o2 jsonb; q record; rarm jsonb;
 begin
   d := public.dc__norm(d) - 'listings' - 'escrow';
-  for r in select key, value from jsonb_each(d -> 'coll') loop
-    if jsonb_typeof(r.value) <> 'number' then continue; end if;
-    n := floor((r.value #>> '{}')::numeric)::int;
-    rr := public.dc__rar(cfg, r.key::int);
-    if n <= 0 or rr is null then continue; end if;
-    newcoll := newcoll || jsonb_build_object(r.key, n);
+  -- 1.4.3 (serveur bloqué après un push) : collection reconstruite en une seule requête, et table des raretés lue une
+  -- seule fois ; avant, chaque carte recopiait la table des raretés (dc__rar) et toute la collection déjà reconstruite
+  -- (newcoll || …) : 250 ms par profil complet, à chaque action du jeu
+  rarm := cfg -> 'rar';
+  select coalesce(jsonb_object_agg(key, cnt), '{}') into newcoll from (
+    select key, floor((value #>> '{}')::numeric)::int cnt from jsonb_each(d -> 'coll') where jsonb_typeof(value) = 'number') s
+    where cnt > 0 and rarm ? key;
+  for r in select key, (value #>> '{}')::int v from jsonb_each(newcoll) loop
+    n := r.v; rr := (rarm ->> r.key)::int;
     byr[rr + 1] := byr[rr + 1] + 1; tot := tot + n;
     id := r.key::int;
     if id <= 1025 then
