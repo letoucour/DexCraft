@@ -43,9 +43,11 @@ create or replace function public.dc__ar_evo(cfg jsonb, id int) returns int[] la
   select case when id = 550 then '{902}'::int[] else
     (select coalesce(array_agg(x::int), '{}') from jsonb_array_elements_text(coalesce(cfg -> 'evo' -> id::text, '[]')) x where x::int <= 1025) end $$;
 create or replace function public.dc__ar_max(r int) returns int language sql immutable as $$ select least(6, 3 + (r - 1) / 2) $$;
--- rareté tirée selon la manche (bandes de 2 manches), parmi les raretés qui ont au moins un Pokémon (avail : 5 booléens)
+-- rareté tirée selon la manche, parmi les raretés qui ont au moins un Pokémon (avail : 5 booléens) ; une ligne de odds par
+-- manche depuis la 1.4.7 (table de Theo), par bandes de 2 manches avant (5 lignes) ; au-delà de la dernière ligne, la dernière
 create or replace function public.dc__ar_pick_rar(cfg jsonb, r int, avail boolean[]) returns int language plpgsql volatile as $$
-declare o jsonb := cfg -> 'arena' -> 'odds' -> least(4, (r - 1) / 2); w int[] := '{}'; s int := 0; x int; k int; rs int[] := array[0, 1, 2, 3, 5];
+declare n int := jsonb_array_length(cfg -> 'arena' -> 'odds');
+  o jsonb := cfg -> 'arena' -> 'odds' -> least(n - 1, case when n > 5 then r - 1 else (r - 1) / 2 end); w int[] := '{}'; s int := 0; x int; k int; rs int[] := array[0, 1, 2, 3, 5];
 begin
   for k in 1 .. 5 loop w := w || case when avail[k] then (o ->> (k - 1))::int else 0 end; s := s + w[k]; end loop;
   if s = 0 then return -1; end if;
@@ -104,7 +106,7 @@ create or replace function public.dc__ar_shop(cfg jsonb, st jsonb, coll jsonb) r
 -- 1.3.1 : réserve lue une seule fois dans des tableaux (rareté et poids de chaque Pokémon possédé). Avant, la table des
 -- raretés de la configuration était recopiée à chaque Pokémon examiné : plusieurs secondes par boutique sur Supabase.
 declare a jsonb := cfg -> 'arena'; rarm jsonb := cfg -> 'rar'; pt text := cfg ->> 'ptype'; tc int[] := array_fill(0, array[18]);
-  ids int[]; rs int[]; ws numeric[]; mine int[]; cnt int[] := array[0, 0, 0, 0, 0, 0]; av boolean[]; shop jsonb := '[]';
+  ids int[]; rs int[]; ws numeric[]; mine int[]; ms int[]; cnt int[] := array[0, 0, 0, 0, 0, 0]; av boolean[]; shop jsonb := '[]';
   k int; j int; r int; t int; u jsonb; wt numeric; tot numeric; x numeric; pick int; slot numeric := (a ->> 'slot')::numeric;
 begin
   for u in select * from public.dc__ar_units(st) loop
@@ -119,10 +121,14 @@ begin
           from jsonb_each(coll) where key ~ '^\d+$' and key::int between 1 and 1025 and value::text::int > 0) q;
   for j in 1 .. coalesce(array_length(ids, 1), 0) loop cnt[rs[j] + 1] := cnt[rs[j] + 1] + 1; end loop;   -- nombre par rareté (0 à 5)
   av := array[cnt[1] > 0, cnt[2] > 0, cnt[3] > 0, cnt[4] > 0, cnt[6] > 0];
-  select coalesce(array_agg((v ->> 'i')::int), '{}') into mine from public.dc__ar_units(st) v where (v ->> 's')::int = 0 and (v ->> 'i')::int = any(ids);
+  -- 1.4.7 (demande de Theo) : les Pokémon à une étoile sont aussi reproposés, à taux réduit (slotStar), pour qu'on puisse
+  -- viser les deux étoiles ; avant, un Pokémon passé à une étoile ne revenait plus qu'au hasard de toute la réserve
+  select coalesce(array_agg((v ->> 'i')::int), '{}'), coalesce(array_agg((v ->> 's')::int), '{}') into mine, ms
+    from public.dc__ar_units(st) v where (v ->> 's')::int <= 1 and (v ->> 'i')::int = any(ids);
   for k in 1 .. 5 loop
     if coalesce(array_length(mine, 1), 0) > 0 and random() < slot then
-      shop := shop || to_jsonb(mine[1 + floor(random() * array_length(mine, 1))::int]); continue;
+      j := 1 + floor(random() * array_length(mine, 1))::int;
+      if ms[j] = 0 or random() < coalesce((a ->> 'slotStar')::numeric, .5) then shop := shop || to_jsonb(mine[j]); continue; end if;
     end if;
     r := public.dc__ar_pick_rar(cfg, (st ->> 'round')::int, av);
     if r < 0 then shop := shop || 'null'::jsonb; continue; end if;
@@ -145,11 +151,25 @@ declare a jsonb := cfg -> 'arena'; rd int := (st ->> 'round')::int; n int := pub
   -- 1.4.0 (demande de Theo) : rareté la plus haute de l'adversaire selon la manche (évolutions comprises) :
   -- manches 1 et 2 Peu commune, 3 Rare, 4 à 6 Épique, ensuite tout
   maxr int := case when rd <= 2 then 1 when rd = 3 then 2 when rd <= 6 then 3 else 5 end; pw numeric; c int;
+  -- 1.4.7 (demande de Theo) : équipe à thème : le type du premier Pokémon est le thème (60 % des suivants), un second type
+  -- vient du premier Pokémon hors thème (25 %), le reste au hasard (les exceptions)
+  pt text := cfg ->> 'ptype'; t1 int; t2 int; want int; rx numeric; tys int[];
 begin
   select array_agg(jsonb_array_length(coalesce(cfg -> 'arBase' -> rr::text, '[]')) > 0 and rr <= maxr order by ord) into av from unnest(array[0, 1, 2, 3, 5]) with ordinality x(rr, ord);
   for k in 1 .. n loop
     r := public.dc__ar_pick_rar(cfg, rd + 1, av); if r < 0 then r := 0; end if;
-    id := (cfg -> 'arBase' -> r::text ->> floor(random() * jsonb_array_length(cfg -> 'arBase' -> r::text))::int)::int;
+    rx := random(); want := case when t1 is null then null when rx < .6 then t1 when rx < .85 then t2 else null end; id := null;
+    if want is not null then   -- de la rareté tirée si possible, sinon d'une rareté plus basse
+      select v::int into id from unnest(array[0, 1, 2, 3, 5]) rr, jsonb_array_elements_text(coalesce(cfg -> 'arBase' -> rr::text, '[]')) v
+        where rr <= r and (ascii(substr(pt, 2 * v::int - 1, 1)) - 96 = want or ascii(substr(pt, 2 * v::int, 1)) - 96 = want)
+        order by rr = r desc, rr desc, random() limit 1;
+    end if;
+    if id is null then
+      id := (cfg -> 'arBase' -> r::text ->> floor(random() * jsonb_array_length(cfg -> 'arBase' -> r::text))::int)::int;
+      tys := public.dc__ar_types(pt, id);
+      if t1 is null then t1 := tys[1 + floor(random() * array_length(tys, 1))::int];
+      elsif t2 is null and not (t1 = any(tys)) then t2 := tys[1 + floor(random() * array_length(tys, 1))::int]; end if;
+    end if;
     for e in 1 .. 2 loop
       if random() < least(.8, (a ->> 'aiEvo')::numeric * rd) then
         evo := public.dc__ar_evo(cfg, id);

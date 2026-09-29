@@ -840,6 +840,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
   .ar-field .ar-side{grid-template-columns:repeat(3,var(--w))}
   .ar-field .ar-slot{aspect-ratio:auto;height:var(--s)}
   .ar-syncol{justify-self:end;display:flex;flex-direction:column;gap:6px;padding-top:6px}
+  .ar-scgrid{display:grid;grid-template-columns:repeat(var(--c,1),auto);gap:6px} /* 1.4.7 : plusieurs colonnes au-delà de 7 types */
   .ar-sch{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);text-align:right;margin-bottom:2px}
   .ar-syncol.ar-mirror{justify-self:start}.ar-mirror .ar-sch{text-align:left}
   .ar-mirror .ar-scrow{flex-direction:row-reverse;justify-content:flex-end} /* adversaire : compteur puis bonus, en miroir */
@@ -1443,7 +1444,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.6";
+const APP_VERSION="1.4.7";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3450,11 +3451,14 @@ function evolve(from,to){
 const VB_CAP=3000; // 2 000 avant la 1.3.0
 const VB_AFTER=10; // 1.3.14 : plafond atteint, une manche gagnée rapporte encore 10 crédits par niveau (80 au niveau 8), hors compteur du jour
 /* ---------- Arène (1.3.0) : règles, exportées dans la configuration (cfg.arena) et appliquées par le serveur (partie 5) ----------
-   odds : chances de rareté de la boutique (Commune, Peu commune, Rare, Épique, Légendaire) par bandes de 2 manches ;
-   slot : chance qu'une case repropose un Pokémon de l'équipe ; typeW : poids des types joués, en part de la réserve ;
+   odds : chances de rareté de la boutique (Commune, Peu commune, Rare, Épique, Légendaire), une ligne par manche depuis la 1.4.7
+   (poids, pas forcément sur 100 ; par bandes de 2 manches avant) ; slot : chance qu'une case repropose un Pokémon de l'équipe
+   (slotStar : chance gardée quand c'est un Pokémon à une étoile, 1.4.7) ; typeW : poids des types joués, en part de la réserve ;
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
 const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,afterCap:100,afterCapPerfect:150,winBase:60,winStep:20,startGold:6,incBase:6,
-  odds:[[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]],cost:{0:1,1:2,2:3,3:4,5:5},
+  // 1.4.7 (Arène v3.3, table de Theo) : avant, par bandes de 2 manches [[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]]
+  odds:[[70,20,10,0,0],[60,30,15,5,0],[50,30,20,9,1],[50,30,20,9,1],[20,30,30,15,5],[20,30,30,15,5],[15,25,30,20,10],[15,25,30,20,10],[10,20,25,30,15],[0,10,20,40,30]],
+  slotStar:.5,cost:{0:1,1:2,2:3,3:4,5:5},
   aiEvo:.07,aiPow0:.82,aiPowK:.042,slot:.2,typeW:1/75, // 1.4.2 : aiPow0 .83 → .82 (« très très légèrement » plus facile, demande de Theo)
   // 1.4.0 (Arène v3.0, demande de Theo) : ordinateur un peu plus faible en manches 1 et 2 (aiEarly), plus fort à partir de la 5e (aiLate par manche) et
   // surtout à la dernière (aiLast) ; intérêts 10 or = +1, 20 = +3, 30 et plus = +5 (interest) ; 1 or de moins par manche à partir de la 5e (incLate) ;
@@ -4685,7 +4689,7 @@ function arSyn(units){const c={};for(const id of new Set(units.map(u=>u.i)))for(
 /* Synergies (1.3.14, demande de Theo) : juste un compteur par type des Pokémon du terrain (différents), à gauche du champ de bataille */
 function arSynCount(units,title){ // 1.3.19 : les deux camps (« Vous : » à gauche du terrain, « Adversaire : » en miroir à droite)
   const on=arSyn(units.filter(Boolean)),ts=Object.keys(on).map(Number).sort((a,b)=>on[b]-on[a]);
-  return `<b class="ar-sch">${title}</b>`+ts.map(t=>{const n=on[t];return `<div class="ar-scrow" style="--t:${TYPES[t][1]}"><em class="${n>=2?"on":""}">${n>=6?"+45 %":n>=4?"+30 %":"+15 %"}</em><div class="ar-sc${n>=4?" max":n>=2?" on":""}" title="${TYPES[t][0]} : ${n} sur le terrain"><span>${TYPES[t][0]}</span><i>${[1,2,3,4,5,6].map(k=>`<b class="${k<=n?"f":""}"></b>`).join("")}</i></div></div>`}).join(""); // 6 : +45 % depuis la 1.3.15 ; bonus à gauche (plan de Theo) : gris tant qu'il n'est pas actif
+  return `<b class="ar-sch">${title}</b><div class="ar-scgrid" style="--c:${ts.length>14?3:ts.length>7?2:1}">`+ts.map(t=>{const n=on[t];return `<div class="ar-scrow" style="--t:${TYPES[t][1]}"><em class="${n>=2?"on":""}">${n>=6?"+45 %":n>=4?"+30 %":"+15 %"}</em><div class="ar-sc${n>=4?" max":n>=2?" on":""}" title="${TYPES[t][0]} : ${n} sur le terrain"><span>${TYPES[t][0]}</span><i>${[1,2,3,4,5,6].map(k=>`<b class="${k<=n?"f":""}"></b>`).join("")}</i></div></div>`}).join("")+`</div>`; // 6 : +45 % depuis la 1.3.15 ; bonus à gauche (plan de Theo) : gris tant qu'il n'est pas actif
 }
 /* À droite du terrain (1.3.14, choix de Theo) : avantages de types contre cet adversaire, puis la progression des manches.
    Multiplicateur comme le serveur (dc__ar_mult) : meilleur type de l'attaquant, cumulé sur les types du défenseur. */
@@ -4735,7 +4739,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.2</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.3</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -4820,10 +4824,10 @@ async function arFight(){
 }
 function arRules(){
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Règles de l’Arène</h2><ul class="ar-rules">
-    <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort : Pokémon Communs et Peu communs en manches 1 et 2, Rares à partir de la 3<sup>e</sup>, Épiques à partir de la 4<sup>e</sup>, Légendaires à partir de la 7<sup>e</sup>. ${AR.lives} vies : une manche perdue coûte une vie et se rejoue, face à un nouvel adversaire, avec l’or d’une manche et ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
+    <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort : Pokémon Communs et Peu communs en manches 1 et 2, Rares à partir de la 3<sup>e</sup>, Épiques à partir de la 4<sup>e</sup>, Légendaires à partir de la 7<sup>e</sup>. Chaque équipe adverse suit un thème : surtout un type, un peu d’un second, et parfois une exception. ${AR.lives} vies : une manche perdue coûte une vie et se rejoue, face à un nouvel adversaire, avec l’or d’une manche et ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
     <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche. Ils restent acquis, même en cas de défaite. Réussir l’Arène (gagner la ${AR.rounds}<sup>e</sup> et dernière manche) rapporte ${AR.finish} de bonus. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque Arène réussie rapporte encore ${AR.afterCap} crédits, ${AR.afterCapPerfect} sans avoir perdu de vie.</li>
     <li>Or : ${AR.startGold} au départ, puis ${AR.incBase} en manche 1 et un peu plus à chaque manche (1 or de moins par manche à partir de la 5<sup>e</sup>), +1 par victoire. Intérêts en fin de manche : 10 or gardés = +${AR.interest[1]}, 20 = +${AR.interest[2]}, 30 et plus = +${AR.interest[3]}.</li>
-    <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon que vous avez déjà revient plus souvent, et les Pokémon des types de votre équipe aussi. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante, puis se déverrouille d’elle-même.</li>
+    <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon que vous avez déjà revient plus souvent (un peu moins une fois à une étoile), et les Pokémon des types de votre équipe aussi. Plus les manches avancent, plus les raretés hautes sortent. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante, puis se déverrouille d’elle-même.</li>
     <li>3 exemplaires du même Pokémon : il évolue (ou gagne une étoile ⭐ en fin de lignée). 3 Pokémon à une étoile : deux étoiles ⭐⭐ (statistiques ×${AR.starK[2]} au lieu de ×${AR.starK[1]}).</li>
     <li>Terrain : 3 Pokémon en manche 1, un de plus toutes les 2 manches (6 au plus). Les places libres sont remplies d’office au combat avec les plus forts du banc. Les Pokémon de devant encaissent en premier.</li>
     <li>Synergies : 2 Pokémon différents d’un même type = +15 % PV et Attaque pour ce type, 4 = +30 %, 6 = +45 %. Faiblesses et résistances des types comptent.</li>
