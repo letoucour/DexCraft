@@ -1445,7 +1445,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.9";
+const APP_VERSION="1.4.10";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2016,21 +2016,28 @@ function keptToast(n){if(n)toast(`${n} carte${n>1?"s":""} favorite${n>1?"s":""} 
 /* proposer à l'échange une carte favorite ou recherchée demande confirmation (1.4.4, demande de Theo) */
 const keepWhy=id=>[S.fav&&S.fav[id]?"★ favori":"",wished(id)?"🔔 recherchée":""].filter(Boolean).join(", ");
 const keepList=ids=>ids.filter(keepCard).map(id=>`${esc(nm(id))} (${keepWhy(id)})`).join(", ");
+/* 1.4.10 (demande de Theo) : aussi quand il manque encore une évolution de ce Pokémon (on pourrait en avoir besoin pour la faire) */
+const evoLack=id=>evoTargets(id).filter(t=>!has(S,t));
+const evoLackTxt=id=>{const l=evoLack(id);return l.length?`il vous manque encore ${l.length>1?`${l.length} de ses évolutions`:"son évolution"}`:""};
 function keepConfirm(id,go,back){
-  if(!keepCard(id))return go();
+  const keep=keepCard(id),lack=evoLack(id).length;
+  if(!keep&&!lack)return go();
   keepConfirm.go=go;keepConfirm.back=back||null;
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <h2>Échanger ${esc(nm(id))} ?</h2>
-    <p>Cette carte est ${S.fav&&S.fav[id]&&wished(id)?"dans vos favoris et parmi vos cartes recherchées 🔔":S.fav&&S.fav[id]?"dans vos favoris ★":"parmi vos cartes recherchées 🔔"}. Êtes-vous sûr de vouloir la proposer à l’échange ?</p>
+    ${keep?`<p>Cette carte est ${S.fav&&S.fav[id]&&wished(id)?"dans vos favoris et parmi vos cartes recherchées 🔔":S.fav&&S.fav[id]?"dans vos favoris ★":"parmi vos cartes recherchées 🔔"}.</p>`:""}
+    ${lack?`<p>🧬 Attention, ${evoLackTxt(id)} : gardez des exemplaires ${/^[aeiouyhéèêâîôû]/i.test(nm(id))?"d’":"de "}${esc(nm(id))} pour ${lack>1?"les":"la"} faire vous-même.</p>`:""}
+    <p>Êtes-vous sûr de vouloir la proposer à l’échange ?</p>
     <div class="actions"><button class="btn primary" data-act="keep-go">Oui, la proposer</button><button class="btn" data-act="keep-back">Annuler</button></div></div>`,true);
 }
 function tradeMany(ids,mode,auto,wants){
   if(tradeManyBusy){toast("Publication déjà en cours, patientez.");return}
   if(!ids.length)return;
-  const names=ids.map(id=>esc(nm(id))).join(", "),kept=ids.filter(keepCard).length;
+  const names=ids.map(id=>esc(nm(id))).join(", "),kept=ids.filter(keepCard).length,lackN=ids.filter(x=>evoLack(x).length).length;
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <h2>Proposer ${ids.length} carte${ids.length>1?"s":""} à l’échange ?</h2><p class="muted">${names}</p>
     ${kept?`<p class="keep-warn">⚠️ ${kept>1?`${kept} de ces cartes sont favorites ou recherchées`:"Une de ces cartes est favorite ou recherchée"} : ${keepList(ids)}. Êtes-vous sûr de vouloir ${kept>1?"les":"la"} proposer ?</p>`:""}
+    ${lackN?`<p class="keep-warn">🧬 ${lackN>1?`${lackN} de ces Pokémon ont`:"Un de ces Pokémon a"} encore une évolution qui vous manque : ${ids.filter(x=>evoLack(x).length).slice(0,20).map(x=>esc(nm(x))).join(", ")}${lackN>20?"…":""}. Vous pourriez en avoir besoin pour la faire vous-même.</p>`:""}
     <p>Demande : ${mode==="list"?`${wants.length>1?`une des ${wants.length} cartes choisies`:"la carte choisie"}, de même rareté (une carte sans carte choisie de sa rareté n’est pas publiée)`:mode==="missing"?"n’importe quelle carte de même rareté qui vous manque":"n’importe quelle carte de même rareté"}.${auto?" <b>⚡ Acceptation automatique</b> : la première proposition valide sera acceptée d’office.":""} Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
     <div class="actions"><button class="btn primary" data-act="tsel-confirm">Proposer</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
   tradeMany.pending={ids,mode,auto:!!auto,wants:mode==="list"?wants:null};
