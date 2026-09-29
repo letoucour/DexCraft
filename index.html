@@ -510,6 +510,7 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .ghost-card .gc-rar{text-align:center;font-weight:700;font-size:.85rem}
 .wish-box{margin:14px 0 6px;padding:12px 14px 14px;border:1px solid var(--gold);border-radius:16px;background:color-mix(in srgb,var(--gold) 7%,var(--surface))}
 .wish-box h2{margin:0 0 2px;font-size:1.15rem}.wish-box .muted{margin:0 0 10px;font-size:.9rem}
+.mini .sel.tsel{background:var(--gold);color:var(--gold-ink)} /* 1.4.15 : exemplaires mis à l’échange */
 .mini .sel{position:absolute;top:6px;right:6px;background:var(--danger);color:#fff;font-weight:700;font-size:.72rem;border-radius:999px;padding:0 7px}
 .mini.picked{outline:3px solid var(--danger);outline-offset:-3px}
 .mini.choice{outline:3px solid var(--gold);outline-offset:-3px}
@@ -1450,7 +1451,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.14";
+const APP_VERSION="1.4.15";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1919,7 +1920,8 @@ function fmtLeft(ms){if(ms<=0)return"terminé";const s=Math.ceil(ms/1000),h=Math
 let ME=null,mode="loading";
 let S=null, MARKET={}, marketReady=false, PLAYERS={};
 let tradeAuto=false; // case « Accepter automatiquement » de la mise à l'échange depuis la collection
-let view="booster", reveal=null, discardSel=null, tradeSel=null; // tradeSel : cartes choisies dans la collection pour être mises à l'échange
+let view="booster", reveal=null, discardSel=null, tradeSel=null; // tradeSel : cartes choisies dans la collection pour être mises à l'échange (Map n° → exemplaires depuis la 1.4.15)
+const tselN=()=>tradeSel?[...tradeSel.values()].reduce((a,b)=>a+b,0):0; // nombre d’annonces à publier
 let filt={q:"",own:"all",r:"all",t:"all",g:"all",sort:"num"};
 
 /* ---------- state ---------- */
@@ -2038,11 +2040,12 @@ function keepConfirm(id,go,back){
 function tradeMany(ids,mode,auto,wants){
   if(tradeManyBusy){toast("Publication déjà en cours, patientez.");return}
   if(!ids.length)return;
-  const names=ids.map(id=>esc(nm(id))).join(", "),kept=ids.filter(keepCard).length,lackN=ids.filter(x=>evoLack(x).length).length;
+  const grp={};ids.forEach(x=>grp[x]=(grp[x]||0)+1);const uids=Object.keys(grp).map(Number);
+  const names=uids.map(id=>esc(nm(id))+(grp[id]>1?` ×${grp[id]}`:"")).join(", "),kept=uids.filter(keepCard).length,lackN=uids.filter(x=>evoLack(x).length).length;
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <h2>Proposer ${ids.length} carte${ids.length>1?"s":""} à l’échange ?</h2><p class="muted">${names}</p>
-    ${kept?`<p class="keep-warn">⚠️ ${kept>1?`${kept} de ces cartes sont favorites ou recherchées`:"Une de ces cartes est favorite ou recherchée"} : ${keepList(ids)}. Êtes-vous sûr de vouloir ${kept>1?"les":"la"} proposer ?</p>`:""}
-    ${lackN?`<p class="keep-warn">🧬 ${lackN>1?`${lackN} de ces Pokémon ont`:"Un de ces Pokémon a"} encore une évolution qui vous manque : ${ids.filter(x=>evoLack(x).length).slice(0,20).map(x=>esc(nm(x))).join(", ")}${lackN>20?"…":""}. Vous pourriez en avoir besoin pour la faire vous-même.</p>`:""}
+    ${kept?`<p class="keep-warn">⚠️ ${kept>1?`${kept} de ces cartes sont favorites ou recherchées`:"Une de ces cartes est favorite ou recherchée"} : ${keepList(uids)}. Êtes-vous sûr de vouloir ${kept>1?"les":"la"} proposer ?</p>`:""}
+    ${lackN?`<p class="keep-warn">🧬 ${lackN>1?`${lackN} de ces Pokémon ont`:"Un de ces Pokémon a"} encore une évolution qui vous manque : ${uids.filter(x=>evoLack(x).length).slice(0,20).map(x=>esc(nm(x))).join(", ")}${lackN>20?"…":""}. Vous pourriez en avoir besoin pour la faire vous-même.</p>`:""}
     <p>Demande : ${mode==="list"?`${wants.length>1?`une des ${wants.length} cartes choisies`:"la carte choisie"}, de même rareté (une carte sans carte choisie de sa rareté n’est pas publiée)`:mode==="missing"?"n’importe quelle carte de même rareté qui vous manque":mode==="missw"?"n’importe quelle carte de même rareté qui vous manque ou que vous recherchez 🔔":"n’importe quelle carte de même rareté"}.${auto?" <b>⚡ Acceptation automatique</b> : la première proposition valide sera acceptée d’office.":""} Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
     <div class="actions"><button class="btn primary" data-act="tsel-confirm">Proposer</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
   tradeMany.pending={ids,mode,auto:!!auto,wants:mode==="list"?wants:null};
@@ -2207,12 +2210,12 @@ function cardHTML(id,lg,sh){ // sh : version shiny (1.1.0)
     :`<div class="stats">${st.map((v,i)=>`<span>${STATN[i]}</span><i><b style="width:${Math.min(100,v/1.8)}%"></b></i><em>${v}</em>`).join("")}</div>`}
   <div class="card-foot"><span>${ex&&(ex.foot||ex.lines)?esc(ex.foot||""):ex&&ex.kind==="gmax"?`${(h/10).toLocaleString("fr-FR")} m et plus`:ex&&!ex.kind?"":`${(h/10).toLocaleString("fr-FR")} m, ${(w/10).toLocaleString("fr-FR")} kg`}</span><span>${rarName(id)}</span></div>
 </div>`}
-function miniHTML(id,{count=0,missing=false,sel=0,choice=false,act="detail",img=true,sh=false,shOwn=false}={}){ // sh : image shiny ; shOwn : shiny débloqué (badge ✨)
+function miniHTML(id,{count=0,missing=false,sel=0,tsel=0,choice=false,act="detail",img=true,sh=false,shOwn=false}={}){ // sh : image shiny ; shOwn : shiny débloqué (badge ✨)
   const fav=S&&S.fav&&S.fav[id];
   const [n,,,ty,,,,r,ex]=D(id);
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
   return `<button class="mini r${r}${sh&&!missing?" shiny":""}${missing?" missing":""}${sel?" picked":""}${choice?" choice":""}" data-act="${act}" data-id="${id}" style="--c1:${c1};--c2:${c2}" aria-label="${missing?"Carte "+id+" manquante":esc(n)}">
-  <div class="strip"><b>${ex&&ex.base?ex.base:isSpec(id)?"✦":id}</b>${img&&imgFor(id,sh&&!missing)?`<span class="mimg"><img src="${esc(imgFor(id,sh&&!missing))}" alt="" loading="lazy" decoding="async" onerror="this.remove()"></span>`:""}</div>${count>1?`<span class="count">×${count}</span>`:""}${shOwn?`<span class="sh-badge" aria-label="Shiny obtenu">✨</span>`:""}${fav?`<span class="fav-badge" aria-label="Favori">★</span>`:""}${wished(id)?`<span class="wish-badge${fav?" wb2":""}" aria-label="Recherchée">🔔</span>`:""}${sel?`<span class="sel">−${sel}</span>`:""}
+  <div class="strip"><b>${ex&&ex.base?ex.base:isSpec(id)?"✦":id}</b>${img&&imgFor(id,sh&&!missing)?`<span class="mimg"><img src="${esc(imgFor(id,sh&&!missing))}" alt="" loading="lazy" decoding="async" onerror="this.remove()"></span>`:""}</div>${count>1?`<span class="count">×${count}</span>`:""}${shOwn?`<span class="sh-badge" aria-label="Shiny obtenu">✨</span>`:""}${fav?`<span class="fav-badge" aria-label="Favori">★</span>`:""}${wished(id)?`<span class="wish-badge${fav?" wb2":""}" aria-label="Recherchée">🔔</span>`:""}${sel?`<span class="sel">−${sel}</span>`:""}${tsel>1?`<span class="sel tsel">×${tsel}</span>`:""}
   <div class="mi"><div class="mn">${missing?"???":esc(n)}</div><div class="mm"><span>${r>=6?RAR[r]:ex&&ex.base?"№ "+pad(ex.base)+" "+(ex.kind?formTag(ex):"Méga"):"№ "+pad(id)}</span><span class="mg">${gems(r)}</span></div></div></button>`}
 function who(id){if(id===ME)return"vous";return nameOf(id)}
 function nameOf(id){const pl=id===ME?S:PLAYERS[id];return (pl&&pl.pseudo)||"Un dresseur"}
@@ -2497,7 +2500,7 @@ function savePlace(){try{sessionStorage.setItem("dc-place",JSON.stringify({view,
 function restorePlace(){
   try{const p=JSON.parse(sessionStorage.getItem("dc-place")||"null");if(!p||!VIEWS.includes(p.view))return 0;
     view=p.view;if(p.filt&&typeof p.filt==="object")filt=Object.assign({},filt,p.filt);
-    if(view==="collection"&&Array.isArray(p.tsel))tradeSel=new Set(p.tsel.map(Number).filter(id=>S&&S.coll[id]>0)); // cartes cochées pour l’échange
+    if(view==="collection"&&Array.isArray(p.tsel))tradeSel=new Map(p.tsel.map(x=>Array.isArray(x)?[+x[0],+x[1]]:[+x,1]).filter(([id,n])=>S&&S.coll[id]>0&&n>0).map(([id,n])=>[id,Math.min(n,S.coll[id])])); // cartes cochées pour l’échange
     return +p.y||0}catch(e){return 0}
 }
 let placeT=0;addEventListener("scroll",()=>{clearTimeout(placeT);placeT=setTimeout(savePlace,300)},{passive:true});
@@ -2826,7 +2829,7 @@ function filtered(){
    (« Un problème récurrent est survenu ») quand le clavier s'ouvrait sur la recherche. */
 const COLL_STEP=150;let collLimit=COLL_STEP,collSig="",collObs=null;
 const collSigNow=()=>JSON.stringify([filt.q,filt.own,filt.r,filt.t,filt.g,filt.sort]);
-const collTile=id=>{const c=S.coll[id]||0;return miniHTML(id,{count:c,missing:!c,sel:discardSel?discardSel[id]||0:0,choice:!!(tradeSel&&tradeSel.has(id)),act:discardSel?"pick":tradeSel?"tpick":"detail",sh:showShiny(id),shOwn:hasShiny(id)})};
+const collTile=id=>{const c=S.coll[id]||0;return miniHTML(id,{count:c,missing:!c,sel:discardSel?discardSel[id]||0:0,choice:!!(tradeSel&&tradeSel.has(id)),tsel:tradeSel?tradeSel.get(id)||0:0,act:discardSel?"pick":tradeSel?"tpick":"detail",sh:showShiny(id),shOwn:hasShiny(id)})};
 function collLimitFor(ids){ // nouveaux filtres : on repart du premier paquet
   const sig=collSigNow();
   if(sig!==collSig){collSig=sig;collLimit=COLL_STEP}
@@ -2878,14 +2881,14 @@ function vCollection(){
       ${favSkipped?`<p class="muted" style="margin:8px 0 0;font-size:.85rem">★ Vos favoris sont protégés : ${favSkipped} carte${favSkipped>1?"s":""} en double ${favSkipped>1?"sont exclues":"est exclue"} de la défausse. Retirez le Pokémon des favoris pour pouvoir le défausser.</p>`:""}
     </div>`})():""}
   ${tradeSel?`<div class="discard-help">
-      <p class="muted" style="margin:0 0 8px">Touchez les cartes à proposer à l’échange : une annonce par carte, un exemplaire chacune. Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
+      <p class="muted" style="margin:0 0 8px">Touchez les cartes à proposer à l’échange : une annonce par exemplaire, touchez plusieurs fois une carte pour en proposer plusieurs. Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
       <div class="actions"><button class="btn small" data-act="tsel-dups">Tous mes doubles</button><button class="btn small" data-act="tsel-shown">Sélectionner les cartes affichées</button><button class="btn small" data-act="tsel-clear">Tout désélectionner</button></div></div>`:""}
   ${ids.length?`<div class="grid" id="coll-grid">${ids.slice(0,collLimitFor(ids)).map(collTile).join("")}</div>${ids.length>collLimit?`<div id="coll-more" class="coll-more" aria-hidden="true"></div>`:""}`:`<div class="empty">Aucune carte ne correspond à ces filtres.</div>`}
-  ${tradeSel?`<div class="discard-bar trade-bar${tradeSel.size?"":" empty"}">
-    <div class="sum"><b>${tradeSel.size} carte${tradeSel.size>1?"s":""} sélectionnée${tradeSel.size>1?"s":""}</b><span>${tradeSel.size?"une annonce par carte":"touchez les cartes à proposer"}</span></div>
+  ${tradeSel?`<div class="discard-bar trade-bar${tselN()?"":" empty"}">
+    <div class="sum"><b>${tselN()} carte${tselN()>1?"s":""} sélectionnée${tselN()>1?"s":""}</b><span>${tselN()?"une annonce par exemplaire":"touchez une carte autant de fois que d’exemplaires à proposer"}</span></div>
     <label class="field tb-want">Demande<select id="ts-want" data-keep="ts-want"><option value="missing">N’importe quelle carte de même rareté qui me manque</option><option value="missw">N’importe quelle carte de même rareté qui me manque ou que je recherche 🔔</option><option value="any">N’importe quelle carte de même rareté</option><option value="wish">Une de mes cartes recherchées 🔔</option><option value="list">Plusieurs cartes précises…</option></select></label>
     <label class="pref tb-auto" title="La première proposition valide est acceptée d’office, sans que vous ayez à répondre"><input type="checkbox" id="ts-auto"${tradeAuto?" checked":""}> ⚡ Accepter automatiquement</label>
-    <button class="btn primary go" data-act="tsel-go" ${tradeSel.size?"":"disabled"}>Proposer ${tradeSel.size||""} annonce${tradeSel.size>1?"s":""}</button></div>`:""}
+    <button class="btn primary go" data-act="tsel-go" ${tselN()?"":"disabled"}>Proposer ${tselN()||""} annonce${tselN()>1?"s":""}</button></div>`:""}
   ${discardSel?`<div class="discard-bar${selN?"":" empty"}">
     <div class="sum"><b>${selN} carte${selN>1?"s":""} sélectionnée${selN>1?"s":""}</b><span>${selN?`vaut ${cr(selValue(discardSel))}`:"touchez une carte ou une rareté"}</span></div>
     <button class="btn small" data-act="sel-clear" ${selN?"":"disabled"}>Vider</button>
@@ -5085,14 +5088,15 @@ document.addEventListener("click",e=>{
     case"my-bulk":myBulk(b.dataset.a);break;
     case"my-bulk-go":if(myBulk.go){const g=myBulk.go;myBulk.go=null;g()}break;
     case"discard-mode":discardSel={};tradeSel=null;filt.own="own";renderView();break;
-    case"trade-mode":tradeSel=new Set();discardSel=null;filt.own="own";renderView();break;
+    case"trade-mode":tradeSel=new Map();discardSel=null;filt.own="own";renderView();break;
     case"trade-cancel":tradeSel=null;renderView();break;
-    case"tsel-clear":tradeSel=new Set();renderView();break;
-    case"tsel-dups":{const ids=Object.keys(S.coll).filter(k=>S.coll[k]>1).map(Number),ok=ids.filter(x=>!keepCard(x));tradeSel=new Set(ok);
+    case"tsel-clear":tradeSel=new Map();renderView();break;
+    case"tsel-dups":{const ids=Object.keys(S.coll).filter(k=>S.coll[k]>1).map(Number),ok=ids.filter(x=>!keepCard(x));tradeSel=new Map(ok.map(x=>[x,1]));
       if(!ids.length)toast("Vous n’avez aucun double pour l’instant.");else keptToast(ids.length-ok.length);renderView();break}
-    case"tsel-shown":{const all=filtered().filter(x=>(S.coll[x]||0)>0),ids=all.filter(x=>!keepCard(x));ids.forEach(x=>tradeSel.add(x));if(!all.length)toast("Aucune carte de votre collection n’est affichée.");else keptToast(all.length-ids.length);renderView();break} // cartes possédées de la liste filtrée, même celles pas encore affichées plus bas (1.1.12)
-    case"tpick":{if(!(S.coll[id]>0))break;tradeSel.has(id)?tradeSel.delete(id):tradeSel.add(id);const y=window.scrollY;renderView();window.scrollTo(0,y);break}
-    case"tsel-go":{const ids=[...tradeSel],v=$("#ts-want").value,au=$("#ts-auto").checked;
+    case"tsel-shown":{const all=filtered().filter(x=>(S.coll[x]||0)>0),ids=all.filter(x=>!keepCard(x));ids.forEach(x=>{if(!tradeSel.has(x))tradeSel.set(x,1)});if(!all.length)toast("Aucune carte de votre collection n’est affichée.");else keptToast(all.length-ids.length);renderView();break} // cartes possédées de la liste filtrée, même celles pas encore affichées plus bas (1.1.12)
+    case"tpick":{const c=S.coll[id]||0;if(!c)break;const nx=(tradeSel.get(id)||0)>=c?0:(tradeSel.get(id)||0)+1;if(nx)tradeSel.set(id,nx);else tradeSel.delete(id); // 1.4.15 : un toucher = un exemplaire de plus, comme la défausse (demande de Theo)
+  const y=window.scrollY;renderView();window.scrollTo(0,y);break}
+    case"tsel-go":{const ids=[...tradeSel].flatMap(([x,n])=>Array(n).fill(x)),v=$("#ts-want").value,au=$("#ts-auto").checked;
       if(v==="list")wantPickOpen(ids.map(rar),"Chaque annonce n’acceptera que les cartes choisies de sa rareté.",ws=>tradeMany(ids,"list",au,ws));
       else if(v==="wish"){ // 1.4.0 : chaque annonce ne demande que les cartes recherchées (🔔) de sa rareté ; sans aucune, elle n’est pas publiée
         const ws=Object.keys(S.wish||{}).map(Number).filter(x=>DEX_ORDER.includes(x));

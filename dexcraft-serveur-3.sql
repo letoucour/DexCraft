@@ -236,7 +236,9 @@ begin
   if coalesce(array_length(p_cards, 1), 0) = 0 then raise exception 'Aucune carte choisie.'; end if;
   if array_length(p_cards, 1) > 500 then raise exception 'Trop de cartes d’un coup : 500 au maximum.'; end if;
   if room <= 0 then raise exception 'Vous avez déjà % annonces d’échange : c’est le maximum. Retirez-en avant d’en publier d’autres.', public.dc__listing_cap(); end if;
-  for c in select distinct x from unnest(p_cards) x where x is not null loop
+  -- 1.4.15 (demande de Theo) : une même carte peut revenir plusieurs fois (une annonce par exemplaire) ; au-delà des exemplaires
+  -- possédés, les suivantes sont ignorées (skipped), car dc__ot_take retire un exemplaire à chaque annonce
+  for c in select x from unnest(p_cards) with ordinality u(x, o) where x is not null order by o loop
     if public.dc__rar(cfg, c) is null or public.dc__count(d, c) < 1 then skipped := skipped || c; continue; end if;
     if n >= room then capped := capped + 1; continue; end if;  -- plafond d'annonces atteint
     wl := null; w := null;   -- liste de cartes demandées (1.0.3) : celles de la même rareté ; aucune → carte non publiée
