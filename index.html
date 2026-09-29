@@ -744,6 +744,9 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ar-spd button{font:inherit;font-weight:700;border:0;background:none;color:var(--ink-soft);border-radius:7px;padding:3px 7px;cursor:pointer}
 .ar-spd button[aria-pressed="true"]{background:var(--gold);color:var(--gold-ink)}
 .ar-small{font-size:.76rem;margin:4px 0 8px}
+.ar-music{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-size:.85rem} /* musique de l'Arène (1.3.21) */
+.ar-music input{width:90px;accent-color:var(--gold)}.ar-music span{min-width:34px;text-align:right;font-size:.75rem;color:var(--ink-soft)}
+@media (max-width:599px){.ar-music input{width:70px}.ar-music span{display:none}}
 .ar-start{max-width:560px;margin:auto;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px}
 .ar-stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
 .ar-play{min-height:0;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -1430,7 +1433,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.20";
+const APP_VERSION="1.3.21";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2478,7 +2481,7 @@ function renderView(){
   if(view==="arena"&&arFighting)return; // combat de l'Arène en cours d'animation : on ne redessine pas
   const anc=view==="collection"&&$("#coll-grid")?collAnchor():null;
   keepInputs(()=>{fillApp(app,({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto,arena:vArena})[view]())});
-  vbMusicSync(); // musique de la VoltoBataille (1.3.18) : seulement sur sa page
+  musicSync(); // musique des jeux (VoltoBataille 1.3.18, Arène 1.3.21) : seulement sur leur page
   document.documentElement.classList.toggle("arena-view",view==="arena");if(view==="arena")arFit();else document.documentElement.classList.remove("arena-scroll"); // Arène : la page ne défile pas
   if(anc){ // après le calcul des vignettes hors de l'écran (image suivante), puis une seconde fois par sécurité
     const fix=()=>{const el=document.querySelector(`#coll-grid .mini[data-id="${anc.id}"]`);if(el){const dy=el.getBoundingClientRect().top-anc.t;if(Math.abs(dy)>1)window.scrollBy(0,dy)}};
@@ -3490,7 +3493,7 @@ function vVolto(){
       <li>Chaque manche gagnée fait monter d’un niveau, jusqu’au niveau 8. Après une défaite ou un encaissement, le niveau redescend au nombre de cartes retournées.</li>
       <li>Vous gagnez au plus <b>${fmtN(VB_CAP)} crédits par jour</b>. Le compteur repart de zéro chaque nuit à minuit. Une fois le plafond atteint, chaque manche gagnée rapporte encore ${VB_AFTER} crédits par niveau (${VB_AFTER*8} au niveau 8).</li>
     </ul></details>
-    <label class="vb-music">🎵 Musique <input type="range" min="0" max="100" step="5" value="${Math.round(vbMusicVol()*100)}" data-keep="vbvol" data-vbvol aria-label="Volume de la musique"><span id="vb-vol-n">${Math.round(vbMusicVol()*100)} %</span></label></div>`;
+    ${musicSlider("volto","vbvol","vb-music","Musique")}</div>`;
 }
 /* Retourne une carte : le serveur donne sa valeur (et tout le plateau si la manche se termine) */
 function vbFlip(i){
@@ -4133,20 +4136,22 @@ function shinyFx(el){
 }
 /* Son du shiny (1.3.9) : fichier fourni par Theo, sinon le son synthétisé d'une Épique */
 const SHINY_SND="images/sons/shiny.mp3";
-/* Musique de la VoltoBataille (1.3.18) : fichier fourni par Theo, en boucle tant que la page est ouverte et visible ;
-   volume propre au joueur (curseur sous « Comment jouer ? », gardé sur l'appareil), multiplié par le volume général,
-   coupée avec le son du jeu. Chargée seulement à la première visite de la page (preload none). */
-const VB_MUSIC="images/sons/voltobataille.mp3?v=2"; // ?v= : à changer quand le fichier change (cache de Cloudflare et des navigateurs)
-let vbMusic=null;
-function vbMusicVol(){try{const v=parseFloat(localStorage.getItem("dc-vb-music"));return isNaN(v)?.4:Math.min(1,Math.max(0,v))}catch(e){return .4}}
-function vbMusicSync(){
+/* Musiques des jeux (VoltoBataille 1.3.18, Arène 1.3.21) : fichiers de Theo réencodés en MP3 64 kb/s au même volume moyen
+   (environ −32 dB, originaux dans images-perso/) ; en boucle tant que la page du jeu est ouverte et l'onglet visible ; volume
+   propre à chaque jeu (curseur, gardé sur l'appareil, 40 % par défaut), multiplié par le volume général, coupé avec le son du jeu.
+   Chargées seulement à la première visite (preload none). ?v= : à changer quand un fichier change (cache). */
+const MUSIC={volto:{src:"images/sons/voltobataille.mp3?v=2",key:"dc-vb-music"},arena:{src:"images/sons/arena.mp3?v=1",key:"dc-ar-music"}};
+function musicVol(g){try{const v=parseFloat(localStorage.getItem(MUSIC[g].key));return isNaN(v)?.4:Math.min(1,Math.max(0,v))}catch(e){return .4}}
+const musicSlider=(g,keep,cls,label)=>`<label class="${cls}" title="Volume de la musique">🎵${label?" "+label:""} <input type="range" min="0" max="100" step="5" value="${Math.round(musicVol(g)*100)}" data-keep="${keep}" data-music="${g}" aria-label="Volume de la musique"><span id="mus-n-${g}">${Math.round(musicVol(g)*100)} %</span></label>`;
+function musicSync(){
   let muted=false;try{muted=localStorage.getItem("dc-mute")==="1"}catch(e){}
-  const on=view==="volto"&&!document.hidden&&!muted&&vbMusicVol()>0;
-  if(!on){if(vbMusic&&!vbMusic.paused)vbMusic.pause();return}
-  if(!vbMusic){vbMusic=new Audio(VB_MUSIC);vbMusic.loop=true;vbMusic.preload="none"}
-  vbMusic.volume=Math.min(1,vbMusicVol()*prefs().vol);
-  if(vbMusic.paused)vbMusic.play().catch(()=>{ // lecture refusée sans geste du joueur : au premier toucher
-    addEventListener("pointerdown",vbMusicSync,{once:true})});
+  for(const g in MUSIC){const m=MUSIC[g],on=view===g&&!document.hidden&&!muted&&musicVol(g)>0;
+    if(!on){if(m.a&&!m.a.paused)m.a.pause();continue}
+    if(!m.a){m.a=new Audio(m.src);m.a.loop=true;m.a.preload="none"}
+    m.a.volume=Math.min(1,musicVol(g)*prefs().vol);
+    if(m.a.paused)m.a.play().catch(()=>{ // lecture refusée sans geste du joueur : au premier toucher
+      addEventListener("pointerdown",musicSync,{once:true})});
+  }
 }
 function shinySound(){
   try{if(localStorage.getItem("dc-mute")==="1")return}catch(e){}
@@ -4658,11 +4663,11 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.5</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.6</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
-    <button class="btn small" data-ar="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${r&&!r.over?`<button class="btn small" data-ar="new" title="Nouvelle partie">↻<span class="ar-wide"> Nouvelle partie</span></button>`:""}</div>`;
+    <button class="btn small" data-ar="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${r&&!r.over?`<button class="btn small" data-ar="new" title="Nouvelle partie">↻<span class="ar-wide"> Nouvelle partie</span></button>`:""}${musicSlider("arena","arvol","ar-music","")}</div>`;
   if(!r||r.over)return `<div class="arena ar-intro">${top}<div class="ar-start">
     <p>Composez une équipe avec les Pokémon de <b>votre collection</b>, faites-les évoluer en réunissant 3 exemplaires, et affrontez l’ordinateur sur ${AR.rounds} manches. Chaque manche gagnée rapporte des crédits (${fmtN(AR.cap)} par jour au plus).</p>
     ${r&&r.over?`<p class="muted">Dernière partie : ${r.wins} manche${r.wins>1?"s":""} gagnée${r.wins>1?"s":""}, +${fmtN(r.credits)} crédits.</p>`:""}
@@ -4859,7 +4864,7 @@ document.addEventListener("click",e=>{
     case"rc-filter":{const r=b.dataset.r;if(r==="shiny")filt.own=filt.own==="shiny"?"all":"shiny";else filt.r=filt.r===r?"all":r;renderView();break} // compteurs de rareté cliquables (1.1.10)
     case"toggle-theme":toggleTheme();break;
     case"install-app":installApp();break; // 1.1.5
-    case"toggle-sound":{const on=SFX.toggle();vbMusicSync();b.textContent=on?"🔊":"🔇";b.setAttribute("aria-label",on?"Couper le son":"Activer le son");b.title=on?"Couper le son":"Activer le son";if(on){SFX.flip(1)}break}
+    case"toggle-sound":{const on=SFX.toggle();musicSync();b.textContent=on?"🔊":"🔇";b.setAttribute("aria-label",on?"Couper le son":"Activer le son");b.title=on?"Couper le son":"Activer le son";if(on){SFX.flip(1)}break}
     case"flip":{if(dragMoved){dragMoved=false;break}
       if(flipLock)break;flipLock=true;setTimeout(()=>{flipLock=false},320);
       const c=reveal[+b.dataset.i];if(!b.classList.contains("current"))centerCard(b);if(c.shown)break;flipOne(b,c);updateReveal();break}
@@ -5067,9 +5072,9 @@ function installApp(){
 themeBtn();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",themeBtn)}catch(e){}
 document.addEventListener("keydown",e=>{const t=e.target.closest&&e.target.closest(".tag-click,[role=button][data-act]");if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();t.click()}});
 document.addEventListener("input",e=>{
-  if(e.target.matches&&e.target.matches("[data-vbvol]")){ // volume de la musique de la VoltoBataille (1.3.18)
-    const v=(+e.target.value||0)/100;try{localStorage.setItem("dc-vb-music",String(v))}catch(err){}
-    const n=$("#vb-vol-n");if(n)n.textContent=Math.round(v*100)+" %";vbMusicSync();return}
+  if(e.target.matches&&e.target.matches("[data-music]")){ // volume de la musique d'un jeu (VoltoBataille 1.3.18, Arène 1.3.21)
+    const g=e.target.dataset.music,v=(+e.target.value||0)/100;try{localStorage.setItem(MUSIC[g].key,String(v))}catch(err){}
+    const n=$("#mus-n-"+g);if(n)n.textContent=Math.round(v*100)+" %";musicSync();return}
   const sk=e.target.dataset&&e.target.dataset.search;
   if(sk){trdQ=e.target.value;clearTimeout(window.__srchT);window.__srchT=setTimeout(renderView,180);return}
   if(e.target.id==="ts-auto"){tradeAuto=e.target.checked;return}
@@ -5077,9 +5082,9 @@ document.addEventListener("input",e=>{
   if(e.target.dataset&&e.target.dataset.spsel){spSel[e.target.dataset.spsel]=+e.target.value;renderView();return} // boosters spéciaux (1.2.3)
   if(e.target.dataset&&e.target.dataset.pickSearch!==undefined){const q=norm2(e.target.value).trim();document.querySelectorAll("#picker .pick").forEach(p=>p.hidden=!!q&&!p.dataset.n.includes(q));return} // recherche dans « Proposer une carte »
   {const pr=e.target.dataset&&e.target.dataset.pref;if(pr){ // réglages son et vibrations
-    if(pr==="vol"){setPrefs({vol:+e.target.value/100});if(vbMusic)vbMusic.volume=Math.min(1,vbMusicVol()*prefs().vol);const lb=e.target.parentElement.querySelector("b");if(lb)lb.textContent=e.target.value+" %";clearTimeout(window.__volT);window.__volT=setTimeout(()=>SFX.flip(1),120)}
+    if(pr==="vol"){setPrefs({vol:+e.target.value/100});for(const g in MUSIC)if(MUSIC[g].a)MUSIC[g].a.volume=Math.min(1,musicVol(g)*prefs().vol);const lb=e.target.parentElement.querySelector("b");if(lb)lb.textContent=e.target.value+" %";clearTimeout(window.__volT);window.__volT=setTimeout(()=>SFX.flip(1),120)}
     else if(pr==="vib"){setPrefs({vib:e.target.checked});if(e.target.checked)vib(40)}
-    else if(pr==="snd"){if(e.target.checked===SFX.muted())SFX.toggle();renderHeader();renderView();vbMusicSync()}
+    else if(pr==="snd"){if(e.target.checked===SFX.muted())SFX.toggle();renderHeader();renderView();musicSync()}
     return}}
   if(e.target.dataset&&e.target.dataset.avaq!==undefined){avaQ=e.target.value;clearTimeout(window.__avaT);window.__avaT=setTimeout(renderView,150);return}
   if(e.target.dataset&&e.target.dataset.evoq!==undefined){evoQ=e.target.value;clearTimeout(window.__evoT);window.__evoT=setTimeout(renderView,150);return} // recherche des évolutions (1.2.0)
@@ -5288,7 +5293,7 @@ function pollShared(){
   if(view==="ranking"||Date.now()-playersTs>300000)loadPlayers();
 }
 document.addEventListener("visibilitychange",()=>{
-  vbMusicSync(); // onglet caché : musique en pause, reprise au retour
+  musicSync(); // onglet caché : musique en pause, reprise au retour
   if(!SB||!ME)return;
   if(document.hidden){hiddenAt=Date.now();return}
   if(hiddenAt&&Date.now()-hiddenAt>30000){loadMe();loadMarket(Date.now()-hiddenAt>300000).then(loadOwnerColls);if(Date.now()-playersTs>60000)loadPlayers()}
