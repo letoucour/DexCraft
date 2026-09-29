@@ -254,7 +254,8 @@ begin
   nl := case when kind = 'won' then least(8, v.level + 1) else greatest(1, least(v.level, v.flipped)) end;
   if kind <> 'lost' and v.score > 0 then added := least(v.score, greatest(0, cap - gained)); end if;
   -- 1.3.14 : plafond du jour déjà atteint, une manche gagnée rapporte encore vbAfter (10) crédits par niveau, hors compteur du jour
-  if kind = 'won' and gained >= cap then extra := coalesce((public.dc__cfg() ->> 'vbAfter')::int, 0) * v.level; end if;
+  -- 1.3.15 : aussi quand c'est cette manche qui atteint le plafond
+  if kind = 'won' and gained + added >= cap then extra := coalesce((public.dc__cfg() ->> 'vbAfter')::int, 0) * v.level; end if;
   d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') + added + extra));
   d := jsonb_set(d, '{volto}', jsonb_build_object('day', day, 'gained', gained + added, 'level', nl));
   if kind = 'won' then

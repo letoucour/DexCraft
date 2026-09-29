@@ -156,7 +156,9 @@ declare e jsonb;
 begin
   e := public.dc__ar_enemy(cfg, st);
   st := st || jsonb_build_object('enemy', jsonb_build_object('board', e -> 'board', 'power', e -> 'power'), 'n', e -> 'n');
-  if not coalesce((st ->> 'locked')::boolean, false) then st := jsonb_set(st, '{shop}', public.dc__ar_shop(cfg, st, coll)); end if;
+  -- boutique verrouillée : gardée pour cette manche seulement, puis déverrouillée d'office (1.3.15, demande de Theo)
+  if not coalesce((st ->> 'locked')::boolean, false) then st := jsonb_set(st, '{shop}', public.dc__ar_shop(cfg, st, coll));
+  else st := jsonb_set(st, '{locked}', 'false'); end if;
   return st;
 end $$;
 
@@ -314,7 +316,7 @@ begin
       v := case side when 0 then board -> k else enemy -> 'board' -> k end;
       continue when v is null or v = 'null';
       st := public.dc__ar_stat(sc, (v ->> 'i')::int); b := 0;
-      foreach t in array public.dc__ar_types(pt, (v ->> 'i')::int) loop b := greatest(b, case when syn[t] >= 4 then .3 when syn[t] >= 2 then .15 else 0 end); end loop;
+      foreach t in array public.dc__ar_types(pt, (v ->> 'i')::int) loop b := greatest(b, case when syn[t] >= 6 then .45 when syn[t] >= 4 then .3 when syn[t] >= 2 then .15 else 0 end); end loop;
       s := case when (v ->> 's')::int = 1 then 1.6 else 1 end;
       sd := sd || side; rw := rw || (k / 3); cl := cl || (k % 3); ids := ids || (v ->> 'i')::int; us := us || (v ->> 'u')::int;
       mx := mx || round((2 * st[1] + 60) * s * (1 + b) * pw)::int; atk := atk || (greatest(st[2], st[4]) * s * (1 + b) * pw); df := df || ((st[3] + st[5]) / 2.0); sp := sp || st[6];
@@ -378,9 +380,10 @@ begin
   if (st ->> 'hp')::int <= 0 or rd >= (a ->> 'rounds')::int then
     st := jsonb_set(st, '{over}', 'true');
     if (st ->> 'hp')::int > 0 then
-      -- 1.3.14 : plafond du jour déjà atteint, une partie terminée rapporte encore afterCap (50) crédits, hors compteur du jour
-      if gained + added >= cap then post := coalesce((a ->> 'afterCap')::int, 0);
-      else bonus := least((a ->> 'finish')::int, greatest(0, cap - gained - added)); end if;
+      -- une partie terminée quand le plafond du jour est atteint rapporte encore afterCap (50) crédits, hors compteur du jour
+      -- (1.3.14 ; 1.3.15 : aussi quand c'est cette fin de partie, dernière manche ou bonus final, qui atteint le plafond)
+      bonus := least((a ->> 'finish')::int, greatest(0, cap - gained - added));
+      if gained + added + bonus >= cap then post := coalesce((a ->> 'afterCap')::int, 0); end if;
       d := public.dc__bump(d, 'arDone');
     end if;
     -- titre Invaincu (1.3.6) : les 10 manches sans perdre une vie

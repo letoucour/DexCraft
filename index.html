@@ -781,9 +781,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ar-log{font-size:.8rem;min-height:1.2em;text-align:center;font-weight:700}
 .ar-dock{display:flex;flex-direction:column;gap:6px;align-items:center;width:100%}
 .ar-colL{display:none}
-.ar-colR{display:flex;flex-direction:column;gap:6px;align-items:center;min-width:0}
 .ar-fieldrow{display:contents}.ar-syncol,.ar-frsp{display:none}
-@media (max-width:999px){.ar-stage{display:flex;flex-direction:column;gap:6px}.ar-play,.ar-colR{flex:none}} /* une colonne : boutique et boutons sous le banc, sans chevauchement (1.3.14) */
 .ar-bench{display:grid;grid-template-columns:repeat(8,var(--b));gap:4px}
 .ar-shop{display:grid;grid-template-columns:repeat(5,var(--o));gap:5px;border-radius:12px;border:2px solid transparent}
 .ar-shop.locked{border-color:var(--gold)}
@@ -819,23 +817,28 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 /* téléphone (1.3.2) : dans l'Arène, l'en-tête du site ne garde que le logo (pastilles profil, crédits, boosters… masquées) pour laisser la place au jeu */
 @media (max-width:999px){html.arena-view header.top .chips{display:none}.ar-log{font-size:.74rem;min-height:0}}
 @media (min-width:1000px){
-  /* 1.3.14 (plan de Theo) : synergies et fiche à gauche, champ de bataille agrandi au centre avec le banc dessous,
-     boutique en colonne et boutons à droite */
-  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 175px) / 4.85),150px);--b:min(calc(var(--s) * .72),calc((100vw - 600px) / 8),86px)}
-  .ar-play{justify-content:center}
-  .ar-stage{grid-template-columns:250px minmax(0,1fr) 250px}
-  .ar-colL{display:flex;flex-direction:column;gap:10px;min-height:0}
-  .ar-colL .ar-infop{display:block;flex:1}
-  /* champ de bataille élargi et centré (demande de Theo) : compteur des types à sa gauche, espace égal à sa droite ;
-     cases plus larges que hautes quand la place le permet (--w, largeur de la colonne centrale en cqw) */
-  .ar-play{container-type:inline-size}
+  /* Arène v2.1 (1.3.15, retour de Theo : l'ergonomie d'avant, mais un terrain plus grand) : avantages de types et
+     manches à gauche, fiche à droite ; au centre le terrain élargi (compteur des types collé à sa gauche), le banc,
+     puis la boutique encadrée des boutons (Relancer et Verrouiller à gauche, Vendre et Combattre à droite) sur une
+     seule rangée, pour laisser au terrain la hauteur d'une rangée de boutons */
+  html.arena-view main{max-width:1680px}
+  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 300px) / 4.72),150px);--b:min(calc(var(--s) * .72),calc((100vw - 600px) / 8),86px);--o:88px}
+  .ar-play{justify-content:safe center;container-type:inline-size}
+  .ar-stage{grid-template-columns:220px minmax(0,1fr) 250px}
+  .ar-colL{display:block;min-height:0;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px}
+  .ar-stage>.ar-infop{display:block}
   .ar-fieldrow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;width:100%;align-items:start}
-  .ar-field{--w:max(var(--s),min(calc(var(--s) * 1.4),calc((100cqw - 400px) / 3)))}
+  .ar-field{--w:max(var(--s),min(calc(var(--s) * 1.5),calc((100cqw - 360px) / 3)))}
   .ar-field .ar-side{grid-template-columns:repeat(3,var(--w))}
   .ar-field .ar-slot{aspect-ratio:auto;height:var(--s)}
   .ar-syncol{justify-self:end;display:flex;flex-direction:column;gap:6px;padding-top:24px}
-  html.arena-view main{max-width:1680px} /* grand écran : l'Arène prend plus de largeur, pour le terrain et ses deux colonnes */
-  .ar-frsp{display:block;justify-self:start;padding-top:24px;min-width:0;max-width:190px}
+  .ar-frsp{display:block}
+  .ar-dock{display:grid;grid-template-columns:auto auto auto;grid-template-areas:"bench bench bench" "reroll shop sell" "lock shop fight";justify-content:center;column-gap:12px;row-gap:6px}
+  .ar-benchw{grid-area:bench;justify-self:center}.ar-shopw{grid-area:shop}
+  .ar-dock .ar-acts{display:contents}
+  .ar-dock [data-ar="reroll"]{grid-area:reroll}.ar-dock [data-ar="lock"]{grid-area:lock}.ar-dock .ar-sellz{grid-area:sell}.ar-dock .ar-fight{grid-area:fight}
+  .ar-dock .ar-acts .btn{align-self:end;min-width:150px;white-space:nowrap}.ar-dock .ar-sname{display:none} /* le nom est déjà dans la fiche */
+  .ar-dock .ar-pic{aspect-ratio:1.7}
   .ar-sideinfo{display:flex;flex-direction:column;gap:12px;font-size:.74rem}
   .ar-sideinfo b{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin:0 0 4px}
   .ar-edge>div{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
@@ -855,15 +858,6 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
   .ar-sc i{display:flex;gap:3px}.ar-sc i b{width:9px;height:9px;border-radius:50%;border:2px solid var(--t);opacity:.55}.ar-sc i b.f{background:var(--t);opacity:1}
   .ar-sc.on{color:var(--ink);border-color:var(--t)}
   .ar-sc.max{color:#fff;background:var(--t);border-color:var(--t)}.ar-sc.max i b{border-color:#fff;opacity:1}.ar-sc.max i b.f{background:#fff}
-  .ar-colR{align-items:stretch;justify-content:flex-start;min-height:0;gap:10px}
-  .ar-colR .ar-shopw{flex:1;min-height:0;display:flex;flex-direction:column}
-  .ar-colR .ar-shop{flex:1;min-height:0;grid-template-columns:1fr;grid-auto-rows:minmax(0,1fr);gap:6px;padding:2px}
-  .ar-colR .ar-offer{display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr 1fr;column-gap:10px;align-items:center;padding:5px 8px;text-align:left;min-height:0}
-  .ar-colR .ar-pic{grid-row:1/3;height:100%;width:auto;aspect-ratio:1;max-height:80px}
-  .ar-colR .ar-on{font-size:.86rem;align-self:end;justify-self:start}
-  .ar-colR .ar-oc{font-size:.8rem;align-self:start;justify-self:start}
-  .ar-colR .ar-acts{flex-direction:column;align-items:stretch}
-  .ar-colR .ar-acts .btn{width:100%}
   .ar-field{padding:10px 16px}.ar-side{gap:8px}
   .ar-un{font-size:clamp(.56rem,calc(var(--s) * .105),.9rem)}
   .ar-hp{height:clamp(5px,calc(var(--s) * .06),9px)}
@@ -1427,7 +1421,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.14";
+const APP_VERSION="1.3.15";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3402,7 +3396,7 @@ const VB_AFTER=10; // 1.3.14 : plafond atteint, une manche gagnée rapporte enco
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
 const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,afterCap:50,winBase:60,winStep:20,startGold:6,incBase:6,
   odds:[[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]],cost:{0:1,1:2,2:3,3:4,5:5},
-  aiEvo:.066,aiPow0:.80,aiPowK:.04,slot:.2,typeW:1/75}; // 1.3.2 : slot .25 → .2 et typeW 1/60 → 1/75 ; 1.3.5 : ordinateur un peu plus fort (aiEvo .04, aiPow0 .65, aiPowK .03 avant ; « un poil simple », avis de Theo) ; 1.3.6 : encore un cran (.048, .69, .033 avant ; « encore trop simple ») ; 1.3.7 : .056, .74, .036 avant (« toujours trop simple »)
+  aiEvo:.07,aiPow0:.83,aiPowK:.042,slot:.2,typeW:1/75}; // 1.3.2 : slot .25 → .2 et typeW 1/60 → 1/75 ; 1.3.5 : ordinateur un peu plus fort (aiEvo .04, aiPow0 .65, aiPowK .03 avant ; « un poil simple », avis de Theo) ; 1.3.6 : encore un cran (.048, .69, .033 avant ; « encore trop simple ») ; 1.3.7 : .056, .74, .036 avant (« toujours trop simple ») ; 1.3.15 : .066, .80, .04 avant (un peu plus fort, contrepartie des synergies à 6)
 const AR_CHART={1:{6:.5,9:.5,8:0},2:{1:2,6:2,9:2,15:2,17:2,3:.5,4:.5,7:.5,14:.5,18:.5,8:0},3:{2:2,7:2,12:2,6:.5,9:.5,13:.5},
   4:{12:2,18:2,4:.5,5:.5,6:.5,8:.5,9:0},5:{4:2,6:2,9:2,10:2,13:2,7:.5,12:.5,3:0},6:{3:2,7:2,10:2,15:2,2:.5,5:.5,9:.5},
   7:{12:2,14:2,17:2,2:.5,3:.5,4:.5,8:.5,9:.5,10:.5,18:.5},8:{8:2,14:2,17:.5,1:0},9:{6:2,15:2,18:2,9:.5,10:.5,11:.5,13:.5},
@@ -4586,7 +4580,7 @@ function arSyn(units){const c={};for(const id of new Set(units.map(u=>u.i)))for(
 /* Synergies (1.3.14, demande de Theo) : juste un compteur par type des Pokémon du terrain (différents), à gauche du champ de bataille */
 function arSynCount(){
   const r=arRun(),on=arSyn(r.board.filter(Boolean)),ts=Object.keys(on).map(Number).sort((a,b)=>on[b]-on[a]);
-  return ts.map(t=>{const n=on[t];return `<div class="ar-scrow" style="--t:${TYPES[t][1]}"><em class="${n>=2?"on":""}">${n>=4?"+30 %":"+15 %"}</em><div class="ar-sc${n>=4?" max":n>=2?" on":""}" title="${TYPES[t][0]} : ${n} sur le terrain"><span>${TYPES[t][0]}</span><i>${[1,2,3,4].map(k=>`<b class="${k<=n?"f":""}"></b>`).join("")}</i></div></div>`}).join(""); // bonus à gauche (plan de Theo) : gris tant qu'il n'est pas actif
+  return ts.map(t=>{const n=on[t];return `<div class="ar-scrow" style="--t:${TYPES[t][1]}"><em class="${n>=2?"on":""}">${n>=6?"+45 %":n>=4?"+30 %":"+15 %"}</em><div class="ar-sc${n>=4?" max":n>=2?" on":""}" title="${TYPES[t][0]} : ${n} sur le terrain"><span>${TYPES[t][0]}</span><i>${[1,2,3,4,5,6].map(k=>`<b class="${k<=n?"f":""}"></b>`).join("")}</i></div></div>`}).join(""); // 6 : +45 % depuis la 1.3.15 ; bonus à gauche (plan de Theo) : gris tant qu'il n'est pas actif
 }
 /* À droite du terrain (1.3.14, choix de Theo) : avantages de types contre cet adversaire, puis la progression des manches.
    Multiplicateur comme le serveur (dc__ar_mult) : meilleur type de l'attaquant, cumulé sur les types du défenseur. */
@@ -4607,7 +4601,7 @@ function arSideInfo(){
   return `<div class="ar-sideinfo">${types}<div class="ar-rounds"><b>Manches</b><ol>${rows}</ol></div></div>`;
 }
 function arSynLine(){const r=arRun(),on=arSyn(r.board.filter(Boolean)),l=Object.keys(on).map(Number).sort((a,b)=>on[b]-on[a]);
-  return `<div class="ar-synl">${l.length?l.map(t=>`<span class="${on[t]>=2?"on":""}" style="--t:${TYPES[t][1]}">${TYPES[t][0]} ${on[t]}${on[t]>=4?" · +30 %":on[t]>=2?" · +15 %":"/2"}</span>`).join(""):`<span>Synergies : 2 Pokémon d’un même type = +15 %</span>`}</div>`}
+  return `<div class="ar-synl">${l.length?l.map(t=>`<span class="${on[t]>=2?"on":""}" style="--t:${TYPES[t][1]}">${TYPES[t][0]} ${on[t]}${on[t]>=6?" · +45 %":on[t]>=4?" · +30 %":on[t]>=2?" · +15 %":"/2"}</span>`).join(""):`<span>Synergies : 2 Pokémon d’un même type = +15 %</span>`}</div>`}
 const AR_STN=["PV","Atq","Déf","A.Spé","D.Spé","Vit"];
 function arInfoInner(u,ref){ // u : {i, s} ; ref : Pokémon sélectionné, comparé (vert : mieux, rouge : moins bien)
   if(!u)return `<h3>Fiche</h3><p class="muted ar-small">Touchez un de vos Pokémon, ou passez sur une offre de la boutique ou un adversaire, pour voir sa fiche. Un Pokémon choisi puis un autre survolé : leurs statistiques sont comparées.</p>`;
@@ -4635,7 +4629,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.0</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.2</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip">🪙 <b>${r.gold}</b> or</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -4648,30 +4642,29 @@ function vArena(){
   const on=r.board.filter(Boolean).length,max=arMax(r.round),counts={};arUnits().forEach(u=>{if(!u.s)counts[u.i]=(counts[u.i]||0)+1});
   const empt=[0,1,2,3,4,5].filter(i=>!r.board[i]).slice(0,Math.max(0,max-on)),sel=arSel&&arFind(arSel);
   return `<div class="arena">${top}
-  <div class="ar-stage"><div class="ar-colL"><aside class="ar-infop">${arInfoInner(arHover||sel,arHover&&sel&&arHover!==sel?sel:null)}</aside></div><div class="ar-play">
+  <div class="ar-stage"><div class="ar-colL">${arSideInfo()}</div><div class="ar-play">
     <div class="ar-fieldrow"><div class="ar-syncol">${arSynCount()}</div><div class="ar-field">
       <div class="ar-lbl"><span>Adversaire</span><span>manche ${r.round}</span></div>
       <div class="ar-side">${[3,4,5,0,1,2].map(i=>`<div class="ar-slot">${arUnitHTML(r.enemy.board[i],true)}</div>`).join("")}</div>
       <div class="ar-sep"></div>
       <div class="ar-lbl"><span>Votre équipe ${on}/${max}</span><span class="ar-places${on<max?" free":""}">${on<max?`${max-on} place${max-on>1?"s":""} libre${max-on>1?"s":""}`:"Équipe complète"}</span></div>
       <div class="ar-side">${[0,1,2,3,4,5].map(i=>{const u=r.board[i],free=empt.includes(i);return `<div class="ar-slot${free?" free":""}${!u&&on>=max?" closed":""}${sel&&!u&&(on<max||r.board.includes(sel))?" drop":""}" data-ar="slot" data-zone="board" data-i="${i}" data-ar-drop="board:${i}">${arUnitHTML(u)}${free?`<span class="ar-tag">+ libre</span>`:!u&&on>=max?`<span class="ar-tag">🔒</span>`:""}</div>`}).join("")}</div>
-    </div><div class="ar-frsp">${arSideInfo()}</div></div>
+    </div><div class="ar-frsp"></div></div>
     ${arSynLine()}
     <div class="ar-log" id="ar-log">${sel?`${esc(nm(sel.i))} choisi : touchez une case, ou glissez-le.`:`Touchez ou glissez un Pokémon pour le placer<span class="ar-wide"> ; glissez-le sur la boutique pour le vendre</span>.`}</div>
     <div class="ar-dock">
-      <div><div class="ar-lbl">Banc</div><div class="ar-bench">${r.bench.map((u,i)=>`<div class="ar-slot${sel&&!u?" drop":""}" data-ar="slot" data-zone="bench" data-i="${i}" data-ar-drop="bench:${i}">${arUnitHTML(u)}</div>`).join("")}</div></div>
-    </div>
-  </div><div class="ar-colR">
+      <div class="ar-benchw"><div class="ar-lbl">Banc</div><div class="ar-bench">${r.bench.map((u,i)=>`<div class="ar-slot${sel&&!u?" drop":""}" data-ar="slot" data-zone="bench" data-i="${i}" data-ar-drop="bench:${i}">${arUnitHTML(u)}</div>`).join("")}</div></div>
       <div class="ar-shopw"><div class="ar-lbl">Boutique · vos Pokémon</div>
         <div class="ar-shop${r.locked?" locked":""}" data-ar-drop="shop">${r.shop.map((id,i)=>{if(!id)return `<button class="ar-offer empty" disabled></button>`;const [n,,,ty,,,,rr]=D(id),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(id);
           return `<button class="ar-offer" data-ar="buy" data-i="${i}" data-ar-drag="s:${i}" style="--c1:${c1};--c2:${c2};--rc:var(--r${rr})" ${r.gold<AR.cost[rr]?"disabled":""} title="${esc(n)} · ${AR_RARN[rr]}">
             <span class="ar-pic">${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${counts[id]?`<span class="ar-own">${counts[id]}/3</span>`:""}</span><span class="ar-on">${esc(n)}</span><span class="ar-oc">🪙 ${AR.cost[rr]}</span></button>`}).join("")}</div></div>
       <div class="ar-acts">
         <button class="btn" data-ar="reroll" ${r.gold<AR.reroll?"disabled":""}>🔄<span class="ar-wide"> Relancer</span> (${AR.reroll} or)</button>
-        <button class="btn${r.locked?" ar-on":""}" data-ar="lock" title="La boutique reste la même à la manche suivante">${r.locked?`🔒<span class="ar-wide"> Boutique verrouillée</span>`:`🔓<span class="ar-wide"> Verrouiller</span>`}</button>
-        <button class="btn danger ar-sellz" data-ar="sell"${sel?"":" hidden"}>${sel?`Vendre ${esc(nm(sel.i))} (+${arCost(sel)} or)`:"Vendre"}</button>
+        <button class="btn${r.locked?" ar-on":""}" data-ar="lock" title="La boutique reste la même à la manche suivante, puis se déverrouille">${r.locked?`🔒<span class="ar-wide"> Boutique verrouillée</span>`:`🔓<span class="ar-wide"> Verrouiller</span>`}</button>
+        <button class="btn danger ar-sellz" data-ar="sell"${sel?"":" hidden"}>${sel?`Vendre<span class="ar-sname"> ${esc(nm(sel.i))}</span> (+${arCost(sel)} or)`:"Vendre"}</button>
         <button class="btn primary ar-fight" data-ar="fight">⚔️ Combattre</button></div>
-  </div></div></div>`;
+    </div>
+  </div><aside class="ar-infop">${arInfoInner(arHover||sel,arHover&&sel&&arHover!==sel?sel:null)}</aside></div></div>`;
 }
 /* hauteur disponible sous l'en-tête (et au-dessus de la barre d'onglets sur téléphone) : tout tient sans défiler */
 function arFit(){
@@ -4723,10 +4716,10 @@ function arRules(){
     <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort. ${AR.lives} vies : une manche perdue coûte une vie, et la partie continue à la manche suivante avec ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
     <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche, et ${AR.finish} de bonus en finissant les ${AR.rounds} manches. Ils restent acquis, même en cas de défaite. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque partie terminée rapporte encore ${AR.afterCap} crédits.</li>
     <li>Or : ${AR.startGold} au départ, puis ${AR.incBase} en manche 1 jusqu’à ${AR.incBase+Math.floor(AR.rounds/2)} en manche ${AR.rounds}, +1 par victoire, +1 d’intérêt par tranche de 10 or gardés (3 au plus).</li>
-    <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon que vous avez déjà revient plus souvent, et les Pokémon des types de votre équipe aussi. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante.</li>
+    <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon que vous avez déjà revient plus souvent, et les Pokémon des types de votre équipe aussi. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante, puis se déverrouille d’elle-même.</li>
     <li>3 exemplaires du même Pokémon : il évolue (ou gagne une étoile ⭐ en fin de lignée).</li>
     <li>Terrain : 3 Pokémon en manche 1, un de plus toutes les 2 manches (6 au plus). Les places libres sont remplies d’office au combat avec les plus forts du banc. Les Pokémon de devant encaissent en premier.</li>
-    <li>Synergies : 2 Pokémon différents d’un même type = +15 % PV et Attaque pour ce type, 4 = +30 %. Faiblesses et résistances des types comptent.</li>
+    <li>Synergies : 2 Pokémon différents d’un même type = +15 % PV et Attaque pour ce type, 4 = +30 %, 6 = +45 %. Faiblesses et résistances des types comptent.</li>
     <li>Déplacer : touchez un Pokémon puis une case, ou glissez-le. Vendre : glissez-le sur la boutique, ou « Vendre ». Acheter : touchez une offre, ou glissez-la sur le banc ou le terrain.</li></ul></div>`,true);
 }
 document.addEventListener("click",e=>{
@@ -4766,7 +4759,7 @@ document.addEventListener("pointerdown",e=>{
 });
 function arSellZone(u){ // bouton « Vendre » : visible pendant qu'on glisse un Pokémon de l'équipe, pour l'y lâcher
   const z=$(".ar-sellz");if(!z)return;
-  if(u){z.hidden=false;z.textContent=`Vendre ${nm(u.i)} (+${arCost(u)} or)`}else if(!arSel)z.hidden=true;
+  if(u){z.hidden=false;z.innerHTML=`Vendre<span class="ar-sname"> ${esc(nm(u.i))}</span> (+${arCost(u)} or)`}else if(!arSel)z.hidden=true;
 }
 document.addEventListener("pointermove",e=>{
   const g=arDrag;if(!g)return;
