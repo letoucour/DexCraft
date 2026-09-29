@@ -1495,7 +1495,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.18";
+const APP_VERSION="1.4.19";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -4092,7 +4092,7 @@ function detail(id){
   openDlg(`${navBtns}<div class="card-holder">${cardHTML(id,true,showShiny(id))}</div><div class="side">
     <button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <div><h2>${esc(nm(id))}</h2><p class="muted">${c} exemplaire${c>1?"s":""} dans votre collection${r<6?`, obtenue ${fmtN(Math.max(gotN(id),c))} fois au total`:""}</p>${otLine(id,c)}
-      <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button><button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>${r>=6?`<button class="btn small" data-act="replay-fx" data-id="${id}">🎬 Revoir l’animation</button>`:""}${r>=6||mode!=="online"?"":`<button class="btn small wish-btn${wished(id)?" on":""}" data-act="toggle-wish" data-id="${id}" aria-pressed="${wished(id)}" title="Être prévenu quand un joueur la met à l’échange">${wished(id)?"🔔 Je la recherche · Arrêter":"🔔 Je la recherche"}</button>`}${online&&(inVit(id)||vitOf(S).length<VIT_MAX)?`<button class="btn small" data-act="vit-card" data-id="${id}">${inVit(id)?"🏆 Retirer de la vitrine":"🏆 Mettre en vitrine"}</button>`:""}</div></div>
+      <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button><button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>${r>=6||fxRar(id)===5||hasShiny(id)?`<button class="btn small" data-act="replay-fx" data-id="${id}">🎬 Revoir l’animation</button>`:""}${r>=6||mode!=="online"?"":`<button class="btn small wish-btn${wished(id)?" on":""}" data-act="toggle-wish" data-id="${id}" aria-pressed="${wished(id)}" title="Être prévenu quand un joueur la met à l’échange">${wished(id)?"🔔 Je la recherche · Arrêter":"🔔 Je la recherche"}</button>`}${online&&(inVit(id)||vitOf(S).length<VIT_MAX)?`<button class="btn small" data-act="vit-card" data-id="${id}">${inVit(id)?"🏆 Retirer de la vitrine":"🏆 Mettre en vitrine"}</button>`:""}</div></div>
     ${shinyPanelHTML(id)}
     ${online?`<div class="panel"><h3>Proposer à l’échange</h3>
       <div class="actions" style="margin-top:10px;align-items:end">
@@ -5096,7 +5096,8 @@ document.addEventListener("click",e=>{
     case"evo-filter":evoFilter=b.dataset.f;evoQ="";renderView();break;
     case"test-mythic":if(devOn())mythicFx(MYTH_IDS[0]);break;
     case"test-trans":if(devOn())transFx(TRANS_IDS[0]);break;
-    case"replay-fx":{closeDlg();const f=rar(id)===8?specialFx:rar(id)===7?transFx:mythicFx;setTimeout(()=>f(id),120);break} // 1.4.18 : revoir la scène d’obtention depuis la fiche (demande de Theo)
+    case"replay-fx":{closeDlg();const fr=fxRar(id),sh=hasShiny(id); // 1.4.18 : revoir la scène d’obtention depuis la fiche (demande de Theo) ; 1.4.19 : aussi Légendaires et shiny
+      setTimeout(()=>fr===8?specialFx(id):fr===7?transFx(id):fr===6?mythicFx(id):fr===5?legendFx(id,sh):sh?shinyScene(id):0,120);break}
     case"test-special":if(devOn()&&SPECIAL_IDS[0])specialFx(SPECIAL_IDS[0]);break;
     case"reset-coll":if(!devOn())break;openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Réinitialiser votre collection ?</h2>
       <p>Toutes vos cartes, vos crédits, vos boosters, vos favoris, vos achats uniques et vos annonces en cours seront effacés. Vous repartirez de zéro.</p>
