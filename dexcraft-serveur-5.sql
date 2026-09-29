@@ -106,7 +106,7 @@ create or replace function public.dc__ar_shop(cfg jsonb, st jsonb, coll jsonb) r
 -- 1.3.1 : réserve lue une seule fois dans des tableaux (rareté et poids de chaque Pokémon possédé). Avant, la table des
 -- raretés de la configuration était recopiée à chaque Pokémon examiné : plusieurs secondes par boutique sur Supabase.
 declare a jsonb := cfg -> 'arena'; rarm jsonb := cfg -> 'rar'; pt text := cfg ->> 'ptype'; tc int[] := array_fill(0, array[18]);
-  ids int[]; rs int[]; ws numeric[]; mine int[]; ms int[]; cnt int[] := array[0, 0, 0, 0, 0, 0]; av boolean[]; shop jsonb := '[]';
+  ids int[]; rs int[]; ws numeric[]; mine int[]; cnt int[] := array[0, 0, 0, 0, 0, 0]; av boolean[]; shop jsonb := '[]';
   k int; j int; r int; t int; u jsonb; wt numeric; tot numeric; x numeric; pick int; slot numeric := (a ->> 'slot')::numeric;
 begin
   for u in select * from public.dc__ar_units(st) loop
@@ -121,14 +121,15 @@ begin
           from jsonb_each(coll) where key ~ '^\d+$' and key::int between 1 and 1025 and value::text::int > 0) q;
   for j in 1 .. coalesce(array_length(ids, 1), 0) loop cnt[rs[j] + 1] := cnt[rs[j] + 1] + 1; end loop;   -- nombre par rareté (0 à 5)
   av := array[cnt[1] > 0, cnt[2] > 0, cnt[3] > 0, cnt[4] > 0, cnt[6] > 0];
-  -- 1.4.7 (demande de Theo) : les Pokémon à une étoile sont aussi reproposés, à taux réduit (slotStar), pour qu'on puisse
+  -- 1.4.7 (demande de Theo) : les Pokémon à une étoile sont aussi reproposés (à demi-taux jusqu’à la 1.4.8), pour qu'on puisse
   -- viser les deux étoiles ; avant, un Pokémon passé à une étoile ne revenait plus qu'au hasard de toute la réserve
-  select coalesce(array_agg((v ->> 'i')::int), '{}'), coalesce(array_agg((v ->> 's')::int), '{}') into mine, ms
+  -- 1.4.9 : un tirage par Pokémon différent (plus par exemplaire), une étoile au même taux : un Pokémon à une étoile, seule
+  -- unité parmi une dizaine et à demi-taux, ne revenait que dans 7 % des boutiques (mesuré, équipe de 10) ; slot 0,2 → 0,3
+  select coalesce(array_agg(distinct (v ->> 'i')::int), '{}') into mine
     from public.dc__ar_units(st) v where (v ->> 's')::int <= 1 and (v ->> 'i')::int = any(ids);
   for k in 1 .. 5 loop
     if coalesce(array_length(mine, 1), 0) > 0 and random() < slot then
-      j := 1 + floor(random() * array_length(mine, 1))::int;
-      if ms[j] = 0 or random() < coalesce((a ->> 'slotStar')::numeric, .5) then shop := shop || to_jsonb(mine[j]); continue; end if;
+      shop := shop || to_jsonb(mine[1 + floor(random() * array_length(mine, 1))::int]); continue;
     end if;
     r := public.dc__ar_pick_rar(cfg, (st ->> 'round')::int, av);
     if r < 0 then shop := shop || 'null'::jsonb; continue; end if;
