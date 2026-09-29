@@ -739,6 +739,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ar-v{font-size:.7rem;vertical-align:middle;background:var(--gold);color:var(--gold-ink);border-radius:999px;padding:2px 8px;font-family:var(--body)}
 .ar-chip{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-weight:700;font-size:.88rem}
 .ar-chip b{font-family:var(--display)}
+.ar-int{font-style:normal;color:var(--ok);font-weight:800} /* intérêts de l’or (1.3.19) */
 .ar-spd{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:2px 4px;font-size:.78rem}
 .ar-spd button{font:inherit;font-weight:700;border:0;background:none;color:var(--ink-soft);border-radius:7px;padding:3px 7px;cursor:pointer}
 .ar-spd button[aria-pressed="true"]{background:var(--gold);color:var(--gold-ink)}
@@ -832,8 +833,10 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
   .ar-field{--w:max(var(--s),min(calc(var(--s) * 1.5),calc((100cqw - 360px) / 3)))}
   .ar-field .ar-side{grid-template-columns:repeat(3,var(--w))}
   .ar-field .ar-slot{aspect-ratio:auto;height:var(--s)}
-  .ar-syncol{justify-self:end;display:flex;flex-direction:column;gap:6px;padding-top:24px}
-  .ar-frsp{display:block}
+  .ar-syncol{justify-self:end;display:flex;flex-direction:column;gap:6px;padding-top:6px}
+  .ar-sch{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);text-align:right;margin-bottom:2px}
+  .ar-syncol.ar-mirror{justify-self:start}.ar-mirror .ar-sch{text-align:left}
+  .ar-mirror .ar-scrow{flex-direction:row-reverse;justify-content:flex-end} /* adversaire : compteur puis bonus, en miroir */
   /* rangée de la boutique (v2.3, plan de Theo) : « Boutique » et Relancer à gauche, Verrouiller et Combattre à droite ;
      « Vendre » prend la place de Verrouiller tant qu'un Pokémon est choisi (la rangée ne change pas de hauteur) */
   .ar-dock{display:grid;grid-template-columns:auto auto auto;grid-template-areas:"bench bench bench" "blabel shop lock" "reroll shop fight";justify-content:center;column-gap:12px;row-gap:6px}
@@ -841,7 +844,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
   .ar-dock .ar-shop{grid-area:shop;--o:min(100px,calc((100cqw - 340px) / 5))}
   .ar-dock .ar-shoplbl,.ar-purse-top{display:none} /* v2.4 : vies et or à gauche de la boutique, à la place du mot « Boutique » */
   .ar-dock .ar-purse{grid-area:blabel;align-self:end;display:flex;gap:6px;justify-content:center}
-  .ar-dock .ar-purse .ar-chip{text-align:center;font-size:.95rem;padding:4px 9px;white-space:nowrap}
+  .ar-dock .ar-purse .ar-chip{text-align:center;font-size:.9rem;padding:4px 8px;white-space:nowrap}
   .ar-dock .ar-acts{display:contents}
   .ar-dock [data-ar="reroll"]{grid-area:reroll}.ar-dock [data-ar="lock"],.ar-dock .ar-sellz{grid-area:lock}.ar-dock .ar-fight{grid-area:fight}
   .ar-dock .ar-acts:has(.ar-sellz:not([hidden])) [data-ar="lock"]{display:none}
@@ -1427,7 +1430,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.18";
+const APP_VERSION="1.3.19";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2323,9 +2326,9 @@ const TITLES=[
     .map(([need,n])=>({k:"trades"+need,n,ic:"⚜",g:"Échanges",cls:"tc",c:"#a0701c",d:`A conclu ${fmtN(need)} échanges`,stat:"trades",need})),
   /* Arène (1.3.6) : compteurs tenus depuis l'ouverture de l'Arène (1.3.0), donc rétroactifs */
   ...[["arWins",25,"Gladiateur","A gagné 25 manches dans l’Arène"],["arWins",150,"Centurion","A gagné 150 manches dans l’Arène"],["arWins",500,"Imperator","A gagné 500 manches dans l’Arène"],
-    ["arDone",1,"Vainqueur de l’Arène","A terminé les 10 manches d’une partie de l’Arène"],["arDone",25,"Conquérant","A terminé 25 parties de l’Arène, les 10 manches à chaque fois"]]
+    ["arDone",1,"Vainqueur de l’Arène","A réussi une partie de l’Arène (dernière manche gagnée)"],["arDone",25,"Conquérant","A réussi 25 parties de l’Arène"]]
     .map(([stat,need,n,d])=>({k:stat+need,n,ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d,stat,need})),
-  {k:"arPerf",n:"Invaincu",ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d:"A terminé les 10 manches d’une partie de l’Arène sans perdre une vie",test:p=>!!(p.stats&&p.stats.arPerf)},
+  {k:"arPerf",n:"Invaincu",ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d:"A réussi une partie de l’Arène sans perdre une vie",test:p=>!!(p.stats&&p.stats.arPerf)},
 ];
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
 const TITLE_MAX=3,TITLE_DEFAULT=["maitre"]; // Alpha et Bêta testeur : badges à côté du pseudo depuis la 1.0.1, plus des titres
@@ -4569,6 +4572,9 @@ let arSpeed=(()=>{try{return +localStorage.getItem("dc-ar-speed")||1}catch(e){re
 const AR_SPEEDS=[[1,"×1"],[2,"×2"],[4,"×4"],[9,`<span class="ar-wide">Instantané</span><span class="ar-narrow" title="Instantané">⏩</span>`]],AR_RARN={0:"Commune",1:"Peu commune",2:"Rare",3:"Épique",5:"Légendaire"};
 const arRun=()=>AR_V&&AR_V.run;
 const arMax=r=>Math.min(6,3+Math.floor((r-1)/2));
+/* intérêts (1.3.19, affichés dans la pastille de l'or) : +1 or par tranche de 10 or gardés en fin de manche, 3 au plus (comme dc_ar_fight) */
+const arInt=r=>Math.min(3,Math.floor(r.gold/10));
+const arIntTip=r=>`Intérêts : +1 or par tranche de 10 or gardés à la fin de la manche (3 au plus). ${arInt(r)?`Avec ${r.gold} or : +${arInt(r)}.`:`Gardez 10 or pour gagner +1.`}`;
 const arCost=u=>AR.cost[rar(u.i)]*(u.s?3:1);
 const arUnits=()=>{const r=arRun();return r?[...r.board,...r.bench].filter(Boolean):[]};
 const arFind=uid=>arUnits().find(u=>u.u===uid);
@@ -4601,9 +4607,9 @@ function arSell(uid){if(!arFind(uid)||arFighting)return;arAct("dc_ar_sell",{p_u:
 /* ---------- synergies et fiche ---------- */
 function arSyn(units){const c={};for(const id of new Set(units.map(u=>u.i)))for(const t of D(id)[3])c[t]=(c[t]||0)+1;return c}
 /* Synergies (1.3.14, demande de Theo) : juste un compteur par type des Pokémon du terrain (différents), à gauche du champ de bataille */
-function arSynCount(){
-  const r=arRun(),on=arSyn(r.board.filter(Boolean)),ts=Object.keys(on).map(Number).sort((a,b)=>on[b]-on[a]);
-  return ts.map(t=>{const n=on[t];return `<div class="ar-scrow" style="--t:${TYPES[t][1]}"><em class="${n>=2?"on":""}">${n>=6?"+45 %":n>=4?"+30 %":"+15 %"}</em><div class="ar-sc${n>=4?" max":n>=2?" on":""}" title="${TYPES[t][0]} : ${n} sur le terrain"><span>${TYPES[t][0]}</span><i>${[1,2,3,4,5,6].map(k=>`<b class="${k<=n?"f":""}"></b>`).join("")}</i></div></div>`}).join(""); // 6 : +45 % depuis la 1.3.15 ; bonus à gauche (plan de Theo) : gris tant qu'il n'est pas actif
+function arSynCount(units,title){ // 1.3.19 : les deux camps (« Vous : » à gauche du terrain, « Adversaire : » en miroir à droite)
+  const on=arSyn(units.filter(Boolean)),ts=Object.keys(on).map(Number).sort((a,b)=>on[b]-on[a]);
+  return `<b class="ar-sch">${title}</b>`+ts.map(t=>{const n=on[t];return `<div class="ar-scrow" style="--t:${TYPES[t][1]}"><em class="${n>=2?"on":""}">${n>=6?"+45 %":n>=4?"+30 %":"+15 %"}</em><div class="ar-sc${n>=4?" max":n>=2?" on":""}" title="${TYPES[t][0]} : ${n} sur le terrain"><span>${TYPES[t][0]}</span><i>${[1,2,3,4,5,6].map(k=>`<b class="${k<=n?"f":""}"></b>`).join("")}</i></div></div>`}).join(""); // 6 : +45 % depuis la 1.3.15 ; bonus à gauche (plan de Theo) : gris tant qu'il n'est pas actif
 }
 /* À droite du terrain (1.3.14, choix de Theo) : avantages de types contre cet adversaire, puis la progression des manches.
    Multiplicateur comme le serveur (dc__ar_mult) : meilleur type de l'attaquant, cumulé sur les types du défenseur. */
@@ -4652,32 +4658,32 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.4</span></h1>
-    ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top">🪙 <b>${r.gold}</b> or</span>`:""}
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.5</span></h1>
+    ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
     <button class="btn small" data-ar="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${r&&!r.over?`<button class="btn small" data-ar="new" title="Nouvelle partie">↻<span class="ar-wide"> Nouvelle partie</span></button>`:""}</div>`;
   if(!r||r.over)return `<div class="arena ar-intro">${top}<div class="ar-start">
     <p>Composez une équipe avec les Pokémon de <b>votre collection</b>, faites-les évoluer en réunissant 3 exemplaires, et affrontez l’ordinateur sur ${AR.rounds} manches. Chaque manche gagnée rapporte des crédits (${fmtN(AR.cap)} par jour au plus).</p>
     ${r&&r.over?`<p class="muted">Dernière partie : ${r.wins} manche${r.wins>1?"s":""} gagnée${r.wins>1?"s":""}, +${fmtN(r.credits)} crédits.</p>`:""}
-    <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:`Plafond du jour atteint : chaque partie terminée (les ${AR.rounds} manches) rapporte encore ${AR.afterCap} crédits jusqu’à minuit.`}</p>
+    <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:`Plafond du jour atteint : chaque Arène réussie (dernière manche gagnée) rapporte encore ${AR.afterCap} crédits jusqu’à minuit.`}</p>
     <button class="btn primary ar-fight" data-ar="start">⚔️ ${r?"Nouvelle partie":"Lancer une partie"}</button></div></div>`;
   const on=r.board.filter(Boolean).length,max=arMax(r.round),counts={};arUnits().forEach(u=>{if(!u.s)counts[u.i]=(counts[u.i]||0)+1});
   const empt=[0,1,2,3,4,5].filter(i=>!r.board[i]).slice(0,Math.max(0,max-on)),sel=arSel&&arFind(arSel);
   return `<div class="arena">${top}
   <div class="ar-stage"><div class="ar-colL">${arSideInfo()}</div><div class="ar-play">
-    <div class="ar-fieldrow"><div class="ar-syncol">${arSynCount()}</div><div class="ar-field">
+    <div class="ar-fieldrow"><div class="ar-syncol">${arSynCount(r.board,"Vous :")}</div><div class="ar-field">
       <div class="ar-lbl"><span>Adversaire</span><span>manche ${r.round}</span></div>
       <div class="ar-side">${[3,4,5,0,1,2].map(i=>`<div class="ar-slot">${arUnitHTML(r.enemy.board[i],true)}</div>`).join("")}</div>
       <div class="ar-sep"></div>
       <div class="ar-lbl"><span>Votre équipe ${on}/${max}</span><span class="ar-places${on<max?" free":""}">${on<max?`${max-on} place${max-on>1?"s":""} libre${max-on>1?"s":""}`:"Équipe complète"}</span></div>
       <div class="ar-side">${[0,1,2,3,4,5].map(i=>{const u=r.board[i],free=empt.includes(i);return `<div class="ar-slot${free?" free":""}${!u&&on>=max?" closed":""}${sel&&!u&&(on<max||r.board.includes(sel))?" drop":""}" data-ar="slot" data-zone="board" data-i="${i}" data-ar-drop="board:${i}">${arUnitHTML(u)}${free?`<span class="ar-tag">+ libre</span>`:!u&&on>=max?`<span class="ar-tag">🔒</span>`:""}</div>`}).join("")}</div>
-    </div><div class="ar-frsp"></div></div>
+    </div><div class="ar-frsp ar-syncol ar-mirror">${arSynCount(r.enemy.board,"Adversaire :")}</div></div>
     ${arSynLine()}
     <div class="ar-log" id="ar-log">${sel?`${esc(nm(sel.i))} choisi : touchez une case, ou glissez-le.`:`Touchez ou glissez un Pokémon pour le placer<span class="ar-wide"> ; glissez-le sur la boutique pour le vendre</span>.`}</div>
     <div class="ar-dock">
       <div class="ar-benchw"><div class="ar-lbl">Banc</div><div class="ar-bench">${r.bench.map((u,i)=>`<div class="ar-slot${sel&&!u?" drop":""}" data-ar="slot" data-zone="bench" data-i="${i}" data-ar-drop="bench:${i}">${arUnitHTML(u)}</div>`).join("")}</div></div>
-      <div class="ar-shopw"><div class="ar-lbl ar-shoplbl">Boutique</div><div class="ar-purse"><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip">🪙 <b>${r.gold}</b> or</span></div>
+      <div class="ar-shopw"><div class="ar-lbl ar-shoplbl">Boutique</div><div class="ar-purse"><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip" title="${r.gold} or. ${arIntTip(r)}">🪙 <b>${r.gold}</b>${arInt(r)?` <i class="ar-int">+${arInt(r)}</i>`:""}</span></div>
         <div class="ar-shop${r.locked?" locked":""}" data-ar-drop="shop">${r.shop.map((id,i)=>{if(!id)return `<button class="ar-offer empty" disabled></button>`;const [n,,,ty,,,,rr]=D(id),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(id);
           return `<button class="ar-offer" data-ar="buy" data-i="${i}" data-ar-drag="s:${i}" style="--c1:${c1};--c2:${c2};--rc:var(--r${rr})" ${r.gold<AR.cost[rr]?"disabled":""} title="${esc(n)} · ${AR_RARN[rr]}">
             <span class="ar-pic">${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${counts[id]?`<span class="ar-own">${counts[id]}/3</span>`:""}</span><span class="ar-on">${esc(n)}</span><span class="ar-oc">🪙 ${AR.cost[rr]}</span></button>`}).join("")}</div></div>
@@ -4726,9 +4732,9 @@ async function arFight(){
   arFighting=false;arSet(res);renderAll();
   const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits.`:""}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` +${AR.lossGold} or pour vous relancer.`}`;
   if(nr.over){
-    openDlg(`<div class="side" style="align-items:center;text-align:center"><div style="font-size:3rem" aria-hidden="true">${nr.hp>0?"🏆":"💥"}</div>
-      <h2>${nr.hp>0?"Arène terminée !":"Plus de vies"}</h2><p>${msg}</p>
-      <p>${nr.hp>0?`Vous avez tenu les ${AR.rounds} manches.`:`Partie finie à la manche ${res.round}.`} ${nr.wins} manche${nr.wins>1?"s":""} gagnée${nr.wins>1?"s":""}.</p>
+    openDlg(`<div class="side" style="align-items:center;text-align:center"><div style="font-size:3rem" aria-hidden="true">${nr.done?"🏆":"💥"}</div>
+      <h2>${nr.done?"Arène réussie !":nr.hp>0?"Arène échouée":"Plus de vies"}</h2><p>${msg}</p>
+      <p>${nr.done?`Vous avez gagné la dernière manche.`:nr.hp>0?`La manche ${res.round} est perdue : pour réussir l’Arène, il faut gagner la dernière manche.`:`Partie finie à la manche ${res.round}.`} ${nr.wins} manche${nr.wins>1?"s":""} gagnée${nr.wins>1?"s":""}.</p>
       <p style="font-size:1.3rem"><b>+${fmtN(nr.credits)} crédits</b>${res.post?` <span class="muted">(dont ${fmtN(res.post)} après le plafond du jour)</span>`:res.bonus?` <span class="muted">(dont ${fmtN(res.bonus)} de bonus final)</span>`:""}</p>
       <p class="muted" style="font-size:.85rem">Les crédits gagnés pendant la partie sont à vous. Aujourd’hui : ${fmtN(AR_V.gained)} / ${fmtN(AR_V.cap)}.</p>
       <div class="actions"><button class="btn primary" data-ar="start">Rejouer</button><button class="btn" data-act="close">Fermer</button></div></div>`,true);
@@ -4737,7 +4743,7 @@ async function arFight(){
 function arRules(){
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Règles de l’Arène</h2><ul class="ar-rules">
     <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort. ${AR.lives} vies : une manche perdue coûte une vie, et la partie continue à la manche suivante avec ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
-    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche, et ${AR.finish} de bonus en finissant les ${AR.rounds} manches. Ils restent acquis, même en cas de défaite. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque partie terminée rapporte encore ${AR.afterCap} crédits.</li>
+    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche. Ils restent acquis, même en cas de défaite. Réussir l’Arène rapporte ${AR.finish} de bonus : il faut gagner la ${AR.rounds}<sup>e</sup> et dernière manche, la perdre fait échouer la partie, même avec des vies. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque Arène réussie rapporte encore ${AR.afterCap} crédits.</li>
     <li>Or : ${AR.startGold} au départ, puis ${AR.incBase} en manche 1 jusqu’à ${AR.incBase+Math.floor(AR.rounds/2)} en manche ${AR.rounds}, +1 par victoire, +1 d’intérêt par tranche de 10 or gardés (3 au plus).</li>
     <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon que vous avez déjà revient plus souvent, et les Pokémon des types de votre équipe aussi. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante, puis se déverrouille d’elle-même.</li>
     <li>3 exemplaires du même Pokémon : il évolue (ou gagne une étoile ⭐ en fin de lignée).</li>

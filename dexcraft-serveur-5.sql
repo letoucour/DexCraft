@@ -379,7 +379,10 @@ begin
   st := jsonb_set(st, '{hist}', coalesce(st -> 'hist', '[]') || to_jsonb(case when (res ->> 'win')::boolean then 1 else 0 end));
   if (st ->> 'hp')::int <= 0 or rd >= (a ->> 'rounds')::int then
     st := jsonb_set(st, '{over}', 'true');
-    if (st ->> 'hp')::int > 0 then
+    -- 1.3.19 (règle de Theo) : l'Arène n'est réussie qu'en gagnant la dernière manche ; la perdre fait échouer la partie,
+    -- même avec des vies (ni bonus final, ni crédits après le plafond, ni partie terminée pour les titres)
+    if (st ->> 'hp')::int > 0 and (res ->> 'win')::boolean then
+      st := jsonb_set(st, '{done}', 'true');
       -- une partie terminée quand le plafond du jour est atteint rapporte encore afterCap (50) crédits, hors compteur du jour
       -- (1.3.14 ; 1.3.15 : aussi quand c'est cette fin de partie, dernière manche ou bonus final, qui atteint le plafond)
       bonus := least((a ->> 'finish')::int, greatest(0, cap - gained - added));
@@ -387,7 +390,7 @@ begin
       d := public.dc__bump(d, 'arDone');
     end if;
     -- titre Invaincu (1.3.6) : les 10 manches sans perdre une vie
-    if (st ->> 'hp')::int >= (a ->> 'lives')::int then d := jsonb_set(d, '{stats,arPerf}', '1'); end if;
+    if (st ->> 'hp')::int >= (a ->> 'lives')::int and (res ->> 'win')::boolean then d := jsonb_set(d, '{stats,arPerf}', '1'); end if;
   else
     st := st || jsonb_build_object('round', rd + 1);
     st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + (rd + 1) / 2 + least(3, (st ->> 'gold')::int / 10)));
