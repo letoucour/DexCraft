@@ -1060,6 +1060,7 @@ dialog,.modal{overscroll-behavior:contain}
 .vb-rules{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
 .vb-rules summary{cursor:pointer;font-weight:700;color:var(--gold)}
 .vb-rules li{margin:4px 0}
+.evo-lack{margin-top:4px;font-size:.82rem;font-weight:700;color:var(--gold)}.evo-lack.ok{color:var(--ok)} /* onglet « Pas encore obtenus » (1.3.22) */
 .vb-music{margin-top:10px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 14px;font-weight:700;color:var(--gold)} /* 1.3.18 */
 .vb-music input{flex:1;accent-color:var(--gold)}.vb-music span{min-width:44px;text-align:right;color:var(--ink-soft);font-size:.85rem}
 /* VoltoBataille sur grand écran (1.0.0) : plateau à gauche, calé sur la hauteur de la fenêtre ; le reste à droite, sans défiler */
@@ -1433,7 +1434,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.21";
+const APP_VERSION="1.3.22";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3299,13 +3300,19 @@ function vEvolution(){
   const score=id=>{const ready=S.coll[id]>=EVO_COST;return ready&&missingTarget(id)?0:ready?1:2};
   const owned=Object.keys(S.coll).map(Number).filter(canEvolve).sort((a,b)=>score(a)-score(b)||S.coll[b]-S.coll[a]||a-b);
   const ready=owned.filter(id=>S.coll[id]>=EVO_COST);
+  // « Pas encore obtenus » (1.3.22, demande de Theo) : Pokémon dont une évolution manque, du plus proche au plus lointain,
+  // selon les exemplaires qu'il manque pour la faire en gardant le sien (EVO_COST + 1), puis le plus d'exemplaires
+  const lack=id=>Math.max(0,EVO_COST+1-S.coll[id]);
+  const todo=owned.filter(missingTarget).sort((a,b)=>lack(a)-lack(b)||S.coll[b]-S.coll[a]||a-b);
+  const nMiss=new Set(todo.flatMap(id=>evoTargets(id).filter(t=>!has(S,t)))).size;
   const q=norm2(evoQ.trim()),fam=q?evoFamily(q):null;
-  const list=fam?owned.filter(id=>fam.has(id)):evoFilter==="ready"?ready:owned;
+  const list=fam?owned.filter(id=>fam.has(id)):evoFilter==="ready"?ready:evoFilter==="missing"?todo:owned;
   const row=id=>{
     const c=S.coll[id],ok=c>=EVO_COST,last=c===EVO_COST;
     return `<div class="evo-row${ok?" ready":""}${last?" last":""}">
       <div class="evo-from"><div class="thumb">${evoTile(id)}</div><div style="min-width:0">
         <h3>${esc(nm(id))}</h3><div class="muted" style="font-size:.9rem">${c} exemplaire${c>1?"s":""}${ok?`, il en restera ${c-EVO_COST}`:""}</div>
+        ${!fam&&evoFilter==="missing"?`<div class="evo-lack${lack(id)?"":" ok"}">${lack(id)?`Encore ${lack(id)} exemplaire${lack(id)>1?"s":""} pour découvrir son évolution en gardant le vôtre`:"Prêt : faites-le évoluer en gardant un exemplaire"}</div>`:""}
         <div class="pips" aria-label="${Math.min(c,EVO_COST)} sur ${EVO_COST}">${Array.from({length:EVO_COST},(_,i)=>`<i class="${i<c?"on":""}"></i>`).join("")}</div>
         ${last?`<div class="evo-warn"><span aria-hidden="true">!</span> Après l’évolution, vous n’aurez plus aucun ${esc(nm(id))} : il redeviendra « ??? » dans votre collection.</div>`:""}</div></div>
       <span class="evo-arrow" aria-hidden="true">→</span>
@@ -3324,10 +3331,11 @@ function vEvolution(){
   <div class="evo-q qty" role="group" aria-label="Filtre">
     <button data-act="evo-filter" data-f="ready" aria-pressed="${!fam&&evoFilter==="ready"}">Prêts à évoluer (${ready.length})</button>
     <button data-act="evo-filter" data-f="all" aria-pressed="${!fam&&evoFilter==="all"}">Tous mes Pokémon évolutifs (${owned.length})</button>
+    <button data-act="evo-filter" data-f="missing" aria-pressed="${!fam&&evoFilter==="missing"}" title="Évolutions que vous n’avez pas encore, de la plus proche à la plus lointaine">Pas encore obtenus (${nMiss})</button>
   </div>
   ${fam?`<p class="muted" style="margin:10px 0 0;font-size:.9rem">${list.length} Pokémon de votre collection dans cette lignée, prêts ou non.</p>`:""}
   ${list.length?`<div class="evo-list">${list.map(row).join("")}</div>`
-    :`<div class="empty" style="margin-top:14px">${fam?"Aucun Pokémon évolutif de votre collection dans cette lignée.":evoFilter==="ready"?`Aucun Pokémon n’a encore ${EVO_COST} exemplaires. Ouvrez des boosters pour accumuler des doubles.`:"Aucun Pokémon évolutif dans votre collection pour l’instant."}</div>`}`;
+    :`<div class="empty" style="margin-top:14px">${fam?"Aucun Pokémon évolutif de votre collection dans cette lignée.":evoFilter==="missing"?"Vous avez déjà toutes les évolutions de vos Pokémon.":evoFilter==="ready"?`Aucun Pokémon n’a encore ${EVO_COST} exemplaires. Ouvrez des boosters pour accumuler des doubles.`:"Aucun Pokémon évolutif dans votre collection pour l’instant."}</div>`}`;
 }
 /* Évolution rapide : tous les Pokémon en 4 exemplaires ou plus (il en reste toujours au moins 1).
    all = false : seulement quand une évolution manque encore ; all = true (1.1.1) : aussi quand on les a déjà toutes,
