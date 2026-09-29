@@ -1443,7 +1443,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.5";
+const APP_VERSION="1.4.6";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2876,7 +2876,7 @@ function vCollection(){
     <button class="btn small" data-act="sel-clear" ${selN?"":"disabled"}>Vider</button>
     <button class="btn primary go" data-act="discard-go" ${selN?"":"disabled"}><span aria-hidden="true">◆</span> Défausser et gagner ${cr(selValue(discardSel))}</button></div>`:""}`;
 }
-let trdF="0",trdDbl=false,wishDbl=false,trdQ=""; // trdDbl : seulement les annonces où l'on a un double à proposer (1.2.0)
+let trdM=false,trdE=false,trdDbl=false,wishDbl=false,trdQ=""; // trdDbl : seulement les annonces où l'on a un double à proposer (1.2.0)
 const norm2=s=>String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 function cardMatches(id,q){
   q=norm2(q).trim();if(!q)return true;
@@ -2892,7 +2892,7 @@ function searchBar(act,val,ph){
 /* Annonces des autres joueurs par paquets (1.2.5), comme la collection : il peut y en avoir des milliers, et toute la
    page se redessine à chaque changement du marché. Les suivantes arrivent quand le bas approche (trdWatch). */
 const TRD_STEP=120;let trdLimit=TRD_STEP,trdSig="",trdObs=null,trdList=[];
-function trdLimitFor(){const sig=JSON.stringify([trdQ,trdF,trdDbl,trdR]);if(sig!==trdSig){trdSig=sig;trdLimit=TRD_STEP}return trdLimit}
+function trdLimitFor(){const sig=JSON.stringify([trdQ,trdM,trdE,trdDbl,trdR]);if(sig!==trdSig){trdSig=sig;trdLimit=TRD_STEP}return trdLimit}
 function trdMore(){
   const g=$("#trd-grid"),m=$("#trd-more");if(!g||!m)return;
   const next=trdList.slice(trdLimit,trdLimit+TRD_STEP);trdLimit+=TRD_STEP;
@@ -2921,7 +2921,10 @@ function vTrades(){
   const evoNeed=new Map();
   for(const id of Object.keys(S.coll).map(Number).filter(canEvolve))if(evoTargets(id).some(t=>!has(S,t)))evoNeed.set(id,Math.max(0,EVO_COST+1-S.coll[id]));
   const evoMiss=all.filter(([,m])=>evoNeed.has(m.card)).sort((a,b)=>evoNeed.get(a[1].card)-evoNeed.get(b[1].card));
-  const base=trdF==="1"?missing:trdF==="2"?evoMiss:all;
+  // « Manquantes / recherchées » et « Évolutions pas encore obtenues » se cumulent (1.4.6, demande de Theo) : les deux ensemble,
+  // les annonces de l’un ou de l’autre, par date ; « Toutes les cartes » les retire
+  const evoSet=new Set(evoMiss.map(([id])=>id));
+  const base=trdM&&trdE?all.filter(([id,m])=>evoSet.has(id)||!has(S,m.card)||wished(m.card)):trdM?missing:trdE?evoMiss:all;
   const withDbl=base.filter(([,m])=>hasDbl(m)),others=byR(trdDbl?withDbl:base);trdList=others;
   const myOffers=all.filter(([id,m])=>myOffer(id,m)); // mes propositions en attente chez les autres
   const pendMine=mine.reduce((n,[,m])=>n+offersOf(m).length,0);
@@ -2943,11 +2946,11 @@ function vTrades(){
     <span>${showHist?"Masquer":"Voir"} l’historique de mes échanges</span><span class="mt-arrow" aria-hidden="true">${showHist?"▲":"▼"}</span></button>
   ${showHist?histHTML():""}
   <section class="section"><h2>Annonces des autres joueurs</h2>
-  <div class="trd-filters"><div class="qty"><button data-act="trd-filter" data-v="0" aria-pressed="${trdF==="0"}">Toutes les cartes (${all.length})</button><button data-act="trd-filter" data-v="1" aria-pressed="${trdF==="1"}">Manquantes / recherchées (${missing.length})</button><button data-act="trd-filter" data-v="2" aria-pressed="${trdF==="2"}" title="Pokémon de votre collection dont une évolution vous manque encore : des exemplaires en plus pour la faire, du plus proche au plus lointain">Évolutions pas encore obtenues (${evoMiss.length})</button></div>
+  <div class="trd-filters"><div class="qty"><button data-act="trd-filter" data-v="0" aria-pressed="${!trdM&&!trdE}">Toutes les cartes (${all.length})</button><button data-act="trd-filter" data-v="1" aria-pressed="${trdM}">Manquantes / recherchées (${missing.length})</button><button data-act="trd-filter" data-v="2" aria-pressed="${trdE}" title="Pokémon de votre collection dont une évolution vous manque encore : des exemplaires en plus pour la faire, du plus proche au plus lointain">Évolutions pas encore obtenues (${evoMiss.length})</button></div>
     <select data-trdr aria-label="Rareté"><option value="all"${trdR==="all"?" selected":""}>Toutes les raretés</option>${rars.map(r=>`<option value="${r}"${String(r)===trdR?" selected":""}>${RAR[r]} (${all.filter(([,m])=>rar(m.card)===r).length})</option>`).join("")}</select>
     <div class="qty"><button data-act="trd-dbl" aria-pressed="${trdDbl}" title="Seulement les annonces pour lesquelles vous avez un double à proposer">🔁 J’ai un double à proposer (${withDbl.length})</button></div></div>
   ${others.length?`<div class="trade-grid" id="trd-grid">${others.slice(0,trdLimitFor()).map(([id,m])=>tradeTile(id,m)).join("")}</div>${others.length>trdLimit?`<div id="trd-more" class="coll-more" aria-hidden="true"></div>`:""}`
-    :`<div class="empty">${trdDbl?"Aucune annonce pour laquelle vous avez un double à proposer.":trdF==="1"?"Aucune carte qui vous manque ou que vous recherchez n’est proposée pour l’instant.":trdF==="2"?"Aucun Pokémon dont une évolution vous manque n’est proposé pour l’instant.":"Aucune annonce pour l’instant."}</div>`}</section>
+    :`<div class="empty">${trdDbl?"Aucune annonce pour laquelle vous avez un double à proposer.":trdM&&trdE?"Aucune carte qui vous manque, que vous recherchez ou qu’il vous faut pour une évolution n’est proposée pour l’instant.":trdM?"Aucune carte qui vous manque ou que vous recherchez n’est proposée pour l’instant.":trdE?"Aucun Pokémon dont une évolution vous manque n’est proposé pour l’instant.":"Aucune annonce pour l’instant."}</div>`}</section>
   ${mySel&&showMyTrades?myTradesBar():""}`;
 }
 let showMyTrades=false,showMyOffers=false,trdR="all",mySel=null,myLimit=120; // mySel : annonces choisies pour une action groupée ; myLimit : « Mes annonces » par paquets (1.3.10)
@@ -5105,7 +5108,7 @@ document.addEventListener("click",e=>{
       keepConfirm(id,()=>createTrade(id,v==="missing"?"missing":(+v||null)),()=>detail(id));break}
     case"cancel":closeDlg();cancelListing(mid);break;
     case"trade":tradeDlg(mid);break;
-    case"trd-filter":trdF=b.dataset.v;renderView();break;
+    case"trd-filter":{const v=b.dataset.v;if(v==="0")trdM=trdE=false;else if(v==="1")trdM=!trdM;else trdE=!trdE}renderView();break;
     case"trd-dbl":trdDbl=!trdDbl;renderView();break;
     case"wish-dbl":wishDbl=!wishDbl;renderView();break;
     case"give":tradeGive=id;document.querySelectorAll("#picker .pick").forEach(x=>x.classList.toggle("choice",+x.dataset.id===id));{const g=$("#give-go");g.disabled=false;g.textContent=`Proposer ${nm(id)}`}break;
