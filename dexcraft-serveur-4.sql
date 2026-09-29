@@ -12,8 +12,15 @@
 -- sans aucune carte du choix est retirée du tirage, pour que le booster respecte toujours ce qui a été acheté.
 create or replace function public.dc__open_special(d jsonb, cfg jsonb, p_kind text, p_val int, p_k int) returns jsonb language plpgsql volatile as $$
 declare now_ms bigint := public.dc__now(); sc text := cfg ->> 'spCard'; lst jsonb; pools jsonb := '[]'; pool jsonb;
-  odds bigint[] := '{}'; tot bigint := 0; b int; i int; r int; x bigint; id int; sh boolean; drawn jsonb := '[]'; legend int;
+  odds bigint[] := '{}'; tot bigint := 0; b int; i int; r int; x bigint; id int; sh boolean; drawn jsonb := '[]'; legend int; spc int;
 begin
+  -- cartes spéciales (1.4.17, rareté 8, jamais tirées au hasard) : condition dans secret_cards (unlock : need = cartes à posséder,
+  -- sp = booster spécial) ; la première fois qu'un joueur qui la remplit ouvre ce booster, sa dernière carte est la carte spéciale.
+  -- Une seule fois par joueur (spGot), même s'il l'échange ou la défausse ensuite.
+  select c.id into spc from public.secret_cards c
+    where c.data -> 8 -> 'unlock' ->> 'sp' = p_kind || ':' || p_val and not coalesce(d -> 'spGot', '{}') ? c.id::text
+      and not exists (select 1 from jsonb_array_elements_text(c.data -> 8 -> 'unlock' -> 'need') n where public.dc__count(d, n::int) < 1)
+    order by c.id limit 1;
   if p_kind = 'gen' and p_val between 1 and 9 then
     select coalesce(jsonb_agg(v), '[]') into lst from jsonb_array_elements(cfg -> 'dexOrder') with ordinality as t(v, n)
       where substr(sc, 3 * n::int - 2, 1) = p_val::text;
@@ -45,6 +52,9 @@ begin
       end loop;
       pool := pools -> r;
       id := (pool ->> public.dc__rnd(jsonb_array_length(pool)))::int;
+      if spc is not null and b = 1 and i = (cfg ->> 'cards')::int then
+        id := spc; r := 8; d := jsonb_set(d, '{spGot}', coalesce(d -> 'spGot', '{}') || jsonb_build_object(spc::text, now_ms));
+      end if;
       -- shiny : même règle que dc_open
       sh := false;
       if r <= 5 and cfg ? 'shinyBase' and not (cfg -> 'shinyNo' @> to_jsonb(id)) and not (d -> 'shiny' ? id::text) then

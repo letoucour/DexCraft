@@ -42,7 +42,7 @@ try{const t=localStorage.getItem("dc-theme");if(t==="light"||t==="dark")document
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --r6:#ff4fd8;
+  --r6:#ff4fd8; --r8:#8b5cf6;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
@@ -398,11 +398,46 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
   background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.95) 45%,rgba(190,205,230,.7) 55%,transparent 75%);background-size:280% 100%;animation:holo 2.8s linear infinite}
 .mini.r7{border:2px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,conic-gradient(#ffffff,#9aa3b5,#f2f4f8,#7d8496,#ffffff) border-box}
 .mini.r7 .mg{color:#dfe5f0}
+/* rareté Spéciale (1.4.17) : violet sombre, mystérieux, pas d'arc-en-ciel */
+.mini.r8{border:2px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,conic-gradient(#2a0f45,#7c3aed,#c4a3ff,#4c1d95,#2a0f45) border-box}
+.mini.r8 .mg{color:#a78bfa}
+.card.r8{--rc:#7c3aed;border-color:transparent;background:linear-gradient(#f6f2ff,#ebe3fb) padding-box,
+  conic-gradient(from var(--ang,0deg),#1b0a2e,#6d28d9,#c4a3ff,#3b0f6b,#1b0a2e,#8b5cf6,#1b0a2e) border-box;animation:angspin 6s linear infinite}
+.card.r8 .gems{color:#7c3aed;font-size:1.1rem;text-shadow:0 0 8px rgba(139,92,246,.6)}
+.card.r8::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:8px;mix-blend-mode:soft-light;
+  background:radial-gradient(circle at 30% 20%,rgba(196,163,255,.45),transparent 45%),radial-gradient(circle at 75% 80%,rgba(76,29,149,.4),transparent 50%);animation:specGlow 4s ease-in-out infinite alternate}
+@keyframes specGlow{from{opacity:.4}to{opacity:1}}
+.spec-txt{background:linear-gradient(90deg,#6d28d9,#c4a3ff,#8b5cf6,#e9d5ff,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700;filter:drop-shadow(0 0 6px rgba(139,92,246,.45))}
 .myth-txt{background:linear-gradient(90deg,#ff4f4f,#ffcf3f,#5fd68f,#4fc3ff,#b46cff,#ff4fd8);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 .mini.r6{border:2px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,conic-gradient(#ff4f4f,#ffcf3f,#5fd68f,#4fc3ff,#b46cff,#ff4fd8,#ff4f4f) border-box}
 .mini.r6 .mg{background:linear-gradient(90deg,#ff4f4f,#ffcf3f,#4fc3ff,#b46cff);-webkit-background-clip:text;background-clip:text;color:transparent}
 
 /* Mythique : la totale */
+/* scène d'une carte spéciale (1.4.17) : noir, brume violette, anneaux de runes, la carte sort de l'ombre */
+.legend.special{background:#05020b;animation:lgIn .6s ease-out;overflow:hidden}
+.legend.special .s-fog{position:absolute;inset:-25%;background:radial-gradient(circle at 50% 47%,rgba(124,58,237,.5),rgba(46,16,101,.32) 28%,transparent 58%);filter:blur(24px);opacity:0;animation:sFog 2.2s .2s ease-out forwards,sBreath 5s 2.4s ease-in-out infinite alternate}
+@keyframes sFog{to{opacity:1}}
+@keyframes sBreath{from{transform:scale(1)}to{transform:scale(1.1)}}
+.legend.special .s-ring{position:absolute;left:50%;top:45%;width:min(92vmin,660px);aspect-ratio:1;translate:-50% -50%;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,rgba(196,163,255,.5) 0 1.5deg,transparent 1.5deg 7deg,rgba(139,92,246,.35) 7deg 9deg,transparent 9deg 16deg);
+  -webkit-mask:radial-gradient(circle,transparent 63%,#000 64%,#000 67%,transparent 68%);mask:radial-gradient(circle,transparent 63%,#000 64%,#000 67%,transparent 68%);
+  opacity:0;animation:sRing 1.4s 1.3s ease-out forwards,spin 60s linear infinite}
+.legend.special .s-ring.r2{width:min(74vmin,520px);animation:sRing 1.4s 1.5s ease-out forwards,spin 38s linear infinite reverse;
+  background:repeating-conic-gradient(from 5deg,rgba(233,213,255,.4) 0 .8deg,transparent .8deg 4deg,rgba(124,58,237,.45) 4deg 12deg,transparent 12deg 20deg)}
+@keyframes sRing{from{opacity:0;scale:.82}to{opacity:.85;scale:1}}
+.legend.special .s-pulse{position:absolute;left:50%;top:45%;width:24px;height:24px;translate:-50% -50%;border-radius:50%;
+  background:radial-gradient(circle,rgba(233,213,255,.85),rgba(124,58,237,.45) 40%,transparent 70%);opacity:0;animation:sPulse 1.8s 1.3s ease-out forwards}
+@keyframes sPulse{0%{opacity:0;transform:scale(1)}12%{opacity:1}100%{opacity:0;transform:scale(55)}}
+.legend.special .lg-title{font-size:clamp(1.6rem,6.5vw,3.2rem);letter-spacing:.34em;text-transform:uppercase;padding-left:.34em;
+  background:linear-gradient(100deg,#6d28d9 0%,#c4a3ff 35%,#f5f0ff 50%,#a78bfa 65%,#6d28d9 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 14px rgba(139,92,246,.85));animation:sTitle 1.6s 1.6s ease-out both,shine 3.4s 3.2s linear infinite}
+@keyframes sTitle{from{opacity:0;letter-spacing:.9em}to{opacity:1;letter-spacing:.34em}}
+.legend.special .lg-card{width:min(280px,70vw);animation:sCard 2s 1.4s cubic-bezier(.2,.8,.25,1) both;filter:drop-shadow(0 0 26px rgba(139,92,246,.85)) drop-shadow(0 0 60px rgba(76,29,149,.8))}
+@keyframes sCard{0%{opacity:0;transform:scale(.82) translateY(24px);filter:blur(16px) brightness(.15)}55%{opacity:1;filter:blur(3px) brightness(.7)}
+  100%{opacity:1;transform:none;filter:drop-shadow(0 0 26px rgba(139,92,246,.85)) drop-shadow(0 0 60px rgba(76,29,149,.8))}}
+.legend.special .lg-name{animation:lgIn .9s 3s both;color:#ede4ff;text-shadow:0 0 14px rgba(167,139,250,.9)}
+.legend.special .lg-share{background:#7c3aed;color:#fff;animation-delay:3.2s;box-shadow:0 4px 18px rgba(124,58,237,.5)}
+.legend.special .lg-sub{animation:lgIn .6s 3.6s both;color:#c9b8f0}
 .legend.mythic{background:#05040c;animation:none;overflow:hidden}
 .mythic .m-bg{position:absolute;inset:-20%;background:radial-gradient(circle at 50% 55%,rgba(255,79,216,.35),transparent 45%),radial-gradient(circle at 30% 40%,rgba(79,195,255,.25),transparent 40%),radial-gradient(circle at 70% 40%,rgba(255,207,63,.25),transparent 40%);opacity:0;animation:mbg 1s 1.2s ease-out forwards,hue 6s 1.2s linear infinite}
 @keyframes mbg{to{opacity:1}}
@@ -537,7 +572,7 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .rar-pick b{font-size:.9rem}
 .rar-pick span{font-size:.78rem;color:var(--ink-soft);font-weight:700}
 .rar-pick.r0 b{color:var(--r0)}.rar-pick.r1 b{color:var(--r1)}.rar-pick.r2 b{color:var(--r2)}.rar-pick.r3 b{color:var(--r3)}.rar-pick.r5 b{color:var(--r5)}
-.rar-pick.r6 b{color:var(--r6)}.rar-pick.r7 b{color:#cfd6e2}
+.rar-pick.r8 b{color:#a78bfa}.rar-pick.r6 b{color:var(--r6)}.rar-pick.r7 b{color:#cfd6e2}
 .rar-pick[aria-pressed="true"]{border-color:var(--gold);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--gold)}
 .discard-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;gap:14px;align-items:center;
   background:var(--surface);border:2px solid var(--gold);border-radius:20px;padding:12px 16px;box-shadow:0 16px 40px rgba(0,0,0,.45),0 0 0 6px color-mix(in srgb,var(--gold) 18%,transparent);
@@ -606,6 +641,14 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .ava img+b{visibility:hidden}
 .ava-none{background:var(--surface-2);color:var(--gold)}
 .art-img{position:absolute;inset:4% 20%;width:60%;height:92%;object-fit:contain;z-index:1}
+/* carte secrète dont l’illustration remplit tout le cadre (champ full) et apparence « ancienne » (skin ancien, 1.4.17) */
+.card.art-full .art{flex-basis:50%;padding:0}.card.art-full .art-gen{display:none}.card.art-full .art-img{inset:0;width:100%;height:100%;object-fit:cover}.card.art-full .art-no,.card.art-full .art-initial{display:none}
+.card.skin-ancien{border-color:transparent;animation:none;color:#f3d77e;
+  background:radial-gradient(circle,rgba(240,205,110,.55) 0 .8px,transparent 1.3px) 0 0/6px 6px padding-box,radial-gradient(circle,rgba(240,205,110,.35) 0 .8px,transparent 1.3px) 3px 2px/9px 9px padding-box,linear-gradient(165deg,#43205f,#5d2c80 40%,#35194f) padding-box,
+    radial-gradient(circle,rgba(90,45,20,.55) 0 1px,transparent 1.6px) 0 0/5px 5px border-box,linear-gradient(135deg,#f3d77e,#b8892a 35%,#f0cf6a 60%,#9c7020) border-box}
+.card.skin-ancien .art{border:3px solid #c9a13b;box-shadow:inset 0 0 0 1px #6b4a12}.card.skin-ancien::after{opacity:.28}
+.card.skin-ancien .card-top,.card.skin-ancien .genus,.card.skin-ancien .card-foot,.card.skin-ancien .stats span,.card.skin-ancien .spec-lines{color:#e7c65a}
+.card.skin-ancien .card-name{color:#f6dc86;text-shadow:0 1px 0 #2a1238}
 .art-img~.art-initial{display:none}
 @media (max-width:1300px){.brand{font-size:1rem}nav.tabs button{font-size:.76rem;padding:4px 6px}.chip{font-size:.74rem;padding:3px 8px;gap:4px}.chip b{font-size:.9rem}.chips .ava,.chips .avf{--s:22px!important}}
 
@@ -948,10 +991,10 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ava-pick span.n{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ava-pick[aria-pressed="true"]{border-color:var(--gold);background:var(--surface-2)}
 .ava-pick:disabled{opacity:.4;cursor:not-allowed}
-.lb-row{grid-template-columns:32px auto minmax(0,1fr) 86px!important}
+.lb-row{grid-template-columns:32px auto minmax(0,1fr) auto!important} /* 1.4.17 : plus de colonne forcée à 86 px (les compteurs débordaient depuis la 1.4.16) */
 .lb-row .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lb-row .sc{font-family:var(--display);font-weight:700;display:grid;grid-template-columns:56px 40px 40px;gap:6px;justify-items:end;align-items:center;white-space:nowrap} /* 1.4.16 : ✨ ✦ ❖ sur une ligne, chacun dans sa colonne, alignés d’une rangée à l’autre (demande de Theo) */
-@media (max-width:640px){.lb-row .sc{grid-template-columns:auto auto auto;gap:4px;font-size:.85rem}}
+.lb-row .sc{font-family:var(--display);font-weight:700;display:grid;grid-template-columns:52px 38px 38px 38px;gap:5px;justify-items:end;align-items:center;white-space:nowrap} /* 1.4.16 : ✨ ✦ ❖ sur une ligne, chacun dans sa colonne, alignés d’une rangée à l’autre (demande de Theo) */
+@media (max-width:640px){.lb-row .sc{grid-template-columns:auto auto auto auto;gap:4px;font-size:.85rem}}
 .lb-bar{display:flex;height:9px;border-radius:999px;overflow:hidden;background:var(--surface-2)}
 .lb-bar .seg{display:block;height:100%}
 .seg.neutral{background:var(--ink-soft);opacity:.5}
@@ -1014,7 +1057,7 @@ dialog,.modal{overscroll-behavior:contain}
 @media (max-width:600px){.trade-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}
 .trade-tile{--rc:#b9bccb;position:relative;display:flex;flex-direction:column;align-items:stretch;padding:0;text-align:left;background:var(--surface);border:2px solid var(--rc);border-radius:12px;overflow:hidden;min-width:0;transition:transform .15s}
 .trade-tile:hover{transform:translateY(-2px)}
-.trade-tile.r1{--rc:#5fbf83}.trade-tile.r2{--rc:#5a9df0}.trade-tile.r3{--rc:#a86ef0}.trade-tile.r4{--rc:#2fd4c9}.trade-tile.r5{--rc:#f1b72a}.trade-tile.r6{--rc:#ff4fd8}.trade-tile.r7{--rc:#c9d2e0}
+.trade-tile.r1{--rc:#5fbf83}.trade-tile.r2{--rc:#5a9df0}.trade-tile.r3{--rc:#a86ef0}.trade-tile.r4{--rc:#2fd4c9}.trade-tile.r5{--rc:#f1b72a}.trade-tile.r6{--rc:#ff4fd8}.trade-tile.r8{--rc:#8b5cf6}.trade-tile.r7{--rc:#c9d2e0}
 .tt-art{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
   background:repeating-radial-gradient(circle at 78% 30%,rgba(255,255,255,.22) 0 2px,transparent 2px 10px),linear-gradient(135deg,var(--c1),var(--c2))}
 .tt-art img{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain;z-index:1}
@@ -1452,7 +1495,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.16";
+const APP_VERSION="1.4.17";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1472,7 +1515,7 @@ for(const r in RAR_FIX)RAR_FIX[r].forEach(id=>DEX[id-1][7]=+r);
 const EVO={"1":[2],"2":[3],"4":[5],"5":[6],"7":[8],"8":[9],"10":[11],"11":[12],"13":[14],"14":[15],"16":[17],"17":[18],"19":[20],"21":[22],"23":[24],"25":[26],"27":[28],"29":[30],"30":[31],"32":[33],"33":[34],"35":[36],"37":[38],"39":[40],"41":[42],"42":[169],"43":[44],"44":[45,182],"46":[47],"48":[49],"50":[51],"52":[53,863],"54":[55],"56":[57],"57":[979],"58":[59],"60":[61],"61":[62,186],"63":[64],"64":[65],"66":[67],"67":[68],"69":[70],"70":[71],"72":[73],"74":[75],"75":[76],"77":[78],"79":[80,199],"81":[82],"82":[462],"83":[865],"84":[85],"86":[87],"88":[89],"90":[91],"92":[93],"93":[94],"95":[208],"96":[97],"98":[99],"100":[101],"102":[103],"104":[105],"108":[463],"109":[110],"111":[112],"112":[464],"113":[242],"114":[465],"116":[117],"117":[230],"118":[119],"120":[121],"122":[866],"123":[212,900],"125":[466],"126":[467],"129":[130],"133":[134,135,136,196,197,470,471,700],"137":[233],"138":[139],"140":[141],"147":[148],"148":[149],"152":[153],"153":[154],"155":[156],"156":[157],"158":[159],"159":[160],"161":[162],"163":[164],"165":[166],"167":[168],"170":[171],"172":[25],"173":[35],"174":[39],"175":[176],"176":[468],"177":[178],"179":[180],"180":[181],"183":[184],"187":[188],"188":[189],"190":[424],"191":[192],"193":[469],"194":[195,980],"198":[430],"200":[429],"203":[981],"204":[205],"206":[982],"207":[472],"209":[210],"211":[904],"215":[461,903],"216":[217],"217":[901],"218":[219],"220":[221],"221":[473],"222":[864],"223":[224],"228":[229],"231":[232],"233":[474],"234":[899],"236":[106,107,237],"238":[124],"239":[125],"240":[126],"246":[247],"247":[248],"252":[253],"253":[254],"255":[256],"256":[257],"258":[259],"259":[260],"261":[262],"263":[264],"264":[862],"265":[266,268],"266":[267],"268":[269],"270":[271],"271":[272],"273":[274],"274":[275],"276":[277],"278":[279],"280":[281],"281":[282,475],"283":[284],"285":[286],"287":[288],"288":[289],"290":[291,292],"293":[294],"294":[295],"296":[297],"298":[183],"299":[476],"300":[301],"304":[305],"305":[306],"307":[308],"309":[310],"315":[407],"316":[317],"318":[319],"320":[321],"322":[323],"325":[326],"328":[329],"329":[330],"331":[332],"333":[334],"339":[340],"341":[342],"343":[344],"345":[346],"347":[348],"349":[350],"353":[354],"355":[356],"356":[477],"360":[202],"361":[362,478],"363":[364],"364":[365],"366":[367,368],"371":[372],"372":[373],"374":[375],"375":[376],"387":[388],"388":[389],"390":[391],"391":[392],"393":[394],"394":[395],"396":[397],"397":[398],"399":[400],"401":[402],"403":[404],"404":[405],"406":[315],"408":[409],"410":[411],"412":[413,414],"415":[416],"418":[419],"420":[421],"422":[423],"425":[426],"427":[428],"431":[432],"433":[358],"434":[435],"436":[437],"438":[185],"439":[122],"440":[113],"443":[444],"444":[445],"446":[143],"447":[448],"449":[450],"451":[452],"453":[454],"456":[457],"458":[226],"459":[460],"495":[496],"496":[497],"498":[499],"499":[500],"501":[502],"502":[503],"504":[505],"506":[507],"507":[508],"509":[510],"511":[512],"513":[514],"515":[516],"517":[518],"519":[520],"520":[521],"522":[523],"524":[525],"525":[526],"527":[528],"529":[530],"532":[533],"533":[534],"535":[536],"536":[537],"540":[541],"541":[542],"543":[544],"544":[545],"546":[547],"548":[549],"550":[902],"551":[552],"552":[553],"554":[555],"557":[558],"559":[560],"562":[563,867],"564":[565],"566":[567],"568":[569],"570":[571],"572":[573],"574":[575],"575":[576],"577":[578],"578":[579],"580":[581],"582":[583],"583":[584],"585":[586],"588":[589],"590":[591],"592":[593],"595":[596],"597":[598],"599":[600],"600":[601],"602":[603],"603":[604],"605":[606],"607":[608],"608":[609],"610":[611],"611":[612],"613":[614],"616":[617],"619":[620],"622":[623],"624":[625],"625":[983],"627":[628],"629":[630],"633":[634],"634":[635],"636":[637],"650":[651],"651":[652],"653":[654],"654":[655],"656":[657],"657":[658],"659":[660],"661":[662],"662":[663],"664":[665],"665":[666],"667":[668],"669":[670],"670":[671],"672":[673],"674":[675],"677":[678],"679":[680],"680":[681],"682":[683],"684":[685],"686":[687],"688":[689],"690":[691],"692":[693],"694":[695],"696":[697],"698":[699],"704":[705],"705":[706],"708":[709],"710":[711],"712":[713],"714":[715],"722":[723],"723":[724],"725":[726],"726":[727],"728":[729],"729":[730],"731":[732],"732":[733],"734":[735],"736":[737],"737":[738],"739":[740],"742":[743],"744":[745],"747":[748],"749":[750],"751":[752],"753":[754],"755":[756],"757":[758],"759":[760],"761":[762],"762":[763],"767":[768],"769":[770],"772":[773],"782":[783],"783":[784],"789":[790],"790":[791,792],"803":[804],"808":[809],"810":[811],"811":[812],"813":[814],"814":[815],"816":[817],"817":[818],"819":[820],"821":[822],"822":[823],"824":[825],"825":[826],"827":[828],"829":[830],"831":[832],"833":[834],"835":[836],"837":[838],"838":[839],"840":[841,842,1011],"843":[844],"846":[847],"848":[849],"850":[851],"852":[853],"854":[855],"856":[857],"857":[858],"859":[860],"860":[861],"868":[869],"872":[873],"878":[879],"884":[1018],"885":[886],"886":[887],"891":[892],"906":[907],"907":[908],"909":[910],"910":[911],"912":[913],"913":[914],"915":[916],"917":[918],"919":[920],"921":[922],"922":[923],"924":[925],"926":[927],"928":[929],"929":[930],"932":[933],"933":[934],"935":[936,937],"938":[939],"940":[941],"942":[943],"944":[945],"946":[947],"948":[949],"951":[952],"953":[954],"955":[956],"957":[958],"958":[959],"960":[961],"963":[964],"965":[966],"969":[970],"971":[972],"974":[975],"996":[997],"997":[998],"999":[1000],"1011":[1019],"1012":[1013]}; // numéro -> évolutions possibles
 const EVO_COST=3; // [nom, catégorie, génération, types, taille dm, poids hg, stats, rareté]
 const TYPES=[null,["Normal","#9a9c8e"],["Combat","#e0782a"],["Vol","#6fa3dc"],["Poison","#9141cb"],["Sol","#9a6a2f"],["Roche","#a39a6c"],["Insecte","#8a9a1b"],["Spectre","#704170"],["Acier","#5a95ad"],["Feu","#e03a2a"],["Eau","#2f80e8"],["Plante","#3a9a2a"],["Électrik","#e8b400"],["Psy","#e8457c"],["Glace","#3bbbd8"],["Dragon","#5060e1"],["Ténèbres","#5a4a4b"],["Fée","#e070e0"]];
-const RAR=["Commune","Peu commune","Rare","Épique","Mégas & Gigamax","Légendaire","Mythique","Transcendante"];
+const RAR=["Commune","Peu commune","Rare","Épique","Mégas & Gigamax","Légendaire","Mythique","Transcendante","Spéciale"]; // Spéciale (1.4.17) : jamais tirée au hasard, conditions de déblocage (serveur)
 /* Méga-évolutions (rareté 4) : numéros 4001 et suivants, champ base = Pokémon d'origine.
    [nom, catégorie, génération, types, taille (dm), poids (hg), stats, rareté, extra] */
 const MEGA={
@@ -1775,7 +1818,8 @@ const SPEC=Object.assign({},MEGA,FORMS);
 const MEGA_IDS=Object.keys(MEGA).map(Number);
 const MYTH_IDS=Object.keys(SPEC).map(Number).filter(id=>SPEC[id][7]===6);
 const TRANS_IDS=Object.keys(SPEC).map(Number).filter(id=>SPEC[id][7]===7);
-const HIDDEN_IDS=[...MYTH_IDS,...TRANS_IDS]; // invisibles tant qu'on ne les a pas
+const SPECIAL_IDS=Object.keys(SPEC).map(Number).filter(id=>SPEC[id][7]===8);
+const HIDDEN_IDS=[...MYTH_IDS,...TRANS_IDS,...SPECIAL_IDS]; // invisibles tant qu'on ne les a pas
 const MEGA_BY_BASE={};MEGA_IDS.forEach(id=>{const b=MEGA[id][8].base;(MEGA_BY_BASE[b]=MEGA_BY_BASE[b]||[]).push(id)});
 const REG_IDS=Object.keys(FORMS).map(Number).filter(id=>["alola","galar","hisui","paldea"].includes(FORMS[id][8].kind)); // formes régionales
 const GMAX_IDS=Object.keys(FORMS).map(Number).filter(id=>FORMS[id][8].kind==="gmax"); // Gigamax
@@ -1805,7 +1849,7 @@ const ODDS_K=[SCALE-MK-TK-OTHER_K.reduce((a,b)=>a+b,0),...OTHER_K,MK,TK];
 const ODDS=ODDS_K.map(v=>v*100/SCALE);
 const isSpec=id=>+id>1025;
 const D=id=>+id>1025?(SPEC[+id]||(isSecretId(id)?secretStub(+id):undefined)):DEX[id-1];
-const gems=r=>r===7?"❖":r===6?"✦":r===5?"★":r===4?"✪":"◆".repeat(r+1);
+const gems=r=>r===8?"✵":r===7?"❖":r===6?"✦":r===5?"★":r===4?"✪":"◆".repeat(r+1);
 const pct=v=>v.toLocaleString("fr-FR",{maximumFractionDigits:3})+" %";
 const ROMAN=["","I","II","III","IV","V","VI","VII","VIII","IX"];
 const STATN=["PV","Atq","Déf","A.Spé","D.Spé","Vit"];
@@ -1814,7 +1858,7 @@ const STATN=["PV","Atq","Déf","A.Spé","D.Spé","Vit"];
 const IMG_URL="images/{id}.webp";
 const PER=10*60*1000, MAXP=10, CARDS=5, START_CREDITS=1900; // nouveau joueur : 1 900 crédits et 10 boosters (1.0.0 ; 3 100 avant)
 // Crédits gagnés par carte défaussée, de Commune (0) à Transcendante (7)
-const DISCARD=[2,5,10,15,18,20,50,100];
+const DISCARD=[2,5,10,15,18,20,50,100,150];
 const dVal=id=>DISCARD[rar(+id)];
 const cr=n=>`${fmtN(n)} crédit${n>1?"s":""}`;
 const selValue=sel=>Object.entries(sel).reduce((a,[id,q])=>a+dVal(id)*q,0);
@@ -1906,7 +1950,7 @@ const DAILY=[{packs:10,credits:500},{packs:15,credits:700},{packs:20,credits:100
 let OWNER=false;
 const devOn=()=>OWNER&&!!(S&&S.dev);
 const fmtN=n=>Number(n).toLocaleString("fr-FR");
-const BYR=[[],[],[],[],[],[],[],[]]; DEX.forEach((d,i)=>BYR[d[7]].push(i+1)); SPEC_IDS.forEach(id=>BYR[SPEC[id][7]].push(id));
+const BYR=[[],[],[],[],[],[],[],[],[]]; DEX.forEach((d,i)=>BYR[d[7]].push(i+1)); SPEC_IDS.forEach(id=>BYR[SPEC[id][7]].push(id));
 const TAB=Math.random().toString(36).slice(2);
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2199,11 +2243,11 @@ function cardHTML(id,lg,sh){ // sh : version shiny (1.1.0)
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
   const chips=ex&&ex.chips?ex.chips.map(x=>`<span class="type" style="--t:${chipCol(ex,x,c1)}">${esc(x)}</span>`).join(""):ty.map(t=>`<span class="type" style="--t:${TYPES[t][1]}">${TYPES[t][0]}</span>`).join("");
   const kind=ex&&ex.base?(ex.kind?formTag(ex):"Méga"):"";
-  const label=r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
-  const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind==="forme"?ex.fn:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
-  return `<div class="card r${r}${lg?" lg":""}${sh?" shiny":""}" style="--c1:${c1};--c2:${c2}">
+  const label=r===8?"Carte spéciale":r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
+  const edition=r===8?"Édition spéciale":r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind==="forme"?ex.fn:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
+  return `<div class="card r${r}${lg?" lg":""}${sh?" shiny":""}${ex&&ex.skin?" skin-"+ex.skin:""}${ex&&ex.full?" art-full":""}" style="--c1:${c1};--c2:${c2}">
   <div class="card-top"><span>${sh?`<b class="sh-mark" title="Shiny">✨</b> `:""}${label}</span><span class="gems" aria-label="${rarName(id)}">${gems(r)}</span></div>
-  <div class="art">${imgFor(id,sh)?`<img class="art-img" src="${esc(imgFor(id,sh))}" alt="" onerror="this.remove()">`:""}<span class="art-initial" aria-hidden="true">${esc(n[0])}</span><span class="art-no" aria-hidden="true">${r===7?"❖":r===6?"✦":ex&&ex.base?ex.base:id}</span><span class="art-gen">${edition}</span></div>
+  <div class="art">${imgFor(id,sh)?`<img class="art-img" src="${esc(imgFor(id,sh))}" alt="" onerror="this.remove()">`:""}<span class="art-initial" aria-hidden="true">${esc(n[0])}</span><span class="art-no" aria-hidden="true">${r===8?"✵":r===7?"❖":r===6?"✦":ex&&ex.base?ex.base:id}</span><span class="art-gen">${edition}</span></div>
   <div class="card-name">${esc(n)}</div>
   <div class="genus">${esc(g)}</div>
   <div class="types">${chips}</div>
@@ -2250,13 +2294,13 @@ const secretAsked=new Set(),secretWant=new Set();let secretT=0;
 function secretStub(id){
   if(!secretAsked.has(id)&&!secretWant.has(id)){secretWant.add(id);clearTimeout(secretT);secretT=setTimeout(()=>loadSecrets().then(n=>{if(n)renderAll()}),300)}
   const r=id>=3000?7:6;
-  return ["???",r===7?"Carte transcendante":"Carte mythique",0,[],0,0,[],r,{c1:"#4a4a5a",c2:"#1c1c26",chips:[],lines:[],foot:""}];
+  return ["???",r===8?"Carte spéciale":r===7?"Carte transcendante":"Carte mythique",0,[],0,0,[],r,{c1:"#4a4a5a",c2:"#1c1c26",chips:[],lines:[],foot:""}];
 }
 function applySecrets(res){
-  if(res&&res.ids)for(const [r,arr] of [[6,MYTH_IDS],[7,TRANS_IDS]]){
+  if(res&&res.ids)for(const [r,arr] of [[6,MYTH_IDS],[7,TRANS_IDS],[8,SPECIAL_IDS]]){
     const l=(res.ids[r]||[]).map(Number).sort((a,b)=>a-b);arr.splice(0,arr.length,...l);BYR[r].splice(0,BYR[r].length,...l);
   }
-  HIDDEN_IDS.splice(0,HIDDEN_IDS.length,...MYTH_IDS,...TRANS_IDS);
+  HIDDEN_IDS.splice(0,HIDDEN_IDS.length,...MYTH_IDS,...TRANS_IDS,...SPECIAL_IDS);
   let n=0;for(const [id,d] of Object.entries((res&&res.cards)||{})){if(Array.isArray(d)){SPEC[+id]=d;n++}}
   return n;
 }
@@ -2850,15 +2894,15 @@ function collWatch(){ // après chaque affichage de la collection : charge le pa
 }
 function vCollection(){
   const uniq=Object.keys(S.coll).filter(k=>!isSpec(k)).length,total=Object.values(S.coll).reduce((a,b)=>a+b,0);
-  const per=[0,0,0,0,0,0,0,0];for(const id of Object.keys(S.coll))per[rar(+id)]++;
+  const per=[0,0,0,0,0,0,0,0,0];for(const id of Object.keys(S.coll))per[rar(+id)]++;
   const own=ids=>ids.filter(x=>(S.coll[x]||0)>0).length,nDex=masterCount(S.coll); // cartes différentes du Pokédex, par famille
-  const myth=per[6],trans=per[7];
-  const showR=i=>i<6||(i===6&&myth>0)||(i===7&&trans>0); // mythiques et transcendantes : chacune seulement une fois découverte (1.2.3 : l’une ne dévoile plus l’autre)
+  const myth=per[6],trans=per[7],spec=per[8];
+  const showR=i=>i<6||(i===6&&myth>0)||(i===7&&trans>0)||(i===8&&spec>0); // mythiques et transcendantes : chacune seulement une fois découverte (1.2.3 : l’une ne dévoile plus l’autre)
   const ids=filtered();const selN=discardSel?Object.values(discardSel).reduce((a,b)=>a+b,0):0;
   const opt=(k,v,l)=>`<option value="${v}"${String(filt[k])===String(v)?" selected":""}>${l}</option>`;
   return `<div class="col-head"><div><h1>Collection</h1>
     <div class="rar-counts">${RAR.map((r,i)=>{if(!showR(i))return "";const on=filt.r===String(i),b=`<button type="button" class="rc${on?" on":""}" data-act="rc-filter" data-r="${i}" aria-pressed="${on}" title="${on?"Toutes les raretés":"Voir seulement : "+r}">`;
-      const c=i>=6?`${b}<span class="${i===7?"trans-txt":"myth-txt"}">${gems(i)} <b>${per[i]}</b>/${BYR[i].length}</span></button>`:`${b}<span style="color:var(--r${i})">${gems(i)}</span> <b>${per[i]}</b>/${BYR[i].length}</button>`;
+      const c=i>=6?`${b}<span class="${i===8?"spec-txt":i===7?"trans-txt":"myth-txt"}">${gems(i)} <b>${per[i]}</b>/${BYR[i].length}</span></button>`:`${b}<span style="color:var(--r${i})">${gems(i)}</span> <b>${per[i]}</b>/${BYR[i].length}</button>`;
       return i===5?c+`<button type="button" class="rc${filt.own==="shiny"?" on":""}" data-act="rc-filter" data-r="shiny" aria-pressed="${filt.own==="shiny"}" title="${filt.own==="shiny"?"Toutes les cartes":"Voir seulement mes shiny"}"><span class="sh-sum">✨</span> <b>${fmtN(S.shinyN||0)}</b>/${fmtN(shinyTotal())}</button>`:c}).join("")}</div></div>
     <div class="actions">${discardSel?`<button class="btn small" data-act="discard-cancel">Quitter la défausse</button>`:tradeSel?`<button class="btn small" data-act="trade-cancel">Quitter la sélection</button>`:`<button class="btn" data-act="trade-mode">Mettre à l’échange</button><button class="btn" data-act="discard-mode">Défausser des cartes</button>`}</div></div>
   <div class="progress" style="margin-top:12px"><b style="width:${nDex*100/LB_TOTAL}%"></b></div>
@@ -2871,7 +2915,7 @@ function vCollection(){
     <select data-f="g" aria-label="Génération">${opt("g","all","Toutes générations")}${ROMAN.slice(1).map((r,i)=>opt("g",i+1,"Génération "+r)).join("")}</select>
   </div>
   ${discardSel?(()=>{
-    const dup=[0,0,0,0,0,0,0,0];let favSkipped=0;
+    const dup=[0,0,0,0,0,0,0,0,0];let favSkipped=0;
     for(const [k,v] of Object.entries(S.coll)){if(v<2)continue;if(S.fav&&S.fav[k]){favSkipped+=v-1;continue}dup[rar(+k)]+=v-1}
     const selR=i=>{let n=0;for(const [k,v] of Object.entries(discardSel))if(rar(+k)===i)n+=v;return n};
     return `<div class="discard-help">
@@ -3083,7 +3127,7 @@ function vRanking(){
   const all=Object.assign({},PLAYERS);if(ME&&S)all[ME]=Object.assign({},all[ME],S); // sa propre ligne toujours à jour
   const rows=Object.entries(all).map(([id,p])=>{
     const byr=p.byrV===BYR_V?p.byr:null,diff=byr?byr.slice(0,6).reduce((a,b)=>a+(b||0),0):(p.unique||0); // cartes différentes hors mythiques et transcendantes
-    return {id,u:p.unique||0,score:diff,t:p.total||0,c:p.credits||0,m:p.myth||0,x:p.trans||0,byr,mt:p.masterTs||Infinity,sn:p.shinyN||0};
+    return {id,u:p.unique||0,score:diff,t:p.total||0,c:p.credits||0,m:p.myth||0,x:p.trans||0,byr,mt:p.masterTs||Infinity,sn:p.shinyN||0,sp:(Array.isArray(p.byr)&&p.byr[8])||0};
   }).sort((a,b)=>b.score-a.score||(a.score===LB_TOTAL&&a.mt!==b.mt?a.mt-b.mt:0)||b.t-a.t); // entre Maîtres : le premier à avoir obtenu le titre devant
   return `<h1>Classement</h1>
   ${ME&&rows.some(r=>r.id===ME)?`<div class="actions" style="margin-top:10px"><button class="btn small" data-act="rank-me">Voir ma position (n° ${rows.findIndex(r=>r.id===ME)+1} sur ${rows.length})</button></div>`:""}
@@ -3091,7 +3135,7 @@ function vRanking(){
   <div class="lb" style="margin-top:16px">${rows.map((r,i)=>`<div class="lb-row${r.id===ME?" me":""}${i<3?" p"+(i+1):""}" data-act="player" data-uid="${esc(r.id)}" role="button" tabindex="0" aria-label="Profil de ${esc(nameOf(r.id))}">
     <span class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</span>${playerAva(r.id,36)}
     <div style="min-width:0"><div class="nm">${playerName(r.id)}${badgeTag(r.id,true)}</div>${lbBar(r)}</div>
-    <span class="sc"><span class="sh-sum" title="Shiny">${r.sn?`✨${fmtN(r.sn)}`:""}</span><span class="myth-txt">${r.m?`✦${r.m}`:""}</span><span class="trans-txt">${r.x?`❖${r.x}`:""}</span></span></div>`).join("")||`<div class="empty">Personne n’a encore joué.</div>`}</div>`;
+    <span class="sc"><span class="sh-sum" title="Shiny">${r.sn?`✨${fmtN(r.sn)}`:""}</span><span class="myth-txt">${r.m?`✦${r.m}`:""}</span><span class="trans-txt">${r.x?`❖${r.x}`:""}</span><span class="spec-txt">${r.sp?`✵${r.sp}`:""}</span></span></div>`).join("")||`<div class="empty">Personne n’a encore joué.</div>`}</div>`;
 }
 
 /* Profil d'un joueur, ouvert depuis le classement. Son profil complet n'est lu qu'à ce moment-là.
@@ -3101,7 +3145,7 @@ function playerDlg(uid){
   run(async()=>{
     const p=uid===ME?S:norm(await loadPlayer(uid));
     if(!p||!p.coll){toast("Ce joueur n’existe plus.");return}
-    const c=p.coll,per=[0,0,0,0,0,0,0,0];for(const k of Object.keys(c))per[rar(+k)]++;
+    const c=p.coll,per=[0,0,0,0,0,0,0,0,0];for(const k of Object.keys(c))per[rar(+k)]++;
     const since=p.created?new Date(p.created).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):"";
     const vit=vitOf(p); // vitrine (1.1.6) : remplace les favoris dans la fiche des autres joueurs
     const earned=TITLES.filter(t=>titleEarned(t,p)&&(!t.hidden||titleEarned(t,S)));
@@ -3116,7 +3160,7 @@ function playerDlg(uid){
         <div><b>${fmtN((p.stats&&p.stats.packs)||0)}</b><span class="muted">boosters ouverts</span></div>
         <div><b>${earned.length}</b><span class="muted">titres obtenus</span></div>
         <div><b>✨ ${fmtN(p.shinyN||0)}</b><span class="muted">shiny</span></div>
-        ${per[6]||per[7]?`<div><b>${per[6]?`<span class="myth-txt">✦${per[6]}</span> `:""}${per[7]?`<span class="trans-txt">❖${per[7]}</span>`:""}</b><span class="muted">trophées</span></div>`:""}</div>
+        ${per[6]||per[7]||per[8]?`<div><b>${per[6]?`<span class="myth-txt">✦${per[6]}</span> `:""}${per[7]?`<span class="trans-txt">❖${per[7]}</span> `:""}${per[8]?`<span class="spec-txt">✵${per[8]}</span>`:""}</b><span class="muted">trophées</span></div>`:""}</div>
       <div class="pl-rar">${[0,1,2,3,4,5].map(i=>`<span style="color:var(--r${i})">${gems(i)} ${RAR[i]}</span><span class="bar"><i style="width:${per[i]*100/BYR[i].length}%;background:var(--r${i})"></i></span><span>${per[i]} / ${BYR[i].length}</span>`).join("")}</div>
       ${vit.length?`<div><h3 style="margin:0 0 8px">🏆 Vitrine</h3><div class="vit-cards">${vit.map(v=>{const id=+v.i;return isSecretId(id)&&!has(S,id)&&uid!==ME?`<div class="vit-ghost" aria-label="Carte inconnue"><span>???</span></div>`:`<div class="vit-card">${cardHTML(id,false,!!v.s&&hasShiny(id,p))}</div>`}).join("")}</div></div>`:""}
     </div>`,true);
@@ -3275,6 +3319,7 @@ function vProfile(){
     ${S.dev?`<div class="actions" style="margin-top:16px">
       <button class="btn" data-act="test-mythic">Tester la carte mythique</button>
       <button class="btn" data-act="test-trans">Tester la carte transcendante</button>
+      <button class="btn" data-act="test-special">Tester la carte spéciale</button>
       <button class="btn" data-act="reset-once">Réinitialiser mes offres uniques</button>
       <button class="btn danger" data-act="reset-coll">Réinitialiser ma collection</button>
       <button class="btn danger" data-act="reset-profile">Reset profil</button>
@@ -4067,7 +4112,7 @@ function detail(id){
    Depuis la collection (cartes possédées) et depuis la scène d'une carte Légendaire qui vient de tomber. */
 const SITE_URL="https://dexcraft.fr";
 const SHARE_RC=["#b9bccb","#5fbf83","#5a9df0","#a86ef0","#2fd4c9","#f1b72a","#ff4fd8","#c9d2e0"];
-const SHARE_GEM=["#8a8fa8","#2f9e5b","#2f7fe0","#9a4fe6","#0f9c94","#d99a00","#ff4fd8","#7d8496"];
+const SHARE_GEM=["#8a8fa8","#2f9e5b","#2f7fe0","#9a4fe6","#0f9c94","#d99a00","#ff4fd8","#7d8496","#7c3aed"];
 let shareId=0,shareBlob=null,shareData="";
 function shareText(id,fresh,sh){
   const n=nm(id)+(sh?" shiny ✨":""),r=rar(id);
@@ -4078,8 +4123,8 @@ async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
   const [n,g,gen,ty,h,w,st,r,ex]=D(id);
   const c1=ex&&ex.c1?ex.c1:TYPES[ty[0]][1],c2=ex&&ex.c2?ex.c2:(ty[1]?TYPES[ty[1]][1]:c1);
   const kind=ex&&ex.base?(ex.kind?formTag(ex):"Méga"):"";
-  const label=r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
-  const edition=r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind==="forme"?ex.fn:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
+  const label=r===8?"Carte spéciale":r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
+  const edition=r===8?"Édition spéciale":r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind==="forme"?ex.fn:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
   const foot=ex&&(ex.foot||ex.lines)?(ex.foot||""):ex&&ex.kind==="gmax"?`${(h/10).toLocaleString("fr-FR")} m et plus`:ex&&!ex.kind?"":`${(h/10).toLocaleString("fr-FR")} m, ${(w/10).toLocaleString("fr-FR")} kg`;
   const chips=ex&&ex.chips?ex.chips.map(x=>[x,chipCol(ex,x,c1)]):ty.map(t=>[TYPES[t][0],TYPES[t][1]]);
   const src=imgFor(id,sh);let img=null;
@@ -4096,6 +4141,7 @@ async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
   // cadre de rareté
   let rc=SHARE_RC[r];
   if(r===6&&x.createConicGradient){rc=x.createConicGradient(0,150,210);["#ff4f4f","#ffcf3f","#5fd68f","#4fc3ff","#b46cff","#ff4fd8","#ff4f4f"].forEach((c,i)=>rc.addColorStop(i/6,c))}
+  if(r===8){rc=x.createLinearGradient(0,0,300,420);["#2a0f45","#7c3aed","#c4a3ff","#4c1d95","#2a0f45"].forEach((c,i)=>rc.addColorStop(i/4,c))}
   if(r===7){rc=x.createLinearGradient(0,0,300,420);["#eef1f6","#9aa3b5","#ffffff","#8d96a8","#e3e7ee"].forEach((c,i)=>rc.addColorStop(i/4,c))}
   x.shadowColor="rgba(0,0,0,.45)";x.shadowBlur=24;x.shadowOffsetY=8;rr(0,0,300,420,14);x.fillStyle=rc;x.fill();x.shadowColor="transparent";
   // fond de la carte
@@ -4113,7 +4159,7 @@ async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
   // illustration
   rr(16,32,268,142,9);x.save();x.clip();
   const ag=x.createLinearGradient(16,32,284,174);ag.addColorStop(0,c1);ag.addColorStop(1,c2);x.fillStyle=ag;x.fillRect(16,32,268,142);
-  x.fillStyle="rgba(255,255,255,.34)";x.font=disp(700,88);x.textAlign="right";x.textBaseline="alphabetic";x.fillText(r===7?"❖":r===6?"✦":String(ex&&ex.base?ex.base:id),290,196);
+  x.fillStyle="rgba(255,255,255,.34)";x.font=disp(700,88);x.textAlign="right";x.textBaseline="alphabetic";x.fillText(r===8?"✵":r===7?"❖":r===6?"✦":String(ex&&ex.base?ex.base:id),290,196);
   if(img){const s=Math.min(160/img.width,130/img.height);x.drawImage(img,150-img.width*s/2,103-img.height*s/2,img.width*s,img.height*s)}
   else{x.fillStyle="#fff";x.font=disp(700,52);x.textAlign="left";x.fillText(n[0],26,88)}
   x.font=body(700,11);x.textAlign="left";x.textBaseline="middle";const ew=x.measureText(edition).width+12;
@@ -4279,6 +4325,7 @@ function flipOne(b,c){
   if(r===5){legendSoon=true;setTimeout(()=>legendFx(c.id,c.shiny),450)}
   if(r===6){legendSoon=true;setTimeout(()=>mythicFx(c.id),450)}
   if(r===7){legendSoon=true;setTimeout(()=>transFx(c.id),450)}
+  if(r===8){legendSoon=true;setTimeout(()=>specialFx(c.id),450)}
 }
 let flippingAll=false,flipAbort=false,flipLock=false,flipGen=0;
 async function flipAll(){
@@ -4449,7 +4496,7 @@ const SFX=(()=>{
         tone(d,t+.28,1.5,{type:"sine",f0:146.8,vol:.35,attack:.02});
         tone(d,t+.28,1.5,{type:"sawtooth",f0:293.7,vol:.06,attack:.2,lp:1600});
         return}
-      if(r>=6){const d=out(.4);tone(d,t,.2,{f0:r===7?900:760,f1:r===7?200:240,vol:.4,lp:2400})} // la fanfare suit
+      if(r>=6){const d=out(.4);tone(d,t,.2,{f0:r===8?420:r===7?900:760,f1:r===8?90:r===7?200:240,vol:.4,lp:r===8?900:2400})} // la fanfare suit
     }
   };
 })();
@@ -4633,6 +4680,70 @@ function mythicFx(id){
       if(c.y>H+30){conf.splice(i,1);continue}
       cx.save();cx.translate(c.x,c.y);cx.rotate(c.rot);cx.scale(1,Math.cos(c.tilt));cx.fillStyle=c.c;cx.fillRect(-c.w/2,-c.h/2,c.w,c.h);cx.restore()}
     requestAnimationFrame(loop)})(last);
+}
+/* Scène d'une carte spéciale (1.4.17, demande de Theo) : mystérieuse, sombre et violette, très visuelle sans être extravagante.
+   Des lueurs convergent dans le noir, une onde sourde, deux anneaux de runes qui tournent lentement, la carte sort de l'ombre. */
+function specialFx(id){
+  legendSoon=true;
+  if(navigator.vibrate)try{vib([60,120,60,120,400])}catch(e){}
+  const ov=document.createElement("div");ov.className="legend special";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Carte spéciale obtenue");
+  ov.innerHTML=`<div class="s-fog"></div><div class="s-ring"></div><div class="s-ring r2"></div><canvas class="fw"></canvas><div class="s-pulse"></div>
+    <div class="lg-title">Spéciale</div><div class="lg-card">${cardHTML(id,true)}</div>
+    <div class="lg-name">${esc(D(id)[0])}</div><button class="btn lg-share" data-act="share-card" data-id="${id}" data-fresh="1">📤 Partager</button><div class="lg-sub">Touchez pour continuer</div>`;
+  document.body.append(ov);legendSoon=false;
+  const snd=specialSound();
+  let alive=true;
+  const close=()=>{if(!alive)return;alive=false;ov.remove();if(snd)snd.close();removeEventListener("keydown",onKey);if(pendingRender){pendingRender=false;updateReveal()}};
+  ov._close=close;setTimeout(()=>ov.addEventListener("click",close),3200);
+  const onKey=e=>{if(e.key==="Escape"||e.key==="Enter")close()};addEventListener("keydown",onKey);
+  if(RM())return;
+  const dpr=Math.min(2,devicePixelRatio||1),W=innerWidth*dpr,H=innerHeight*dpr,cv=ov.querySelector(".fw"),x=cv.getContext("2d");
+  cv.width=W;cv.height=H;
+  const cx=W/2,cy=H*.45,R=Math.max(W,H)*.6;
+  // lueurs : elles convergent vers le centre, puis, après l'onde, remontent lentement comme des braises
+  const motes=Array.from({length:110},()=>{const a=Math.random()*Math.PI*2,d=R*(.35+Math.random()*.65);
+    return {x:cx+Math.cos(a)*d,y:cy+Math.sin(a)*d,vx:0,vy:0,s:(.8+Math.random()*1.8)*dpr,h:258+Math.random()*30,l:.2+Math.random()*.5,ph:Math.random()*6}});
+  let last=performance.now();const t0=last;let burst=false;
+  (function loop(t){if(!alive)return;
+    const dt=Math.min(2.5,(t-last)/16.7),el=t-t0;last=t;
+    x.globalCompositeOperation="destination-out";x.fillStyle="rgba(0,0,0,.16)";x.fillRect(0,0,W,H);x.globalCompositeOperation="lighter";
+    if(!burst&&el>1350){burst=true;
+      for(const m of motes){const a=Math.atan2(m.y-cy,m.x-cx)+(Math.random()-.5)*.6,s=(2+Math.random()*5)*dpr;m.vx=Math.cos(a)*s;m.vy=Math.sin(a)*s;m.l=.9}}
+    for(const m of motes){
+      if(!burst){m.vx+=(cx-m.x)*.0009*dt;m.vy+=(cy-m.y)*.0009*dt;m.vx*=.95;m.vy*=.95;m.l=Math.min(.9,m.l+.004*dt)}
+      else{m.vx*=.965;m.vy=m.vy*.965-.018*dpr*dt;m.l=Math.max(.12,m.l-.004*dt);
+        if(m.y<-20){m.y=H+10;m.x=Math.random()*W;m.vx=0;m.vy=-(.3+Math.random()*.6)*dpr}}
+      m.x+=m.vx*dt+Math.sin((t/900)+m.ph)*.25*dpr;m.y+=m.vy*dt;
+      const g=x.createRadialGradient(m.x,m.y,0,m.x,m.y,m.s*4);g.addColorStop(0,`hsla(${m.h},90%,78%,${m.l})`);g.addColorStop(1,`hsla(${m.h},90%,50%,0)`);
+      x.fillStyle=g;x.beginPath();x.arc(m.x,m.y,m.s*4,0,7);x.fill()}
+    requestAnimationFrame(loop)})(last);
+}
+/* son de la scène spéciale : bourdon grave dans le noir, souffle qui monte, coup sourd et accord mineur voilé, notes de verre */
+function specialSound(){
+  if(SFX.muted())return null;
+  let ac;try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return null}
+  if(ac.state==="suspended")ac.resume().catch(()=>{});
+  const master=ac.createGain();master.gain.value=.36;master.connect(ac.destination);
+  const len=ac.sampleRate*4,ir=ac.createBuffer(2,len,ac.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2)}
+  const verb=ac.createConvolver();verb.buffer=ir;const vg=ac.createGain();vg.gain.value=1.2;verb.connect(vg);vg.connect(master);
+  const send=(g,a)=>{const s=ac.createGain();s.gain.value=a;g.connect(s);s.connect(verb)};
+  const nb=ac.createBuffer(1,ac.sampleRate*3,ac.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+  const voice=(type,f,start,dur,vol,lp,att)=>{const g=ac.createGain();g.gain.setValueAtTime(0,start);g.gain.linearRampToValueAtTime(vol,start+(att||.02));
+    g.gain.exponentialRampToValueAtTime(.0008,start+dur);const fl=ac.createBiquadFilter();fl.type="lowpass";fl.frequency.value=lp||4000;fl.connect(g);g.connect(master);send(g,.9);
+    for(const det of [-6,0,6]){const o=ac.createOscillator();o.type=type;o.frequency.value=f;o.detune.value=det;o.connect(fl);o.start(start);o.stop(start+dur+.05)}};
+  const now=ac.currentTime;
+  // 1) bourdon grave et souffle qui monte, dans le noir
+  voice("sine",55,now,4.8,.5,300,1.2);voice("sine",82.4,now+.2,4.4,.22,300,1.2);
+  {const s=ac.createBufferSource();s.buffer=nb;const f=ac.createBiquadFilter();f.type="bandpass";f.Q.value=2;f.frequency.setValueAtTime(180,now);f.frequency.exponentialRampToValueAtTime(1400,now+1.35);
+   const g=ac.createGain();g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.22,now+1.3);g.gain.exponentialRampToValueAtTime(.0001,now+1.6);s.connect(f);f.connect(g);g.connect(master);send(g,.6);s.start(now);s.stop(now+1.7)}
+  // 2) l'onde : coup sourd et accord mineur voilé
+  const T=now+1.35;
+  voice("sine",73.4,T,3.2,.7,200,.005);voice("triangle",36.7,T,2.2,.35,120,.005);
+  [110,164.8,196,261.6].forEach(f=>voice("sawtooth",f,T+.05,3.6,.05,700,.6));
+  // 3) notes de verre, lentes et descendantes (la mineur)
+  [1318.5,987.8,1046.5,880,659.3].forEach((f,i)=>voice("triangle",f,T+.55+i*.34,2.6,.07,7000,.01));
+  return {close:()=>{try{master.gain.setTargetAtTime(0,ac.currentTime,.3);setTimeout(()=>ac.close(),1200)}catch(e){}}};
 }
 function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
   legendSoon=true;
@@ -4985,6 +5096,7 @@ document.addEventListener("click",e=>{
     case"evo-filter":evoFilter=b.dataset.f;evoQ="";renderView();break;
     case"test-mythic":if(devOn())mythicFx(MYTH_IDS[0]);break;
     case"test-trans":if(devOn())transFx(TRANS_IDS[0]);break;
+    case"test-special":if(devOn()&&SPECIAL_IDS[0])specialFx(SPECIAL_IDS[0]);break;
     case"reset-coll":if(!devOn())break;openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Réinitialiser votre collection ?</h2>
       <p>Toutes vos cartes, vos crédits, vos boosters, vos favoris, vos achats uniques et vos annonces en cours seront effacés. Vous repartirez de zéro.</p>
       <div class="actions"><button class="btn danger" data-act="reset-coll-go">Tout effacer</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);break;
@@ -5710,7 +5822,7 @@ function titleDef(t){
     // les cartes secrètes viennent de secret/cartes-secretes.json, injecté par outils/generer-config.ps1 (jamais publié)
     const sec=window.DC_SECRETS;
     if(!sec){document.body.innerHTML=`<pre id="export-error">Cartes secrètes absentes : lancer outils/generer-config.ps1 (fichier secret/cartes-secretes.json).</pre>`;return}
-    const ids={6:[],7:[]};for(const [id,d] of Object.entries(sec))ids[d[7]].push(+id);applySecrets({ids,cards:sec});
+    const ids={6:[],7:[],8:[]};for(const [id,d] of Object.entries(sec))ids[d[7]].push(+id);applySecrets({ids,cards:sec});
     // en deux parties (1.1.8) : l'éditeur SQL de Supabase tronque au-delà d'environ 40 000 caractères ; la 2e partie est ajoutée à la 1re
     const cfg=gameConfig(),P2=["evo","pool","titleKeys","titleDefault","titleDefs","pgen","ptype","spCard"],P3=["arena","arStat","arChart","arBase"],a={},b={},c={};
     for(const [k,v] of Object.entries(cfg))(P3.includes(k)?c:P2.includes(k)?b:a)[k]=v; // partie 3 (1.3.0) : données de l'Arène

@@ -115,7 +115,7 @@ end $$;
 create or replace function public.dc__stamp(d jsonb, own boolean) returns jsonb language plpgsql volatile as $$
 declare
   cfg jsonb := public.dc__cfg(); r record; n int; rr int;
-  newcoll jsonb := '{}'; byr int[] := array[0,0,0,0,0,0,0,0];
+  newcoll jsonb := '{}'; byr int[] := array[0,0,0,0,0,0,0,0,0];   -- 9e case : cartes spéciales (1.4.17)
   uniq int := 0; myth int := 0; trans int := 0; tot bigint := 0; nmaster int := 0;
   now_ms bigint := public.dc__now(); tk jsonb; id int; t int;
   gencnt int[] := array_fill(0, array[9]); typecnt int[] := array_fill(0, array[18]);

@@ -91,9 +91,7 @@ begin
     end loop;
   end if;
   return jsonb_build_object(
-    'ids', jsonb_build_object(
-      '6', coalesce((select jsonb_agg(id order by id) from public.secret_cards where (data ->> 7)::int = 6), '[]'),
-      '7', coalesce((select jsonb_agg(id order by id) from public.secret_cards where (data ->> 7)::int = 7), '[]')),
+    'ids', coalesce((select jsonb_object_agg(r, l) from (select data ->> 7 r, jsonb_agg(id order by id) l from public.secret_cards group by 1) s), '{}'),   -- par rareté (6, 7, 8 depuis la 1.4.17)
     'cards', coalesce((select jsonb_object_agg(id::text, data) from public.secret_cards where id = any(ok)), '{}'));
 end $$;
 
