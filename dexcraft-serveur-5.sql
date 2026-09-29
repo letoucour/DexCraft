@@ -42,6 +42,10 @@ create or replace function public.dc__ar_cost(cfg jsonb, id int) returns int lan
 create or replace function public.dc__ar_evo(cfg jsonb, id int) returns int[] language sql immutable as $$
   select case when id = 550 then '{902}'::int[] else
     (select coalesce(array_agg(x::int), '{}') from jsonb_array_elements_text(coalesce(cfg -> 'evo' -> id::text, '[]')) x where x::int <= 1025) end $$;
+-- coefficient des statistiques selon les étoiles (starK) ; deux étoiles selon la rareté depuis la 1.4.12 (star2, demande de Theo)
+create or replace function public.dc__ar_stark(cfg jsonb, id int, s int) returns numeric language sql immutable as $$
+  select coalesce(case when s = 2 then (cfg -> 'arena' -> 'star2' ->> public.dc__ar_rar(cfg, id)::text)::numeric end,
+                  (cfg -> 'arena' -> 'starK' ->> s)::numeric, 1) $$;
 create or replace function public.dc__ar_max(r int) returns int language sql immutable as $$ select least(6, 3 + (r - 1) / 2) $$;
 -- rareté tirée selon la manche, parmi les raretés qui ont au moins un Pokémon (avail : 5 booléens) ; une ligne de odds par
 -- manche depuis la 1.4.7 (table de Theo), par bandes de 2 manches avant (5 lignes) ; au-delà de la dernière ligne, la dernière
@@ -363,7 +367,7 @@ begin
       continue when v is null or v = 'null';
       st := public.dc__ar_stat(sc, (v ->> 'i')::int); b := 0;
       foreach t in array public.dc__ar_types(pt, (v ->> 'i')::int) loop b := greatest(b, case when syn[t] >= 6 then .45 when syn[t] >= 4 then .3 when syn[t] >= 2 then .15 else 0 end); end loop;
-      s := coalesce((cfg -> 'arena' -> 'starK' ->> (v ->> 's')::int)::numeric, 1);
+      s := public.dc__ar_stark(cfg, (v ->> 'i')::int, (v ->> 's')::int);
       sd := sd || side; rw := rw || (k / 3); cl := cl || (k % 3); ids := ids || (v ->> 'i')::int; us := us || (v ->> 'u')::int;
       mx := mx || round((2 * st[1] + 60) * s * (1 + b) * pw)::int; atk := atk || (greatest(st[2], st[4]) * s * (1 + b) * pw); df := df || ((st[3] + st[5]) / 2.0); sp := sp || st[6];
       ty := ty || jsonb_build_array(to_jsonb(public.dc__ar_types(pt, (v ->> 'i')::int)));
@@ -404,7 +408,7 @@ begin
   -- places libres : les Pokémon les plus forts du banc (total des statistiques, étoile comprise)
   while (select count(*) from jsonb_array_elements(st -> 'board') x where x <> 'null') < public.dc__ar_max(rd) loop
     select x, j - 1 into v, k from jsonb_array_elements(st -> 'bench') with ordinality e(x, j) where x <> 'null'
-      order by (select sum(s) from unnest(public.dc__ar_stat(cfg ->> 'arStat', (x ->> 'i')::int)) s) * coalesce((cfg -> 'arena' -> 'starK' ->> (x ->> 's')::int)::numeric, 1) desc limit 1;
+      order by (select sum(s) from unnest(public.dc__ar_stat(cfg ->> 'arStat', (x ->> 'i')::int)) s) * public.dc__ar_stark(cfg, (x ->> 'i')::int, (x ->> 's')::int) desc limit 1;
     exit when v is null;
     st := jsonb_set(st, array['bench', k::text], 'null');
     st := jsonb_set(st, array['board', (select min(j - 1) from jsonb_array_elements(st -> 'board') with ordinality e(x, j) where x = 'null')::text], v);
