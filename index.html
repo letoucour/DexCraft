@@ -744,6 +744,9 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ar-spd button{font:inherit;font-weight:700;border:0;background:none;color:var(--ink-soft);border-radius:7px;padding:3px 7px;cursor:pointer}
 .ar-spd button[aria-pressed="true"]{background:var(--gold);color:var(--gold-ink)}
 .ar-small{font-size:.76rem;margin:4px 0 8px}
+.sfx-tg{font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:4px 10px;white-space:nowrap} /* bruitages on/off (1.4.0) */
+.sfx-tg[aria-pressed="false"]{color:var(--ink-soft);opacity:.75}
+.vb-sound{display:flex;gap:8px;align-items:stretch;margin-top:10px}.vb-sound .vb-music{flex:1;margin-top:0}
 .ar-music{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-size:.85rem} /* musique de l'Arène (1.3.21) */
 .ar-music input{width:90px;accent-color:var(--gold)}.ar-music span{min-width:34px;text-align:right;font-size:.75rem;color:var(--ink-soft)}
 @media (max-width:599px){.ar-music input{width:70px}.ar-music span{display:none}}
@@ -1028,6 +1031,7 @@ dialog,.modal{overscroll-behavior:contain}
 .vb-msg.win{color:var(--ok)}.vb-msg.lose{color:var(--danger)}
 .vb-board{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;user-select:none;-webkit-user-select:none}
 .vb-tile{position:relative;aspect-ratio:1;border:0;padding:0;border-radius:10px;perspective:600px;background:none}
+.vb-tile.pending{transform:scale(.93);filter:brightness(1.2);transition:transform .08s} /* carte cliquée, en attente de la réponse du serveur (1.4.0) */
 .vb-tile .in{position:absolute;inset:0;transition:transform .35s cubic-bezier(.3,1.3,.5,1);transform-style:preserve-3d}
 .vb-tile.open .in{transform:rotateY(180deg)}
 .vb-tile .face{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;align-items:center;justify-content:center}
@@ -1434,7 +1438,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.22";
+const APP_VERSION="1.4.0";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1998,6 +2002,10 @@ async function recoverOpen(before,k){
 /* Propositions reçues sur mes annonces d'échange, en attente de ma réponse (bulle de l'onglet Échanges) */
 const pendingOffers=()=>mode!=="online"||!ME?0:Object.values(MARKET).filter(m=>m.kind==="t"&&m.status==="open"&&m.owner===ME).reduce((n,m)=>n+offersOf(m).length,0);
 /* Plusieurs annonces d'un coup depuis la collection : une par carte, créées l'une après l'autre par le serveur */
+/* sélections groupées (défausse, mise à l'échange) : les favoris et les cartes recherchées restent de côté (1.4.0, demande de Theo) ;
+   on peut toujours les toucher une par une */
+const keepCard=id=>!!(S.fav&&S.fav[id])||wished(id);
+function keptToast(n){if(n)toast(`${n} carte${n>1?"s":""} favorite${n>1?"s":""} ou recherchée${n>1?"s":""} laissée${n>1?"s":""} de côté.`)}
 function tradeMany(ids,mode,auto,wants){
   if(tradeManyBusy){toast("Publication déjà en cours, patientez.");return}
   if(!ids.length)return;
@@ -2074,7 +2082,8 @@ function canOffer(m,c){
    le serveur garde pour chaque annonce les cartes de sa rareté. WANT_MAX cartes au plus. */
 const WANT_MAX=50;
 let wantPick=null;
-function wantPickOpen(rars,intro,done){wantPick={rars:[...new Set(rars)],sel:new Set(),miss:true,intro,done};wantPickRender()}
+function wantPickOpen(rars,intro,done){const rs=[...new Set(rars)]; // 1.4.0 : « Seulement celles qui me manquent » décoché d’office quand elles sont toutes possédées (on peut demander des cartes qu’on a)
+  wantPick={rars:rs,sel:new Set(),miss:DEX_ORDER.some(x=>rs.includes(rar(x))&&!has(S,x)),intro,done};wantPickRender()}
 const wantGoTxt=()=>wantPick&&wantPick.sel.size?`Valider (${wantPick.sel.size} carte${wantPick.sel.size>1?"s":""})`:"Choisissez des cartes";
 const wantPool=()=>DEX_ORDER.filter(x=>wantPick.rars.includes(rar(x))&&(!wantPick.miss||!has(S,x)||wantPick.sel.has(x)));
 function wantTile(x){
@@ -2093,7 +2102,7 @@ function wantPickRender(){
       ${wishN?`<button class="btn small" data-act="wp-wish">🔔 Ajouter mes cartes recherchées (${wishN})</button>`:""}
       <button class="btn small" data-act="wp-none">Tout décocher</button></div>
     <input type="search" class="pick-search" data-pick-search placeholder="Rechercher une carte" aria-label="Rechercher une carte">
-    <div class="picker" id="picker">${pool.map(wantTile).join("")||`<div class="empty" style="grid-column:1/-1">Aucune carte : vous les avez déjà toutes.</div>`}</div>
+    <div class="picker" id="picker">${pool.map(wantTile).join("")||`<div class="empty" style="grid-column:1/-1">Vous avez déjà toutes ces cartes : décochez « Seulement celles qui me manquent » pour en demander quand même.</div>`}</div>
     <div class="actions"><button class="btn primary" id="wp-go" data-act="wp-go">${wantGoTxt()}</button></div></div>`,true);
 }
 function wantPickAct(a,b){
@@ -2312,19 +2321,17 @@ const TITLES=[
   ...TYPES.slice(1).map(([tn,col],i)=>({k:"type"+(i+1),n:tn,ic:"●",g:"Types",cls:"tc",c:col,
     d:`Possède tous les Pokémon de type ${tn}`,ids:POKE_IDS.filter(x=>DEX[x-1][3].includes(i+1))})),
   /* Activité : compteurs du profil (stats), sans rétroactivité */
-  ...[["packs",100,"Déballeur","A ouvert {n} boosters"],["packs",1000,"Ouvre-boosters","A ouvert {n} boosters"],["packs",5000,"Accro aux boosters","A ouvert {n} boosters"],
+  ...[["packs",100,"Déballeur","A ouvert {n} boosters"],["packs",1000,"Ouvre-boosters","A ouvert {n} boosters"],["packs",2500,"Chasseur de boosters","A ouvert {n} boosters"],["packs",5000,"Accro aux boosters","A ouvert {n} boosters"], // 2 500 ajouté en 1.3.23 (écart trop grand, demande de Theo)
     ["evos",50,"Éleveur","A réalisé {n} évolutions"],["evos",250,"Évolutionniste","A réalisé {n} évolutions"],
     ["discards",500,"Recycleur","A défaussé {n} cartes"],
     // Fortuné et Magnat (crédits détenus d’un coup) retirés en 1.3.14 : Fortuné est devenu le titre du Pack Or
-    ["days",30,"Fidèle","A joué {n} jours différents"],["days",100,"Vétéran","A joué {n} jours différents"],
-    ["vbWins",50,"Joueur de casino","A gagné {n} manches de VoltoBataille"]]
+    ["days",30,"Fidèle","A joué {n} jours différents"],["days",100,"Vétéran","A joué {n} jours différents"]] // VoltoBataille : groupe à part depuis la 1.3.23
     .map(([stat,need,n,d])=>({k:stat+need,n,ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:d.replace("{n}",fmtN(need)),stat,need})),
   /* Shiny (1.1.0) : nombre de shiny débloqués (stats.shinyN, tenu par le serveur) */
   ...[[1,"Première étoile","A trouvé son premier shiny"],[10,"Daltonien","A trouvé {n} shiny"],[50,"Shiny Hunter","A trouvé {n} shiny"],[200,"Légende Chromatique","A trouvé {n} shiny"]]
     .map(([need,n,d])=>({k:"shinyN"+need,n,ic:"✨",g:"Shiny",cls:"tc",c:"#c9a227",d:d.replace("{n}",fmtN(need)),stat:"shinyN",need})),
   {k:"shinyAll",n:"Dormir n’est pas une option",ic:"✨",g:"Shiny",cls:"tc",c:"#c9a227",d:"A trouvé tous les shiny du jeu",stat:"shinyN",need:shinyTotal()},
   {k:"luck",n:"Chanceux",ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:"A obtenu 2 Légendaires dans un même booster",test:p=>!!(p.stats&&p.stats.luck)},
-  {k:"vbL8",n:"Démineur",ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:"A gagné une manche de VoltoBataille au niveau 8",test:p=>!!(p.stats&&p.stats.vbL8)},
   /* Échanges (1.3.6) : paliers et noms choisis par Theo (avant : Négociant 20, Diplomate 80, Charismatique 200) */
   ...[[20,"Négociant"],[80,"Baron"],[150,"Comte"],[250,"Diplomate"],[500,"Charismatique"],[750,"Duc"],[1000,"Empereur"]]
     .map(([need,n])=>({k:"trades"+need,n,ic:"⚜",g:"Échanges",cls:"tc",c:"#a0701c",d:`A conclu ${fmtN(need)} échanges`,stat:"trades",need})),
@@ -2333,6 +2340,13 @@ const TITLES=[
     ["arDone",1,"Vainqueur de l’Arène","A réussi une partie de l’Arène (dernière manche gagnée)"],["arDone",25,"Conquérant","A réussi 25 parties de l’Arène"]]
     .map(([stat,need,n,d])=>({k:stat+need,n,ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d,stat,need})),
   {k:"arPerf",n:"Invaincu",ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d:"A réussi une partie de l’Arène sans perdre une vie",test:p=>!!(p.stats&&p.stats.arPerf)},
+  /* VoltoBataille (1.3.23, demande de Theo) : groupe à part, comme l'Arène ; clés vbWins50 et vbL8 inchangées (titres déjà choisis gardés).
+     Manches gagnées et Démineur : compteurs tenus depuis la 0.3.0 ; Artificier (vbBooms) et Jackpot (vbMax) comptés depuis la 1.3.23. */
+  ...[["vbWins",10,"Parieur","A gagné 10 manches de VoltoBataille"],["vbWins",50,"Joueur de casino","A gagné 50 manches de VoltoBataille"],
+    ["vbWins",200,"Roi du casino","A gagné 200 manches de VoltoBataille"],["vbWins",500,"Légende de Doublonville","A gagné 500 manches de VoltoBataille"],
+    ["vbMax",2500,"Jackpot","A remporté une manche de VoltoBataille à 2 500 points ou plus"],["vbBooms",100,"Artificier","A fait exploser 100 Voltorbe"]]
+    .map(([stat,need,n,d])=>({k:stat+need,n,ic:"⚡",g:"VoltoBataille",cls:"tc",c:"#c98f00",d,stat,need})),
+  {k:"vbL8",n:"Démineur",ic:"⚡",g:"VoltoBataille",cls:"tc",c:"#c98f00",d:"A gagné une manche de VoltoBataille au niveau 8",test:p=>!!(p.stats&&p.stats.vbL8)},
 ];
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
 const TITLE_MAX=3,TITLE_DEFAULT=["maitre"]; // Alpha et Bêta testeur : badges à côté du pseudo depuis la 1.0.1, plus des titres
@@ -2837,7 +2851,7 @@ function vCollection(){
   ${ids.length?`<div class="grid" id="coll-grid">${ids.slice(0,collLimitFor(ids)).map(collTile).join("")}</div>${ids.length>collLimit?`<div id="coll-more" class="coll-more" aria-hidden="true"></div>`:""}`:`<div class="empty">Aucune carte ne correspond à ces filtres.</div>`}
   ${tradeSel?`<div class="discard-bar trade-bar${tradeSel.size?"":" empty"}">
     <div class="sum"><b>${tradeSel.size} carte${tradeSel.size>1?"s":""} sélectionnée${tradeSel.size>1?"s":""}</b><span>${tradeSel.size?"une annonce par carte":"touchez les cartes à proposer"}</span></div>
-    <label class="field tb-want">Demande<select id="ts-want" data-keep="ts-want"><option value="missing">N’importe quelle carte de même rareté qui me manque</option><option value="any">N’importe quelle carte de même rareté</option><option value="list">Plusieurs cartes précises…</option></select></label>
+    <label class="field tb-want">Demande<select id="ts-want" data-keep="ts-want"><option value="missing">N’importe quelle carte de même rareté qui me manque</option><option value="any">N’importe quelle carte de même rareté</option><option value="wish">Une de mes cartes recherchées 🔔</option><option value="list">Plusieurs cartes précises…</option></select></label>
     <label class="pref tb-auto" title="La première proposition valide est acceptée d’office, sans que vous ayez à répondre"><input type="checkbox" id="ts-auto"${tradeAuto?" checked":""}> ⚡ Accepter automatiquement</label>
     <button class="btn primary go" data-act="tsel-go" ${tradeSel.size?"":"disabled"}>Proposer ${tradeSel.size||""} annonce${tradeSel.size>1?"s":""}</button></div>`:""}
   ${discardSel?`<div class="discard-bar${selN?"":" empty"}">
@@ -2879,7 +2893,7 @@ function vTrades(){
   const mine=open.filter(([,m])=>m.owner===ME).filter(([,m])=>cardMatches(m.card,trdQ)).sort((a,b)=>offersOf(b[1]).length-offersOf(a[1]).length), // annonces avec des propositions à traiter en premier
         all=open.filter(([,m])=>m.owner!==ME).filter(([,m])=>cardMatches(m.card,trdQ));
   const byR=list=>trdR==="all"?list:list.filter(([,m])=>rar(m.card)===+trdR);
-  const missing=all.filter(([,m])=>!has(S,m.card));
+  const missing=all.filter(([,m])=>!has(S,m.card)||wished(m.card)); // 1.4.0 : « Manquantes / recherchées » (cloche 🔔 aussi sur une carte possédée)
   // annonces pour lesquelles on a un double à proposer (1.2.0) : une carte en 2 exemplaires ou plus que l'annonce accepte
   const dblR={};for(const [k,v] of Object.entries(S.coll))if(v>=2)(dblR[rar(+k)]=dblR[rar(+k)]||[]).push(+k);
   const hasDbl=m=>(dblR[rar(m.card)]||[]).some(c=>canOffer(m,c));
@@ -2908,11 +2922,11 @@ function vTrades(){
     <span>${showHist?"Masquer":"Voir"} l’historique de mes échanges</span><span class="mt-arrow" aria-hidden="true">${showHist?"▲":"▼"}</span></button>
   ${showHist?histHTML():""}
   <section class="section"><h2>Annonces des autres joueurs</h2>
-  <div class="trd-filters"><div class="qty"><button data-act="trd-filter" data-v="0" aria-pressed="${!trdMissing}">Toutes les cartes (${all.length})</button><button data-act="trd-filter" data-v="1" aria-pressed="${trdMissing}">Seulement celles qui me manquent (${missing.length})</button></div>
+  <div class="trd-filters"><div class="qty"><button data-act="trd-filter" data-v="0" aria-pressed="${!trdMissing}">Toutes les cartes (${all.length})</button><button data-act="trd-filter" data-v="1" aria-pressed="${trdMissing}">Manquantes / recherchées (${missing.length})</button></div>
     <select data-trdr aria-label="Rareté"><option value="all"${trdR==="all"?" selected":""}>Toutes les raretés</option>${rars.map(r=>`<option value="${r}"${String(r)===trdR?" selected":""}>${RAR[r]} (${all.filter(([,m])=>rar(m.card)===r).length})</option>`).join("")}</select>
     <div class="qty"><button data-act="trd-dbl" aria-pressed="${trdDbl}" title="Seulement les annonces pour lesquelles vous avez un double à proposer">🔁 J’ai un double à proposer (${withDbl.length})</button></div></div>
   ${others.length?`<div class="trade-grid" id="trd-grid">${others.slice(0,trdLimitFor()).map(([id,m])=>tradeTile(id,m)).join("")}</div>${others.length>trdLimit?`<div id="trd-more" class="coll-more" aria-hidden="true"></div>`:""}`
-    :`<div class="empty">${trdDbl?"Aucune annonce pour laquelle vous avez un double à proposer.":trdMissing?"Aucune carte qui vous manque n’est proposée pour l’instant.":"Aucune annonce pour l’instant."}</div>`}</section>
+    :`<div class="empty">${trdDbl?"Aucune annonce pour laquelle vous avez un double à proposer.":trdMissing?"Aucune carte qui vous manque ou que vous recherchez n’est proposée pour l’instant.":"Aucune annonce pour l’instant."}</div>`}</section>
   ${mySel&&showMyTrades?myTradesBar():""}`;
 }
 let showMyTrades=false,showMyOffers=false,trdR="all",mySel=null,myLimit=120; // mySel : annonces choisies pour une action groupée ; myLimit : « Mes annonces » par paquets (1.3.10)
@@ -3415,9 +3429,13 @@ const VB_AFTER=10; // 1.3.14 : plafond atteint, une manche gagnée rapporte enco
    odds : chances de rareté de la boutique (Commune, Peu commune, Rare, Épique, Légendaire) par bandes de 2 manches ;
    slot : chance qu'une case repropose un Pokémon de l'équipe ; typeW : poids des types joués, en part de la réserve ;
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
-const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,afterCap:50,winBase:60,winStep:20,startGold:6,incBase:6,
+const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,afterCap:100,winBase:60,winStep:20,startGold:6,incBase:6,
   odds:[[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]],cost:{0:1,1:2,2:3,3:4,5:5},
-  aiEvo:.07,aiPow0:.83,aiPowK:.042,slot:.2,typeW:1/75}; // 1.3.2 : slot .25 → .2 et typeW 1/60 → 1/75 ; 1.3.5 : ordinateur un peu plus fort (aiEvo .04, aiPow0 .65, aiPowK .03 avant ; « un poil simple », avis de Theo) ; 1.3.6 : encore un cran (.048, .69, .033 avant ; « encore trop simple ») ; 1.3.7 : .056, .74, .036 avant (« toujours trop simple ») ; 1.3.15 : .066, .80, .04 avant (un peu plus fort, contrepartie des synergies à 6)
+  aiEvo:.07,aiPow0:.83,aiPowK:.042,slot:.2,typeW:1/75,
+  // 1.4.0 (Arène v3.0, demande de Theo) : ordinateur un peu plus faible en manches 1 et 2 (aiEarly), plus fort à partir de la 5e (aiLate par manche) et
+  // surtout à la dernière (aiLast) ; intérêts 10 or = +1, 20 = +3, 30 et plus = +5 (interest) ; 1 or de moins par manche à partir de la 5e (incLate) ;
+  // coefficient des statistiques selon les étoiles (starK : 2 étoiles = 3 Pokémon à une étoile)
+  aiEarly:.03,aiLate:.012,aiLast:.08,interest:[0,1,3,5],incLate:1,starK:[1,1.6,2.5]}; // 1.3.2 : slot .25 → .2 et typeW 1/60 → 1/75 ; 1.3.5 : ordinateur un peu plus fort (aiEvo .04, aiPow0 .65, aiPowK .03 avant ; « un poil simple », avis de Theo) ; 1.3.6 : encore un cran (.048, .69, .033 avant ; « encore trop simple ») ; 1.3.7 : .056, .74, .036 avant (« toujours trop simple ») ; 1.3.15 : .066, .80, .04 avant (un peu plus fort, contrepartie des synergies à 6)
 const AR_CHART={1:{6:.5,9:.5,8:0},2:{1:2,6:2,9:2,15:2,17:2,3:.5,4:.5,7:.5,14:.5,18:.5,8:0},3:{2:2,7:2,12:2,6:.5,9:.5,13:.5},
   4:{12:2,18:2,4:.5,5:.5,6:.5,8:.5,9:0},5:{4:2,6:2,9:2,10:2,13:2,7:.5,12:.5,3:0},6:{3:2,7:2,10:2,15:2,2:.5,5:.5,9:.5},
   7:{12:2,14:2,17:2,2:.5,3:.5,4:.5,8:.5,9:.5,10:.5,18:.5},8:{8:2,14:2,17:.5,1:0},9:{6:2,15:2,18:2,9:.5,10:.5,11:.5,13:.5},
@@ -3466,14 +3484,14 @@ function vbTile(i,closed){
     <span class="face front v${v===null?"":v}">${v===null?"":v?v:vbVolt()}</span></span></button>`;
 }
 function vVolto(){
-  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.5</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
+  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.6</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
   const s=VB.srv,g=vbGained(S),left=Math.max(0,VB_CAP-g);vbMid=nextMidnight();
   VB.level=s.level;VB.score=s.state==="lost"?0:s.score;VB.state=s.state;
   let board="";
   for(let r=0;r<5;r++){for(let c=0;c<5;c++)board+=vbTile(r*5+c);board+=vbClue(s.rows[r],VB_COLORS[r])}
   for(let c=0;c<5;c++)board+=vbClue(s.cols[c],VB_COLORS[c]);
   board+=`<span></span>`;
-  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.5</span></h1>
+  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.6</span></h1>
     <p class="muted" style="margin:4px 0 0">Retournez les cartes, multipliez vos gains… et évitez les Voltorbe !</p>
     <div class="vb-day">
       <div class="vb-day-top"><span><b>${fmtN(g)} / ${fmtN(VB_CAP)}</b> crédits gagnés aujourd’hui</span><span class="muted">Remise à zéro dans <b data-countdown="${vbMid}">${fmtLeft(vbMid-Date.now())}</b></span></div>
@@ -3501,36 +3519,42 @@ function vVolto(){
       <li>Chaque manche gagnée fait monter d’un niveau, jusqu’au niveau 8. Après une défaite ou un encaissement, le niveau redescend au nombre de cartes retournées.</li>
       <li>Vous gagnez au plus <b>${fmtN(VB_CAP)} crédits par jour</b>. Le compteur repart de zéro chaque nuit à minuit. Une fois le plafond atteint, chaque manche gagnée rapporte encore ${VB_AFTER} crédits par niveau (${VB_AFTER*8} au niveau 8).</li>
     </ul></details>
-    ${musicSlider("volto","vbvol","vb-music","Musique")}</div>`;
+    <div class="vb-sound">${musicSlider("volto","vbvol","vb-music","Musique")}${sfxBtn("volto")}</div></div>`;
 }
 /* Retourne une carte : le serveur donne sa valeur (et tout le plateau si la manche se termine) */
 function vbFlip(i){
-  if(!VB||!VB.srv||VB.busy||VB.srv.state!=="play"||VB.srv.vals[i]!==null)return;
+  if(!VB||!VB.srv||VB.srv.state!=="play"||VB.srv.vals[i]!==null)return;
   const el=document.querySelector(`.vb-tile[data-i="${i}"]`);
   if(VB.memo){const mk=VB.marks[i],k=mk.indexOf(VB.mark);if(k<0)mk.push(VB.mark);else mk.splice(k,1);if(el)el.outerHTML=vbTile(i);return}
+  // 1.4.0 : un clic pendant qu'une carte est en route n'est plus perdu, il attend son tour ; la carte réagit tout de suite
+  if(VB.busy){VB.next=VB.next||[];if(!VB.next.includes(i)){VB.next.push(i);if(el)el.classList.add("pending")}return}
+  if(el)el.classList.add("pending");
   VB.busy=true;
   run(async()=>{
     let r;
-    try{r=await rpc("dc_vb_flip",{p_i:i},{render:false})}finally{VB.busy=false}
+    try{r=await rpc("dc_vb_flip",{p_i:i},{render:false})}
+    catch(e){VB.next=[];document.querySelectorAll(".vb-tile.pending").forEach(t=>t.classList.remove("pending"));throw e}
+    finally{VB.busy=false}
     const prev=VB.srv;VB.srv=r.vb;
     const tile=document.querySelector(`.vb-tile[data-i="${i}"]`);
     if(r.kind)VB.hide=true;   // fin de manche : on montre d'abord la carte retournée, le reste 450 ms après
     if(tile){tile.outerHTML=vbTile(i,true);const t2=document.querySelector(`.vb-tile[data-i="${i}"]`);void t2.offsetWidth;t2.classList.add("open")}
     if(r.val===0){
-      const t2=document.querySelector(`.vb-tile[data-i="${i}"]`);if(t2)t2.classList.add("boom");SFX.boom();
+      const t2=document.querySelector(`.vb-tile[data-i="${i}"]`);if(t2)t2.classList.add("boom");if(sfxOn("volto"))SFX.boom();
       const b=$("#vb-board");if(b&&!RM()){b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake")}
       if(navigator.vibrate)try{vib([60,40,120])}catch(e){}
-    }else SFX.flip(r.val===3?2:r.val===2?1:0);
-    if(r.kind){vbEnd(r);return}
+    }else if(sfxOn("volto"))SFX.flip(r.val===3?2:r.val===2?1:0);
+    if(r.kind){VB.next=[];vbEnd(r);return}
     const sc=$("#vb-score");if(sc)sc.textContent=fmtN(VB.srv.score);
     const q=$("#vb-quit");if(q)q.disabled=!VB.srv.score;
+    const nx=(VB.next||[]).shift();if(nx!==undefined)vbFlip(nx); // clic en attente
   });
 }
 /* Fin de manche (réponse du serveur) : message, puis plateau dévoilé */
 function vbEnd(r){
   const kind=r.kind,added=r.added||0,extra=r.extra||0,score=r.score||0,lvl=r.prevLevel,nl=r.level,round=VB.srv;
   const partial=added&&added<score?" (plafond du jour atteint)":"",none="le plafond du jour est déjà atteint, aucun crédit gagné.";
-  if(kind==="won"){VB.cls="win";VB.msg=`Bravo ! ${added+extra?`+${cr(added+extra)}.`:`Manche gagnée, mais ${none}`} ${nl>lvl?`Niveau ${nl} débloqué !`:"Niveau maximum !"}`;SFX.flip(3)}
+  if(kind==="won"){VB.cls="win";VB.msg=`Bravo ! ${added+extra?`+${cr(added+extra)}.`:`Manche gagnée, mais ${none}`} ${nl>lvl?`Niveau ${nl} débloqué !`:"Niveau maximum !"}`;if(sfxOn("volto"))SFX.flip(3)}
   else if(kind==="quit"){VB.cls="win";VB.msg=`${added?`Vous encaissez ${cr(added)}${partial}.`:`Manche arrêtée : ${none}`}${nl<lvl?` Niveau ${nl} pour la prochaine manche.`:""}`}
   else{VB.cls="lose";VB.msg=`Boum ! Un Voltorbe a explosé.${score?` ${cr(score)} perdu${score>1?"s":""}.`:""}${nl<lvl?` Retour au niveau ${nl}.`:""}`}
   const m=$("#vb-msg");if(m){m.textContent=VB.msg;m.className="vb-msg "+VB.cls}
@@ -4151,6 +4175,9 @@ const SHINY_SND="images/sons/shiny.mp3";
 const MUSIC={volto:{src:"images/sons/voltobataille.mp3?v=2",key:"dc-vb-music"},arena:{src:"images/sons/arena.mp3?v=1",key:"dc-ar-music"}};
 function musicVol(g){try{const v=parseFloat(localStorage.getItem(MUSIC[g].key));return isNaN(v)?.4:Math.min(1,Math.max(0,v))}catch(e){return .4}}
 const musicSlider=(g,keep,cls,label)=>`<label class="${cls}" title="Volume de la musique">🎵${label?" "+label:""} <input type="range" min="0" max="100" step="5" value="${Math.round(musicVol(g)*100)}" data-keep="${keep}" data-music="${g}" aria-label="Volume de la musique"><span id="mus-n-${g}">${Math.round(musicVol(g)*100)} %</span></label>`;
+/* bruitages d'un jeu, activés ou non (1.4.0 : bouton à côté du volume de la musique, dans l'Arène et la VoltoBataille) */
+const sfxOn=g=>{try{return localStorage.getItem("dc-sfx-"+g)!=="0"}catch(e){return true}};
+const sfxBtn=g=>`<button class="sfx-tg" data-act="sfx-toggle" data-g="${g}" aria-pressed="${sfxOn(g)}" title="Bruitages du jeu">${sfxOn(g)?"🔔":"🔕"} Bruitages</button>`;
 function musicSync(){
   let muted=false;try{muted=localStorage.getItem("dc-mute")==="1"}catch(e){}
   for(const g in MUSIC){const m=MUSIC[g],on=view===g&&!document.hidden&&!muted&&musicVol(g)>0;
@@ -4280,7 +4307,7 @@ function setPrefs(o){try{localStorage.setItem("dc-prefs",JSON.stringify(Object.a
 function vib(p){if(!prefs().vib)return;try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
 /* ---------- bruitages (synthétisés, aucun fichier) ---------- */
 const SFX=(()=>{
-  let ctx=null,master=null,verb=null,nbuf=null;
+  let ctx=null,master=null,verb=null,nbuf=null,lastHit=0;
   const muted=()=>{try{return localStorage.getItem("dc-mute")==="1"}catch(e){return false}};
   function get(){
     if(!ctx){try{ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return null}
@@ -4323,6 +4350,14 @@ const SFX=(()=>{
     muted,get,
     volume(){if(master)master.gain.value=.55*prefs().vol}, // réglage du volume appliqué tout de suite
     toggle(){try{localStorage.setItem("dc-mute",muted()?"0":"1")}catch(e){}return !muted()},
+    // Arène (1.4.0) : coup, coup super efficace et K.-O., courts et un peu variés (hauteur au hasard) pour ne pas lasser ;
+    // pas plus d'un coup toutes les 45 ms (combats accélérés)
+    hit(ko){if(muted()||!get()||ctx.currentTime-lastHit<.045)return;lastHit=ctx.currentTime;const t=ctx.currentTime+.005,d=out(.12),p=.9+Math.random()*.2;
+      noise(d,t,.09,{type:"bandpass",f0:2200*p,f1:700,q:1.2,vol:.32});tone(d,t,.12,{type:"triangle",f0:170*p,f1:70,vol:.38});
+      if(ko){tone(d,t+.04,.35,{f0:110,f1:40,vol:.45});noise(d,t+.04,.3,{type:"lowpass",f0:900,f1:120,vol:.25})}},
+    superHit(ko){if(muted()||!get())return;lastHit=0;this.hit(ko);const t=ctx.currentTime+.02,d=out(.3);
+      tone(d,t,.14,{type:"square",f0:1320,f1:1760,vol:.09,lp:4200});tone(d,t+.05,.18,{type:"square",f0:1760,f1:2350,vol:.07,lp:4800});
+      noise(d,t+.02,.16,{type:"highpass",f0:5000,vol:.1})},
     boom(){if(muted()||!get())return;const t=ctx.currentTime+.01,d=out(.5); // explosion de Voltorbe
       tone(d,t,.6,{f0:140,f1:38,vol:.75});noise(d,t,.7,{type:"lowpass",f0:1400,f1:120,vol:.6});noise(d,t+.02,.35,{type:"highpass",f0:3000,vol:.15})},
     open(multi){if(muted()||!get())return;const t=ctx.currentTime+.01;
@@ -4586,15 +4621,16 @@ const AR_SPEEDS=[[1,"×1"],[2,"×2"],[4,"×4"],[9,`<span class="ar-wide">Instant
 const arRun=()=>AR_V&&AR_V.run;
 const arMax=r=>Math.min(6,3+Math.floor((r-1)/2));
 /* intérêts (1.3.19, affichés dans la pastille de l'or) : +1 or par tranche de 10 or gardés en fin de manche, 3 au plus (comme dc_ar_fight) */
-const arInt=r=>Math.min(3,Math.floor(r.gold/10));
-const arIntTip=r=>`Intérêts : +1 or par tranche de 10 or gardés à la fin de la manche (3 au plus). ${arInt(r)?`Avec ${r.gold} or : +${arInt(r)}.`:`Gardez 10 or pour gagner +1.`}`;
-const arCost=u=>AR.cost[rar(u.i)]*(u.s?3:1);
+const arInt=r=>AR.interest[Math.min(3,Math.floor(r.gold/10))]; // 1.4.0 : 10 or = +1, 20 = +3, 30 et plus = +5
+const arIntTip=r=>`Intérêts en fin de manche : 10 or gardés = +${AR.interest[1]}, 20 = +${AR.interest[2]}, 30 et plus = +${AR.interest[3]}. ${arInt(r)?`Avec ${r.gold} or : +${arInt(r)}.`:`Gardez 10 or pour gagner +${AR.interest[1]}.`}`;
+const arCost=u=>AR.cost[rar(u.i)]*(u.s===2?9:u.s?3:1); // 2 étoiles (1.4.0) : 3 Pokémon à une étoile
+const arD=id=>id===550?8018:id; // 1.4.0 : dans l'Arène, Bargantua joue la forme Motif Blanc (évolue en Paragruel, comme dans les jeux)
 const arUnits=()=>{const r=arRun();return r?[...r.board,...r.bench].filter(Boolean):[]};
 const arFind=uid=>arUnits().find(u=>u.u===uid);
 const arLayout=()=>{const r=arRun();return {p_board:r.board.map(u=>u?u.u:null),p_bench:r.bench.map(u=>u?u.u:null)}};
 function arSet(v){ // réponse du serveur : partie, crédits du jour, message d'évolution
   AR_V={run:v.run||null,gained:v.gained||0,cap:v.cap||AR.cap};
-  if(typeof v.msg==="string"){const [k,a,b]=v.msg.split(":");toast(k==="evo"?`✨ ${nm(+a)} évolue en ${nm(+b)} !`:`⭐ ${nm(+a)} passe à une étoile !`)}
+  if(typeof v.msg==="string"){const [k,a,b]=v.msg.split(":");toast(k==="evo"?`✨ ${nm(arD(+a))} évolue en ${nm(arD(+b))} !`:k==="star2"?`🌟 ${nm(arD(+a))} passe à deux étoiles !`:`⭐ ${nm(arD(+a))} passe à une étoile !`)}
 }
 function arLoad(){if(arLoading)return;arLoading=true;rpc("dc_ar_state",{},{render:false}).then(v=>{arSet(v);renderView()}).catch(e=>toast(e.message)).finally(()=>{arLoading=false})}
 function arAct(name,args){ // action sur le serveur, avec le placement actuel
@@ -4628,9 +4664,9 @@ function arSynCount(units,title){ // 1.3.19 : les deux camps (« Vous : » à ga
    Multiplicateur comme le serveur (dc__ar_mult) : meilleur type de l'attaquant, cumulé sur les types du défenseur. */
 const arMult=(a,dd)=>Math.max(...a.map(x=>dd.reduce((m,y)=>m*((AR_CHART[x]||{})[y]??1),1)));
 function arSideInfo(){
-  const r=arRun(),me=r.board.filter(Boolean),en=r.enemy.board.filter(Boolean),ty=u=>D(u.i)[3];
+  const r=arRun(),me=r.board.filter(Boolean),en=r.enemy.board.filter(Boolean),ty=u=>D(arD(u.i))[3];
   const hit=en.filter(e=>me.some(m=>arMult(ty(m),ty(e))>=2)),fear=en.filter(e=>me.some(m=>arMult(ty(e),ty(m))>=2));
-  const names=l=>[...new Set(l.map(u=>nm(u.i)))].map(n=>`<span>${esc(n)}</span>`).join("");
+  const names=l=>[...new Set(l.map(u=>nm(arD(u.i))))].map(n=>`<span>${esc(n)}</span>`).join("");
   const types=me.length?`<div class="ar-edge"><b>💪 Vous frappez fort</b><div>${hit.length?names(hit):`<em>personne</em>`}</div>
     <b>⚠️ Ils vous frappent fort</b><div>${fear.length?names(fear):`<em>personne</em>`}</div></div>`
     :`<p class="muted ar-small">Placez des Pokémon pour voir vos avantages de types.</p>`;
@@ -4647,12 +4683,12 @@ function arSynLine(){const r=arRun(),on=arSyn(r.board.filter(Boolean)),l=Object.
 const AR_STN=["PV","Atq","Déf","A.Spé","D.Spé","Vit"];
 function arInfoInner(u,ref){ // u : {i, s} ; ref : Pokémon sélectionné, comparé (vert : mieux, rouge : moins bien)
   if(!u)return `<h3>Fiche</h3><p class="muted ar-small">Touchez un de vos Pokémon, ou passez sur une offre de la boutique ou un adversaire, pour voir sa fiche. Un Pokémon choisi puis un autre survolé : leurs statistiques sont comparées.</p>`;
-  const [n,cat,,ty,,,st,r]=D(u.i),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,k=u.s?1.6:1,all=Array.from({length:18},(_,i)=>i+1);
+  const [n,cat,,ty,,,st,r]=D(arD(u.i)),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,k=AR.starK[u.s||0]||1,all=Array.from({length:18},(_,i)=>i+1);
   const strong=all.filter(t=>ty.some(a=>(AR_CHART[a]||{})[t]===2)),weak=all.filter(t=>ty.reduce((m,d)=>m*((AR_CHART[t]||{})[d]??1),1)>=2);
   const chips=l=>l.length?`<span class="ar-tags">${l.map(t=>`<span style="--t:${TYPES[t][1]}">${TYPES[t][0]}</span>`).join("")}</span>`:`<span class="muted">aucun</span>`;
   const evo=(EVO[u.i]||[]).filter(x=>x<=1025);
   return `<h3>${esc(n)}${u.s?" ⭐":""}</h3><div class="muted ar-small">${esc(cat)} · ${AR_RARN[r]} · 🪙 ${AR.cost[r]}</div>
-    <div class="ar-ipart" style="--c1:${c1};--c2:${c2}">${imgFor(u.i)?`<img src="${esc(imgFor(u.i))}" alt="">`:""}</div>
+    <div class="ar-ipart" style="--c1:${c1};--c2:${c2}">${imgFor(arD(u.i))?`<img src="${esc(imgFor(arD(u.i)))}" alt="">`:""}</div>
     <span class="ar-tags">${ty.map(t=>`<span style="--t:${TYPES[t][1]}">${TYPES[t][0]}</span>`).join("")}</span>
     ${ref?`<p class="ar-small muted" style="margin:4px 0 0">Comparé à ${ref.shop?"":"votre "}${esc(nm(ref.i))}${ref.s?" ⭐":""}${ref.shop?" de la boutique":""} :</p>`:""}
     <div class="ar-ipst${ref?" cmp":""}" style="--c1:${c1};--c2:${c2}">${st.map((v,i)=>{const val=Math.round(v*k),d=ref?val-Math.round(D(ref.i)[6][i]*(ref.s?1.6:1)):0;
@@ -4663,19 +4699,19 @@ function arInfoInner(u,ref){ // u : {i, s} ; ref : Pokémon sélectionné, compa
 function arInfoShow(u){arHover=u;const p=$(".ar-infop"),s=arSel&&arFind(arSel);if(p)p.innerHTML=arInfoInner(arHover||s,arHover&&s&&arHover!==s?s:null)}
 /* ---------- affichage ---------- */
 function arUnitHTML(u,enemy){
-  if(!u)return "";const [n,,,ty,,,,r]=D(u.i),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(u.i);
+  if(!u)return "";const [n,,,ty,,,,r]=D(arD(u.i)),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(arD(u.i));
   return `<div class="ar-unit${enemy?" enemy":""}${arSel===u.u?" sel":""}" data-uid="${u.u}"${enemy?"":` data-ar-drag="u:${u.u}"`} style="--c1:${c1};--c2:${c2};--rc:var(--r${r})">
-    ${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${u.s?`<span class="ar-star">★</span>`:""}${enemy?"":`<span class="ar-cost">${arCost(u)}</span>`}
+    ${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${u.s?`<span class="ar-star">${u.s===2?"★★":"★"}</span>`:""}${enemy?"":`<span class="ar-cost">${arCost(u)}</span>`}
     <span class="ar-un">${esc(n)}</span><span class="ar-hp"><i style="width:100%"></i></span></div>`;
 }
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.6</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.0</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
-    <button class="btn small" data-ar="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${r&&!r.over?`<button class="btn small" data-ar="new" title="Nouvelle partie">↻<span class="ar-wide"> Nouvelle partie</span></button>`:""}${musicSlider("arena","arvol","ar-music","")}</div>`;
+    <button class="btn small" data-ar="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${r&&!r.over?`<button class="btn small" data-ar="new" title="Nouvelle partie">↻<span class="ar-wide"> Nouvelle partie</span></button>`:""}${musicSlider("arena","arvol","ar-music","")}${sfxBtn("arena")}</div>`;
   if(!r||r.over)return `<div class="arena ar-intro">${top}<div class="ar-start">
     <p>Composez une équipe avec les Pokémon de <b>votre collection</b>, faites-les évoluer en réunissant 3 exemplaires, et affrontez l’ordinateur sur ${AR.rounds} manches. Chaque manche gagnée rapporte des crédits (${fmtN(AR.cap)} par jour au plus).</p>
     ${r&&r.over?`<p class="muted">Dernière partie : ${r.wins} manche${r.wins>1?"s":""} gagnée${r.wins>1?"s":""}, +${fmtN(r.credits)} crédits.</p>`:""}
@@ -4693,17 +4729,17 @@ function vArena(){
       <div class="ar-side">${[0,1,2,3,4,5].map(i=>{const u=r.board[i],free=empt.includes(i);return `<div class="ar-slot${free?" free":""}${!u&&on>=max?" closed":""}${sel&&!u&&(on<max||r.board.includes(sel))?" drop":""}" data-ar="slot" data-zone="board" data-i="${i}" data-ar-drop="board:${i}">${arUnitHTML(u)}${free?`<span class="ar-tag">+ libre</span>`:!u&&on>=max?`<span class="ar-tag">🔒</span>`:""}</div>`}).join("")}</div>
     </div><div class="ar-frsp ar-syncol ar-mirror">${arSynCount(r.enemy.board,"Adversaire :")}</div></div>
     ${arSynLine()}
-    <div class="ar-log" id="ar-log">${sel?`${esc(nm(sel.i))} choisi : touchez une case, ou glissez-le.`:`Touchez ou glissez un Pokémon pour le placer<span class="ar-wide"> ; glissez-le sur la boutique pour le vendre</span>.`}</div>
+    <div class="ar-log" id="ar-log">${sel?`${esc(nm(arD(sel.i)))} choisi : touchez une case, ou glissez-le.`:`Touchez ou glissez un Pokémon pour le placer<span class="ar-wide"> ; glissez-le sur la boutique pour le vendre</span>.`}</div>
     <div class="ar-dock">
       <div class="ar-benchw"><div class="ar-lbl">Banc</div><div class="ar-bench">${r.bench.map((u,i)=>`<div class="ar-slot${sel&&!u?" drop":""}" data-ar="slot" data-zone="bench" data-i="${i}" data-ar-drop="bench:${i}">${arUnitHTML(u)}</div>`).join("")}</div></div>
       <div class="ar-shopw"><div class="ar-lbl ar-shoplbl">Boutique</div><div class="ar-purse"><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip" title="${r.gold} or. ${arIntTip(r)}">🪙 <b>${r.gold}</b>${arInt(r)?` <i class="ar-int">+${arInt(r)}</i>`:""}</span></div>
-        <div class="ar-shop${r.locked?" locked":""}" data-ar-drop="shop">${r.shop.map((id,i)=>{if(!id)return `<button class="ar-offer empty" disabled></button>`;const [n,,,ty,,,,rr]=D(id),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(id);
+        <div class="ar-shop${r.locked?" locked":""}" data-ar-drop="shop">${r.shop.map((id,i)=>{if(!id)return `<button class="ar-offer empty" disabled></button>`;const [n,,,ty,,,,rr]=D(arD(id)),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(arD(id));
           return `<button class="ar-offer" data-ar="buy" data-i="${i}" data-ar-drag="s:${i}" style="--c1:${c1};--c2:${c2};--rc:var(--r${rr})" ${r.gold<AR.cost[rr]?"disabled":""} title="${esc(n)} · ${AR_RARN[rr]}">
             <span class="ar-pic">${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${counts[id]?`<span class="ar-own">${counts[id]}/3</span>`:""}</span><span class="ar-on">${esc(n)}</span><span class="ar-oc">🪙 ${AR.cost[rr]}</span></button>`}).join("")}</div></div>
       <div class="ar-acts">
         <button class="btn" data-ar="reroll" ${r.gold<AR.reroll?"disabled":""}>🔄<span class="ar-wide"> Relancer</span> (${AR.reroll} or)</button>
         <button class="btn${r.locked?" ar-on":""}" data-ar="lock" title="La boutique reste la même à la manche suivante, puis se déverrouille">${r.locked?`🔒<span class="ar-wide"> Boutique verrouillée</span>`:`🔓<span class="ar-wide"> Verrouiller</span>`}</button>
-        <button class="btn danger ar-sellz" data-ar="sell"${sel?"":" hidden"}>${sel?`Vendre<span class="ar-sname"> ${esc(nm(sel.i))}</span> (+${arCost(sel)} or)`:"Vendre"}</button>
+        <button class="btn danger ar-sellz" data-ar="sell"${sel?"":" hidden"}>${sel?`Vendre<span class="ar-sname"> ${esc(nm(arD(sel.i)))}</span> (+${arCost(sel)} or)`:"Vendre"}</button>
         <button class="btn primary ar-fight" data-ar="fight">⚔️ Combattre</button></div>
     </div>
   </div><aside class="ar-infop">${arInfoInner(arHover||sel,arHover&&sel&&arHover!==sel?sel:null)}</aside></div></div>`;
@@ -4737,7 +4773,8 @@ async function arFight(){
     if(arSpeed<9){ea&&ea.classList.add("act");await sleep(140/arSpeed)}
     if(et){const bar=et.querySelector(".ar-hp i");if(bar)bar.style.width=Math.max(0,hp*100/mx)+"%";
       if(arSpeed<9){et.classList.remove("hit");void et.offsetWidth;et.classList.add("hit");
-        const n=document.createElement("span");n.className="ar-dmg"+(m>1?" sup":m<1?" weak":"");n.textContent=m===0?"Aucun effet":m>1?`${dmg} !`:dmg;et.parentElement.append(n);setTimeout(()=>n.remove(),700)}
+        const n=document.createElement("span");n.className="ar-dmg"+(m>1?" sup":m<1?" weak":"");n.textContent=m===0?"Aucun effet":m>1?`${dmg} !`:dmg;et.parentElement.append(n);setTimeout(()=>n.remove(),700)
+        if(m>0&&sfxOn("arena"))m>1?SFX.superHit(hp<=0):SFX.hit(hp<=0)} // bruitages (1.4.0)
       if(hp<=0)et.classList.add("dead")}
     if(arSpeed<9){await sleep(260/arSpeed);ea&&ea.classList.remove("act")}
   }
@@ -4755,11 +4792,11 @@ async function arFight(){
 }
 function arRules(){
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Règles de l’Arène</h2><ul class="ar-rules">
-    <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort. ${AR.lives} vies : une manche perdue coûte une vie, et la partie continue à la manche suivante avec ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
+    <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort : Pokémon Communs et Peu communs en manches 1 et 2, Rares à partir de la 3<sup>e</sup>, Épiques à partir de la 4<sup>e</sup>, Légendaires à partir de la 7<sup>e</sup>. ${AR.lives} vies : une manche perdue coûte une vie, et la partie continue à la manche suivante avec ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
     <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche. Ils restent acquis, même en cas de défaite. Réussir l’Arène rapporte ${AR.finish} de bonus : il faut gagner la ${AR.rounds}<sup>e</sup> et dernière manche, la perdre fait échouer la partie, même avec des vies. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque Arène réussie rapporte encore ${AR.afterCap} crédits.</li>
-    <li>Or : ${AR.startGold} au départ, puis ${AR.incBase} en manche 1 jusqu’à ${AR.incBase+Math.floor(AR.rounds/2)} en manche ${AR.rounds}, +1 par victoire, +1 d’intérêt par tranche de 10 or gardés (3 au plus).</li>
+    <li>Or : ${AR.startGold} au départ, puis ${AR.incBase} en manche 1 et un peu plus à chaque manche (1 or de moins par manche à partir de la 5<sup>e</sup>), +1 par victoire. Intérêts en fin de manche : 10 or gardés = +${AR.interest[1]}, 20 = +${AR.interest[2]}, 30 et plus = +${AR.interest[3]}.</li>
     <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon que vous avez déjà revient plus souvent, et les Pokémon des types de votre équipe aussi. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante, puis se déverrouille d’elle-même.</li>
-    <li>3 exemplaires du même Pokémon : il évolue (ou gagne une étoile ⭐ en fin de lignée).</li>
+    <li>3 exemplaires du même Pokémon : il évolue (ou gagne une étoile ⭐ en fin de lignée). 3 Pokémon à une étoile : deux étoiles ⭐⭐ (statistiques ×${AR.starK[2]} au lieu de ×${AR.starK[1]}).</li>
     <li>Terrain : 3 Pokémon en manche 1, un de plus toutes les 2 manches (6 au plus). Les places libres sont remplies d’office au combat avec les plus forts du banc. Les Pokémon de devant encaissent en premier.</li>
     <li>Synergies : 2 Pokémon différents d’un même type = +15 % PV et Attaque pour ce type, 4 = +30 %, 6 = +45 %. Faiblesses et résistances des types comptent.</li>
     <li>Déplacer : touchez un Pokémon puis une case, ou glissez-le. Vendre : glissez-le sur la boutique, ou « Vendre ». Acheter : touchez une offre, ou glissez-la sur le banc ou le terrain.</li></ul></div>`,true);
@@ -4872,6 +4909,7 @@ document.addEventListener("click",e=>{
     case"rc-filter":{const r=b.dataset.r;if(r==="shiny")filt.own=filt.own==="shiny"?"all":"shiny";else filt.r=filt.r===r?"all":r;renderView();break} // compteurs de rareté cliquables (1.1.10)
     case"toggle-theme":toggleTheme();break;
     case"install-app":installApp();break; // 1.1.5
+    case"sfx-toggle":{const g=b.dataset.g,on=!sfxOn(g);try{localStorage.setItem("dc-sfx-"+g,on?"1":"0")}catch(e){}b.setAttribute("aria-pressed",on);b.textContent=(on?"🔔":"🔕")+" Bruitages";break}
     case"toggle-sound":{const on=SFX.toggle();musicSync();b.textContent=on?"🔊":"🔇";b.setAttribute("aria-label",on?"Couper le son":"Activer le son");b.title=on?"Couper le son":"Activer le son";if(on){SFX.flip(1)}break}
     case"flip":{if(dragMoved){dragMoved=false;break}
       if(flipLock)break;flipLock=true;setTimeout(()=>{flipLock=false},320);
@@ -5000,26 +5038,32 @@ document.addEventListener("click",e=>{
     case"trade-mode":tradeSel=new Set();discardSel=null;filt.own="own";renderView();break;
     case"trade-cancel":tradeSel=null;renderView();break;
     case"tsel-clear":tradeSel=new Set();renderView();break;
-    case"tsel-dups":tradeSel=new Set(Object.keys(S.coll).filter(k=>S.coll[k]>1).map(Number));if(!tradeSel.size)toast("Vous n’avez aucun double pour l’instant.");renderView();break;
-    case"tsel-shown":{const ids=filtered().filter(x=>(S.coll[x]||0)>0);ids.forEach(x=>tradeSel.add(x));if(!ids.length)toast("Aucune carte de votre collection n’est affichée.");renderView();break} // cartes possédées de la liste filtrée, même celles pas encore affichées plus bas (1.1.12)
+    case"tsel-dups":{const ids=Object.keys(S.coll).filter(k=>S.coll[k]>1).map(Number),ok=ids.filter(x=>!keepCard(x));tradeSel=new Set(ok);
+      if(!ids.length)toast("Vous n’avez aucun double pour l’instant.");else keptToast(ids.length-ok.length);renderView();break}
+    case"tsel-shown":{const all=filtered().filter(x=>(S.coll[x]||0)>0),ids=all.filter(x=>!keepCard(x));ids.forEach(x=>tradeSel.add(x));if(!all.length)toast("Aucune carte de votre collection n’est affichée.");else keptToast(all.length-ids.length);renderView();break} // cartes possédées de la liste filtrée, même celles pas encore affichées plus bas (1.1.12)
     case"tpick":{if(!(S.coll[id]>0))break;tradeSel.has(id)?tradeSel.delete(id):tradeSel.add(id);const y=window.scrollY;renderView();window.scrollTo(0,y);break}
     case"tsel-go":{const ids=[...tradeSel],v=$("#ts-want").value,au=$("#ts-auto").checked;
-      if(v==="list")wantPickOpen(ids.map(rar),"Chaque annonce n’acceptera que les cartes choisies de sa rareté.",ws=>tradeMany(ids,"list",au,ws));else tradeMany(ids,v,au);break}
+      if(v==="list")wantPickOpen(ids.map(rar),"Chaque annonce n’acceptera que les cartes choisies de sa rareté.",ws=>tradeMany(ids,"list",au,ws));
+      else if(v==="wish"){ // 1.4.0 : chaque annonce ne demande que les cartes recherchées (🔔) de sa rareté ; sans aucune, elle n’est pas publiée
+        const ws=Object.keys(S.wish||{}).map(Number).filter(x=>DEX_ORDER.includes(x));
+        if(!ws.length){toast("Vous n’avez aucune carte recherchée : posez une cloche 🔔 sur les cartes que vous voulez, depuis la collection.");break}
+        tradeMany(ids,"list",au,ws)}
+      else tradeMany(ids,v,au);break}
     case"wp-toggle":case"wp-miss":case"wp-wish":case"wp-none":case"wp-go":wantPickAct(a,b);break;
     case"tsel-confirm":tradeManyGo();break;
     case"discard-cancel":discardSel=null;renderView();break;
     case"sel-clear":discardSel={};renderView();break;
     case"sel-dups":{discardSel={};let skipped=0;
-      for(const [k,v] of Object.entries(S.coll)){if(v<2)continue;if(S.fav&&S.fav[k]){skipped++;continue}discardSel[k]=v-1}
-      renderView();if(skipped)toast(`${skipped} favori${skipped>1?"s":""} laissé${skipped>1?"s":""} de côté.`);break}
+      for(const [k,v] of Object.entries(S.coll)){if(v<2)continue;if(keepCard(+k)){skipped++;continue}discardSel[k]=v-1}
+      renderView();keptToast(skipped);break}
     case"sel-rar":{const ri=+b.dataset.r;let dup=0,sel=0;
       for(const [k,v] of Object.entries(S.coll))if(rar(+k)===ri&&v>1)dup+=v-1;
       for(const [k,v] of Object.entries(discardSel))if(rar(+k)===ri)sel+=v;
       const on=sel<dup;
       let skipped=0;
       for(const [k,v] of Object.entries(S.coll)){if(rar(+k)!==ri)continue;
-        if(on){if(S.fav&&S.fav[k]){skipped++;continue}if(v>1)discardSel[k]=v-1}else delete discardSel[k]}
-      if(on&&skipped)toast(`${skipped} favori${skipped>1?"s":""} laissé${skipped>1?"s":""} de côté.`);
+        if(on){if(v>1&&keepCard(+k)){skipped++;continue}if(v>1)discardSel[k]=v-1}else delete discardSel[k]}
+      if(on)keptToast(skipped);
       renderView();break}
     case"pick":{const c=S.coll[id]||0;if(!c)break;
       if(S.fav&&S.fav[id]){toast(`${nm(id)} est dans vos favoris : retirez-le des favoris pour pouvoir le défausser.`);break}const cur=discardSel[id]||0;const nx=cur>=c?0:cur+1;if(nx)discardSel[id]=nx;else delete discardSel[id];
@@ -5166,7 +5210,8 @@ async function loadPlayers(){
    et celles touchées par ses propres actions sont vérifiées tout de suite (touched). */
 let LIGHT=true; // 1.3.20 : colonnes upd et summary du serveur (partie 4) ; false si elles manquent encore (repli sur l’ancienne lecture)
 let marketFullTs=0,marketSince=null,rtMe=false,rtMarket=false,meTs=0,marketTs=0,marketSoonT=0; // rt… : temps réel connecté (1.3.11, voir pollShared ; rtMarket = canal dc-ping depuis la 1.3.12)
-const marketSoon=()=>{clearTimeout(marketSoonT);marketSoonT=setTimeout(()=>loadMarket(),700)}; // marché relu peu après un signal du temps réel
+const marketSoon=()=>{clearTimeout(marketSoonT);marketSoonT=setTimeout(()=>loadMarket(),700)};
+let meSoonT=0;const meSoon=()=>{clearTimeout(meSoonT);meSoonT=setTimeout(()=>loadMe(),1200)}; // 1.4.0 : profil relu après un signal (plusieurs actions de suite : une seule lecture) // marché relu peu après un signal du temps réel
 async function loadMarket(full,touched){
   marketTs=Date.now();
   full=full||!marketSince||Date.now()-marketFullTs>900000;
@@ -5326,12 +5371,11 @@ function watchShared(){
   try{
     // 1.3.12 : plus de diffusion de tout le marché à tous (voir la partie 4 du serveur). Le propriétaire d'une annonce
     // est prévenu en direct quand ses propositions changent (table pings) ; le reste arrive par loadMarket toutes les 2 minutes.
-    SB.channel("dc-ping").on("postgres_changes",{event:"*",schema:"public",table:"pings",filter:"uid=eq."+ME},()=>marketSoon())
-      .subscribe(st=>{const was=rtMarket;rtMarket=st==="SUBSCRIBED";if(rtMarket&&!was&&marketTs)loadMarket()}); // reconnecté : rattrape la coupure
-    SB.channel("dc-me").on("postgres_changes",{event:"UPDATE",schema:"public",table:"docs",filter:"path=eq.players/"+ME},pl=>{
-      if(pl.new&&pl.new.data)onMine(pl.new.data);
-      marketSoon(); // carte rendue ou reçue : une proposition a été acceptée ou refusée, le marché a changé
-    }).subscribe(st=>{const was=rtMe;rtMe=st==="SUBSCRIBED";if(rtMe&&!was&&meTs)loadMe()});
+    // 1.4.0 : le profil n'est plus diffusé en temps réel (décodage trop lourd pour le serveur, 44 % de son temps) : la même
+    // ligne de pings signale aussi un profil modifié (échange conclu, carte rendue, cadeau…) ; la page relit alors, en léger,
+    // la date du profil (et le profil entier seulement s'il a changé) et le marché, signaux rapprochés regroupés
+    SB.channel("dc-ping").on("postgres_changes",{event:"*",schema:"public",table:"pings",filter:"uid=eq."+ME},()=>{marketSoon();meSoon()})
+      .subscribe(st=>{const was=rtMarket;rtMarket=rtMe=st==="SUBSCRIBED";if(rtMarket&&!was&&marketTs){loadMarket();loadMe()}}); // reconnecté : rattrape la coupure
   }catch(e){console.warn(e)}
 }
 /* Profil complet d'un autre joueur, lu seulement quand on l'ouvre depuis le classement */

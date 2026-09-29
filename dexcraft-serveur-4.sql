@@ -157,6 +157,11 @@ begin
   if new.coll = 'market' and new.data ->> 'owner' is not null and (old.data -> 'offers') is distinct from (new.data -> 'offers') then
     insert into public.pings (uid, at) values ((new.data ->> 'owner')::uuid, public.dc__now()) on conflict (uid) do update set at = excluded.at;
   end if;
+  -- 1.4.0 : profil modifié (par soi ou par un autre joueur : échange conclu, carte rendue, cadeau…) : son joueur est prévenu
+  -- par sa ligne de pings, à la place de la diffusion du profil entier en temps réel (voir plus bas)
+  if new.coll = 'players' and new.upd is distinct from old.upd then
+    insert into public.pings (uid, at) values (substr(new.path, 9)::uuid, public.dc__now()) on conflict (uid) do update set at = excluded.at;
+  end if;
   return null;
 end $$;
 drop trigger if exists dc_market_trg on public.docs;
@@ -186,6 +191,12 @@ alter table public.docs add column if not exists upd bigint generated always as 
 alter table public.docs add column if not exists summary jsonb generated always as (case when coll = 'players' then public.dc__summary(data) end) stored;
 create index if not exists docs_market_upd_idx on public.docs (updated_at) where coll = 'market';
 analyze public.docs;
+
+-- 1.4.0 : la table docs quitte le temps réel. Le décodage du journal des modifications (WAL) pour le temps réel prenait 44 % du
+-- temps du serveur : chaque action réécrit le profil entier du joueur, collection comprise, et tout était décodé pour être
+-- diffusé. Seule la petite table pings reste diffusée : un signal par joueur (profil modifié, propositions reçues), après
+-- lequel la page relit ce qui a changé (colonnes légères upd et summary).
+do $$ begin alter publication supabase_realtime drop table public.docs; exception when others then null; end $$;
 
 -- ============================================================
 --  Droits d'exécution des fonctions de cette partie

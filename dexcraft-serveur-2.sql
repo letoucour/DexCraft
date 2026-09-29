@@ -221,7 +221,7 @@ begin
     cols := cols || jsonb_build_array(jsonb_build_array(pts, vo));
   end loop;
   return jsonb_build_object('level', v.level, 'score', v.score, 'flipped', v.flipped, 'state', v.state, 'boom', v.boom,
-    'vals', vals, 'opened', to_jsonb(v.opened), 'rows', rows_, 'cols', cols, 'gained', gained, 'cap', public.dc__cfg() -> 'vbCap', 'day', public.dc__day());
+    'vals', vals, 'opened', to_jsonb(v.opened), 'rows', rows_, 'cols', cols, 'gained', gained, 'day', public.dc__day());   -- plafond : lu par la page (VB_CAP), plus relu ici (1.4.0)
 end $$;
 
 create or replace function public.dc_vb_state() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
@@ -262,29 +262,34 @@ begin
     d := public.dc__bump(d, 'vbWins');
     if v.level = 8 then d := jsonb_set(d, '{stats,vbL8}', '1'); end if;
   end if;
+  -- 1.3.23 : titres Artificier (Voltorbe explosés) et Jackpot (meilleur score d'une manche gagnée ou encaissée)
+  if kind = 'lost' then d := public.dc__bump(d, 'vbBooms');
+  elsif v.score > coalesce((d -> 'stats' ->> 'vbMax')::bigint, 0) then
+    d := jsonb_set(d, '{stats}', coalesce(d -> 'stats', '{}') || jsonb_build_object('vbMax', v.score)); end if;
   update public.vb_rounds set state = kind, level = nl where uid = u;
   d := public.dc__save(u, d);
   return jsonb_build_object('profile', d, 'added', added, 'extra', extra, 'kind', kind, 'prevLevel', v.level, 'level', nl, 'score', v.score);
 end $$;
 
+-- 1.4.0 (lenteurs signalées par Theo) : une carte ordinaire ne lit plus ni le profil ni la configuration (seulement le plateau
+-- caché) ; le profil n'est verrouillé et chargé qu'en fin de manche, pour verser les crédits
 create or replace function public.dc_vb_flip(p_i int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); v public.vb_rounds; val int; res jsonb := '{}'; i int; all_ boolean := true;
+declare u uuid := public.dc__uid(); d jsonb; v public.vb_rounds; val int; res jsonb := '{}'; i int; all_ boolean := true;
 begin
   if p_i < 0 or p_i > 24 then raise exception 'Carte invalide.'; end if;
   select * into v from public.vb_rounds where uid = u for update;
-  if not found or v.state <> 'play' or v.opened[p_i + 1] then return jsonb_build_object('vb', public.dc__vb_view(u, d)); end if;
+  if not found or v.state <> 'play' or v.opened[p_i + 1] then return jsonb_build_object('vb', public.dc__vb_view(u, null)); end if;
   val := v.board[p_i + 1]; v.opened[p_i + 1] := true;
   if val = 0 then
     update public.vb_rounds set opened = v.opened, boom = p_i where uid = u;
-    res := public.dc__vb_end(u, d, v, 'lost');
+    d := public.dc__lock(u, true); res := public.dc__vb_end(u, d, v, 'lost');
   else
     v.flipped := v.flipped + 1; v.score := case when v.score = 0 then val else v.score * val end;
     update public.vb_rounds set opened = v.opened, flipped = v.flipped, score = v.score where uid = u;
     for i in 1 .. 25 loop if v.board[i] >= 2 and not v.opened[i] then all_ := false; exit; end if; end loop;
-    if all_ then res := public.dc__vb_end(u, d, v, 'won'); end if;
+    if all_ then d := public.dc__lock(u, true); res := public.dc__vb_end(u, d, v, 'won'); end if;
   end if;
-  d := coalesce(res -> 'profile', d);
-  return res || jsonb_build_object('vb', public.dc__vb_view(u, d), 'val', val);
+  return res || jsonb_build_object('vb', public.dc__vb_view(u, res -> 'profile'), 'val', val);
 end $$;
 
 create or replace function public.dc_vb_quit() returns jsonb language plpgsql security definer set search_path = public, extensions as $$

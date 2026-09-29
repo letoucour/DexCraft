@@ -38,8 +38,10 @@ end $$;
 create or replace function public.dc__ar_rar(cfg jsonb, id int) returns int language sql immutable as $$ select (cfg -> 'rar' ->> id::text)::int $$;
 create or replace function public.dc__ar_cost(cfg jsonb, id int) returns int language sql immutable as $$
   select (cfg -> 'arena' -> 'cost' ->> public.dc__ar_rar(cfg, id)::text)::int $$;
+-- 1.4.0 (demande de Theo) : dans l'Arène, Bargantua (550) joue la forme Motif Blanc, la seule qui évolue en Paragruel (902)
 create or replace function public.dc__ar_evo(cfg jsonb, id int) returns int[] language sql immutable as $$
-  select coalesce(array_agg(x::int), '{}') from jsonb_array_elements_text(coalesce(cfg -> 'evo' -> id::text, '[]')) x where x::int <= 1025 $$;
+  select case when id = 550 then '{902}'::int[] else
+    (select coalesce(array_agg(x::int), '{}') from jsonb_array_elements_text(coalesce(cfg -> 'evo' -> id::text, '[]')) x where x::int <= 1025) end $$;
 create or replace function public.dc__ar_max(r int) returns int language sql immutable as $$ select least(6, 3 + (r - 1) / 2) $$;
 -- rareté tirée selon la manche (bandes de 2 manches), parmi les raretés qui ont au moins un Pokémon (avail : 5 booléens)
 create or replace function public.dc__ar_pick_rar(cfg jsonb, r int, avail boolean[]) returns int language plpgsql volatile as $$
@@ -81,6 +83,17 @@ begin
       exit;
     end if;
   end loop;
+  -- 1.4.0 (Arène v3.0, demande de Theo) : 3 exemplaires à une étoile du même Pokémon donnent 2 étoiles
+  select array_agg(z || ':' || k order by z = 'board' desc, k) into pos from (
+    select 'board' z, k - 1 k from jsonb_array_elements(st -> 'board') with ordinality e(v, k) where v <> 'null' and (v ->> 'i')::int = id and (v ->> 's')::int = 1
+    union all
+    select 'bench', k - 1 from jsonb_array_elements(st -> 'bench') with ordinality e(v, k) where v <> 'null' and (v ->> 'i')::int = id and (v ->> 's')::int = 1) s;
+  if coalesce(array_length(pos, 1), 0) >= 3 then
+    st := jsonb_set(st, array[split_part(pos[2], ':', 1), split_part(pos[2], ':', 2)], 'null');
+    st := jsonb_set(st, array[split_part(pos[3], ':', 1), split_part(pos[3], ':', 2)], 'null');
+    st := jsonb_set(st, array[split_part(pos[1], ':', 1), split_part(pos[1], ':', 2), 's'], '2');
+    st := st || jsonb_build_object('msg', 'star2:' || id);
+  end if;
   return st;
 end $$;
 
@@ -129,15 +142,21 @@ end $$;
 create or replace function public.dc__ar_enemy(cfg jsonb, st jsonb) returns jsonb language plpgsql volatile as $$
 declare a jsonb := cfg -> 'arena'; rd int := (st ->> 'round')::int; n int := public.dc__ar_max(rd); team jsonb := '[]';
   av boolean[]; r int; id int; e int; evo int[]; nu int := (st ->> 'n')::int; board jsonb := '[null,null,null,null,null,null]'; u jsonb; k int := 0;
+  -- 1.4.0 (demande de Theo) : rareté la plus haute de l'adversaire selon la manche (évolutions comprises) :
+  -- manches 1 et 2 Peu commune, 3 Rare, 4 à 6 Épique, ensuite tout
+  maxr int := case when rd <= 2 then 1 when rd = 3 then 2 when rd <= 6 then 3 else 5 end; pw numeric; c int;
 begin
-  select array_agg(jsonb_array_length(coalesce(cfg -> 'arBase' -> rr::text, '[]')) > 0 order by ord) into av from unnest(array[0, 1, 2, 3, 5]) with ordinality x(rr, ord);
+  select array_agg(jsonb_array_length(coalesce(cfg -> 'arBase' -> rr::text, '[]')) > 0 and rr <= maxr order by ord) into av from unnest(array[0, 1, 2, 3, 5]) with ordinality x(rr, ord);
   for k in 1 .. n loop
     r := public.dc__ar_pick_rar(cfg, rd + 1, av); if r < 0 then r := 0; end if;
     id := (cfg -> 'arBase' -> r::text ->> floor(random() * jsonb_array_length(cfg -> 'arBase' -> r::text))::int)::int;
     for e in 1 .. 2 loop
       if random() < least(.8, (a ->> 'aiEvo')::numeric * rd) then
         evo := public.dc__ar_evo(cfg, id);
-        if coalesce(array_length(evo, 1), 0) > 0 then id := evo[1 + floor(random() * array_length(evo, 1))::int]; end if;
+        if coalesce(array_length(evo, 1), 0) > 0 then
+          c := evo[1 + floor(random() * array_length(evo, 1))::int];
+          if public.dc__ar_rar(cfg, c) <= maxr then id := c; end if;
+        end if;
       end if;
     end loop;
     nu := nu + 1;
@@ -147,7 +166,13 @@ begin
   for u in select v from jsonb_array_elements(team) v order by (public.dc__ar_stat(cfg ->> 'arStat', (v ->> 'i')::int))[3] desc loop
     board := jsonb_set(board, array[k::text], u); k := k + 1;
   end loop;
-  return jsonb_build_object('board', board, 'power', (a ->> 'aiPow0')::numeric + (a ->> 'aiPowK')::numeric * rd, 'n', nu);
+  -- puissance (1.4.0) : un peu moins en manches 1 et 2 (aiEarly), un peu plus à partir de la 5e (aiLate par manche) et
+  -- surtout à la dernière (aiLast), où les joueurs ont dépensé toute leur économie
+  pw := (a ->> 'aiPow0')::numeric + (a ->> 'aiPowK')::numeric * rd
+    - case when rd <= 2 then coalesce((a ->> 'aiEarly')::numeric, 0) else 0 end
+    + greatest(0, rd - 4) * coalesce((a ->> 'aiLate')::numeric, 0)
+    + case when rd >= (a ->> 'rounds')::int then coalesce((a ->> 'aiLast')::numeric, 0) else 0 end;
+  return jsonb_build_object('board', board, 'power', pw, 'n', nu);
 end $$;
 
 -- ---------- nouvelle manche : adversaire, et boutique sauf si elle est verrouillée ----------
@@ -267,7 +292,7 @@ begin
       v := st -> z -> k;
       if v <> 'null' and (v ->> 'u')::int = p_u then
         st := jsonb_set(st, array[z, k::text], 'null');
-        st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + public.dc__ar_cost(cfg, (v ->> 'i')::int) * case when (v ->> 's')::int = 1 then 3 else 1 end));
+        st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + public.dc__ar_cost(cfg, (v ->> 'i')::int) * case (v ->> 's')::int when 2 then 9 when 1 then 3 else 1 end));
         perform public.dc__ar_put(u, st);
         return public.dc__ar_view(d, st);
       end if;
@@ -317,7 +342,7 @@ begin
       continue when v is null or v = 'null';
       st := public.dc__ar_stat(sc, (v ->> 'i')::int); b := 0;
       foreach t in array public.dc__ar_types(pt, (v ->> 'i')::int) loop b := greatest(b, case when syn[t] >= 6 then .45 when syn[t] >= 4 then .3 when syn[t] >= 2 then .15 else 0 end); end loop;
-      s := case when (v ->> 's')::int = 1 then 1.6 else 1 end;
+      s := coalesce((cfg -> 'arena' -> 'starK' ->> (v ->> 's')::int)::numeric, 1);
       sd := sd || side; rw := rw || (k / 3); cl := cl || (k % 3); ids := ids || (v ->> 'i')::int; us := us || (v ->> 'u')::int;
       mx := mx || round((2 * st[1] + 60) * s * (1 + b) * pw)::int; atk := atk || (greatest(st[2], st[4]) * s * (1 + b) * pw); df := df || ((st[3] + st[5]) / 2.0); sp := sp || st[6];
       ty := ty || jsonb_build_array(to_jsonb(public.dc__ar_types(pt, (v ->> 'i')::int)));
@@ -358,7 +383,7 @@ begin
   -- places libres : les Pokémon les plus forts du banc (total des statistiques, étoile comprise)
   while (select count(*) from jsonb_array_elements(st -> 'board') x where x <> 'null') < public.dc__ar_max(rd) loop
     select x, j - 1 into v, k from jsonb_array_elements(st -> 'bench') with ordinality e(x, j) where x <> 'null'
-      order by (select sum(s) from unnest(public.dc__ar_stat(cfg ->> 'arStat', (x ->> 'i')::int)) s) * case when (x ->> 's')::int = 1 then 1.6 else 1 end desc limit 1;
+      order by (select sum(s) from unnest(public.dc__ar_stat(cfg ->> 'arStat', (x ->> 'i')::int)) s) * coalesce((cfg -> 'arena' -> 'starK' ->> (x ->> 's')::int)::numeric, 1) desc limit 1;
     exit when v is null;
     st := jsonb_set(st, array['bench', k::text], 'null');
     st := jsonb_set(st, array['board', (select min(j - 1) from jsonb_array_elements(st -> 'board') with ordinality e(x, j) where x = 'null')::text], v);
@@ -393,7 +418,11 @@ begin
     if (st ->> 'hp')::int >= (a ->> 'lives')::int and (res ->> 'win')::boolean then d := jsonb_set(d, '{stats,arPerf}', '1'); end if;
   else
     st := st || jsonb_build_object('round', rd + 1);
-    st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + (rd + 1) / 2 + least(3, (st ->> 'gold')::int / 10)));
+    -- or de la manche suivante : base + moitié de la manche, moins incLate à partir de la manche 5, plus les intérêts
+    -- (1.4.0 : 10 or gardés = +1, 20 = +3, 30 et plus = +5, table interest de la config ; avant, +1 par tranche de 10, 3 au plus)
+    st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + (rd + 1) / 2
+      - case when rd + 1 >= 5 then coalesce((a ->> 'incLate')::int, 0) else 0 end
+      + coalesce((a -> 'interest' ->> least(3, (st ->> 'gold')::int / 10))::int, least(3, (st ->> 'gold')::int / 10))));
     st := public.dc__ar_round(cfg, st, d -> 'coll');
   end if;
   st := jsonb_set(st, '{credits}', to_jsonb((st ->> 'credits')::int + added + bonus + post));
