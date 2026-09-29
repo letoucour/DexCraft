@@ -377,7 +377,7 @@ end $$;
 create or replace function public.dc_ar_fight(p_board jsonb default null, p_bench jsonb default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); a jsonb := cfg -> 'arena';
   st jsonb := public.dc__ar_get(u); rd int; res jsonb; auto_ jsonb := '[]'; v jsonb; k int; before jsonb; day text := public.dc__day();
-  gained bigint; added bigint := 0; bonus bigint := 0; post bigint := 0; cap bigint := (a ->> 'cap')::bigint;
+  gained bigint; added bigint := 0; bonus bigint := 0; post bigint := 0; cap bigint := (a ->> 'cap')::bigint; win boolean; nr int;
 begin
   st := public.dc__ar_layout(st, p_board, p_bench) - 'msg'; rd := (st ->> 'round')::int;
   -- places libres : les Pokémon les plus forts du banc (total des statistiques, étoile comprise)
@@ -400,28 +400,34 @@ begin
   else
     st := st || jsonb_build_object('hp', greatest(0, (st ->> 'hp')::int - 1), 'gold', (st ->> 'gold')::int + (a ->> 'lossGold')::int);
   end if;
-  -- 1.3.14 : issue de chaque manche (1 gagnée, 0 perdue), pour la progression affichée à droite du terrain
-  st := jsonb_set(st, '{hist}', coalesce(st -> 'hist', '[]') || to_jsonb(case when (res ->> 'win')::boolean then 1 else 0 end));
-  if (st ->> 'hp')::int <= 0 or rd >= (a ->> 'rounds')::int then
+  win := (res ->> 'win')::boolean;
+  -- issue de chaque combat, [manche, 1 gagnée ou 0 perdue], pour la progression affichée (1.3.14 ; 1.4.2 : avec la manche,
+  -- car une manche perdue se rejoue)
+  st := jsonb_set(st, '{hist}', coalesce(st -> 'hist', '[]') || jsonb_build_array(jsonb_build_array(rd, case when win then 1 else 0 end)));
+  -- fin de partie : plus de vie, ou dernière manche gagnée (seul moyen de réussir l'Arène, règle de Theo 1.3.19)
+  if (st ->> 'hp')::int <= 0 or (win and rd >= (a ->> 'rounds')::int) then
     st := jsonb_set(st, '{over}', 'true');
-    -- 1.3.19 (règle de Theo) : l'Arène n'est réussie qu'en gagnant la dernière manche ; la perdre fait échouer la partie,
-    -- même avec des vies (ni bonus final, ni crédits après le plafond, ni partie terminée pour les titres)
-    if (st ->> 'hp')::int > 0 and (res ->> 'win')::boolean then
+    if win then
       st := jsonb_set(st, '{done}', 'true');
-      -- une partie terminée quand le plafond du jour est atteint rapporte encore afterCap (50) crédits, hors compteur du jour
-      -- (1.3.14 ; 1.3.15 : aussi quand c'est cette fin de partie, dernière manche ou bonus final, qui atteint le plafond)
+      -- plafond du jour atteint (ou atteint par cette fin de partie) : encore afterCap crédits, hors compteur du jour,
+      -- afterCapPerfect sans avoir perdu de vie (1.3.14 ; 100 et 150 depuis la 1.4.2, demande de Theo)
       bonus := least((a ->> 'finish')::int, greatest(0, cap - gained - added));
-      if gained + added + bonus >= cap then post := coalesce((a ->> 'afterCap')::int, 0); end if;
+      if gained + added + bonus >= cap then
+        post := case when (st ->> 'hp')::int >= (a ->> 'lives')::int then coalesce((a ->> 'afterCapPerfect')::int, (a ->> 'afterCap')::int, 0)
+                     else coalesce((a ->> 'afterCap')::int, 0) end;
+      end if;
       d := public.dc__bump(d, 'arDone');
+      -- titre Invaincu (1.3.6) : l'Arène réussie sans perdre une vie
+      if (st ->> 'hp')::int >= (a ->> 'lives')::int then d := jsonb_set(d, '{stats,arPerf}', '1'); end if;
     end if;
-    -- titre Invaincu (1.3.6) : les 10 manches sans perdre une vie
-    if (st ->> 'hp')::int >= (a ->> 'lives')::int and (res ->> 'win')::boolean then d := jsonb_set(d, '{stats,arPerf}', '1'); end if;
   else
-    st := st || jsonb_build_object('round', rd + 1);
-    -- or de la manche suivante : base + moitié de la manche, moins incLate à partir de la manche 5, plus les intérêts
-    -- (1.4.0 : 10 or gardés = +1, 20 = +3, 30 et plus = +5, table interest de la config ; avant, +1 par tranche de 10, 3 au plus)
-    st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + (rd + 1) / 2
-      - case when rd + 1 >= 5 then coalesce((a ->> 'incLate')::int, 0) else 0 end
+    -- 1.4.2 (demande de Theo) : une manche perdue se rejoue (nouvel adversaire), avec lossGold en plus de l'or de la manche
+    nr := case when win then rd + 1 else rd end;
+    st := st || jsonb_build_object('round', nr);
+    -- or de la manche : base + moitié de la manche, moins incLate à partir de la manche 5, plus les intérêts
+    -- (1.4.0 : 10 or gardés = +1, 20 = +3, 30 et plus = +5, table interest de la config)
+    st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + nr / 2
+      - case when nr >= 5 then coalesce((a ->> 'incLate')::int, 0) else 0 end
       + coalesce((a -> 'interest' ->> least(3, (st ->> 'gold')::int / 10))::int, least(3, (st ->> 'gold')::int / 10))));
     st := public.dc__ar_round(cfg, st, d -> 'coll');
   end if;

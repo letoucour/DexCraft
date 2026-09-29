@@ -867,6 +867,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
   .ar-rounds li.won,.ar-rounds li.lost,.ar-rounds li.done,.ar-rounds li.now{opacity:1}
   .ar-rounds li.won{color:var(--ok)}.ar-rounds li.won span{background:var(--ok);border-color:var(--ok);color:#fff}
   .ar-rounds li.lost{color:var(--danger)}.ar-rounds li.lost span{background:var(--danger);border-color:var(--danger);color:#fff}
+  .ar-ko{font-style:normal;color:var(--danger);font-weight:800}
   .ar-rounds li.now{color:var(--ink);font-weight:800}.ar-rounds li.now span{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
   .ar-scrow{display:flex;align-items:center;justify-content:flex-end;gap:8px}
   .ar-scrow em{font-style:normal;font-family:var(--display);font-weight:700;font-size:.9rem;color:var(--ink-soft);opacity:.45;white-space:nowrap}
@@ -1438,7 +1439,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.1";
+const APP_VERSION="1.4.2";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3425,9 +3426,9 @@ const VB_AFTER=10; // 1.3.14 : plafond atteint, une manche gagnée rapporte enco
    odds : chances de rareté de la boutique (Commune, Peu commune, Rare, Épique, Légendaire) par bandes de 2 manches ;
    slot : chance qu'une case repropose un Pokémon de l'équipe ; typeW : poids des types joués, en part de la réserve ;
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
-const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,afterCap:100,winBase:60,winStep:20,startGold:6,incBase:6,
+const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,afterCap:100,afterCapPerfect:150,winBase:60,winStep:20,startGold:6,incBase:6,
   odds:[[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]],cost:{0:1,1:2,2:3,3:4,5:5},
-  aiEvo:.07,aiPow0:.83,aiPowK:.042,slot:.2,typeW:1/75,
+  aiEvo:.07,aiPow0:.82,aiPowK:.042,slot:.2,typeW:1/75, // 1.4.2 : aiPow0 .83 → .82 (« très très légèrement » plus facile, demande de Theo)
   // 1.4.0 (Arène v3.0, demande de Theo) : ordinateur un peu plus faible en manches 1 et 2 (aiEarly), plus fort à partir de la 5e (aiLate par manche) et
   // surtout à la dernière (aiLast) ; intérêts 10 or = +1, 20 = +3, 30 et plus = +5 (interest) ; 1 or de moins par manche à partir de la 5e (incLate) ;
   // coefficient des statistiques selon les étoiles (starK : 2 étoiles = 3 Pokémon à une étoile)
@@ -4669,11 +4670,12 @@ function arSideInfo(){
   const types=me.length?`<div class="ar-edge"><b>💪 Vous frappez fort</b><div>${hit.length?names(hit):`<em>personne</em>`}</div>
     <b>⚠️ Ils vous frappent fort</b><div>${fear.length?names(fear):`<em>personne</em>`}</div></div>`
     :`<p class="muted ar-small">Placez des Pokémon pour voir vos avantages de types.</p>`;
-  const h=Array.isArray(r.hist)?r.hist:[],gain=Math.min(AR.winBase+AR.winStep*r.round,Math.max(0,AR_V.cap-AR_V.gained));
-  const rows=Array.from({length:AR.rounds},(_,k)=>{const n=k+1;
-    if(n<=h.length)return `<li class="${h[k]?"won":"lost"}"><span>${n}</span>${h[k]?"✔ gagnée":"✘ perdue"}</li>`;
+  // historique : [manche, 1 gagnée ou 0 perdue] depuis la 1.4.2 (une manche perdue se rejoue) ; avant, 1 ou 0 par manche jouée
+  const h=(Array.isArray(r.hist)?r.hist:[]).map((x,k)=>Array.isArray(x)?x:[k+1,x]),gain=Math.min(AR.winBase+AR.winStep*r.round,Math.max(0,AR_V.cap-AR_V.gained));
+  const rows=Array.from({length:AR.rounds},(_,k)=>{const n=k+1,f=h.filter(x=>x[0]===n),lost=f.filter(x=>!x[1]).length,ko=lost?` <i class="ar-ko">✘${lost>1?"×"+lost:""}</i>`:"";
+    if(f.some(x=>x[1]))return `<li class="won"><span>${n}</span>✔ gagnée${ko}</li>`;
     if(n<r.round)return `<li class="done"><span>${n}</span>jouée</li>`; // partie commencée avant la 1.3.14 : issue inconnue
-    if(n===r.round)return `<li class="now"><span>${n}</span>en cours${gain?` · +${fmtN(gain)}`:""}</li>`;
+    if(n===r.round)return `<li class="now"><span>${n}</span>${lost?"à rejouer":"en cours"}${gain?` · +${fmtN(gain)}`:""}${ko}</li>`;
     return `<li><span>${n}</span></li>`}).join("");
   return `<div class="ar-sideinfo">${types}<div class="ar-rounds"><b>Manches</b><ol>${rows}</ol></div></div>`;
 }
@@ -4706,7 +4708,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.1</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.2</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -4714,7 +4716,7 @@ function vArena(){
   if(!r||r.over)return `<div class="arena ar-intro">${top}<div class="ar-start">
     <p>Composez une équipe avec les Pokémon de <b>votre collection</b>, faites-les évoluer en réunissant 3 exemplaires, et affrontez l’ordinateur sur ${AR.rounds} manches. Chaque manche gagnée rapporte des crédits (${fmtN(AR.cap)} par jour au plus).</p>
     ${r&&r.over?`<p class="muted">Dernière partie : ${r.wins} manche${r.wins>1?"s":""} gagnée${r.wins>1?"s":""}, +${fmtN(r.credits)} crédits.</p>`:""}
-    <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:`Plafond du jour atteint : chaque Arène réussie (dernière manche gagnée) rapporte encore ${AR.afterCap} crédits jusqu’à minuit.`}</p>
+    <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:`Plafond du jour atteint : chaque Arène réussie (dernière manche gagnée) rapporte encore ${AR.afterCap} crédits, ${AR.afterCapPerfect} sans perdre de vie, jusqu’à minuit.`}</p>
     <button class="btn primary ar-fight" data-ar="start">⚔️ ${r?"Nouvelle partie":"Lancer une partie"}</button></div></div>`;
   const on=r.board.filter(Boolean).length,max=arMax(r.round),counts={};arUnits().forEach(u=>{if(!u.s)counts[u.i]=(counts[u.i]||0)+1});
   const empt=[0,1,2,3,4,5].filter(i=>!r.board[i]).slice(0,Math.max(0,max-on)),sel=arSel&&arFind(arSel);
@@ -4779,7 +4781,7 @@ async function arFight(){
   }
   await sleep(arSpeed<9?500:150);
   arFighting=false;arSet(res);renderAll();
-  const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits.`:""}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` +${AR.lossGold} or pour vous relancer.`}`;
+  const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits.`:""}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` Vous la rejouez, avec ${AR.lossGold} or de plus pour vous relancer.`}`;
   if(nr.over){
     openDlg(`<div class="side" style="align-items:center;text-align:center"><div style="font-size:3rem" aria-hidden="true">${nr.done?"🏆":"💥"}</div>
       <h2>${nr.done?"Arène réussie !":nr.hp>0?"Arène échouée":"Plus de vies"}</h2><p>${msg}</p>
@@ -4791,8 +4793,8 @@ async function arFight(){
 }
 function arRules(){
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Règles de l’Arène</h2><ul class="ar-rules">
-    <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort : Pokémon Communs et Peu communs en manches 1 et 2, Rares à partir de la 3<sup>e</sup>, Épiques à partir de la 4<sup>e</sup>, Légendaires à partir de la 7<sup>e</sup>. ${AR.lives} vies : une manche perdue coûte une vie, et la partie continue à la manche suivante avec ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
-    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche. Ils restent acquis, même en cas de défaite. Réussir l’Arène rapporte ${AR.finish} de bonus : il faut gagner la ${AR.rounds}<sup>e</sup> et dernière manche, la perdre fait échouer la partie, même avec des vies. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque Arène réussie rapporte encore ${AR.afterCap} crédits.</li>
+    <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort : Pokémon Communs et Peu communs en manches 1 et 2, Rares à partir de la 3<sup>e</sup>, Épiques à partir de la 4<sup>e</sup>, Légendaires à partir de la 7<sup>e</sup>. ${AR.lives} vies : une manche perdue coûte une vie et se rejoue, face à un nouvel adversaire, avec l’or d’une manche et ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
+    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche. Ils restent acquis, même en cas de défaite. Réussir l’Arène (gagner la ${AR.rounds}<sup>e</sup> et dernière manche) rapporte ${AR.finish} de bonus. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque Arène réussie rapporte encore ${AR.afterCap} crédits, ${AR.afterCapPerfect} sans avoir perdu de vie.</li>
     <li>Or : ${AR.startGold} au départ, puis ${AR.incBase} en manche 1 et un peu plus à chaque manche (1 or de moins par manche à partir de la 5<sup>e</sup>), +1 par victoire. Intérêts en fin de manche : 10 or gardés = +${AR.interest[1]}, 20 = +${AR.interest[2]}, 30 et plus = +${AR.interest[3]}.</li>
     <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon que vous avez déjà revient plus souvent, et les Pokémon des types de votre équipe aussi. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante, puis se déverrouille d’elle-même.</li>
     <li>3 exemplaires du même Pokémon : il évolue (ou gagne une étoile ⭐ en fin de lignée). 3 Pokémon à une étoile : deux étoiles ⭐⭐ (statistiques ×${AR.starK[2]} au lieu de ×${AR.starK[1]}).</li>
