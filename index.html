@@ -822,7 +822,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
      puis la boutique encadrée des boutons (Relancer et Verrouiller à gauche, Vendre et Combattre à droite) sur une
      seule rangée, pour laisser au terrain la hauteur d'une rangée de boutons */
   html.arena-view main{max-width:1680px}
-  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 300px) / 4.72),150px);--b:min(calc(var(--s) * .72),calc((100vw - 600px) / 8),86px);--o:88px}
+  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 310px) / 4.72),150px);--b:min(calc(var(--s) * .72),calc((100vw - 600px) / 8),86px)}
   .ar-play{justify-content:safe center;container-type:inline-size}
   .ar-stage{grid-template-columns:220px minmax(0,1fr) 250px}
   .ar-colL{display:block;min-height:0;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px}
@@ -833,12 +833,17 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
   .ar-field .ar-slot{aspect-ratio:auto;height:var(--s)}
   .ar-syncol{justify-self:end;display:flex;flex-direction:column;gap:6px;padding-top:24px}
   .ar-frsp{display:block}
-  .ar-dock{display:grid;grid-template-columns:auto auto auto;grid-template-areas:"bench bench bench" "reroll shop sell" "lock shop fight";justify-content:center;column-gap:12px;row-gap:6px}
-  .ar-benchw{grid-area:bench;justify-self:center}.ar-shopw{grid-area:shop}
+  /* rangée de la boutique (v2.3, plan de Theo) : « Boutique » et Relancer à gauche, Verrouiller et Combattre à droite ;
+     « Vendre » prend la place de Verrouiller tant qu'un Pokémon est choisi (la rangée ne change pas de hauteur) */
+  .ar-dock{display:grid;grid-template-columns:auto auto auto;grid-template-areas:"bench bench bench" "blabel shop lock" "reroll shop fight";justify-content:center;column-gap:12px;row-gap:6px}
+  .ar-benchw{grid-area:bench;justify-self:center}.ar-dock .ar-shopw{display:contents}
+  .ar-dock .ar-shop{grid-area:shop;--o:min(100px,calc((100cqw - 340px) / 5))}
+  .ar-dock .ar-shoplbl{grid-area:blabel;align-self:end;justify-content:center;font-size:.8rem;margin:0;padding-bottom:4px}
   .ar-dock .ar-acts{display:contents}
-  .ar-dock [data-ar="reroll"]{grid-area:reroll}.ar-dock [data-ar="lock"]{grid-area:lock}.ar-dock .ar-sellz{grid-area:sell}.ar-dock .ar-fight{grid-area:fight}
-  .ar-dock .ar-acts .btn{align-self:end;min-width:150px;white-space:nowrap}.ar-dock .ar-sname{display:none} /* le nom est déjà dans la fiche */
-  .ar-dock .ar-pic{aspect-ratio:1.7}
+  .ar-dock [data-ar="reroll"]{grid-area:reroll}.ar-dock [data-ar="lock"],.ar-dock .ar-sellz{grid-area:lock}.ar-dock .ar-fight{grid-area:fight}
+  .ar-dock .ar-acts:has(.ar-sellz:not([hidden])) [data-ar="lock"]{display:none}
+  .ar-dock .ar-acts .btn{align-self:end;min-width:140px;white-space:nowrap}.ar-dock .ar-sname{display:none} /* le nom est déjà dans la fiche */
+  .ar-dock .ar-pic{aspect-ratio:1.35}
   .ar-sideinfo{display:flex;flex-direction:column;gap:12px;font-size:.74rem}
   .ar-sideinfo b{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin:0 0 4px}
   .ar-edge>div{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
@@ -1421,7 +1426,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.15";
+const APP_VERSION="1.3.16";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3445,14 +3450,14 @@ function vbTile(i,closed){
     <span class="face front v${v===null?"":v}">${v===null?"":v?v:vbVolt()}</span></span></button>`;
 }
 function vVolto(){
-  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.3</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
+  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.4</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
   const s=VB.srv,g=vbGained(S),left=Math.max(0,VB_CAP-g);vbMid=nextMidnight();
   VB.level=s.level;VB.score=s.state==="lost"?0:s.score;VB.state=s.state;
   let board="";
   for(let r=0;r<5;r++){for(let c=0;c<5;c++)board+=vbTile(r*5+c);board+=vbClue(s.rows[r],VB_COLORS[r])}
   for(let c=0;c<5;c++)board+=vbClue(s.cols[c],VB_COLORS[c]);
   board+=`<span></span>`;
-  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.3</span></h1>
+  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.4</span></h1>
     <p class="muted" style="margin:4px 0 0">Retournez les cartes, multipliez vos gains… et évitez les Voltorbe !</p>
     <div class="vb-day">
       <div class="vb-day-top"><span><b>${fmtN(g)} / ${fmtN(VB_CAP)}</b> crédits gagnés aujourd’hui</span><span class="muted">Remise à zéro dans <b data-countdown="${vbMid}">${fmtLeft(vbMid-Date.now())}</b></span></div>
@@ -3508,7 +3513,7 @@ function vbFlip(i){
 function vbEnd(r){
   const kind=r.kind,added=r.added||0,extra=r.extra||0,score=r.score||0,lvl=r.prevLevel,nl=r.level,round=VB.srv;
   const partial=added&&added<score?" (plafond du jour atteint)":"",none="le plafond du jour est déjà atteint, aucun crédit gagné.";
-  if(kind==="won"){VB.cls="win";VB.msg=`Bravo ! ${added?`+${cr(added)}${partial}.`:extra?`+${cr(extra)} pour le niveau ${lvl} (plafond du jour atteint).`:`Manche gagnée, mais ${none}`} ${nl>lvl?`Niveau ${nl} débloqué !`:"Niveau maximum !"}`;SFX.flip(3)}
+  if(kind==="won"){VB.cls="win";VB.msg=`Bravo ! ${added+extra?`+${cr(added+extra)}.`:`Manche gagnée, mais ${none}`} ${nl>lvl?`Niveau ${nl} débloqué !`:"Niveau maximum !"}`;SFX.flip(3)}
   else if(kind==="quit"){VB.cls="win";VB.msg=`${added?`Vous encaissez ${cr(added)}${partial}.`:`Manche arrêtée : ${none}`}${nl<lvl?` Niveau ${nl} pour la prochaine manche.`:""}`}
   else{VB.cls="lose";VB.msg=`Boum ! Un Voltorbe a explosé.${score?` ${cr(score)} perdu${score>1?"s":""}.`:""}${nl<lvl?` Retour au niveau ${nl}.`:""}`}
   const m=$("#vb-msg");if(m){m.textContent=VB.msg;m.className="vb-msg "+VB.cls}
@@ -4629,7 +4634,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.2</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.3</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip">🪙 <b>${r.gold}</b> or</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -4654,7 +4659,7 @@ function vArena(){
     <div class="ar-log" id="ar-log">${sel?`${esc(nm(sel.i))} choisi : touchez une case, ou glissez-le.`:`Touchez ou glissez un Pokémon pour le placer<span class="ar-wide"> ; glissez-le sur la boutique pour le vendre</span>.`}</div>
     <div class="ar-dock">
       <div class="ar-benchw"><div class="ar-lbl">Banc</div><div class="ar-bench">${r.bench.map((u,i)=>`<div class="ar-slot${sel&&!u?" drop":""}" data-ar="slot" data-zone="bench" data-i="${i}" data-ar-drop="bench:${i}">${arUnitHTML(u)}</div>`).join("")}</div></div>
-      <div class="ar-shopw"><div class="ar-lbl">Boutique · vos Pokémon</div>
+      <div class="ar-shopw"><div class="ar-lbl ar-shoplbl">Boutique</div>
         <div class="ar-shop${r.locked?" locked":""}" data-ar-drop="shop">${r.shop.map((id,i)=>{if(!id)return `<button class="ar-offer empty" disabled></button>`;const [n,,,ty,,,,rr]=D(id),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(id);
           return `<button class="ar-offer" data-ar="buy" data-i="${i}" data-ar-drag="s:${i}" style="--c1:${c1};--c2:${c2};--rc:var(--r${rr})" ${r.gold<AR.cost[rr]?"disabled":""} title="${esc(n)} · ${AR_RARN[rr]}">
             <span class="ar-pic">${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${counts[id]?`<span class="ar-own">${counts[id]}/3</span>`:""}</span><span class="ar-on">${esc(n)}</span><span class="ar-oc">🪙 ${AR.cost[rr]}</span></button>`}).join("")}</div></div>
@@ -4701,7 +4706,7 @@ async function arFight(){
   }
   await sleep(arSpeed<9?500:150);
   arFighting=false;arSet(res);renderAll();
-  const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits.`:" (plafond du jour atteint)"}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` +${AR.lossGold} or pour vous relancer.`}`;
+  const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits.`:""}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` +${AR.lossGold} or pour vous relancer.`}`;
   if(nr.over){
     openDlg(`<div class="side" style="align-items:center;text-align:center"><div style="font-size:3rem" aria-hidden="true">${nr.hp>0?"🏆":"💥"}</div>
       <h2>${nr.hp>0?"Arène terminée !":"Plus de vies"}</h2><p>${msg}</p>
