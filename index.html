@@ -950,7 +950,8 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ava-pick:disabled{opacity:.4;cursor:not-allowed}
 .lb-row{grid-template-columns:32px auto minmax(0,1fr) 86px!important}
 .lb-row .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lb-row .sc{font-family:var(--display);font-weight:700;width:86px;text-align:right;display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.lb-row .sc{font-family:var(--display);font-weight:700;display:grid;grid-template-columns:56px 40px 40px;gap:6px;justify-items:end;align-items:center;white-space:nowrap} /* 1.4.16 : ✨ ✦ ❖ sur une ligne, chacun dans sa colonne, alignés d’une rangée à l’autre (demande de Theo) */
+@media (max-width:640px){.lb-row .sc{grid-template-columns:auto auto auto;gap:4px;font-size:.85rem}}
 .lb-bar{display:flex;height:9px;border-radius:999px;overflow:hidden;background:var(--surface-2)}
 .lb-bar .seg{display:block;height:100%}
 .seg.neutral{background:var(--ink-soft);opacity:.5}
@@ -1451,7 +1452,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.15";
+const APP_VERSION="1.4.16";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3090,7 +3091,7 @@ function vRanking(){
   <div class="lb" style="margin-top:16px">${rows.map((r,i)=>`<div class="lb-row${r.id===ME?" me":""}${i<3?" p"+(i+1):""}" data-act="player" data-uid="${esc(r.id)}" role="button" tabindex="0" aria-label="Profil de ${esc(nameOf(r.id))}">
     <span class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</span>${playerAva(r.id,36)}
     <div style="min-width:0"><div class="nm">${playerName(r.id)}${badgeTag(r.id,true)}</div>${lbBar(r)}</div>
-    <span class="sc">${r.sn?`<span class="sh-sum" title="Shiny">✨${fmtN(r.sn)}</span>`:""}${r.m?` <span class="myth-txt">✦${r.m}</span>`:""}${r.x?` <span class="trans-txt">❖${r.x}</span>`:""}</span></div>`).join("")||`<div class="empty">Personne n’a encore joué.</div>`}</div>`;
+    <span class="sc"><span class="sh-sum" title="Shiny">${r.sn?`✨${fmtN(r.sn)}`:""}</span><span class="myth-txt">${r.m?`✦${r.m}`:""}</span><span class="trans-txt">${r.x?`❖${r.x}`:""}</span></span></div>`).join("")||`<div class="empty">Personne n’a encore joué.</div>`}</div>`;
 }
 
 /* Profil d'un joueur, ouvert depuis le classement. Son profil complet n'est lu qu'à ce moment-là.
