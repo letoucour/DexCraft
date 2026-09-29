@@ -732,7 +732,7 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 html.arena-view:not(.arena-scroll),html.arena-view:not(.arena-scroll) body{overflow:hidden}
 html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12px}
 @media (max-width:999px){html.arena-view #version,html.arena-view #cgu-link{display:none}} /* le numéro de version passait sur les boutons de l’Arène */
-.arena{--s:clamp(36px,calc((var(--ar-h,700px) - 450px) / 4),96px);--b:min(calc(var(--s) * .86),calc((100vw - 64px) / 8));--o:min(calc(var(--s) * 1.02),calc((100vw - 56px) / 5));
+.arena{--s:clamp(36px,calc((var(--ar-h,700px) - 450px) / 4),96px);--b:min(calc(var(--s) * .86),calc((100vw - 64px) / 8),64px);--o:min(calc(var(--s) * 1.02),calc((100vw - 56px) / 5),80px);
   height:var(--ar-h,auto);display:flex;flex-direction:column;gap:6px;overflow:hidden}
 .ar-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 .ar-top h1{font-size:1.35rem;margin:0 4px 0 0}
@@ -780,6 +780,10 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 @keyframes arDmg{from{opacity:1;top:30%}to{opacity:0;top:-10%}}
 .ar-log{font-size:.8rem;min-height:1.2em;text-align:center;font-weight:700}
 .ar-dock{display:flex;flex-direction:column;gap:6px;align-items:center;width:100%}
+.ar-colL{display:none}
+.ar-colR{display:flex;flex-direction:column;gap:6px;align-items:center;min-width:0}
+.ar-fieldrow{display:contents}.ar-syncol,.ar-frsp{display:none}
+@media (max-width:999px){.ar-stage{display:flex;flex-direction:column;gap:6px}.ar-play,.ar-colR{flex:none}} /* une colonne : boutique et boutons sous le banc, sans chevauchement (1.3.14) */
 .ar-bench{display:grid;grid-template-columns:repeat(8,var(--b));gap:4px}
 .ar-shop{display:grid;grid-template-columns:repeat(5,var(--o));gap:5px;border-radius:12px;border:2px solid transparent}
 .ar-shop.locked{border-color:var(--gold)}
@@ -795,13 +799,8 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ar-acts .btn.ar-on{background:var(--ink);color:var(--bg)}
 .ar-sellz[hidden]{display:none}.ar-sellz.ar-over{outline:3px solid var(--gold);transform:scale(1.05)}
 .ar-fight{padding:10px 26px;font-size:1.05rem}
-.ar-synp,.ar-infop{display:none;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:0;overflow:auto;font-size:.8rem}
-.ar-synp h3,.ar-infop h3{font-size:.95rem;margin:0}
-.ar-sy{display:grid;grid-template-columns:72px auto 1fr;align-items:center;gap:7px;padding:4px 0;border-top:1px solid var(--line);font-size:.76rem}
-.ar-syt{font-weight:700;border-radius:999px;padding:2px 6px;text-align:center;background:var(--surface-2);color:var(--ink-soft)}
-.ar-sy.on .ar-syt{background:var(--t);color:#fff}
-.ar-syd{display:flex;gap:3px}.ar-syd i{width:8px;height:8px;border-radius:50%;border:2px solid var(--t);opacity:.6}.ar-syd i.f{background:var(--t);opacity:1}
-.ar-sye{font-weight:700}.ar-sy:not(.on) .ar-sye{font-weight:400;color:var(--ink-soft)}
+.ar-infop{display:none;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:0;overflow:auto;font-size:.8rem}
+.ar-infop h3{font-size:.95rem;margin:0}
 .ar-synl{display:flex;gap:5px;overflow-x:auto;max-width:100%;scrollbar-width:none;min-height:24px}
 .ar-synl span{flex:0 0 auto;border-radius:999px;padding:3px 9px;font-size:.7rem;font-weight:700;background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line)}
 .ar-synl span.on{color:#fff;background:var(--t);border-color:transparent}
@@ -820,9 +819,57 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 /* téléphone (1.3.2) : dans l'Arène, l'en-tête du site ne garde que le logo (pastilles profil, crédits, boosters… masquées) pour laisser la place au jeu */
 @media (max-width:999px){html.arena-view header.top .chips{display:none}.ar-log{font-size:.74rem;min-height:0}}
 @media (min-width:1000px){
-  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 290px) / 5.75),104px);--b:min(calc(var(--s) * .86),92px);--o:min(calc(var(--s) * 1.05),112px)}
-  .ar-stage{grid-template-columns:240px minmax(0,1fr) 240px}
-  .ar-stage .ar-synp{display:block;grid-column:1;grid-row:1}.ar-stage .ar-play{grid-column:2;grid-row:1}.ar-stage .ar-infop{display:block;grid-column:3;grid-row:1}
+  /* 1.3.14 (plan de Theo) : synergies et fiche à gauche, champ de bataille agrandi au centre avec le banc dessous,
+     boutique en colonne et boutons à droite */
+  .arena{--s:clamp(44px,calc((var(--ar-h,700px) - 175px) / 4.85),150px);--b:min(calc(var(--s) * .72),calc((100vw - 600px) / 8),86px)}
+  .ar-play{justify-content:center}
+  .ar-stage{grid-template-columns:250px minmax(0,1fr) 250px}
+  .ar-colL{display:flex;flex-direction:column;gap:10px;min-height:0}
+  .ar-colL .ar-infop{display:block;flex:1}
+  /* champ de bataille élargi et centré (demande de Theo) : compteur des types à sa gauche, espace égal à sa droite ;
+     cases plus larges que hautes quand la place le permet (--w, largeur de la colonne centrale en cqw) */
+  .ar-play{container-type:inline-size}
+  .ar-fieldrow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;width:100%;align-items:start}
+  .ar-field{--w:max(var(--s),min(calc(var(--s) * 1.4),calc((100cqw - 400px) / 3)))}
+  .ar-field .ar-side{grid-template-columns:repeat(3,var(--w))}
+  .ar-field .ar-slot{aspect-ratio:auto;height:var(--s)}
+  .ar-syncol{justify-self:end;display:flex;flex-direction:column;gap:6px;padding-top:24px}
+  html.arena-view main{max-width:1680px} /* grand écran : l'Arène prend plus de largeur, pour le terrain et ses deux colonnes */
+  .ar-frsp{display:block;justify-self:start;padding-top:24px;min-width:0;max-width:190px}
+  .ar-sideinfo{display:flex;flex-direction:column;gap:12px;font-size:.74rem}
+  .ar-sideinfo b{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin:0 0 4px}
+  .ar-edge>div{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+  .ar-edge span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-weight:700}
+  .ar-edge em{font-style:normal;color:var(--ink-soft)}
+  .ar-rounds ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+  .ar-rounds li{display:flex;align-items:center;gap:7px;color:var(--ink-soft);opacity:.55}
+  .ar-rounds li span{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);font-weight:800;font-size:.7rem}
+  .ar-rounds li.won,.ar-rounds li.lost,.ar-rounds li.done,.ar-rounds li.now{opacity:1}
+  .ar-rounds li.won{color:var(--ok)}.ar-rounds li.won span{background:var(--ok);border-color:var(--ok);color:#fff}
+  .ar-rounds li.lost{color:var(--danger)}.ar-rounds li.lost span{background:var(--danger);border-color:var(--danger);color:#fff}
+  .ar-rounds li.now{color:var(--ink);font-weight:800}.ar-rounds li.now span{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+  .ar-scrow{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+  .ar-scrow em{font-style:normal;font-family:var(--display);font-weight:700;font-size:.9rem;color:var(--ink-soft);opacity:.45;white-space:nowrap}
+  .ar-scrow em.on{color:var(--t);opacity:1;filter:brightness(1.25)}
+  .ar-sc{display:flex;flex-direction:column;gap:3px;min-width:92px;padding:5px 9px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:.74rem;font-weight:700;color:var(--ink-soft)}
+  .ar-sc i{display:flex;gap:3px}.ar-sc i b{width:9px;height:9px;border-radius:50%;border:2px solid var(--t);opacity:.55}.ar-sc i b.f{background:var(--t);opacity:1}
+  .ar-sc.on{color:var(--ink);border-color:var(--t)}
+  .ar-sc.max{color:#fff;background:var(--t);border-color:var(--t)}.ar-sc.max i b{border-color:#fff;opacity:1}.ar-sc.max i b.f{background:#fff}
+  .ar-colR{align-items:stretch;justify-content:flex-start;min-height:0;gap:10px}
+  .ar-colR .ar-shopw{flex:1;min-height:0;display:flex;flex-direction:column}
+  .ar-colR .ar-shop{flex:1;min-height:0;grid-template-columns:1fr;grid-auto-rows:minmax(0,1fr);gap:6px;padding:2px}
+  .ar-colR .ar-offer{display:grid;grid-template-columns:auto 1fr;grid-template-rows:1fr 1fr;column-gap:10px;align-items:center;padding:5px 8px;text-align:left;min-height:0}
+  .ar-colR .ar-pic{grid-row:1/3;height:100%;width:auto;aspect-ratio:1;max-height:80px}
+  .ar-colR .ar-on{font-size:.86rem;align-self:end;justify-self:start}
+  .ar-colR .ar-oc{font-size:.8rem;align-self:start;justify-self:start}
+  .ar-colR .ar-acts{flex-direction:column;align-items:stretch}
+  .ar-colR .ar-acts .btn{width:100%}
+  .ar-field{padding:10px 16px}.ar-side{gap:8px}
+  .ar-un{font-size:clamp(.56rem,calc(var(--s) * .105),.9rem)}
+  .ar-hp{height:clamp(5px,calc(var(--s) * .06),9px)}
+  .ar-star{font-size:clamp(.75rem,calc(var(--s) * .14),1.2rem)}.ar-cost{font-size:clamp(.56rem,calc(var(--s) * .09),.8rem)}
+  .ar-dmg{font-size:clamp(1rem,calc(var(--s) * .17),1.6rem)}
+  .ar-tag{font-size:clamp(.7rem,calc(var(--s) * .11),1rem)}
   .ar-synl{display:none}
 }
 /* boutique (1.2.3) : rubriques plus bas, visibles dès le haut de la page */
@@ -1255,6 +1302,18 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 .look-opt{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;min-width:92px;min-height:104px;padding:10px 8px;border-radius:14px;border:2px solid transparent;background:var(--surface-2);color:var(--ink);font-weight:700;font-size:.82rem}
 .look-opt[aria-pressed="true"]{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,var(--surface-2))}
 .look-more{border:2px dashed var(--line);background:transparent;color:var(--gold)} /* vers la boutique (1.0.4) */
+/* articles pas encore achetés (1.3.14) : grisés, un toucher lance l'essai du pack */
+.look-lock{border:2px dashed var(--line);background:transparent}
+.look-lock>:first-child{opacity:.55;filter:saturate(.6)}
+.look-lock:hover>:first-child,.look-lock:focus-visible>:first-child{opacity:.9;filter:none}
+.look-lock{max-width:124px}
+.look-lock .lk-pk{font-size:.66rem;color:var(--ink-soft);font-weight:700;white-space:normal;text-align:center;line-height:1.25}
+/* bandeau de l'essai d'un pack (1.3.14) */
+#try-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:900;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;
+  max-width:calc(100vw - 24px);padding:7px 10px 7px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--gold);box-shadow:0 6px 20px rgba(0,0,0,.3);font-size:.88rem}
+#try-bar #try-s{font-family:var(--display);color:var(--gold)}
+@media (max-width:700px){#try-bar{bottom:84px}} /* au-dessus de la barre d’onglets */
+.pl-look{margin:4px 0 0;font-size:.8rem}.pl-look .linkish{font-size:inherit}
 #shop-packs{scroll-margin-top:72px}
 .look-more:hover{border-color:var(--gold)}
 .look-more .lm-ic{font-size:30px;line-height:1;margin-bottom:auto;margin-top:12px}
@@ -1368,7 +1427,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.13";
+const APP_VERSION="1.3.14";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1750,7 +1809,7 @@ const COS={
   "dos.nuit":"Nuit étoilée","sac.galaxie":"Galaxie","cadre.constellation":"Constellation","pseudo.nebuleuse":"Nébuleuse","fond.cosmos":"Cosmos",
   "dos.or":"Or","sac.noiror":"Noir et or","cadre.dore":"Doré","pseudo.dore":"Dégradé doré","fond.tresor":"Trésor",
   "dos.diamant":"Diamant","sac.lingot":"Lingot de platine","cadre.solitaire":"Solitaire","pseudo.platine":"Platine","fond.palais":"Palais",
-  "badge.soutien":"♥ Soutien","badge.flambeur":"💸 Flambeur","titre.lord":"🐋 Lord"};
+  "badge.soutien":"♥ Soutien","badge.flambeur":"💸 Flambeur","titre.lord":"🐋 Lord","titre.fortune":"💰 Fortuné"};
 /* Badges ronds à droite du pseudo : alpha et beta viennent du profil (champs alpha, beta ; 1.0.1), les autres de la boutique (vis.b) */
 const BADGES={alpha:{ic:"✦",t:"Alpha testeur : a aidé au développement en Alpha de DexCraft"},beta:{ic:"◈",t:"Bêta testeur : a participé à la Bêta ouverte de DexCraft"},soutien:{ic:"♥",t:"Soutient DexCraft"},flambeur:{ic:"💸",t:"A dépensé beaucoup trop pour ce badge"}};
 const COS_PACK={}; // article -> pack (rempli ci-dessous)
@@ -1761,7 +1820,7 @@ const OFFERS=[
   {k:"brasier",n:"Pack Brasier",eur:500,d:"Des braises, de la lave et un volcan qui gronde.",items:["dos.braise","sac.volcan","cadre.flammes","pseudo.magma","fond.volcan"]},
   {k:"ocean",n:"Pack Océan",eur:500,d:"Les vagues, la plage et les fonds marins.",items:["dos.ocean","sac.plage","cadre.marine","pseudo.corail","fond.abysses"]},
   {k:"cosmos",n:"Pack Cosmos",eur:1000,d:"Une nuit étoilée, une galaxie et des nébuleuses.",items:["dos.nuit","sac.galaxie","cadre.constellation","pseudo.nebuleuse","fond.cosmos"]},
-  {k:"or",n:"Pack Or",eur:2000,d:"De l’or brossé, du noir profond et un trésor.",items:["dos.or","sac.noiror","cadre.dore","pseudo.dore","fond.tresor"]},
+  {k:"or",n:"Pack Or",eur:2000,d:"De l’or brossé, du noir profond et un trésor, avec le titre Fortuné.",items:["dos.or","sac.noiror","cadre.dore","pseudo.dore","fond.tresor","titre.fortune"]}, // titre Fortuné ajouté en 1.3.14 (demande de Theo),
   {k:"baleine",n:"Pack Baleine assumée",ic:"🐋",eur:5000,ribbon:"Pour les baleines",
    d:"Platine, diamants et un palais de marbre, avec en prime le titre Lord. Ça sert à rien et c’est beaucoup trop cher, mais ça brille.",
    warn:"Aucun avantage en jeu. Ne l’achetez pas si ce n’est pas raisonnable pour vous.",
@@ -1776,10 +1835,33 @@ const ownsOffer=(p,o)=>o.items.every(i=>owns(p,i));
 /* ce qu'un joueur porte, vu par les autres (vis, calculé par le serveur) ; pour soi, depuis look et cos */
 function visOf(id){
   const p=profOf(id);if(!p)return {};
-  if(id===ME){const l=p.look||{};return {f:owns(p,l.cadre)?l.cadre:null,p:owns(p,l.pseudo)?l.pseudo:null,b:Object.keys(p.cos||{}).filter(k=>k.startsWith("badge.")).sort()}}
+  if(id===ME){const l=p.look||{},tb=TRY?OFFER_BY[TRY.k].items.filter(k=>k.startsWith("badge.")):[]; // essai d'un pack : ses articles, de son côté seulement
+    return {f:tryItem("cadre")||(owns(p,l.cadre)?l.cadre:null),p:tryItem("pseudo")||(owns(p,l.pseudo)?l.pseudo:null),b:[...new Set([...Object.keys(p.cos||{}).filter(k=>k.startsWith("badge.")),...tb])].sort()}}
   return p.vis||{};
 }
-const myLook=s=>{const l=(S&&S.look)||{};return S&&owns(S,l[s])?l[s]:null};
+const myLook=s=>{const t=tryItem(s);if(t)return t;const l=(S&&S.look)||{};return S&&owns(S,l[s])?l[s]:null};
+/* Essai d'un pack (1.3.14, idée de Theo) : 60 secondes, une seule fois par pack (gardé sur l'appareil, dc-try).
+   Le pack est porté pour de vrai, mais de son côté seulement : rien n'est enregistré ni vu par les autres joueurs. */
+let TRY=null,tryTick=0;
+const TRY_S=60;
+function tryUsed(k){try{return !!JSON.parse(localStorage.getItem("dc-try")||"{}")[k]}catch(e){return false}}
+function tryItem(s){const o=TRY&&OFFER_BY[TRY.k];return o&&o.items.find(i=>i.startsWith(s+"."))||null}
+const canTry=o=>!!o&&o.k!=="soutien"&&!ownsOffer(S,o)&&!tryUsed(o.k)&&!TRY;
+function tryStart(k){
+  const o=OFFER_BY[k];if(!canTry(o))return;
+  try{const u=JSON.parse(localStorage.getItem("dc-try")||"{}");u[k]=Date.now();localStorage.setItem("dc-try",JSON.stringify(u))}catch(e){}
+  TRY={k,until:Date.now()+TRY_S*1000};closeDlg();view="booster";renderAll();window.scrollTo(0,0);
+  const bar=document.createElement("div");bar.id="try-bar";bar.setAttribute("role","status");
+  bar.innerHTML=`<span>👀 Essai du <b>${esc(o.n)}</b> · <b id="try-s">${TRY_S}</b> s</span><button class="btn small primary" data-act="buy-offer" data-k="${k}">Acheter ${eurTxt(o.eur)}</button><button class="btn small" data-act="try-stop">Arrêter</button>`;
+  document.body.append(bar);
+  toast(`Voici le ${o.n} en vrai, pendant ${TRY_S} secondes : ouvrez un booster pour voir le dos des cartes.`);
+  clearInterval(tryTick);tryTick=setInterval(()=>{const s=Math.max(0,Math.ceil((TRY.until-Date.now())/1000)),e=$("#try-s");if(e)e.textContent=s;if(!s)tryStop(true)},250);
+}
+function tryStop(ended){
+  if(!TRY)return;const o=OFFER_BY[TRY.k];clearInterval(tryTick);TRY=null;const bar=$("#try-bar");if(bar)bar.remove();
+  renderHeader();if(!reveal)renderView(); // pendant l'ouverture d'un booster, la main garde le dos jusqu'au prochain affichage
+  toast(ended?`Fin de l’essai du ${o.n}.`:"Essai arrêté.");
+}
 /* image de profil d'un joueur, avec son cadre */
 /* image de profil en shiny (1.1.0) : avaS, calculé par le serveur, visible par tous */
 const avaShiny=id=>{const p=id===ME?S:PLAYERS[id];return !!(p&&p.avaS)};
@@ -2203,6 +2285,7 @@ const TITLES=[
   {k:"mythique",n:"Mythique",ic:"✦",g:"Spéciaux",cls:"myth",d:"Possède toutes les cartes mythiques",ids:MYTH_IDS,hidden:true},
   {k:"transcendant",n:"Transcendant",ic:"❖",g:"Spéciaux",cls:"trans",d:"Possède toutes les cartes transcendantes",ids:TRANS_IDS,hidden:true},
   {k:"lord",n:"Lord",ic:"🐋",g:"Spéciaux",cls:"lord",d:"A acheté le Pack Baleine assumée",test:p=>owns(p,"titre.lord")}, // titre de la boutique (0.9.0)
+  {k:"fortune",n:"Fortuné",ic:"💰",g:"Spéciaux",cls:"tc",c:"#b8860b",d:"A acheté le Pack Or",test:p=>owns(p,"titre.fortune")}, // titre de la boutique (1.3.14, demande de Theo)
   ...DEX_TIERS.map(([need,n,k])=>({k,n,ic:"★",g:"Pokédex",cls:"tier",d:`A obtenu ${fmtN(need)} cartes différentes, toutes formes comprises`,ids:DEX_ORDER,need})),
   {k:"maitre",n:"Maître",ic:"♛",g:"Pokédex",cls:"master",d:"Possède toutes les cartes du jeu : Pokémon, formes régionales, formes de Zarbi, autres formes, méga-évolutions et Gigamax",ids:DEX_ORDER},
   {k:"starters",n:"Starters",ic:"✿",g:"Collections",cls:"tc",c:"#e0782a",d:"A obtenu tous les starters des 9 générations",ids:STARTER_IDS},
@@ -2225,7 +2308,7 @@ const TITLES=[
   ...[["packs",100,"Déballeur","A ouvert {n} boosters"],["packs",1000,"Ouvre-boosters","A ouvert {n} boosters"],["packs",5000,"Accro aux boosters","A ouvert {n} boosters"],
     ["evos",50,"Éleveur","A réalisé {n} évolutions"],["evos",250,"Évolutionniste","A réalisé {n} évolutions"],
     ["discards",500,"Recycleur","A défaussé {n} cartes"],
-    ["maxCr",50000,"Fortuné","A possédé {n} crédits en même temps"],["maxCr",250000,"Magnat","A possédé {n} crédits en même temps"],
+    // Fortuné et Magnat (crédits détenus d’un coup) retirés en 1.3.14 : Fortuné est devenu le titre du Pack Or
     ["days",30,"Fidèle","A joué {n} jours différents"],["days",100,"Vétéran","A joué {n} jours différents"],
     ["vbWins",50,"Joueur de casino","A gagné {n} manches de VoltoBataille"]]
     .map(([stat,need,n,d])=>({k:stat+need,n,ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:d.replace("{n}",fmtN(need)),stat,need})),
@@ -2959,7 +3042,10 @@ function playerDlg(uid){
     const earned=TITLES.filter(t=>titleEarned(t,p)&&(!t.hidden||titleEarned(t,S)));
     openDlg(`<div class="side" style="gap:14px"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
       <div class="pl-head">${playerAva(uid,72)}<div><h2 style="margin:0">${playerName(uid)}</h2>
-        <div>${badgeTag(uid,true)}</div>${since?`<p class="muted" style="margin:4px 0 0;font-size:.85rem">Joue depuis le ${since}</p>`:""}</div></div>
+        <div>${badgeTag(uid,true)}</div>${since?`<p class="muted" style="margin:4px 0 0;font-size:.85rem">Joue depuis le ${since}</p>`:""}
+        ${(()=>{const v=visOf(uid),it=[v.f,v.p].filter(i=>i&&COS_PACK[i]); // cadre et pseudo : de quel pack ils viennent (1.3.14)
+          const by={};it.forEach(i=>(by[COS_PACK[i]]=by[COS_PACK[i]]||[]).push(i));
+          return it.length?`<p class="pl-look">${Object.entries(by).map(([k,l])=>`<button class="linkish" data-act="goto-packs">${l.map((i,n)=>`${n?slotShort(i).toLowerCase():slotShort(i)} ${esc(cosName(i))}`).join(" et ")} · ${esc(OFFER_BY[k].n)}</button>`).join(" — ")}</p>`:""})()}</div></div>
       <div class="pl-stats"><div><b>${masterCount(c)} / ${fmtN(LB_TOTAL)}</b><span class="muted">cartes différentes</span></div>
         <div><b>${fmtN(p.total||Object.values(c).reduce((a,b)=>a+b,0))}</b><span class="muted">cartes au total</span></div>
         <div><b>${fmtN((p.stats&&p.stats.packs)||0)}</b><span class="muted">boosters ouverts</span></div>
@@ -2993,14 +3079,18 @@ function lookPreview(s,i){
 }
 function lookHTML(){
   const owned=Object.keys(S.cos||{});
-  if(!owned.length)return `<p class="muted">Aucun cosmétique pour l’instant. Les packs de la boutique changent l’apparence de vos cartes, de votre sachet, de votre image de profil, de votre pseudo et de l’écran des boosters.</p>
-    <button class="btn primary" data-act="goto-packs">Voir les packs de la boutique</button>`;
+  // articles des packs pas encore achetés (1.3.14) : grisés au bout de chaque rangée ; un toucher lance l'essai du pack, ou mène à la boutique
+  const lockedOf=s=>OFFERS.filter(o=>o.k!=="soutien").flatMap(o=>o.items.filter(i=>i.startsWith(s+".")&&COS[i]&&!owns(S,i)));
+  const lockTile=(s,i)=>{const o=OFFER_BY[COS_PACK[i]],t=canTry(o);
+    return `<button class="look-opt look-lock" data-act="${t?"try-offer":"goto-packs"}" data-k="${o.k}" title="${t?`Essayer le ${esc(o.n)} pendant ${TRY_S} secondes`:`Voir le ${esc(o.n)} dans la boutique`}">${lookPreview(s,i)}<span>${esc(cosName(i))}</span><span class="lk-pk">🔒 ${esc(o.n)}${t?" · 👀 Essayer":""}</span></button>`};
+  if(!owned.length)return `<p class="muted">Aucun cosmétique pour l’instant. Les packs de la boutique changent l’apparence de vos cartes, de votre sachet, de votre image de profil, de votre pseudo et de l’écran des boosters. Touchez un article pour l’essayer ${TRY_S} secondes.</p>
+    ${COS_SLOTS.map(([s,label])=>`<h3 class="look-h">${label}</h3><div class="look-row">${lockedOf(s).map(i=>lockTile(s,i)).join("")}</div>`).join("")}`;
   const left=OFFERS.filter(o=>!ownsOffer(S,o)&&o.items.some(i=>!i.startsWith("badge."))).length; // packs pas encore achetés (boutique, 1.0.4)
   const more=left?`<button class="look-opt look-more" data-act="goto-packs"><span class="lm-ic" aria-hidden="true">🛒</span><span>Plus de styles</span></button>`:"";
   const rows=COS_SLOTS.map(([s,label])=>{
     const items=owned.filter(i=>i.startsWith(s+".")&&COS[i]).sort((a,b)=>OFFERS.findIndex(o=>o.k===COS_PACK[a])-OFFERS.findIndex(o=>o.k===COS_PACK[b]));
-    if(!items.length)return "";const cur=myLook(s);
-    return `<h3 class="look-h">${label}</h3><div class="look-row">${[null,...items].map(i=>`<button class="look-opt" data-act="look" data-slot="${s}" data-item="${i||""}" aria-pressed="${(cur||null)===i}">${lookPreview(s,i)}<span>${i?esc(cosName(i)):"Classique"}</span></button>`).join("")}${more}</div>`;
+    const cur=myLook(s),lk=lockedOf(s);
+    return `<h3 class="look-h">${label}</h3><div class="look-row">${[null,...items].map(i=>`<button class="look-opt" data-act="look" data-slot="${s}" data-item="${i||""}" aria-pressed="${(cur||null)===i}">${lookPreview(s,i)}<span>${i?esc(cosName(i)):"Classique"}</span></button>`).join("")}${lk.map(i=>lockTile(s,i)).join("")}${lk.length?"":more}</div>`;
   }).join("");
   const bd=owned.filter(i=>i.startsWith("badge.")),tl=owned.filter(i=>i.startsWith("titre."));
   return `<p class="muted">Vous pouvez mélanger les articles de vos différents packs. Le cadre, la couleur du pseudo et les badges sont visibles par tous les joueurs ; le reste, par vous seul.</p>${rows}
@@ -3305,11 +3395,12 @@ function evolve(from,to){
    par ligne et par colonne. Gains = produit des cartes retournées, versés en crédits dans la limite
    de VB_CAP par jour (remise à zéro à minuit, heure du joueur). Niveau gardé dans le profil (volto). */
 const VB_CAP=3000; // 2 000 avant la 1.3.0
+const VB_AFTER=10; // 1.3.14 : plafond atteint, une manche gagnée rapporte encore 10 crédits par niveau (80 au niveau 8), hors compteur du jour
 /* ---------- Arène (1.3.0) : règles, exportées dans la configuration (cfg.arena) et appliquées par le serveur (partie 5) ----------
    odds : chances de rareté de la boutique (Commune, Peu commune, Rare, Épique, Légendaire) par bandes de 2 manches ;
    slot : chance qu'une case repropose un Pokémon de l'équipe ; typeW : poids des types joués, en part de la réserve ;
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
-const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,winBase:60,winStep:20,startGold:6,incBase:6,
+const AR={rounds:10,lives:3,lossGold:3,bench:8,reroll:2,cap:3000,finish:400,afterCap:50,winBase:60,winStep:20,startGold:6,incBase:6,
   odds:[[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]],cost:{0:1,1:2,2:3,3:4,5:5},
   aiEvo:.066,aiPow0:.80,aiPowK:.04,slot:.2,typeW:1/75}; // 1.3.2 : slot .25 → .2 et typeW 1/60 → 1/75 ; 1.3.5 : ordinateur un peu plus fort (aiEvo .04, aiPow0 .65, aiPowK .03 avant ; « un poil simple », avis de Theo) ; 1.3.6 : encore un cran (.048, .69, .033 avant ; « encore trop simple ») ; 1.3.7 : .056, .74, .036 avant (« toujours trop simple »)
 const AR_CHART={1:{6:.5,9:.5,8:0},2:{1:2,6:2,9:2,15:2,17:2,3:.5,4:.5,7:.5,14:.5,18:.5,8:0},3:{2:2,7:2,12:2,6:.5,9:.5,13:.5},
@@ -3360,19 +3451,19 @@ function vbTile(i,closed){
     <span class="face front v${v===null?"":v}">${v===null?"":v?v:vbVolt()}</span></span></button>`;
 }
 function vVolto(){
-  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.2</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
+  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.3</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
   const s=VB.srv,g=vbGained(S),left=Math.max(0,VB_CAP-g);vbMid=nextMidnight();
   VB.level=s.level;VB.score=s.state==="lost"?0:s.score;VB.state=s.state;
   let board="";
   for(let r=0;r<5;r++){for(let c=0;c<5;c++)board+=vbTile(r*5+c);board+=vbClue(s.rows[r],VB_COLORS[r])}
   for(let c=0;c<5;c++)board+=vbClue(s.cols[c],VB_COLORS[c]);
   board+=`<span></span>`;
-  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.2</span></h1>
+  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.3</span></h1>
     <p class="muted" style="margin:4px 0 0">Retournez les cartes, multipliez vos gains… et évitez les Voltorbe !</p>
     <div class="vb-day">
       <div class="vb-day-top"><span><b>${fmtN(g)} / ${fmtN(VB_CAP)}</b> crédits gagnés aujourd’hui</span><span class="muted">Remise à zéro dans <b data-countdown="${vbMid}">${fmtLeft(vbMid-Date.now())}</b></span></div>
       <div class="progress"><b style="width:${Math.min(100,g*100/VB_CAP)}%"></b></div>
-      ${left?"":`<p class="muted" style="margin:6px 0 0;font-size:.85rem">Plafond du jour atteint : vous pouvez continuer à jouer pour le plaisir, les gains reprennent à minuit.</p>`}
+      ${left?"":`<p class="muted" style="margin:6px 0 0;font-size:.85rem">Plafond du jour atteint : chaque manche gagnée rapporte encore ${VB_AFTER} crédits par niveau (${VB_AFTER*8} au niveau 8) jusqu’à minuit.</p>`}
     </div>
     <div class="vb-hud"><div><small>Niveau</small><b>${VB.level}</b></div><div class="gain"><small>Gains de la manche</small><b id="vb-score">${fmtN(VB.score)}</b></div><div><small>Crédits</small><b>${fmtN(S.credits)}</b></div></div>
     <div class="vb-msg${VB.cls?" "+VB.cls:""}" id="vb-msg" role="status" aria-live="polite">${esc(VB.msg)}</div>
@@ -3393,7 +3484,7 @@ function vVolto(){
       <li><b>Mode mémo</b> : choisissez une note puis touchez une carte pour la noter sans la retourner.</li>
       <li><b>Encaisser et arrêter</b> : gardez les gains déjà obtenus et passez à une nouvelle manche.</li>
       <li>Chaque manche gagnée fait monter d’un niveau, jusqu’au niveau 8. Après une défaite ou un encaissement, le niveau redescend au nombre de cartes retournées.</li>
-      <li>Vous gagnez au plus <b>${fmtN(VB_CAP)} crédits par jour</b>. Le compteur repart de zéro chaque nuit à minuit.</li>
+      <li>Vous gagnez au plus <b>${fmtN(VB_CAP)} crédits par jour</b>. Le compteur repart de zéro chaque nuit à minuit. Une fois le plafond atteint, chaque manche gagnée rapporte encore ${VB_AFTER} crédits par niveau (${VB_AFTER*8} au niveau 8).</li>
     </ul></details></div>`;
 }
 /* Retourne une carte : le serveur donne sa valeur (et tout le plateau si la manche se termine) */
@@ -3421,9 +3512,9 @@ function vbFlip(i){
 }
 /* Fin de manche (réponse du serveur) : message, puis plateau dévoilé */
 function vbEnd(r){
-  const kind=r.kind,added=r.added||0,score=r.score||0,lvl=r.prevLevel,nl=r.level,round=VB.srv;
+  const kind=r.kind,added=r.added||0,extra=r.extra||0,score=r.score||0,lvl=r.prevLevel,nl=r.level,round=VB.srv;
   const partial=added&&added<score?" (plafond du jour atteint)":"",none="le plafond du jour est déjà atteint, aucun crédit gagné.";
-  if(kind==="won"){VB.cls="win";VB.msg=`Bravo ! ${added?`+${cr(added)}${partial}.`:`Manche gagnée, mais ${none}`} ${nl>lvl?`Niveau ${nl} débloqué !`:"Niveau maximum !"}`;SFX.flip(3)}
+  if(kind==="won"){VB.cls="win";VB.msg=`Bravo ! ${added?`+${cr(added)}${partial}.`:extra?`+${cr(extra)} pour le niveau ${lvl} (plafond du jour atteint).`:`Manche gagnée, mais ${none}`} ${nl>lvl?`Niveau ${nl} débloqué !`:"Niveau maximum !"}`;SFX.flip(3)}
   else if(kind==="quit"){VB.cls="win";VB.msg=`${added?`Vous encaissez ${cr(added)}${partial}.`:`Manche arrêtée : ${none}`}${nl<lvl?` Niveau ${nl} pour la prochaine manche.`:""}`}
   else{VB.cls="lose";VB.msg=`Boum ! Un Voltorbe a explosé.${score?` ${cr(score)} perdu${score>1?"s":""}.`:""}${nl<lvl?` Retour au niveau ${nl}.`:""}`}
   const m=$("#vb-msg");if(m){m.textContent=VB.msg;m.className="vb-msg "+VB.cls}
@@ -3501,7 +3592,7 @@ function offerHTML(o,dev){
       ${o.items.length>1?`<ul class="contents">${o.items.map(i=>`<li>${slotShort(i)} <b>${esc(cosName(i))}</b></li>`).join("")}</ul>`:""}</div>
     ${o.warn&&!own?`<p class="baleine-note">${esc(o.warn)}</p>`:""}
     ${own?`<div class="price owned-txt">✓ Dans votre collection</div><button class="btn" data-act="goto-look">Changer de look</button>`
-      :`<div class="price">${eurTxt(o.eur)}</div><button class="btn primary" data-act="buy-offer" data-k="${o.k}">Acheter pour ${eurTxt(o.eur)}</button>${dev?`<button class="btn small" data-act="dev-offer" data-k="${o.k}">Obtenir (mode dev)</button>`:""}`}
+      :`<div class="price">${eurTxt(o.eur)}</div><button class="btn primary" data-act="buy-offer" data-k="${o.k}">Acheter pour ${eurTxt(o.eur)}</button>${canTry(o)?`<button class="btn" data-act="try-offer" data-k="${o.k}" title="Portez ce pack pendant ${TRY_S} secondes, de votre côté seulement (une seule fois)">👀 Essayer ${TRY_S} secondes</button>`:""}${dev?`<button class="btn small" data-act="dev-offer" data-k="${o.k}">Obtenir (mode dev)</button>`:""}`}
     <button class="btn gift-btn" data-act="gift-offer" data-k="${o.k}">🎁 Offrir à un joueur</button>
   </div>`;
 }
@@ -4492,13 +4583,28 @@ function arBuy(i,zone,slot){
 function arSell(uid){if(!arFind(uid)||arFighting)return;arAct("dc_ar_sell",{p_u:uid})}
 /* ---------- synergies et fiche ---------- */
 function arSyn(units){const c={};for(const id of new Set(units.map(u=>u.i)))for(const t of D(id)[3])c[t]=(c[t]||0)+1;return c}
-function arSynPanel(){
-  const r=arRun(),on=arSyn(r.board.filter(Boolean)),bn=arSyn(r.bench.filter(Boolean));
-  const ts=[...new Set([...Object.keys(on),...Object.keys(bn)])].map(Number).sort((a,b)=>(on[b]||0)-(on[a]||0)||(bn[b]||0)-(bn[a]||0));
-  return `<aside class="ar-synp"><h3>Synergies</h3><p class="muted ar-small">Pokémon différents d’un même type sur le terrain : <b>2</b> = +15 % PV et Attaque pour ce type, <b>4</b> = +30 %.</p>
-    ${ts.length?ts.map(t=>{const n=on[t]||0,b=bn[t]||0;return `<div class="ar-sy${n>=2?" on":""}" style="--t:${TYPES[t][1]}"><span class="ar-syt">${TYPES[t][0]}</span><span class="ar-syd">${[1,2,3,4].map(k=>`<i class="${k<=n?"f":""}"></i>`).join("")}</span>
-      <span class="ar-sye">${n>=4?"+30 %":n>=2?"+15 % · 4 : +30 %":n?"encore 1 : +15 %":"sur le banc"}${b&&n<4?` <span class="muted">(${b} au banc)</span>`:""}</span></div>`}).join("")
-      :`<p class="muted ar-small">Placez des Pokémon sur le terrain pour voir leurs synergies.</p>`}</aside>`;
+/* Synergies (1.3.14, demande de Theo) : juste un compteur par type des Pokémon du terrain (différents), à gauche du champ de bataille */
+function arSynCount(){
+  const r=arRun(),on=arSyn(r.board.filter(Boolean)),ts=Object.keys(on).map(Number).sort((a,b)=>on[b]-on[a]);
+  return ts.map(t=>{const n=on[t];return `<div class="ar-scrow" style="--t:${TYPES[t][1]}"><em class="${n>=2?"on":""}">${n>=4?"+30 %":"+15 %"}</em><div class="ar-sc${n>=4?" max":n>=2?" on":""}" title="${TYPES[t][0]} : ${n} sur le terrain"><span>${TYPES[t][0]}</span><i>${[1,2,3,4].map(k=>`<b class="${k<=n?"f":""}"></b>`).join("")}</i></div></div>`}).join(""); // bonus à gauche (plan de Theo) : gris tant qu'il n'est pas actif
+}
+/* À droite du terrain (1.3.14, choix de Theo) : avantages de types contre cet adversaire, puis la progression des manches.
+   Multiplicateur comme le serveur (dc__ar_mult) : meilleur type de l'attaquant, cumulé sur les types du défenseur. */
+const arMult=(a,dd)=>Math.max(...a.map(x=>dd.reduce((m,y)=>m*((AR_CHART[x]||{})[y]??1),1)));
+function arSideInfo(){
+  const r=arRun(),me=r.board.filter(Boolean),en=r.enemy.board.filter(Boolean),ty=u=>D(u.i)[3];
+  const hit=en.filter(e=>me.some(m=>arMult(ty(m),ty(e))>=2)),fear=en.filter(e=>me.some(m=>arMult(ty(e),ty(m))>=2));
+  const names=l=>[...new Set(l.map(u=>nm(u.i)))].map(n=>`<span>${esc(n)}</span>`).join("");
+  const types=me.length?`<div class="ar-edge"><b>💪 Vous frappez fort</b><div>${hit.length?names(hit):`<em>personne</em>`}</div>
+    <b>⚠️ Ils vous frappent fort</b><div>${fear.length?names(fear):`<em>personne</em>`}</div></div>`
+    :`<p class="muted ar-small">Placez des Pokémon pour voir vos avantages de types.</p>`;
+  const h=Array.isArray(r.hist)?r.hist:[],gain=Math.min(AR.winBase+AR.winStep*r.round,Math.max(0,AR_V.cap-AR_V.gained));
+  const rows=Array.from({length:AR.rounds},(_,k)=>{const n=k+1;
+    if(n<=h.length)return `<li class="${h[k]?"won":"lost"}"><span>${n}</span>${h[k]?"✔ gagnée":"✘ perdue"}</li>`;
+    if(n<r.round)return `<li class="done"><span>${n}</span>jouée</li>`; // partie commencée avant la 1.3.14 : issue inconnue
+    if(n===r.round)return `<li class="now"><span>${n}</span>en cours${gain?` · +${fmtN(gain)}`:""}</li>`;
+    return `<li><span>${n}</span></li>`}).join("");
+  return `<div class="ar-sideinfo">${types}<div class="ar-rounds"><b>Manches</b><ol>${rows}</ol></div></div>`;
 }
 function arSynLine(){const r=arRun(),on=arSyn(r.board.filter(Boolean)),l=Object.keys(on).map(Number).sort((a,b)=>on[b]-on[a]);
   return `<div class="ar-synl">${l.length?l.map(t=>`<span class="${on[t]>=2?"on":""}" style="--t:${TYPES[t][1]}">${TYPES[t][0]} ${on[t]}${on[t]>=4?" · +30 %":on[t]>=2?" · +15 %":"/2"}</span>`).join(""):`<span>Synergies : 2 Pokémon d’un même type = +15 %</span>`}</div>`}
@@ -4529,7 +4635,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v1.6</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v2.0</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip">🪙 <b>${r.gold}</b> or</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -4537,24 +4643,26 @@ function vArena(){
   if(!r||r.over)return `<div class="arena ar-intro">${top}<div class="ar-start">
     <p>Composez une équipe avec les Pokémon de <b>votre collection</b>, faites-les évoluer en réunissant 3 exemplaires, et affrontez l’ordinateur sur ${AR.rounds} manches. Chaque manche gagnée rapporte des crédits (${fmtN(AR.cap)} par jour au plus).</p>
     ${r&&r.over?`<p class="muted">Dernière partie : ${r.wins} manche${r.wins>1?"s":""} gagnée${r.wins>1?"s":""}, +${fmtN(r.credits)} crédits.</p>`:""}
-    <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:"Plafond du jour atteint : vous pouvez jouer, sans gagner de crédits jusqu’à minuit."}</p>
+    <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:`Plafond du jour atteint : chaque partie terminée (les ${AR.rounds} manches) rapporte encore ${AR.afterCap} crédits jusqu’à minuit.`}</p>
     <button class="btn primary ar-fight" data-ar="start">⚔️ ${r?"Nouvelle partie":"Lancer une partie"}</button></div></div>`;
   const on=r.board.filter(Boolean).length,max=arMax(r.round),counts={};arUnits().forEach(u=>{if(!u.s)counts[u.i]=(counts[u.i]||0)+1});
   const empt=[0,1,2,3,4,5].filter(i=>!r.board[i]).slice(0,Math.max(0,max-on)),sel=arSel&&arFind(arSel);
   return `<div class="arena">${top}
-  <div class="ar-stage">${arSynPanel()}<div class="ar-play">
-    <div class="ar-field">
+  <div class="ar-stage"><div class="ar-colL"><aside class="ar-infop">${arInfoInner(arHover||sel,arHover&&sel&&arHover!==sel?sel:null)}</aside></div><div class="ar-play">
+    <div class="ar-fieldrow"><div class="ar-syncol">${arSynCount()}</div><div class="ar-field">
       <div class="ar-lbl"><span>Adversaire</span><span>manche ${r.round}</span></div>
       <div class="ar-side">${[3,4,5,0,1,2].map(i=>`<div class="ar-slot">${arUnitHTML(r.enemy.board[i],true)}</div>`).join("")}</div>
       <div class="ar-sep"></div>
       <div class="ar-lbl"><span>Votre équipe ${on}/${max}</span><span class="ar-places${on<max?" free":""}">${on<max?`${max-on} place${max-on>1?"s":""} libre${max-on>1?"s":""}`:"Équipe complète"}</span></div>
       <div class="ar-side">${[0,1,2,3,4,5].map(i=>{const u=r.board[i],free=empt.includes(i);return `<div class="ar-slot${free?" free":""}${!u&&on>=max?" closed":""}${sel&&!u&&(on<max||r.board.includes(sel))?" drop":""}" data-ar="slot" data-zone="board" data-i="${i}" data-ar-drop="board:${i}">${arUnitHTML(u)}${free?`<span class="ar-tag">+ libre</span>`:!u&&on>=max?`<span class="ar-tag">🔒</span>`:""}</div>`}).join("")}</div>
-    </div>
+    </div><div class="ar-frsp">${arSideInfo()}</div></div>
     ${arSynLine()}
     <div class="ar-log" id="ar-log">${sel?`${esc(nm(sel.i))} choisi : touchez une case, ou glissez-le.`:`Touchez ou glissez un Pokémon pour le placer<span class="ar-wide"> ; glissez-le sur la boutique pour le vendre</span>.`}</div>
     <div class="ar-dock">
       <div><div class="ar-lbl">Banc</div><div class="ar-bench">${r.bench.map((u,i)=>`<div class="ar-slot${sel&&!u?" drop":""}" data-ar="slot" data-zone="bench" data-i="${i}" data-ar-drop="bench:${i}">${arUnitHTML(u)}</div>`).join("")}</div></div>
-      <div><div class="ar-lbl">Boutique · vos Pokémon</div>
+    </div>
+  </div><div class="ar-colR">
+      <div class="ar-shopw"><div class="ar-lbl">Boutique · vos Pokémon</div>
         <div class="ar-shop${r.locked?" locked":""}" data-ar-drop="shop">${r.shop.map((id,i)=>{if(!id)return `<button class="ar-offer empty" disabled></button>`;const [n,,,ty,,,,rr]=D(id),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(id);
           return `<button class="ar-offer" data-ar="buy" data-i="${i}" data-ar-drag="s:${i}" style="--c1:${c1};--c2:${c2};--rc:var(--r${rr})" ${r.gold<AR.cost[rr]?"disabled":""} title="${esc(n)} · ${AR_RARN[rr]}">
             <span class="ar-pic">${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${counts[id]?`<span class="ar-own">${counts[id]}/3</span>`:""}</span><span class="ar-on">${esc(n)}</span><span class="ar-oc">🪙 ${AR.cost[rr]}</span></button>`}).join("")}</div></div>
@@ -4563,8 +4671,7 @@ function vArena(){
         <button class="btn${r.locked?" ar-on":""}" data-ar="lock" title="La boutique reste la même à la manche suivante">${r.locked?`🔒<span class="ar-wide"> Boutique verrouillée</span>`:`🔓<span class="ar-wide"> Verrouiller</span>`}</button>
         <button class="btn danger ar-sellz" data-ar="sell"${sel?"":" hidden"}>${sel?`Vendre ${esc(nm(sel.i))} (+${arCost(sel)} or)`:"Vendre"}</button>
         <button class="btn primary ar-fight" data-ar="fight">⚔️ Combattre</button></div>
-    </div>
-  </div><aside class="ar-infop">${arInfoInner(arHover||sel,arHover&&sel&&arHover!==sel?sel:null)}</aside></div></div>`;
+  </div></div></div>`;
 }
 /* hauteur disponible sous l'en-tête (et au-dessus de la barre d'onglets sur téléphone) : tout tient sans défiler */
 function arFit(){
@@ -4572,8 +4679,14 @@ function arFit(){
   const h=Math.max(420,innerHeight-(a.getBoundingClientRect().top+scrollY)-(fixed?nav.offsetHeight:0)-10);
   document.documentElement.style.setProperty("--ar-h",h+"px");
   // petit téléphone (1.3.2) : plutôt que des cases minuscules, des cases lisibles et la page qui défile
-  document.documentElement.classList.toggle("arena-scroll",innerWidth<1000&&(h-450)/4<54);
+  const size=innerWidth+"x"+innerHeight;
+  document.documentElement.classList.toggle("arena-scroll",innerWidth<1000&&((h-450)/4<54||arTall===size));
+  // écran étroit (1.3.14) : si tout ne tient pas malgré tout (tablette), la page défile plutôt que de couper les boutons ;
+  // décision gardée pour cette taille d'écran (arTall), sinon l'Arène clignoterait à chaque affichage
+  if(innerWidth<1000&&!document.documentElement.classList.contains("arena-scroll"))requestAnimationFrame(()=>{
+    const b=$(".arena");if(b&&b.scrollHeight>b.clientHeight+2){arTall=size;document.documentElement.classList.add("arena-scroll")}});
 }
+let arTall="";
 addEventListener("resize",arFit);
 /* ---------- combat : le serveur a tout calculé, la page anime le déroulé ---------- */
 async function arFight(){
@@ -4600,7 +4713,7 @@ async function arFight(){
     openDlg(`<div class="side" style="align-items:center;text-align:center"><div style="font-size:3rem" aria-hidden="true">${nr.hp>0?"🏆":"💥"}</div>
       <h2>${nr.hp>0?"Arène terminée !":"Plus de vies"}</h2><p>${msg}</p>
       <p>${nr.hp>0?`Vous avez tenu les ${AR.rounds} manches.`:`Partie finie à la manche ${res.round}.`} ${nr.wins} manche${nr.wins>1?"s":""} gagnée${nr.wins>1?"s":""}.</p>
-      <p style="font-size:1.3rem"><b>+${fmtN(nr.credits)} crédits</b>${res.bonus?` <span class="muted">(dont ${fmtN(res.bonus)} de bonus final)</span>`:""}</p>
+      <p style="font-size:1.3rem"><b>+${fmtN(nr.credits)} crédits</b>${res.post?` <span class="muted">(dont ${fmtN(res.post)} après le plafond du jour)</span>`:res.bonus?` <span class="muted">(dont ${fmtN(res.bonus)} de bonus final)</span>`:""}</p>
       <p class="muted" style="font-size:.85rem">Les crédits gagnés pendant la partie sont à vous. Aujourd’hui : ${fmtN(AR_V.gained)} / ${fmtN(AR_V.cap)}.</p>
       <div class="actions"><button class="btn primary" data-ar="start">Rejouer</button><button class="btn" data-act="close">Fermer</button></div></div>`,true);
   }else{const l=$("#ar-log");if(l)l.textContent=msg;toast(msg)}
@@ -4608,7 +4721,7 @@ async function arFight(){
 function arRules(){
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Règles de l’Arène</h2><ul class="ar-rules">
     <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort. ${AR.lives} vies : une manche perdue coûte une vie, et la partie continue à la manche suivante avec ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
-    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche, et ${AR.finish} de bonus en finissant les ${AR.rounds} manches. Ils restent acquis, même en cas de défaite. ${fmtN(AR.cap)} par jour au plus.</li>
+    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche, et ${AR.finish} de bonus en finissant les ${AR.rounds} manches. Ils restent acquis, même en cas de défaite. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque partie terminée rapporte encore ${AR.afterCap} crédits.</li>
     <li>Or : ${AR.startGold} au départ, puis ${AR.incBase} en manche 1 jusqu’à ${AR.incBase+Math.floor(AR.rounds/2)} en manche ${AR.rounds}, +1 par victoire, +1 d’intérêt par tranche de 10 or gardés (3 au plus).</li>
     <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon que vous avez déjà revient plus souvent, et les Pokémon des types de votre équipe aussi. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante.</li>
     <li>3 exemplaires du même Pokémon : il évolue (ou gagne une étoile ⭐ en fin de lignée).</li>
@@ -4703,13 +4816,15 @@ document.addEventListener("click",e=>{
     case"cgu":openCgu();break;
     case"cgv":openCgv();break;
     case"look-news":try{localStorage.setItem("dc-look-news","1")}catch(e){}view="profile";renderAll();window.scrollTo(0,0);break; // « votre pseudo » : le message ne revient plus
-    case"goto-packs":view="shop";renderAll();window.scrollTo(0,0);setTimeout(()=>shopGo("shop-packs"));break; // « Mon look » → packs de la boutique (1.0.4)
+    case"goto-packs":closeDlg();view="shop";renderAll();window.scrollTo(0,0);setTimeout(()=>shopGo("shop-packs"));break; // « Mon look » → packs de la boutique (1.0.4)
     case"claim-launch":run(async()=>{await rpc("dc_buy_once",{p_key:LAUNCH.k});toast(`Pack de lancement récupéré : +${fmtN(LAUNCH.credits)} crédits et +${LAUNCH.packs} boosters !`)});break;
     case"badge-info":e.stopPropagation();{const B=BADGES[b.dataset.k];if(B)toast(`${B.ic} ${B.t}`)}break;
     case"discord-soon":e.preventDefault();toast("Le serveur Discord ouvre très bientôt !");break;
     case"share-card":e.preventDefault();shareCard(id,b.dataset.fresh==="1",b.dataset.sh==="1");break;
     case"share-copy":case"share-dl":shareAct(a);break;
     case"buy-offer":buyOffer(b.dataset.k);break;
+    case"try-offer":tryStart(b.dataset.k);break;
+    case"try-stop":tryStop(false);break;
     case"buy-go":run(()=>buyGo(b.dataset.k,!!b.dataset.gift));break;
     case"gift-offer":buyOffer(b.dataset.k,true);break;
     case"gift-to":giftTo=b.dataset.uid;giftRefresh();break;
@@ -5403,7 +5518,7 @@ function gameConfig(){
     maxp:MAXP,per:PER,cards:CARDS,startCredits:START_CREDITS,packPrice:PACK_PRICE,byrV:BYR_V,
     once:LAUNCH?{[LAUNCH.k]:{free:true,credits:LAUNCH.credits,packs:LAUNCH.packs,until:LAUNCH.until}}:{},creditPacks:[], // anciennes offres en euros retirées en 0.9.0 ; once : pack gratuit de lancement (1.0.0)
     shop:{offers:Object.fromEntries(OFFERS.map(o=>[o.k,{n:o.n,eur:o.eur,items:o.items}])),items:Object.keys(COS)}, // boutique cosmétique : prix en centimes
-    vbLevels:VB_LEVELS,vbCap:VB_CAP,betaOpen:BETA_OPEN,openOpts:OPEN_OPTS,pseudoWait:PSEUDO_WAIT,titleMax:TITLE_MAX,
+    vbLevels:VB_LEVELS,vbCap:VB_CAP,vbAfter:VB_AFTER,betaOpen:BETA_OPEN,openOpts:OPEN_OPTS,pseudoWait:PSEUDO_WAIT,titleMax:TITLE_MAX,
     titleKeys:TITLES.map(t=>t.k),titleDefault:TITLE_DEFAULT,titleDefs:Object.fromEntries(TITLES.map(t=>[t.k,titleDef(t)])),
     pgen:POKE_IDS.map(id=>DEX[id-1][2]).join(""),
     ptype:POKE_IDS.map(id=>{const t=DEX[id-1][3];return String.fromCharCode(96+t[0])+(t[1]?String.fromCharCode(96+t[1]):"-")}).join(""),
@@ -5424,7 +5539,7 @@ function gameConfig(){
 function titleDef(t){
   const same=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
   if(t.stat)return {c:"stat",s:t.stat,n:t.need};
-  const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},arPerf:{c:"sflag",s:"arPerf"},lord:{c:"cos",i:"titre.lord"}};
+  const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},arPerf:{c:"sflag",s:"arPerf"},lord:{c:"cos",i:"titre.lord"},fortune:{c:"cos",i:"titre.fortune"}};
   if(fixed[t.k])return fixed[t.k];
   if(t.k==="darwin")return {c:"evo",n:t.ids.length}; // cibles de cfg.evo, comptées par le serveur (1.1.3)
   if(t.ids&&same(t.ids,DEX_ORDER))return {c:"dex",n:t.need||DEX_ORDER.length};

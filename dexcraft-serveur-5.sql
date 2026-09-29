@@ -350,7 +350,7 @@ end $$;
 create or replace function public.dc_ar_fight(p_board jsonb default null, p_bench jsonb default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); a jsonb := cfg -> 'arena';
   st jsonb := public.dc__ar_get(u); rd int; res jsonb; auto_ jsonb := '[]'; v jsonb; k int; before jsonb; day text := public.dc__day();
-  gained bigint; added bigint := 0; bonus bigint := 0; cap bigint := (a ->> 'cap')::bigint;
+  gained bigint; added bigint := 0; bonus bigint := 0; post bigint := 0; cap bigint := (a ->> 'cap')::bigint;
 begin
   st := public.dc__ar_layout(st, p_board, p_bench) - 'msg'; rd := (st ->> 'round')::int;
   -- places libres : les Pokémon les plus forts du banc (total des statistiques, étoile comprise)
@@ -373,9 +373,16 @@ begin
   else
     st := st || jsonb_build_object('hp', greatest(0, (st ->> 'hp')::int - 1), 'gold', (st ->> 'gold')::int + (a ->> 'lossGold')::int);
   end if;
+  -- 1.3.14 : issue de chaque manche (1 gagnée, 0 perdue), pour la progression affichée à droite du terrain
+  st := jsonb_set(st, '{hist}', coalesce(st -> 'hist', '[]') || to_jsonb(case when (res ->> 'win')::boolean then 1 else 0 end));
   if (st ->> 'hp')::int <= 0 or rd >= (a ->> 'rounds')::int then
     st := jsonb_set(st, '{over}', 'true');
-    if (st ->> 'hp')::int > 0 then bonus := least((a ->> 'finish')::int, greatest(0, cap - gained - added)); d := public.dc__bump(d, 'arDone'); end if;
+    if (st ->> 'hp')::int > 0 then
+      -- 1.3.14 : plafond du jour déjà atteint, une partie terminée rapporte encore afterCap (50) crédits, hors compteur du jour
+      if gained + added >= cap then post := coalesce((a ->> 'afterCap')::int, 0);
+      else bonus := least((a ->> 'finish')::int, greatest(0, cap - gained - added)); end if;
+      d := public.dc__bump(d, 'arDone');
+    end if;
     -- titre Invaincu (1.3.6) : les 10 manches sans perdre une vie
     if (st ->> 'hp')::int >= (a ->> 'lives')::int then d := jsonb_set(d, '{stats,arPerf}', '1'); end if;
   else
@@ -383,13 +390,13 @@ begin
     st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + (rd + 1) / 2 + least(3, (st ->> 'gold')::int / 10)));
     st := public.dc__ar_round(cfg, st, d -> 'coll');
   end if;
-  st := jsonb_set(st, '{credits}', to_jsonb((st ->> 'credits')::int + added + bonus));
-  d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') + added + bonus));
+  st := jsonb_set(st, '{credits}', to_jsonb((st ->> 'credits')::int + added + bonus + post));
+  d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') + added + bonus + post));
   d := d || jsonb_build_object('arena', jsonb_build_object('day', day, 'gained', gained + added + bonus));
   perform public.dc__ar_put(u, st);
   d := public.dc__save(u, d);
   return public.dc__ar_view(d, st) || jsonb_build_object('profile', d, 'before', before, 'log', res -> 'log', 'win', res -> 'win',
-    'added', added, 'bonus', bonus, 'auto', auto_, 'round', rd);
+    'added', added, 'bonus', bonus, 'post', post, 'auto', auto_, 'round', rd);
 end $$;
 
 -- ============================================================

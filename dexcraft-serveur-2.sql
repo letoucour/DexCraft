@@ -249,11 +249,13 @@ end $$;
 create or replace function public.dc__vb_end(u uuid, d jsonb, v public.vb_rounds, kind text) returns jsonb language plpgsql volatile as $$
 declare cap bigint := (public.dc__cfg() ->> 'vbCap')::bigint; day text := public.dc__day();
   gained bigint := case when d -> 'volto' ->> 'day' = day then public.dc__int(d -> 'volto', 'gained') else 0 end;
-  added bigint := 0; nl int;
+  added bigint := 0; nl int; extra bigint := 0;
 begin
   nl := case when kind = 'won' then least(8, v.level + 1) else greatest(1, least(v.level, v.flipped)) end;
   if kind <> 'lost' and v.score > 0 then added := least(v.score, greatest(0, cap - gained)); end if;
-  d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') + added));
+  -- 1.3.14 : plafond du jour déjà atteint, une manche gagnée rapporte encore vbAfter (10) crédits par niveau, hors compteur du jour
+  if kind = 'won' and gained >= cap then extra := coalesce((public.dc__cfg() ->> 'vbAfter')::int, 0) * v.level; end if;
+  d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') + added + extra));
   d := jsonb_set(d, '{volto}', jsonb_build_object('day', day, 'gained', gained + added, 'level', nl));
   if kind = 'won' then
     d := public.dc__bump(d, 'vbWins');
@@ -261,7 +263,7 @@ begin
   end if;
   update public.vb_rounds set state = kind, level = nl where uid = u;
   d := public.dc__save(u, d);
-  return jsonb_build_object('profile', d, 'added', added, 'kind', kind, 'prevLevel', v.level, 'level', nl, 'score', v.score);
+  return jsonb_build_object('profile', d, 'added', added, 'extra', extra, 'kind', kind, 'prevLevel', v.level, 'level', nl, 'score', v.score);
 end $$;
 
 create or replace function public.dc_vb_flip(p_i int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$

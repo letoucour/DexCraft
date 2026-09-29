@@ -56,7 +56,8 @@ function setup(scene){
   showGate(false);if(new URLSearchParams(parent.location.search).get("theme"))document.documentElement.dataset.theme=new URLSearchParams(parent.location.search).get("theme");
   if(scene==="shop"||scene==="buy"||scene==="packs"){view="shop";renderAll();if(scene==="buy")buyOffer("cosmos");if(scene==="packs")setTimeout(()=>document.querySelectorAll("#app h2")[2].scrollIntoView(),50)}
   if(scene==="look"){profOpen.look=true;view="profile";renderAll();setTimeout(()=>document.querySelector('[data-sec="look"]').scrollIntoView(),50)}
-  if(scene==="arena"){view="arena";renderAll()}
+  if(scene==="arena"){if(new URLSearchParams(parent.location.search).get("run")){localStorage.setItem("dc-mute","1");window.__arN=200;window.__ar={round:3,hp:2,gold:9,wins:1,credits:100,hist:[1,0],locked:false,over:false,board:[{u:101,i:4,s:0},{u:102,i:58,s:0},{u:103,i:25,s:0},{u:104,i:1,s:0},null,null],bench:[{u:105,i:133,s:0},{u:106,i:4,s:0},null,null,null,null,null,null],shop:[6,9,26,134,94],enemy:{board:[{u:111,i:19,s:0},{u:112,i:16,s:0},{u:113,i:10,s:0},{u:114,i:74,s:0},null,null],power:.7}}} // ?run=1 : partie en cours, pour les captures (1.3.14)
+    view="arena";renderAll()}
   if(scene==="booster"){view="booster";if(new URLSearchParams(parent.location.search).get("inv"))S.spInv={prem:2,"gen:1":3,"type:10":1,"type:16":12};renderAll()}
   if(scene==="special"){OWNER=false;S.credits=12500;view="shop";renderAll();setTimeout(()=>{const h=document.querySelector("#shop-special");window.scrollTo(0,h.getBoundingClientRect().top+scrollY-70)},50)}
   if(scene==="hand"){view="booster";reveal=[1,4,7,25,6].map(id=>({id,isNew:false,shown:false}));renderAll()}
