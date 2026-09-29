@@ -1430,7 +1430,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.3.19";
+const APP_VERSION="1.3.20";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -5139,15 +5139,19 @@ async function selectAll(make){
   }
 }
 async function loadPlayers(){
-  const {data,error}=await selectAll(()=>SB.from("docs").select("path,"+PL_FIELDS.map(f=>`${f}:data->${f}`).join(",")).eq("coll","players").order("path"));
+  // 1.3.20 : colonne summary (résumé calculé par PostgreSQL à chaque écriture), sans décompresser les profils entiers
+  let {data,error}=LIGHT?await selectAll(()=>SB.from("docs").select("path,summary").eq("coll","players").order("path")):{error:1};
+  if(error&&LIGHT){LIGHT=false;error=null}
+  if(!LIGHT)({data,error}=await selectAll(()=>SB.from("docs").select("path,"+PL_FIELDS.map(f=>`${f}:data->${f}`).join(",")).eq("coll","players").order("path")));
   if(error){console.warn(error);return}
-  const p={};data.forEach(r=>{const o={};PL_FIELDS.forEach(f=>{if(r[f]!=null)o[f]=r[f]});p[r.path.slice(8)]=o});
+  const p={};data.forEach(r=>{const s=r.summary||r,o={};PL_FIELDS.forEach(f=>{if(s[f]!=null)o[f]=s[f]});p[r.path.slice(8)]=o});
   PLAYERS=p;playersTs=Date.now();renderHeader();if(view==="ranking"&&!dlg.open)renderView();
 }
 /* Marché (1.3.10, trafic de Supabase) : la liste légère complète (toutes les annonces) seulement au démarrage, au retour
    après 5 minutes d'absence et toutes les 15 minutes ; entre-temps, seulement les annonces modifiées depuis la dernière
    lecture (avec 2 minutes de marge pour les écritures en cours). Les annonces retirées arrivent par le temps réel,
    et celles touchées par ses propres actions sont vérifiées tout de suite (touched). */
+let LIGHT=true; // 1.3.20 : colonnes upd et summary du serveur (partie 4) ; false si elles manquent encore (repli sur l’ancienne lecture)
 let marketFullTs=0,marketSince=null,rtMe=false,rtMarket=false,meTs=0,marketTs=0,marketSoonT=0; // rt… : temps réel connecté (1.3.11, voir pollShared ; rtMarket = canal dc-ping depuis la 1.3.12)
 const marketSoon=()=>{clearTimeout(marketSoonT);marketSoonT=setTimeout(()=>loadMarket(),700)}; // marché relu peu après un signal du temps réel
 async function loadMarket(full,touched){
@@ -5247,7 +5251,7 @@ async function loadOwnerColls(){
   // toutes les 5 minutes : d'abord la date de chaque profil (quelques octets), la collection seulement si elle a pu changer (1.3.10)
   if(all){const known=ids.filter(id=>OWNER_COLL[id]);
     for(let i=0;i<known.length;i+=100){
-      const part=known.slice(i,i+100),{data,error}=await SB.from("docs").select("path,upd:data->updated").in("path",part.map(id=>"players/"+id));
+      const part=known.slice(i,i+100),{data,error}=await SB.from("docs").select(LIGHT?"path,upd":"path,upd:data->updated").in("path",part.map(id=>"players/"+id));
       if(error){console.warn(error);return}
       (data||[]).forEach(r=>{const id=r.path.slice(8);if((+r.upd||0)!==OWNER_UPD[id])todo.push(id)});
     }
@@ -5256,7 +5260,7 @@ async function loadOwnerColls(){
   if(!todo.length)return;
   for(let i=0;i<todo.length;i+=100){
     const part=todo.slice(i,i+100);
-    const {data,error}=await SB.from("docs").select("path,upd:data->updated,coll:data->coll").in("path",part.map(id=>"players/"+id));
+    const {data,error}=await SB.from("docs").select(LIGHT?"path,upd,coll:data->coll":"path,upd:data->updated,coll:data->coll").in("path",part.map(id=>"players/"+id));
     if(error){console.warn(error);return}
     part.forEach(id=>OWNER_COLL[id]=OWNER_COLL[id]||{}); // profil introuvable : ne pas le redemander à chaque fois
     (data||[]).forEach(r=>{const id=r.path.slice(8);OWNER_COLL[id]=r.coll||{};OWNER_UPD[id]=+r.upd||0});
@@ -5266,7 +5270,8 @@ async function loadOwnerColls(){
 /* Son profil : d'abord sa seule date de mise à jour (quelques octets), le profil entier seulement s'il a changé */
 async function loadMe(){
   if(!S)return;meTs=Date.now();
-  const {data:h,error:e1}=await SB.from("docs").select("upd:data->updated").eq("path","players/"+ME).maybeSingle();
+  let {data:h,error:e1}=await SB.from("docs").select(LIGHT?"upd":"upd:data->updated").eq("path","players/"+ME).maybeSingle();
+  if(e1&&LIGHT){LIGHT=false;({data:h,error:e1}=await SB.from("docs").select("upd:data->updated").eq("path","players/"+ME).maybeSingle())}
   if(e1||!h||(+h.upd||0)<=(S.updated||0))return;
   const {data,error}=await SB.from("docs").select("data").eq("path","players/"+ME).maybeSingle();
   if(!error&&data)onMine(data.data);

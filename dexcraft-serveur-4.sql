@@ -171,8 +171,26 @@ create or replace function public.dc_market_since(p_since timestamptz) returns j
     'now', now()) $$;
 
 -- ============================================================
+--  Allègement du serveur (1.3.20) : les lectures fréquentes ne décompressent plus tout le profil.
+--  - upd     : date de mise à jour du profil (« mon profil a-t-il changé ? », dates des auteurs d'annonces) ;
+--  - summary : résumé du classement (pseudo, image, titres affichés, compteurs), lu toutes les 5 minutes par chaque joueur.
+--  Colonnes calculées par PostgreSQL à chaque écriture d'un profil (generated stored) : une seule fois, au lieu d'à
+--  chaque lecture. Index du marché pour la lecture des annonces modifiées (dc_market_since, toutes les 2 minutes).
+--  Ajout des colonnes : la table est réécrite une fois (quelques secondes). Relançable sans risque.
+-- ============================================================
+create or replace function public.dc__summary(d jsonb) returns jsonb language sql immutable as $$
+  select jsonb_strip_nulls(jsonb_build_object('pseudo', d -> 'pseudo', 'avatar', d -> 'avatar', 'alpha', d -> 'alpha', 'beta', d -> 'beta',
+    'shown', d -> 'shown', 'unique', d -> 'unique', 'total', d -> 'total', 'credits', d -> 'credits', 'myth', d -> 'myth', 'trans', d -> 'trans',
+    'byr', d -> 'byr', 'byrV', d -> 'byrV', 'masterTs', d -> 'masterTs', 'vis', d -> 'vis', 'shinyN', d -> 'shinyN', 'avaS', d -> 'avaS')) $$;
+alter table public.docs add column if not exists upd bigint generated always as ((data ->> 'updated')::numeric::bigint) stored;
+alter table public.docs add column if not exists summary jsonb generated always as (case when coll = 'players' then public.dc__summary(data) end) stored;
+create index if not exists docs_market_upd_idx on public.docs (updated_at) where coll = 'market';
+analyze public.docs;
+
+-- ============================================================
 --  Droits d'exécution des fonctions de cette partie
 -- ============================================================
+revoke all on function public.dc__summary(jsonb) from public, anon, authenticated;
 revoke all on function public.dc__market_trg() from public, anon, authenticated;
 revoke all on function public.dc_market_since(timestamptz) from public, anon;
 grant execute on function public.dc_market_since(timestamptz) to authenticated;
