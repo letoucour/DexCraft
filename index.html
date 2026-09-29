@@ -987,6 +987,9 @@ dialog,.modal{overscroll-behavior:contain}
 .pick.choice{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,var(--surface-2))}
 .pick .pick-n{font-size:.74rem;font-weight:700;color:var(--ink-soft)}
 .pick-head{grid-column:1/-1;font-weight:800;font-size:.85rem;color:var(--ink-soft);margin-top:4px}
+.pick-head.pick-uniq{margin-top:10px;padding:8px 10px;border-radius:10px;background:rgba(220,60,60,.16);border:1px solid rgba(220,60,60,.6);color:#ff6b6b;font-size:.92rem}
+:root[data-theme="light"] .pick-head.pick-uniq{color:#c0282d}
+.pick.uniq:not(.choice){border-color:rgba(220,60,60,.55)}.uniq-n{color:#ff6b6b}:root[data-theme="light"] .uniq-n{color:#c0282d}
 .pick[hidden]{display:none}
 /* choix de plusieurs cartes demandées (1.0.3) */
 .pick.wp{align-items:center;text-align:center}
@@ -1440,7 +1443,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.4";
+const APP_VERSION="1.4.5";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2909,7 +2912,8 @@ function vTrades(){
   const byR=list=>trdR==="all"?list:list.filter(([,m])=>rar(m.card)===+trdR);
   const missing=all.filter(([,m])=>!has(S,m.card)||wished(m.card)); // 1.4.0 : « Manquantes / recherchées » (cloche 🔔 aussi sur une carte possédée)
   // annonces pour lesquelles on a un double à proposer (1.2.0) : une carte en 2 exemplaires ou plus que l'annonce accepte
-  const dblR={};for(const [k,v] of Object.entries(S.coll))if(v>=2)(dblR[rar(+k)]=dblR[rar(+k)]||[]).push(+k);
+  // 1.4.4 (demande de Theo) : sauf les cartes recherchées 🔔, dont on veut plus d’exemplaires ; les favoris restent comptés
+  const dblR={};for(const [k,v] of Object.entries(S.coll))if(v>=2&&!wished(+k))(dblR[rar(+k)]=dblR[rar(+k)]||[]).push(+k);
   const hasDbl=m=>(dblR[rar(m.card)]||[]).some(c=>canOffer(m,c));
   // « Évolutions pas encore obtenues » (1.4.4, demande de Theo) : les cartes de l’onglet « Pas encore obtenus » des Évolutions,
   // Pokémon de sa collection dont une évolution manque encore (des exemplaires en plus pour la faire), du plus proche au plus
@@ -4155,9 +4159,9 @@ function tradeDlg(mid_){
       <p class="muted">${esc(who(m.owner))} demande ${tradeWants(m)}. ${m.auto?"<b>⚡ Acceptation automatique</b> : l’échange se fait dès que vous proposez une carte.":"Il recevra votre proposition et décidera de l’accepter ou non. Votre carte est mise de côté en attendant sa réponse."}</p></div>
     ${mine.length>8?`<input type="search" class="pick-search" data-pick-search placeholder="Rechercher parmi vos ${mine.length} cartes" aria-label="Rechercher une carte à proposer">`:""}
     <div class="picker" id="picker">${mine.length?mine.map((c,i)=>{const his=ownerHas(m.owner,c);
-      return `${i===0&&nDbl?head(`Vos doubles (${nDbl})`):""}${i===nDbl?head(`Vos exemplaires uniques (${mine.length-nDbl})`):""}<button class="pick" data-act="give" data-id="${c}" data-n="${esc(norm2(nm(c))+" "+c)}">
+      return `${i===0&&nDbl?head(`Vos doubles (${nDbl})`):""}${i===nDbl?`<div class="pick-head pick-uniq">⚠️ Vos exemplaires <b>UNIQUES</b> (${mine.length-nDbl}) : si vous les échangez, vous ne les aurez plus</div>`:""}<button class="pick${S.coll[c]>1?"":" uniq"}" data-act="give" data-id="${c}" data-n="${esc(norm2(nm(c))+" "+c)}">
         <span class="pick-tag ${his?"ok":"missing"}">${his?"Il l’a déjà":"Il ne l’a pas"}</span>
-        ${evoTile(c)}<span class="pick-n">${S.coll[c]>1?`Vous en avez ${S.coll[c]}`:"Votre seul exemplaire"}</span></button>`}).join("")
+        ${evoTile(c)}<span class="pick-n">${S.coll[c]>1?`Vous en avez ${S.coll[c]}`:`<b class="uniq-n">⚠️ Votre seul exemplaire</b>`}</span></button>`}).join("")
       :`<div class="empty" style="grid-column:1/-1">Aucune carte de votre collection ne correspond à cette demande.</div>`}</div>
     <div class="actions"><button class="btn primary" id="give-go" data-act="give-go" data-mid="${mid_}" disabled>Choisissez une carte</button></div></div>`,true);
 }
