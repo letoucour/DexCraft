@@ -1445,7 +1445,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.4.10";
+const APP_VERSION="1.4.11";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2038,7 +2038,7 @@ function tradeMany(ids,mode,auto,wants){
     <h2>Proposer ${ids.length} carte${ids.length>1?"s":""} à l’échange ?</h2><p class="muted">${names}</p>
     ${kept?`<p class="keep-warn">⚠️ ${kept>1?`${kept} de ces cartes sont favorites ou recherchées`:"Une de ces cartes est favorite ou recherchée"} : ${keepList(ids)}. Êtes-vous sûr de vouloir ${kept>1?"les":"la"} proposer ?</p>`:""}
     ${lackN?`<p class="keep-warn">🧬 ${lackN>1?`${lackN} de ces Pokémon ont`:"Un de ces Pokémon a"} encore une évolution qui vous manque : ${ids.filter(x=>evoLack(x).length).slice(0,20).map(x=>esc(nm(x))).join(", ")}${lackN>20?"…":""}. Vous pourriez en avoir besoin pour la faire vous-même.</p>`:""}
-    <p>Demande : ${mode==="list"?`${wants.length>1?`une des ${wants.length} cartes choisies`:"la carte choisie"}, de même rareté (une carte sans carte choisie de sa rareté n’est pas publiée)`:mode==="missing"?"n’importe quelle carte de même rareté qui vous manque":"n’importe quelle carte de même rareté"}.${auto?" <b>⚡ Acceptation automatique</b> : la première proposition valide sera acceptée d’office.":""} Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
+    <p>Demande : ${mode==="list"?`${wants.length>1?`une des ${wants.length} cartes choisies`:"la carte choisie"}, de même rareté (une carte sans carte choisie de sa rareté n’est pas publiée)`:mode==="missing"?"n’importe quelle carte de même rareté qui vous manque":mode==="missw"?"n’importe quelle carte de même rareté qui vous manque ou que vous recherchez 🔔":"n’importe quelle carte de même rareté"}.${auto?" <b>⚡ Acceptation automatique</b> : la première proposition valide sera acceptée d’office.":""} Chaque carte est mise de côté jusqu’à ce que vous acceptiez une proposition ou retiriez l’annonce.</p>
     <div class="actions"><button class="btn primary" data-act="tsel-confirm">Proposer</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
   tradeMany.pending={ids,mode,auto:!!auto,wants:mode==="list"?wants:null};
 }
@@ -2053,7 +2053,7 @@ function tradeManyGo(){
   dlgLocked=true;
   run(async()=>{
     try{
-      const r=await rpc("dc_trade_create_many",{p_cards:p.ids,p_mode:p.mode==="missing"?"missing":null,p_auto:p.auto,p_wants:p.wants},{render:false});
+      const r=await rpc("dc_trade_create_many",{p_cards:p.ids,p_mode:p.mode==="missing"||p.mode==="missw"?p.mode:null,p_auto:p.auto,p_wants:p.wants},{render:false});
       const n=r.n||0,sk=(r.skipped||[]).map(id=>nm(id));
       dlgLocked=false;closeDlg();renderAll();
       const cap=r.capped||0,nl=(r.nolist||[]).length;
@@ -2084,7 +2084,7 @@ function tradeWants(m){
   if(Array.isArray(m.wantList)&&m.wantList.length){const l=m.wantList;
     return `une de ces cartes : ${l.slice(0,8).map(x=>`<b>${esc(nm(x))}</b>`).join(", ")}${l.length>8?` et ${l.length-8} autre${l.length-8>1?"s":""}`:""}`}
   if(m.want)return `<b>${esc(nm(m.want))}</b>`;
-  if(m.wantMode==="missing"&&!ownerHasAll(m.owner,r))return `n’importe quelle carte ${RAR[r].toLowerCase()} manquante`;
+  if(m.wantMode==="missing"&&!ownerHasAll(m.owner,r))return `n’importe quelle carte ${RAR[r].toLowerCase()} manquante${(m.wantWish||[]).length?" ou recherchée 🔔":""}`;
   return `n’importe quelle carte ${RAR[r].toLowerCase()}`;
 }
 /* Dresseur d'origine (1.1.13) : ot = {n°: {uid: nombre}} dans le profil, exemplaires venus d'autres dresseurs (le reste est à
@@ -2100,7 +2100,7 @@ function canOffer(m,c){
   if((S.coll[c]||0)-otFrom(c,m.owner)<1)return false; // seul exemplaire venu du propriétaire de l'annonce : il ne peut pas le récupérer
   if(Array.isArray(m.wantList)&&m.wantList.length)return m.wantList.includes(c); // liste de cartes demandées (1.0.3)
   if(m.want)return m.want===c;
-  if(m.wantMode==="missing"&&!ownerHasAll(m.owner,rar(c)))return !ownerHas(m.owner,c);
+  if(m.wantMode==="missing"&&!ownerHasAll(m.owner,rar(c)))return !ownerHas(m.owner,c)||(m.wantWish||[]).includes(c); // 1.4.11 : ou recherchée (wantWish)
   return true;
 }
 /* ---------- choisir plusieurs cartes demandées (1.0.3) ----------
@@ -2877,7 +2877,7 @@ function vCollection(){
   ${ids.length?`<div class="grid" id="coll-grid">${ids.slice(0,collLimitFor(ids)).map(collTile).join("")}</div>${ids.length>collLimit?`<div id="coll-more" class="coll-more" aria-hidden="true"></div>`:""}`:`<div class="empty">Aucune carte ne correspond à ces filtres.</div>`}
   ${tradeSel?`<div class="discard-bar trade-bar${tradeSel.size?"":" empty"}">
     <div class="sum"><b>${tradeSel.size} carte${tradeSel.size>1?"s":""} sélectionnée${tradeSel.size>1?"s":""}</b><span>${tradeSel.size?"une annonce par carte":"touchez les cartes à proposer"}</span></div>
-    <label class="field tb-want">Demande<select id="ts-want" data-keep="ts-want"><option value="missing">N’importe quelle carte de même rareté qui me manque</option><option value="any">N’importe quelle carte de même rareté</option><option value="wish">Une de mes cartes recherchées 🔔</option><option value="list">Plusieurs cartes précises…</option></select></label>
+    <label class="field tb-want">Demande<select id="ts-want" data-keep="ts-want"><option value="missing">N’importe quelle carte de même rareté qui me manque</option><option value="missw">N’importe quelle carte de même rareté qui me manque ou que je recherche 🔔</option><option value="any">N’importe quelle carte de même rareté</option><option value="wish">Une de mes cartes recherchées 🔔</option><option value="list">Plusieurs cartes précises…</option></select></label>
     <label class="pref tb-auto" title="La première proposition valide est acceptée d’office, sans que vous ayez à répondre"><input type="checkbox" id="ts-auto"${tradeAuto?" checked":""}> ⚡ Accepter automatiquement</label>
     <button class="btn primary go" data-act="tsel-go" ${tradeSel.size?"":"disabled"}>Proposer ${tradeSel.size||""} annonce${tradeSel.size>1?"s":""}</button></div>`:""}
   ${discardSel?`<div class="discard-bar${selN?"":" empty"}">

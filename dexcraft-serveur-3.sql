@@ -228,7 +228,11 @@ drop function if exists public.dc_trade_create_many(integer[], text, boolean);  
 create or replace function public.dc_trade_create_many(p_cards int[], p_mode text, p_auto boolean default false, p_wants int[] default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); c int; n int := 0; skipped int[] := '{}';
   room int := public.dc__listing_cap() - public.dc__open_listings(u); capped int := 0; wl jsonb; w int; nolist int[] := '{}'; t jsonb;
+  rarm jsonb := cfg -> 'rar'; wi int[]; wr int[];
 begin
+  -- 1.4.11 (demande de Theo) : p_mode 'missw' = carte qui me manque OU une de mes cartes recherchées de même rareté (wantWish)
+  select coalesce(array_agg(k::int), '{}'), coalesce(array_agg((rarm ->> k)::int), '{}') into wi, wr
+    from jsonb_object_keys(case when p_mode = 'missw' then coalesce(d -> 'wish', '{}') else '{}' end) k where rarm ? k;
   if coalesce(array_length(p_cards, 1), 0) = 0 then raise exception 'Aucune carte choisie.'; end if;
   if array_length(p_cards, 1) > 500 then raise exception 'Trop de cartes d’un coup : 500 au maximum.'; end if;
   if room <= 0 then raise exception 'Vous avez déjà % annonces d’échange : c’est le maximum. Retirez-en avant d’en publier d’autres.', public.dc__listing_cap(); end if;
@@ -244,7 +248,8 @@ begin
     t := public.dc__ot_take(d, u, c, null); d := t -> 'd';   -- dresseur d'origine de l'exemplaire (1.1.13)
     insert into public.docs (path, coll, data) values ('market/' || public.dc__mid(), 'market', jsonb_build_object(
       'kind', 't', 'owner', u, 'card', c, 'ot', t ->> 'ot', 'rarity', public.dc__rar(cfg, c), 'want', w, 'wantList', wl,
-      'wantMode', case when p_wants is null and p_mode = 'missing' then 'missing' end,
+      'wantMode', case when p_wants is null and p_mode in ('missing', 'missw') then 'missing' end,
+      'wantWish', case when p_wants is null and p_mode = 'missw' then (select coalesce(jsonb_agg(wi[j]), '[]') from generate_subscripts(wi, 1) j where wr[j] = public.dc__rar(cfg, c)) end,
       'status', 'open', 'offers', '{}'::jsonb, 'created', public.dc__now(), 'auto', coalesce(p_auto, false)));
     n := n + 1;
   end loop;
@@ -293,7 +298,7 @@ begin
       update public.docs set data = m.data || jsonb_build_object('want', w, 'wantMode', null, 'wantList', wl), updated_at = now()
         where path = m.path;
     else
-      update public.docs set data = m.data || jsonb_build_object('want', null, 'wantMode', case when p_mode = 'missing' then 'missing' end, 'wantList', null), updated_at = now()
+      update public.docs set data = m.data || jsonb_build_object('want', null, 'wantMode', case when p_mode = 'missing' then 'missing' end, 'wantList', null, 'wantWish', null), updated_at = now()
         where path = m.path;
     end if;
     n := n + 1;

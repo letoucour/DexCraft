@@ -95,7 +95,7 @@ begin
   if m ->> 'wantMode' = 'missing' then
     select data into ow from public.docs where path = 'players/' || (m ->> 'owner');
     -- « carte qui me manque » : si le propriétaire a déjà toutes les cartes de la rareté, n'importe laquelle est acceptée
-    if public.dc__count(ow, p_card) > 0
+    if public.dc__count(ow, p_card) > 0 and not coalesce(m -> 'wantWish', '[]') @> to_jsonb(p_card)   -- ou recherchée (1.4.11)
        and coalesce((ow -> 'byr' ->> public.dc__rar(cfg, p_card))::int, 0) < jsonb_array_length(cfg -> 'byr' -> public.dc__rar(cfg, p_card)) then
       raise exception 'Le propriétaire possède déjà cette carte.';
     end if;
