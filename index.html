@@ -1633,7 +1633,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.7";
+const APP_VERSION="1.5.8";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2545,6 +2545,7 @@ const TITLES=[
   {k:"mythique",n:"Mythique",ic:"✦",g:"Spéciaux",cls:"myth",d:"Possède toutes les cartes mythiques",ids:MYTH_IDS,hidden:true},
   {k:"transcendant",n:"Transcendant",ic:"❖",g:"Spéciaux",cls:"trans",d:"Possède toutes les cartes transcendantes",ids:TRANS_IDS,hidden:true},
   {k:"lord",n:"Lord",ic:"🐋",g:"Spéciaux",cls:"lord",d:"A acheté le Pack Baleine assumée",test:p=>owns(p,"titre.lord")}, // titre de la boutique (0.9.0)
+  {k:"titre50",n:"Titré",ic:"🎖",g:"Spéciaux",cls:"tc",c:"#8a6d1f",d:"A obtenu 50 titres différents",nt:50}, // 1.5.8 (demande de Theo) : les autres titres obtenus, lui-même exclu
   {k:"fortune",n:"Fortuné",ic:"💰",g:"Spéciaux",cls:"tc",c:"#b8860b",d:"A acheté le Pack Or",test:p=>owns(p,"titre.fortune")}, // titre de la boutique (1.3.14, demande de Theo)
   ...DEX_TIERS.map(([need,n,k])=>({k,n,ic:"★",g:"Pokédex",cls:"tier",d:`A obtenu ${fmtN(need)} cartes différentes, toutes formes comprises`,ids:DEX_ORDER,need})),
   {k:"maitre",n:"Maître",ic:"♛",g:"Pokédex",cls:"master",d:"Possède toutes les cartes du jeu : Pokémon, formes régionales, formes de Zarbi, autres formes, méga-évolutions et Gigamax",ids:DEX_ORDER},
@@ -2553,7 +2554,7 @@ const TITLES=[
     d:r===4?"Possède toutes les méga-évolutions":`Possède toutes les cartes ${RAR[r].toLowerCase()}s`,ids:r===4?MEGA_IDS:BYR[r]})),
   {k:"gmax",n:"Gigamax",ic:"✪",g:"Collections",cls:"tc",c:"#c8324b",d:"Possède toutes les formes Gigamax",ids:GMAX_IDS},
   {k:"regions",n:"Formes régionales",ic:"✧",g:"Collections",cls:"tc",c:"#2f7fe0",d:"Possède toutes les formes régionales (Alola, Galar, Hisui, Paldea)",ids:REG_IDS},
-  {k:"alphabet",n:"Alphabétiste",ic:"✎",g:"Collections",cls:"tc",c:"#5b6b8c",d:"Possède les 28 formes de Zarbi, de A à Z, ! et ?",ids:[201,...UNOWN_IDS]},
+  {k:"alphabet",n:"Alphabétiste",ic:"✎",g:"Collections",cls:"tc",c:"#5b6b8c",d:"Possède les 28 formes de Zarbi, de A à Z, ! et ? Peut-être faut-il maintenant aller explorer des ruines ?",ids:[201,...UNOWN_IDS]},
   {k:"evoli",n:"Évoli-fan",ic:"♥",g:"Collections",cls:"tc",c:"#b07a4a",d:"Possède Évoli et ses 8 évolutions",ids:EEVEE_IDS},
   {k:"stase",n:"Pierre Stase",ic:"⬢",g:"Collections",cls:"tc",c:"#7d8196",d:"Possède tous les Pokémon qui n’évoluent pas (hors légendaires et fabuleux), avec leurs méga-évolutions et formes Gigamax",ids:STASE_IDS},
   {k:"bebe",n:"Baby-sitter",ic:"♡",g:"Collections",cls:"tc",c:"#e58fb0",d:"Possède tous les bébés Pokémon",ids:BABY_IDS},
@@ -2598,7 +2599,7 @@ const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
 const TITLE_MAX=3,TITLE_DEFAULT=["maitre"]; // Alpha et Bêta testeur : badges à côté du pseudo depuis la 1.0.1, plus des titres
 const profOf=id=>id===ME?S:PLAYERS[id];
 const ownCount=(ids,coll)=>ids.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
-function titleProgress(t,p){if(t.stat)return [Math.min(((p.stats||{})[t.stat])||0,t.need),t.need];const need=t.need||(t.ids?t.ids.length:1);return [t.ids?ownCount(t.ids,p.coll||{}):titleEarned(t,p)?1:0,need]}
+function titleProgress(t,p){if(t.nt)return [Math.min(TITLES.filter(x=>x!==t&&titleEarned(x,p)).length,t.nt),t.nt];if(t.stat)return [Math.min(((p.stats||{})[t.stat])||0,t.need),t.need];const need=t.need||(t.ids?t.ids.length:1);return [t.ids?ownCount(t.ids,p.coll||{}):titleEarned(t,p)?1:0,need]}
 function titleEarned(t,p){if(!p)return false;if(Array.isArray(p.titlesKept)&&p.titlesKept.includes(t.k))return true; // acquis au prestige (1.5.0)
 if(t.test)return t.test(p);const [n,need]=titleProgress(t,p);return need>0&&n>=need} // need 0 : liste vide (cartes secrètes pas encore reçues du serveur), jamais obtenu
 /* Titres choisis par le joueur (3 au plus), sinon ceux par défaut, dans l'ordre de sélection. */
@@ -6043,6 +6044,7 @@ function gameConfig(){
 function titleDef(t){
   const same=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
   if(t.stat)return {c:"stat",s:t.stat,n:t.need};
+  if(t.nt)return {c:"ntitles",n:t.nt}; // Titré (1.5.8) : compté par le serveur (dc__title_ok)
   const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},arPerf:{c:"sflag",s:"arPerf"},lord:{c:"cos",i:"titre.lord"},fortune:{c:"cos",i:"titre.fortune"}};
   if(fixed[t.k])return fixed[t.k];
   if(t.k==="darwin")return {c:"evo",n:t.ids.length}; // cibles de cfg.evo, comptées par le serveur (1.1.3)

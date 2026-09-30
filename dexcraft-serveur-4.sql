@@ -16,9 +16,11 @@ declare now_ms bigint := public.dc__now(); sc text := cfg ->> 'spCard'; lst json
 begin
   -- cartes spéciales (1.4.17, rareté 8, jamais tirées au hasard) : condition dans secret_cards (unlock : need = cartes à posséder,
   -- sp = booster spécial) ; la première fois qu'un joueur qui la remplit ouvre ce booster, sa dernière carte est la carte spéciale.
-  -- Une seule fois par joueur (spGot), même s'il l'échange ou la défausse ensuite.
+  -- Une seule fois par joueur (spGot), même s'il l'échange ou la défausse ensuite. 1.5.8 : unlock.title = titre qui doit être
+  -- équipé (choisi dans titles) au moment d'ouvrir le booster.
   select c.id into spc from public.secret_cards c
     where c.data -> 8 -> 'unlock' ->> 'sp' = p_kind || ':' || p_val and not coalesce(d -> 'spGot', '{}') ? c.id::text
+      and (c.data -> 8 -> 'unlock' ->> 'title' is null or (jsonb_typeof(d -> 'titles') = 'array' and d -> 'titles' ? (c.data -> 8 -> 'unlock' ->> 'title')))
       and not exists (select 1 from jsonb_array_elements_text(c.data -> 8 -> 'unlock' -> 'need') n where public.dc__count(d, n::int) < 1)
     order by c.id limit 1;
   if p_kind = 'gen' and p_val between 1 and 9 then

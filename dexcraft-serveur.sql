@@ -126,6 +126,9 @@ create or replace function public.dc__title_ok(cfg jsonb, def jsonb, d jsonb, ne
     when 'ids' then (select count(*) from jsonb_array_elements_text(def -> 'ids') x where newcoll ? x) >= (def ->> 'n')::int
     when 'evo' then (select count(distinct x) from jsonb_each(cfg -> 'evo') e, jsonb_array_elements_text(e.value) x where newcoll ? x) >= (def ->> 'n')::int  -- Darwiniste (1.1.3)
     when 'cos' then coalesce(d -> 'cos', '{}') ? (def ->> 'i')
+    -- Titré (1.5.8) : n titres différents obtenus (acquis au prestige compris), lui-même exclu
+    when 'ntitles' then (select count(*) from jsonb_array_elements_text(cfg -> 'titleKeys') k where cfg -> 'titleDefs' -> k ->> 'c' <> 'ntitles'
+      and (coalesce(d -> 'titlesKept' ? k, false) or public.dc__title_ok(cfg, cfg -> 'titleDefs' -> k, d, newcoll, nmaster, byr, gencnt, typecnt, nsec))) >= (def ->> 'n')::int
     else false end $$;
 
 -- champs calculés (classement, titres…) : jamais fournis par le joueur
@@ -140,9 +143,7 @@ declare
   vis jsonb; ot jsonb; o2 jsonb; q record; rarm jsonb;
 begin
   d := public.dc__norm(d) - 'listings' - 'escrow';
-  -- 1.4.3 (serveur bloqué après un push) : collection reconstruite en une seule requête, et table des raretés lue une
-  -- seule fois ; avant, chaque carte recopiait la table des raretés (dc__rar) et toute la collection déjà reconstruite
-  -- (newcoll || …) : 250 ms par profil complet, à chaque action du jeu
+  -- 1.4.3 : collection reconstruite en une requête, raretés lues une fois (avant : 250 ms par profil, voir CLAUDE.md)
   rarm := cfg -> 'rar';
   select coalesce(jsonb_object_agg(key, cnt), '{}') into newcoll from (
     select key, floor((value #>> '{}')::numeric)::int cnt from jsonb_each(d -> 'coll') where jsonb_typeof(value) = 'number') s
