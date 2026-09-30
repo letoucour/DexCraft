@@ -1092,6 +1092,9 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ava-pick:disabled{opacity:.4;cursor:not-allowed}
 .lb-row{grid-template-columns:32px auto minmax(0,1fr) auto!important} /* 1.4.17 : plus de colonne forcée à 86 px (les compteurs débordaient depuis la 1.4.16) */
 .lb-row .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* grand écran (1.5.3, demande de Theo) : classement centré et élargi, tous les titres toujours visibles (ils passent à la ligne au besoin) */
+.lb-page{max-width:1180px;margin:0 auto}
+@media (min-width:900px){.lb-page .lb{max-width:none}.lb-page .lb-row .nm{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.7}}
 .lb-row .sc{font-family:var(--display);font-weight:700;display:grid;grid-template-columns:52px 38px 38px 38px;gap:5px;justify-items:end;align-items:center;white-space:nowrap} /* 1.4.16 : ✨ ✦ ❖ sur une ligne, chacun dans sa colonne, alignés d’une rangée à l’autre (demande de Theo) */
 @media (max-width:640px){.lb-row .sc{grid-template-columns:auto auto auto auto;gap:4px;font-size:.85rem}}
 .lb-bar{display:flex;height:9px;border-radius:999px;overflow:hidden;background:var(--surface-2)}
@@ -1609,7 +1612,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.2";
+const APP_VERSION="1.5.3";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3273,13 +3276,13 @@ function vRanking(){
     const byr=p.byrV===BYR_V?p.byr:null,diff=byr?byr.slice(0,6).reduce((a,b)=>a+(b||0),0):(p.unique||0); // cartes différentes hors mythiques et transcendantes
     return {id,u:p.unique||0,score:diff,t:p.total||0,c:p.credits||0,m:p.myth||0,x:p.trans||0,byr,mt:p.masterTs||Infinity,sn:p.shinyN||0,pr:presOf(p),pk:+(p.packs||(p.stats&&p.stats.packs)||0),sp:(Array.isArray(p.byr)&&p.byr[8])||0};
   }).sort((a,b)=>b.pr-a.pr||b.score-a.score||(a.score===LB_TOTAL&&a.mt!==b.mt?a.mt-b.mt:0)||b.sn-a.sn||b.pk-a.pk||b.t-a.t); // 1.5.0 : prestige, cartes différentes (entre Maîtres, le premier à l’avoir été), shiny, boosters ouverts
-  return `<h1>Classement</h1>
+  return `<div class="lb-page"><h1>Classement</h1>
   ${ME&&rows.some(r=>r.id===ME)?`<div class="actions" style="margin-top:10px"><button class="btn small" data-act="rank-me">Voir ma position (n° ${rows.findIndex(r=>r.id===ME)+1} sur ${rows.length})</button></div>`:""}
   <div class="lb-legend">${[0,1,2,3,4,5].map(i=>`<span><i class="seg r${i}"></i>${RAR[i]}</span>`).join("")}<span><i class="seg lb-aura-key"></i>Aura : shiny</span></div>
   <div class="lb" style="margin-top:16px">${rows.map((r,i)=>`<div class="lb-row${r.id===ME?" me":""}${r.pr?" pres pres"+Math.min(7,r.pr):""}" data-act="player" data-uid="${esc(r.id)}" role="button" tabindex="0" aria-label="Profil de ${esc(nameOf(r.id))}">
     <span class="rk">${i+1}</span>${playerAva(r.id,36)}
     <div style="min-width:0"><div class="nm">${playerName(r.id)}${badgeTag(r.id,true)}</div>${lbBar(r)}</div>
-    <span class="sc"><span class="sh-sum" title="Shiny">${r.sn?`✨${fmtN(r.sn)}`:""}</span><span class="myth-txt">${r.m?`✦${r.m}`:""}</span><span class="trans-txt">${r.x?`❖${r.x}`:""}</span><span class="spec-txt">${r.sp?`✵${r.sp}`:""}</span></span></div>`).join("")||`<div class="empty">Personne n’a encore joué.</div>`}</div>`;
+    <span class="sc"><span class="sh-sum" title="Shiny">${r.sn?`✨${fmtN(r.sn)}`:""}</span><span class="myth-txt">${r.m?`✦${r.m}`:""}</span><span class="trans-txt">${r.x?`❖${r.x}`:""}</span><span class="spec-txt">${r.sp?`✵${r.sp}`:""}</span></span></div>`).join("")||`<div class="empty">Personne n’a encore joué.</div>`}</div></div>`;
 }
 
 /* Profil d'un joueur, ouvert depuis le classement. Son profil complet n'est lu qu'à ce moment-là.
