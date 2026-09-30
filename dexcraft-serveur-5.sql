@@ -212,10 +212,11 @@ begin
   return st;
 end $$;
 
--- vue renvoyée à la page : la partie, et les crédits déjà gagnés aujourd'hui dans l'Arène
+-- vue renvoyée à la page : la partie, et les crédits déjà gagnés aujourd'hui dans l'Arène (1.5.5 : cagnotte de la partie en cours comprise)
 create or replace function public.dc__ar_view(d jsonb, st jsonb) returns jsonb language sql stable as $$
   select jsonb_build_object('run', st - 'msg', 'msg', st -> 'msg',
-    'gained', case when d -> 'arena' ->> 'day' = public.dc__day() then public.dc__int(d -> 'arena', 'gained') else 0 end,
+    'gained', case when d -> 'arena' ->> 'day' = public.dc__day() then public.dc__int(d -> 'arena', 'gained') else 0 end
+      + case when coalesce((st ->> 'over')::boolean, false) then 0 else coalesce((st ->> 'pend')::int, 0) end,
     'cap', public.dc__cfg() -> 'arena' -> 'cap') $$;
 
 create or replace function public.dc_ar_state() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
@@ -232,6 +233,12 @@ begin
   if a is null then raise exception 'L’Arène n’est pas encore ouverte.'; end if;
   select data into st from public.ar_runs where uid = u for update;
   if st is not null and not coalesce((st ->> 'over')::boolean, false) and not p_new then return public.dc__ar_view(d, st); end if;
+  -- 1.5.5 : partie abandonnée, sa cagnotte est versée comme à la fin d'une partie
+  if st is not null and not coalesce((st ->> 'over')::boolean, false) and coalesce((st ->> 'pend')::int, 0) + coalesce((st ->> 'ppost')::int, 0) > 0 then
+    d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') + (st ->> 'pend')::int + coalesce((st ->> 'ppost')::int, 0)));
+    d := d || jsonb_build_object('arena', jsonb_build_object('day', public.dc__day(), 'gained',
+      case when d -> 'arena' ->> 'day' = public.dc__day() then public.dc__int(d -> 'arena', 'gained') else 0 end + (st ->> 'pend')::int));
+  end if;
   if not exists (select 1 from jsonb_each(d -> 'coll') where key ~ '^\d+$' and key::int between 1 and 1025 and value::text::int > 0) then
     raise exception 'Ouvrez d’abord des boosters : la boutique de l’Arène propose les Pokémon de votre collection.'; end if;
   st := jsonb_build_object('round', 1, 'hp', (a ->> 'lives')::int, 'gold', (a ->> 'startGold')::int, 'wins', 0, 'credits', 0, 'n', 0,
@@ -240,7 +247,7 @@ begin
   st := public.dc__ar_round(cfg, st, d -> 'coll');
   insert into public.ar_runs (uid, data) values (u, st) on conflict (uid) do update set data = excluded.data, updated_at = now();
   d := public.dc__save(u, public.dc__bump(d, 'arRuns'));
-  return public.dc__ar_view(d, st);
+  return public.dc__ar_view(d, st) || jsonb_build_object('profile', d);
 end $$;
 
 -- partie en cours, verrouillée pour une action
@@ -408,7 +415,7 @@ end $$;
 create or replace function public.dc_ar_fight(p_board jsonb default null, p_bench jsonb default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); a jsonb := cfg -> 'arena';
   st jsonb := public.dc__ar_get(u); rd int; res jsonb; auto_ jsonb := '[]'; v jsonb; k int; before jsonb; oe jsonb; day text := public.dc__day();
-  gained bigint; added bigint := 0; bonus bigint := 0; post bigint := 0; cap bigint := (a ->> 'cap')::bigint; win boolean; nr int;
+  gained bigint; pend bigint := coalesce((st ->> 'pend')::bigint, 0); added bigint := 0; bonus bigint := 0; post bigint := 0; cap bigint := (a ->> 'cap')::bigint; win boolean; nr int;
 begin
   st := public.dc__ar_layout(st, p_board, p_bench) - 'msg'; rd := (st ->> 'round')::int;
   -- places libres : les Pokémon les plus forts du banc (total des statistiques, étoile comprise)
@@ -423,7 +430,9 @@ begin
   if (select count(*) from jsonb_array_elements(st -> 'board') x where x <> 'null') = 0 then raise exception 'Placez au moins un Pokémon sur le terrain.'; end if;
   before := jsonb_build_object('board', st -> 'board', 'bench', st -> 'bench', 'enemy', st -> 'enemy');
   res := public.dc__ar_sim(cfg, st -> 'board', st -> 'enemy');
-  gained := case when d -> 'arena' ->> 'day' = day then public.dc__int(d -> 'arena', 'gained') else 0 end;
+  -- 1.5.5 (demande de Theo) : les crédits de la partie restent en cagnotte (pend : comptés dans le plafond du jour, ppost : après
+  -- le plafond) et ne sont versés qu'à la fin de la partie, réussie ou non ; gained compte la cagnotte pour le plafond
+  gained := case when d -> 'arena' ->> 'day' = day then public.dc__int(d -> 'arena', 'gained') else 0 end + pend;
   if (res ->> 'win')::boolean then
     added := least((a ->> 'winBase')::int + (a ->> 'winStep')::int * rd, greatest(0, cap - gained));
     -- 1.5.4 (demande de Theo) : plafond du jour déjà atteint, une manche gagnée du premier coup rapporte encore afterRound (20)
@@ -471,8 +480,13 @@ begin
     if not win then st := jsonb_set(st, '{enemy}', oe); end if;
   end if;
   st := jsonb_set(st, '{credits}', to_jsonb((st ->> 'credits')::int + added + bonus + post));
-  d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') + added + bonus + post));
-  d := d || jsonb_build_object('arena', jsonb_build_object('day', day, 'gained', gained + added + bonus));
+  if (st ->> 'over')::boolean then
+    d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') + pend + coalesce((st ->> 'ppost')::int, 0) + added + bonus + post));
+    d := d || jsonb_build_object('arena', jsonb_build_object('day', day, 'gained', gained + added + bonus));
+    st := st - 'pend' - 'ppost';
+  else
+    st := st || jsonb_build_object('pend', pend + added + bonus, 'ppost', coalesce((st ->> 'ppost')::int, 0) + post);
+  end if;
   perform public.dc__ar_put(u, st);
   d := public.dc__save(u, d);
   return public.dc__ar_view(d, st) || jsonb_build_object('profile', d, 'before', before, 'log', res -> 'log', 'win', res -> 'win',

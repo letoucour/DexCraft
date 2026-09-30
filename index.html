@@ -1487,6 +1487,12 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 /* bandeau de l'essai d'un pack (1.3.14) */
 #try-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:900;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;
   max-width:calc(100vw - 24px);padding:7px 10px 7px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--gold);box-shadow:0 6px 20px rgba(0,0,0,.3);font-size:.88rem}
+.ar-pot{display:block;margin:2px 0 4px;font-size:.8rem;color:var(--gold)}
+/* 1.5.5 : bandeau « nouvelle version disponible » */
+#new-ver{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:1200;display:flex;align-items:center;gap:10px;
+  max-width:calc(100vw - 24px);padding:8px 8px 8px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--gold);box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:.9rem;animation:nvIn .35s ease}
+#new-ver .nv-x{background:none;border:0;color:var(--ink-soft);font-size:1.2rem;cursor:pointer;padding:2px 6px}
+@keyframes nvIn{from{opacity:0;transform:translate(-50%,-12px)}}
 #try-bar #try-s{font-family:var(--display);color:var(--gold)}
 @media (max-width:700px){#try-bar{bottom:84px}} /* au-dessus de la barre d’onglets */
 .pl-look{margin:4px 0 0;font-size:.8rem}.pl-look .linkish{font-size:inherit}
@@ -1612,7 +1618,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.4";
+const APP_VERSION="1.5.5";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -5045,7 +5051,7 @@ function arSideInfo(){
     if(n<r.round)return `<li class="done"><span>${n}</span>jouée</li>`; // partie commencée avant la 1.3.14 : issue inconnue
     if(n===r.round)return `<li class="now"><span>${n}</span>${lost?"à rejouer":"en cours"}${gain?` · +${fmtN(gain)}`:""}${ko}</li>`;
     return `<li><span>${n}</span></li>`}).join("");
-  return `<div class="ar-sideinfo">${types}<div class="ar-rounds"><b>Manches</b><ol>${rows}</ol></div></div>`;
+  return `<div class="ar-sideinfo">${types}<div class="ar-rounds"><b>Manches</b>${r.credits?`<span class="ar-pot" title="Versée à la fin de la partie, réussie ou non">💰 Cagnotte : <b>${fmtN(r.credits)}</b></span>`:""}<ol>${rows}</ol></div></div>`;
 }
 function arSynLine(){const r=arRun(),on=arSyn(r.board.filter(Boolean)),l=Object.keys(on).map(Number).sort((a,b)=>on[b]-on[a]);
   return `<div class="ar-synl">${l.length?l.map(t=>`<span class="${on[t]>=2?"on":""}" style="--t:${TYPES[t][1]}">${TYPES[t][0]} ${on[t]}${on[t]>=6?" · +45 %":on[t]>=4?" · +30 %":on[t]>=2?" · +15 %":"/2"}</span>`).join(""):`<span>Synergies : 2 Pokémon d’un même type = +15 %</span>`}</div>`}
@@ -5078,9 +5084,9 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.8</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.9</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
-    <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
+    <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène, cagnotte de la partie en cours comprise">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
     <button class="btn small" data-ar="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${r&&!r.over?`<button class="btn small" data-ar="new" title="Nouvelle partie">↻<span class="ar-wide"> Nouvelle partie</span></button>`:""}${musicSlider("arena","arvol","ar-music","")}${sfxSlider("arena","arsfx")}</div>`;
   if(!r||r.over)return `<div class="arena ar-intro">${top}<div class="ar-start">
@@ -5151,20 +5157,20 @@ async function arFight(){
   }
   await sleep(arSpeed<9?500:150);
   arFighting=false;arSet(res);renderAll();
-  const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits.`:res.post&&!nr.over?` +${fmtN(res.post)} crédits.`:""}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` Vous la rejouez contre la même équipe, avec ${AR.lossGold} or de plus pour vous relancer.`}`;
+  const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits${nr.over?"":" dans la cagnotte"}.`:res.post&&!nr.over?` +${fmtN(res.post)} crédits dans la cagnotte.`:""}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` Vous la rejouez contre la même équipe, avec ${AR.lossGold} or de plus pour vous relancer.`}`;
   if(nr.over){
     openDlg(`<div class="side" style="align-items:center;text-align:center"><div style="font-size:3rem" aria-hidden="true">${nr.done?"🏆":"💥"}</div>
       <h2>${nr.done?"Arène réussie !":nr.hp>0?"Arène échouée":"Plus de vies"}</h2><p>${msg}</p>
       <p>${nr.done?`Vous avez gagné la dernière manche.`:nr.hp>0?`La manche ${res.round} est perdue : pour réussir l’Arène, il faut gagner la dernière manche.`:`Partie finie à la manche ${res.round}.`} ${nr.wins} manche${nr.wins>1?"s":""} gagnée${nr.wins>1?"s":""}.</p>
       <p style="font-size:1.3rem"><b>+${fmtN(nr.credits)} crédits</b>${res.post?` <span class="muted">(dont ${fmtN(res.post)} après le plafond du jour)</span>`:res.bonus?` <span class="muted">(dont ${fmtN(res.bonus)} de bonus final)</span>`:""}</p>
-      <p class="muted" style="font-size:.85rem">Les crédits gagnés pendant la partie sont à vous. Aujourd’hui : ${fmtN(AR_V.gained)} / ${fmtN(AR_V.cap)}.</p>
+      <p class="muted" style="font-size:.85rem">${nr.credits?"La cagnotte de la partie vient d’être versée sur votre compte. ":""}Aujourd’hui : ${fmtN(AR_V.gained)} / ${fmtN(AR_V.cap)}.</p>
       <div class="actions"><button class="btn primary" data-ar="start">Rejouer</button><button class="btn" data-act="close">Fermer</button></div></div>`,true);
   }else{const l=$("#ar-log");if(l)l.textContent=msg;toast(msg)}
 }
 function arRules(){
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Règles de l’Arène</h2><ul class="ar-rules">
     <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort : Pokémon Communs et Peu communs en manches 1 et 2, Rares à partir de la 3<sup>e</sup>, Épiques à partir de la 4<sup>e</sup>, Légendaires à partir de la 7<sup>e</sup>. Chaque équipe adverse suit un thème : surtout un type, un peu d’un second, et parfois une exception. ${AR.lives} vies : une manche perdue coûte une vie et se rejoue, face au même adversaire, avec l’or d’une manche et ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
-    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche. Ils restent acquis, même en cas de défaite. Réussir l’Arène (gagner la ${AR.rounds}<sup>e</sup> et dernière manche) rapporte ${AR.finish} de bonus. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque manche gagnée du premier coup rapporte encore ${AR.afterRound} crédits (une manche perdue puis rejouée ne rapporte rien), et l’Arène réussie ${AR.afterCap} de plus (${AR.afterCapPerfect} sans avoir perdu de vie).</li>
+    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche. Ils s’ajoutent à la cagnotte de la partie, versée à la fin, que l’Arène soit réussie ou non (ou si vous abandonnez). Réussir l’Arène (gagner la ${AR.rounds}<sup>e</sup> et dernière manche) rapporte ${AR.finish} de bonus. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque manche gagnée du premier coup rapporte encore ${AR.afterRound} crédits (une manche perdue puis rejouée ne rapporte rien), et l’Arène réussie ${AR.afterCap} de plus (${AR.afterCapPerfect} sans avoir perdu de vie).</li>
     <li>Or : ${AR.startGold} au départ, puis ${AR.incBase} + ${AR.incStep} par numéro de manche au début de chaque manche (${AR.incBase+2*AR.incStep} en manche 2, ${AR.incBase+10*AR.incStep} en manche 10), +1 par victoire. Intérêts en fin de manche : 10 or gardés = +${AR.interest[1]}, 20 = +${AR.interest[2]}, 30 et plus = +${AR.interest[3]}.</li>
     <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon de votre équipe revient plus souvent (une étoile comprise, pour viser les deux étoiles) et brille en doré dans la boutique ; les Pokémon des types de votre équipe reviennent aussi plus souvent. Plus les manches avancent, plus les raretés hautes sortent. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante, puis se déverrouille d’elle-même.</li>
     <li>3 exemplaires du même Pokémon : il évolue (ou gagne une étoile ⭐ en fin de lignée). 3 Pokémon à une étoile : deux étoiles ⭐⭐ (statistiques ×${AR.starK[1]} à une étoile ; à deux étoiles, ×${AR.star2[0]} pour une Commune, ×${AR.star2[1]} Peu commune, ×${AR.star2[2]} Rare, ×${AR.star2[3]} Épique et ×${AR.star2[5]} Légendaire).</li>
@@ -5180,7 +5186,7 @@ document.addEventListener("click",e=>{
   if(a==="rules"){arRules();return}
   if(a==="start"){closeDlg();run(async()=>{arSet(await rpc("dc_ar_start",{p_new:true},{render:false}));arSel=null;renderView()});return}
   if(arFighting||!r||r.over)return;
-  if(a==="new"){if(confirm("Abandonner la partie en cours et en commencer une nouvelle ?"))run(async()=>{arSet(await rpc("dc_ar_start",{p_new:true},{render:false}));arSel=null;renderView()});return}
+  if(a==="new"){if(confirm(`Abandonner la partie en cours et en commencer une nouvelle ?${arRun()&&arRun().credits?` La cagnotte (${fmtN(arRun().credits)} crédits) vous sera versée.`:""}`))run(async()=>{arSet(await rpc("dc_ar_start",{p_new:true},{render:false}));arSel=null;renderView()});return}
   if(a==="buy"){arBuy(+b.dataset.i);return}
   if(a==="reroll"){arAct("dc_ar_reroll");return}
   if(a==="lock"){arAct("dc_ar_lock",{p_on:!r.locked});return}
@@ -6028,6 +6034,22 @@ function titleDef(t){
   if(t.ids)return {c:"ids",ids:t.ids,n:t.need||t.ids.length};
   throw new Error("Titre sans équivalent serveur : "+t.k);
 }
+/* 1.5.5 (demande de Theo) : un onglet ou une appli laissé ouvert des jours gardait sa vieille version (un joueur était encore
+   en 1.3.18). Toutes les 15 minutes, onglet visible, la page relit le début d’index.html sur le site (sans cache, lecture arrêtée
+   dès APP_VERSION trouvé) ; si la version en ligne est plus récente, bandeau avec « Recharger ». */
+{let vcTs=0,vcDone=false;
+  const newer=(a,b)=>{const x=a.split(".").map(Number),y=b.split(".").map(Number);for(let i=0;i<3;i++)if((x[i]||0)!==(y[i]||0))return (x[i]||0)>(y[i]||0);return false};
+  const show=v=>{vcDone=true;const d=document.createElement("div");d.id="new-ver";d.setAttribute("role","status");
+    d.innerHTML=`<span>✨ Une nouvelle version de DexCraft est disponible (${esc(v)}).</span><button class="btn small primary" data-nv="go">Recharger</button><button class="nv-x" data-nv="x" aria-label="Plus tard">×</button>`;
+    d.addEventListener("click",e=>{const b=e.target.closest("[data-nv]");if(!b)return;if(b.dataset.nv==="go")location.reload();else d.remove()});document.body.appendChild(d)};
+  const check=async()=>{
+    if(vcDone||document.hidden||!/^https?:$/.test(location.protocol)||Date.now()-vcTs<14*60000)return;vcTs=Date.now();
+    try{const r=await fetch(location.pathname+"?vc="+Date.now(),{cache:"no-store"});if(!r.ok||!r.body)return;
+      const rd=r.body.getReader(),dec=new TextDecoder();let t="",m=null;
+      while(!(m=t.match(/APP_VERSION="(\d+\.\d+\.\d+)"/))&&t.length<600000){const {done,value}=await rd.read();if(done)break;t+=dec.decode(value,{stream:true})}
+      rd.cancel().catch(()=>{});if(m&&newer(m[1],APP_VERSION))show(m[1])}catch(e){}};
+  vcTs=Date.now()-13*60000; // premier contrôle une minute après l’ouverture
+  setInterval(check,60000);document.addEventListener("visibilitychange",check)}
 /* 1.5.4 : sur téléphone, la barre d’onglets fixée en bas sort de l’en-tête « collant » (position sticky) : sur iPhone, une barre
    fixe logée dans un élément collant remontait au milieu de l’écran pendant le défilement. Sur grand écran, elle y revient. */
 {const nav=$("#tabs"),home=nav&&nav.parentNode,after=nav&&nav.nextSibling,mq=matchMedia("(max-width:700px)");
