@@ -1730,7 +1730,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.11";
+const APP_VERSION="1.5.12";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -5406,8 +5406,9 @@ document.addEventListener("pointercancel",()=>{const g=arDrag;arDrag=null;if(g&&
    le jeu d'origine, sans limite de parties). */
 // 1.5.10 (demande de Theo, gains trop faibles à l’essai) : fouille plus facile (8 plaques au lieu de 12, 0 à 2 blocs de fer au lieu de 3),
 // trouvailles plus rares (Petites bleues 23 % au lieu de 30 %) et valeurs ×1,375 : environ 215 crédits rendus pour 100 misés en moyenne
-// 1.5.11 (demande de Theo) : ouvert à tous ; mise à 150 crédits (difficulté jugée parfaite, gains un peu trop hauts à 100)
-const SOUT={v:"v1.2",open:true,cost:150,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:8,irons:[0,2],n:[2,4],
+// 1.5.11 (demande de Theo) : ouvert à tous ; mise à 150 crédits (difficulté jugée parfaite, gains un peu trop hauts à 100) ;
+// 1.5.12 : retour à 100 crédits (demande de Theo)
+const SOUT={v:"v1.3",open:true,cost:100,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:8,irons:[0,2],n:[2,4],
   // s : taille (colonnes, lignes) ; w : poids du tirage (sur 100 × %) ; v : éclats ; cr : crédits ; c : couleurs
   items:{pb:{n:"Petite Sphère bleue",s:[2,2],w:4800,v:25,c:["#a9d2ff","#1d5fd6"]},gb:{n:"Grande Sphère bleue",s:[3,3],w:3000,v:58,c:["#a9d2ff","#1d5fd6"]},
     pr:{n:"Petite Sphère rouge",s:[2,2],w:3000,v:50,c:["#ffb3aa","#cf2419"]},gr:{n:"Grande Sphère rouge",s:[3,3],w:1500,v:140,c:["#ffb3aa","#cf2419"]},
