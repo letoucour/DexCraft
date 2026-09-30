@@ -426,6 +426,11 @@ begin
   gained := case when d -> 'arena' ->> 'day' = day then public.dc__int(d -> 'arena', 'gained') else 0 end;
   if (res ->> 'win')::boolean then
     added := least((a ->> 'winBase')::int + (a ->> 'winStep')::int * rd, greatest(0, cap - gained));
+    -- 1.5.4 (demande de Theo) : plafond du jour déjà atteint, une manche gagnée du premier coup rapporte encore afterRound (20)
+    -- crédits, hors compteur du jour ; une manche perdue ne rapporte rien, ni plus tard quand elle est rejouée et gagnée
+    if gained >= cap and not coalesce(st -> 'hist', '[]') @> jsonb_build_array(jsonb_build_array(rd, 0)) then
+      post := coalesce((a ->> 'afterRound')::int, 0);
+    end if;
     st := st || jsonb_build_object('wins', (st ->> 'wins')::int + 1, 'gold', (st ->> 'gold')::int + 1);
     d := public.dc__bump(d, 'arWins');
   else
@@ -441,10 +446,10 @@ begin
     if win then
       st := jsonb_set(st, '{done}', 'true');
       -- plafond du jour atteint (ou atteint par cette fin de partie) : encore afterCap crédits, hors compteur du jour,
-      -- afterCapPerfect sans avoir perdu de vie (1.3.14 ; 100 et 150 depuis la 1.4.2, demande de Theo)
+      -- afterCapPerfect sans avoir perdu de vie (1.3.14 ; 100 et 150 de la 1.4.2 à la 1.5.3, 20 et 50 depuis, demande de Theo)
       bonus := least((a ->> 'finish')::int, greatest(0, cap - gained - added));
       if gained + added + bonus >= cap then
-        post := case when (st ->> 'hp')::int >= (a ->> 'lives')::int then coalesce((a ->> 'afterCapPerfect')::int, (a ->> 'afterCap')::int, 0)
+        post := post + case when (st ->> 'hp')::int >= (a ->> 'lives')::int then coalesce((a ->> 'afterCapPerfect')::int, (a ->> 'afterCap')::int, 0)
                      else coalesce((a ->> 'afterCap')::int, 0) end;
       end if;
       d := public.dc__bump(d, 'arDone');

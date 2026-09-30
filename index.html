@@ -1612,7 +1612,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.3";
+const APP_VERSION="1.5.4";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3086,7 +3086,7 @@ function vCollection(){
     <button class="btn small" data-act="sel-clear" ${selN?"":"disabled"}>Vider</button>
     <button class="btn primary go" data-act="discard-go" ${selN?"":"disabled"}><span aria-hidden="true">◆</span> Défausser et gagner ${cr(selValue(discardSel))}</button></div>`:""}`;
 }
-let trdM=false,trdE=false,trdDbl=false,wishDbl=false,trdQ=""; // trdDbl : seulement les annonces où l'on a un double à proposer (1.2.0)
+let trdM=false,trdE=false,trdA=false,trdDbl=false,wishDbl=false,trdQ=""; // trdDbl : seulement les annonces où l'on a un double à proposer (1.2.0)
 const norm2=s=>String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 function cardMatches(id,q){
   q=norm2(q).trim();if(!q)return true;
@@ -3102,7 +3102,7 @@ function searchBar(act,val,ph){
 /* Annonces des autres joueurs par paquets (1.2.5), comme la collection : il peut y en avoir des milliers, et toute la
    page se redessine à chaque changement du marché. Les suivantes arrivent quand le bas approche (trdWatch). */
 const TRD_STEP=120;let trdLimit=TRD_STEP,trdSig="",trdObs=null,trdList=[];
-function trdLimitFor(){const sig=JSON.stringify([trdQ,trdM,trdE,trdDbl,trdR]);if(sig!==trdSig){trdSig=sig;trdLimit=TRD_STEP}return trdLimit}
+function trdLimitFor(){const sig=JSON.stringify([trdQ,trdM,trdE,trdA,trdDbl,trdR]);if(sig!==trdSig){trdSig=sig;trdLimit=TRD_STEP}return trdLimit}
 function trdMore(){
   const g=$("#trd-grid"),m=$("#trd-more");if(!g||!m)return;
   const next=trdList.slice(trdLimit,trdLimit+TRD_STEP);trdLimit+=TRD_STEP;
@@ -3135,7 +3135,9 @@ function vTrades(){
   // les annonces de l’un ou de l’autre, par date ; « Toutes les cartes » les retire
   const evoSet=new Set(evoMiss.map(([id])=>id));
   const base=trdM&&trdE?all.filter(([id,m])=>evoSet.has(id)||!has(S,m.card)||wished(m.card)):trdM?missing:trdE?evoMiss:all;
-  const withDbl=base.filter(([,m])=>hasDbl(m)),others=byR(trdDbl?withDbl:base);trdList=others;
+  // 1.5.4 (demande de Theo) : « ⚡ Acceptation automatique » se combine avec les autres filtres (seulement les annonces qui acceptent d’office)
+  const autoN=base.filter(([,m])=>m.auto).length,base2=trdA?base.filter(([,m])=>m.auto):base;
+  const withDbl=base2.filter(([,m])=>hasDbl(m)),others=byR(trdDbl?withDbl:base2);trdList=others;
   const myOffers=all.filter(([id,m])=>myOffer(id,m)); // mes propositions en attente chez les autres
   const pendMine=mine.reduce((n,[,m])=>n+offersOf(m).length,0);
   if(mySel)for(const id of [...mySel])if(!MARKET[id])mySel.delete(id); // annonces disparues entre-temps
@@ -3156,11 +3158,11 @@ function vTrades(){
     <span>${showHist?"Masquer":"Voir"} l’historique de mes échanges</span><span class="mt-arrow" aria-hidden="true">${showHist?"▲":"▼"}</span></button>
   ${showHist?histHTML():""}
   <section class="section"><h2>Annonces des autres joueurs</h2>
-  <div class="trd-filters"><div class="qty"><button data-act="trd-filter" data-v="0" aria-pressed="${!trdM&&!trdE}">Toutes les cartes (${all.length})</button><button data-act="trd-filter" data-v="1" aria-pressed="${trdM}">Manquantes / recherchées (${missing.length})</button><button data-act="trd-filter" data-v="2" aria-pressed="${trdE}" title="Pokémon de votre collection dont une évolution vous manque encore : des exemplaires en plus pour la faire, du plus proche au plus lointain">Évolutions pas encore obtenues (${evoMiss.length})</button></div>
+  <div class="trd-filters"><div class="qty"><button data-act="trd-filter" data-v="0" aria-pressed="${!trdM&&!trdE&&!trdA}">Toutes les cartes (${all.length})</button><button data-act="trd-filter" data-v="1" aria-pressed="${trdM}">Manquantes / recherchées (${missing.length})</button><button data-act="trd-filter" data-v="2" aria-pressed="${trdE}" title="Pokémon de votre collection dont une évolution vous manque encore : des exemplaires en plus pour la faire, du plus proche au plus lointain">Évolutions pas encore obtenues (${evoMiss.length})</button><button data-act="trd-filter" data-v="3" aria-pressed="${trdA}" title="Seulement les annonces qui acceptent d’office la première proposition valide">⚡ Acceptation automatique (${autoN})</button></div>
     <select data-trdr aria-label="Rareté"><option value="all"${trdR==="all"?" selected":""}>Toutes les raretés</option>${rars.map(r=>`<option value="${r}"${String(r)===trdR?" selected":""}>${RAR[r]} (${all.filter(([,m])=>rar(m.card)===r).length})</option>`).join("")}</select>
     <div class="qty"><button data-act="trd-dbl" aria-pressed="${trdDbl}" title="Seulement les annonces pour lesquelles vous avez un double à proposer">🔁 J’ai un double à proposer (${withDbl.length})</button></div></div>
   ${others.length?`<div class="trade-grid" id="trd-grid">${others.slice(0,trdLimitFor()).map(([id,m])=>tradeTile(id,m)).join("")}</div>${others.length>trdLimit?`<div id="trd-more" class="coll-more" aria-hidden="true"></div>`:""}`
-    :`<div class="empty">${trdDbl?"Aucune annonce pour laquelle vous avez un double à proposer.":trdM&&trdE?"Aucune carte qui vous manque, que vous recherchez ou qu’il vous faut pour une évolution n’est proposée pour l’instant.":trdM?"Aucune carte qui vous manque ou que vous recherchez n’est proposée pour l’instant.":trdE?"Aucun Pokémon dont une évolution vous manque n’est proposé pour l’instant.":"Aucune annonce pour l’instant."}</div>`}</section>
+    :`<div class="empty">${trdDbl?"Aucune annonce pour laquelle vous avez un double à proposer.":trdA&&!trdM&&!trdE?"Aucune annonce à acceptation automatique pour l’instant.":trdM&&trdE?"Aucune carte qui vous manque, que vous recherchez ou qu’il vous faut pour une évolution n’est proposée pour l’instant.":trdM?"Aucune carte qui vous manque ou que vous recherchez n’est proposée pour l’instant.":trdE?"Aucun Pokémon dont une évolution vous manque n’est proposé pour l’instant.":"Aucune annonce pour l’instant."}</div>`}</section>
   ${mySel&&showMyTrades?myTradesBar():""}`;
 }
 let showMyTrades=false,showMyOffers=false,trdR="all",mySel=null,myLimit=120; // mySel : annonces choisies pour une action groupée ; myLimit : « Mes annonces » par paquets (1.3.10)
@@ -3665,7 +3667,8 @@ const VB_AFTER=10; // 1.3.14 : plafond atteint, une manche gagnée rapporte enco
    (poids, pas forcément sur 100 ; par bandes de 2 manches avant) ; slot : chance qu'une case repropose un Pokémon de l'équipe
    (depuis la 1.4.9 : chaque Pokémon différent de l'équipe à 0 ou 1 étoile a la même chance, slot 0,3) ; typeW : poids des types joués, en part de la réserve ;
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
-const AR={rounds:10,lives:3,lossGold:3,bench:9,reroll:2,cap:3000,finish:400,afterCap:100,afterCapPerfect:150,winBase:60,winStep:20,startGold:8,incBase:6,incStep:1, // 1.4.8 (demande de Theo, économie trop juste) : or de la manche = incBase + incStep × manche (6 + manche/2 avant, startGold 6, incLate 1)
+const AR={rounds:10,lives:3,lossGold:3,bench:9,reroll:2,cap:3000,finish:400,afterCap:20,afterCapPerfect:50,afterRound:20, // 1.5.4 (demande de Theo) : après le plafond, 20 par manche gagnée du premier coup, 20 ou 50 l’Arène réussie (100 et 150 avant)
+  winBase:60,winStep:20,startGold:8,incBase:6,incStep:1, // 1.4.8 (demande de Theo, économie trop juste) : or de la manche = incBase + incStep × manche (6 + manche/2 avant, startGold 6, incLate 1)
   // 1.4.7 (Arène v3.3, table de Theo) : avant, par bandes de 2 manches [[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]]
   odds:[[70,20,10,0,0],[60,30,15,5,0],[50,30,20,9,1],[50,30,20,9,1],[20,30,30,15,5],[20,30,30,15,5],[15,25,30,20,10],[15,25,30,20,10],[10,20,25,30,15],[0,10,20,40,30]],
   cost:{0:1,1:2,2:3,3:4,5:5},
@@ -5075,7 +5078,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.7</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.8</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -5083,7 +5086,7 @@ function vArena(){
   if(!r||r.over)return `<div class="arena ar-intro">${top}<div class="ar-start">
     <p>Composez une équipe avec les Pokémon de <b>votre collection</b>, faites-les évoluer en réunissant 3 exemplaires, et affrontez l’ordinateur sur ${AR.rounds} manches. Chaque manche gagnée rapporte des crédits (${fmtN(AR.cap)} par jour au plus).</p>
     ${r&&r.over?`<p class="muted">Dernière partie : ${r.wins} manche${r.wins>1?"s":""} gagnée${r.wins>1?"s":""}, +${fmtN(r.credits)} crédits.</p>`:""}
-    <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:`Plafond du jour atteint : chaque Arène réussie (dernière manche gagnée) rapporte encore ${AR.afterCap} crédits, ${AR.afterCapPerfect} sans perdre de vie, jusqu’à minuit.`}</p>
+    <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:`Plafond du jour atteint : jusqu’à minuit, chaque manche gagnée du premier coup rapporte encore ${AR.afterRound} crédits, et l’Arène réussie ${AR.afterCap} de plus (${AR.afterCapPerfect} sans perdre de vie).`}</p>
     <button class="btn primary ar-fight" data-ar="start">⚔️ ${r?"Nouvelle partie":"Lancer une partie"}</button></div></div>`;
   const on=r.board.filter(Boolean).length,max=arMax(r.round),counts={},c1s={},owned=new Set();arUnits().forEach(u=>{owned.add(u.i);if(!u.s)counts[u.i]=(counts[u.i]||0)+1;else if(u.s===1)c1s[u.i]=(c1s[u.i]||0)+1}); // 1.4.9 : offres d’un Pokémon déjà dans l’équipe en surbrillance (owned), progrès vers les deux étoiles (c1s)
   const empt=[0,1,2,3,4,5].filter(i=>!r.board[i]).slice(0,Math.max(0,max-on)),sel=arSel&&arFind(arSel);
@@ -5148,7 +5151,7 @@ async function arFight(){
   }
   await sleep(arSpeed<9?500:150);
   arFighting=false;arSet(res);renderAll();
-  const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits.`:""}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` Vous la rejouez contre la même équipe, avec ${AR.lossGold} or de plus pour vous relancer.`}`;
+  const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits.`:res.post&&!nr.over?` +${fmtN(res.post)} crédits.`:""}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` Vous la rejouez contre la même équipe, avec ${AR.lossGold} or de plus pour vous relancer.`}`;
   if(nr.over){
     openDlg(`<div class="side" style="align-items:center;text-align:center"><div style="font-size:3rem" aria-hidden="true">${nr.done?"🏆":"💥"}</div>
       <h2>${nr.done?"Arène réussie !":nr.hp>0?"Arène échouée":"Plus de vies"}</h2><p>${msg}</p>
@@ -5161,7 +5164,7 @@ async function arFight(){
 function arRules(){
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Règles de l’Arène</h2><ul class="ar-rules">
     <li>${AR.rounds} manches contre l’ordinateur, de plus en plus fort : Pokémon Communs et Peu communs en manches 1 et 2, Rares à partir de la 3<sup>e</sup>, Épiques à partir de la 4<sup>e</sup>, Légendaires à partir de la 7<sup>e</sup>. Chaque équipe adverse suit un thème : surtout un type, un peu d’un second, et parfois une exception. ${AR.lives} vies : une manche perdue coûte une vie et se rejoue, face au même adversaire, avec l’or d’une manche et ${AR.lossGold} or de plus pour se relancer. Sans vie, la partie s’arrête.</li>
-    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche. Ils restent acquis, même en cas de défaite. Réussir l’Arène (gagner la ${AR.rounds}<sup>e</sup> et dernière manche) rapporte ${AR.finish} de bonus. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque Arène réussie rapporte encore ${AR.afterCap} crédits, ${AR.afterCapPerfect} sans avoir perdu de vie.</li>
+    <li>Crédits : ${AR.winBase+AR.winStep} en manche 1, puis +${AR.winStep} par manche. Ils restent acquis, même en cas de défaite. Réussir l’Arène (gagner la ${AR.rounds}<sup>e</sup> et dernière manche) rapporte ${AR.finish} de bonus. ${fmtN(AR.cap)} par jour au plus ; ensuite, chaque manche gagnée du premier coup rapporte encore ${AR.afterRound} crédits (une manche perdue puis rejouée ne rapporte rien), et l’Arène réussie ${AR.afterCap} de plus (${AR.afterCapPerfect} sans avoir perdu de vie).</li>
     <li>Or : ${AR.startGold} au départ, puis ${AR.incBase} + ${AR.incStep} par numéro de manche au début de chaque manche (${AR.incBase+2*AR.incStep} en manche 2, ${AR.incBase+10*AR.incStep} en manche 10), +1 par victoire. Intérêts en fin de manche : 10 or gardés = +${AR.interest[1]}, 20 = +${AR.interest[2]}, 30 et plus = +${AR.interest[3]}.</li>
     <li>La boutique ne propose que des Pokémon de votre collection. Un Pokémon de votre équipe revient plus souvent (une étoile comprise, pour viser les deux étoiles) et brille en doré dans la boutique ; les Pokémon des types de votre équipe reviennent aussi plus souvent. Plus les manches avancent, plus les raretés hautes sortent. Prix : Commune 1, Peu commune 2, Rare 3, Épique 4, Légendaire 5. Relancer : ${AR.reroll} or. Verrouiller : la boutique reste la même à la manche suivante, puis se déverrouille d’elle-même.</li>
     <li>3 exemplaires du même Pokémon : il évolue (ou gagne une étoile ⭐ en fin de lignée). 3 Pokémon à une étoile : deux étoiles ⭐⭐ (statistiques ×${AR.starK[1]} à une étoile ; à deux étoiles, ×${AR.star2[0]} pour une Commune, ×${AR.star2[1]} Peu commune, ×${AR.star2[2]} Rare, ×${AR.star2[3]} Épique et ×${AR.star2[5]} Légendaire).</li>
@@ -5456,7 +5459,7 @@ document.addEventListener("click",e=>{
       keepConfirm(id,()=>createTrade(id,v==="missing"?"missing":(+v||null)),()=>detail(id));break}
     case"cancel":closeDlg();cancelListing(mid);break;
     case"trade":tradeDlg(mid);break;
-    case"trd-filter":{const v=b.dataset.v;if(v==="0")trdM=trdE=false;else if(v==="1")trdM=!trdM;else trdE=!trdE}renderView();break;
+    case"trd-filter":{const v=b.dataset.v;if(v==="0")trdM=trdE=trdA=false;else if(v==="1")trdM=!trdM;else if(v==="3")trdA=!trdA;else trdE=!trdE}renderView();break;
     case"trd-dbl":trdDbl=!trdDbl;renderView();break;
     case"wish-dbl":wishDbl=!wishDbl;renderView();break;
     case"give":tradeGive=id;tradeFrom=b.dataset.from||null;document.querySelectorAll("#picker .pick").forEach(x=>x.classList.toggle("choice",x===b));{const g=$("#give-go");g.disabled=false;g.textContent=`Proposer ${nm(id)}`}break;
@@ -6025,6 +6028,11 @@ function titleDef(t){
   if(t.ids)return {c:"ids",ids:t.ids,n:t.need||t.ids.length};
   throw new Error("Titre sans équivalent serveur : "+t.k);
 }
+/* 1.5.4 : sur téléphone, la barre d’onglets fixée en bas sort de l’en-tête « collant » (position sticky) : sur iPhone, une barre
+   fixe logée dans un élément collant remontait au milieu de l’écran pendant le défilement. Sur grand écran, elle y revient. */
+{const nav=$("#tabs"),home=nav&&nav.parentNode,after=nav&&nav.nextSibling,mq=matchMedia("(max-width:700px)");
+  const place=()=>{if(!nav)return;if(mq.matches){if(nav.parentNode!==document.body)document.body.appendChild(nav)}else if(nav.parentNode!==home)home.insertBefore(nav,after)};
+  place();if(mq.addEventListener)mq.addEventListener("change",place);else mq.addListener(place);addEventListener("resize",place)}
 (async()=>{
   if(location.hash==="#cgu")setTimeout(openCgu,0); // lien direct vers les CGU : dexcraft.fr/#cgu
   if(location.search.includes("export-config")){
