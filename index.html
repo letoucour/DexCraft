@@ -1730,7 +1730,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.12";
+const APP_VERSION="1.5.13";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -5421,6 +5421,9 @@ const SOUT={v:"v1.3",open:true,cost:100,hp:100,pick:2,hammer:4,w:13,h:10,base:1,
     {k:"gen",n:"Booster Génération",p:300,sp:"gen"},{k:"type",n:"Booster Type",p:300,sp:"type"},{k:"prem",n:"Booster Premium",p:750,sp:"prem"}]};
 const SO_ORDER=["pb","gb","pr","gr","pv","gv","pj","gj","pd","gd","or","billet"];
 const soOn=()=>SOUT.open||devOn();
+// 1.5.13 : bouton de fouille grisé s'il manque des crédits (un joueur cliquait en boucle, chaque refus du serveur comptait comme une erreur de la base)
+const soMiss=()=>devOn()?0:Math.max(0,SOUT.cost-((S&&S.credits)||0));
+const soStartBtn=(cls,label)=>{const m=soMiss();return m?`<button class="${cls}" disabled>Il vous manque ${fmtN(m)} crédits</button>`:`<button class="${cls}" data-so="start">${label}</button>`};
 let SO=null,soLoading=false,soQ=[],soBusy=false,soEnding=false,soFx={},soGen=1,soType=1,soAim=-1;
 let soTool=(()=>{try{return localStorage.getItem("dc-so-tool")==="p"?"p":"h"}catch(e){return "h"}})();
 const soEc=()=>+((S&&S.sout&&S.sout.ec)||0);
@@ -5497,7 +5500,7 @@ function vSout(){
     const free=devOn();
     return `<div class="souterrain">${soTopHTML()}<div class="so-intro"><div class="so-start">
       <p>Un mur cache <b>2 à 4 trésors</b>. Creusez au <b>marteau</b> ou à la <b>pioche</b> pour les dégager en entier avant que la fissure n’atteigne le bord : à ce moment-là, le mur s’effondre. Méfiez-vous des blocs de fer !</p>
-      <button class="btn primary ar-fight" data-so="start">⛏ Fouiller un mur · ${free?"gratuit (mode développeur)":fmtN(SOUT.cost)+" crédits"}</button>${last}</div>${soShopHTML()}</div></div>`;
+      ${soStartBtn("btn primary ar-fight",`⛏ Fouiller un mur · ${free?"gratuit (mode développeur)":fmtN(SOUT.cost)+" crédits"}`)}${last}</div>${soShopHTML()}</div></div>`;
   }
   return `<div class="souterrain playing">${soTopHTML()}<div class="so-stage"><div class="so-main">${soCrackHTML(r)}${soInfoHTML(r)}${soWallHTML(r)}</div>
     <div class="so-tools" role="group" aria-label="Outil">
@@ -5555,7 +5558,7 @@ function soEnd(v){
       ${res.items.length?`<div class="so-res">${res.items.map(k=>`<div>${soIco(k)}<span>${esc(SOUT.items[k].n)}</span><b>${soGain(k)}</b></div>`).join("")}</div>`:`<p>Aucun objet n’a été dégagé en entier cette fois-ci.</p>`}
       ${missed.length?`<p class="muted ar-small">Restés dans le mur : ${missed.map(o=>esc(SOUT.items[o.k].n)).join(", ")}.</p>`:""}
       <p style="font-size:1.2rem">${res.ec?`<b>+${fmtN(res.ec)} éclats</b>`:""}${res.ec&&res.cr?" · ":""}${res.cr?`<b>+${fmtN(res.cr)} crédits</b>`:""}</p>
-      <div class="actions"><button class="btn primary" data-so="start">⛏ Fouiller un autre mur</button><button class="btn" data-act="close">Fermer</button></div></div>`,true);
+      <div class="actions">${soStartBtn("btn primary","⛏ Fouiller un autre mur")}<button class="btn" data-act="close">Fermer</button></div></div>`,true);
   },r.end==="wall"&&!RM()?1500:700);
 }
 function soRules(){
