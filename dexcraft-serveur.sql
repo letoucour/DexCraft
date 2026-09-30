@@ -111,6 +111,23 @@ begin
   return d;
 end $$;
 
+-- un titre est-il obtenu ? (1.5.0 : sorti de dc__stamp, qui s'en sert aussi pour les titres acquis au prestige)
+create or replace function public.dc__title_ok(cfg jsonb, def jsonb, d jsonb, newcoll jsonb, nmaster int, byr int[], gencnt int[], typecnt int[], nsec int) returns boolean language sql stable as $$
+  select case def ->> 'c'
+    when 'flag' then coalesce(d ->> (def ->> 'f'), '') = 'true'
+    when 'beta' then (cfg ->> 'betaOpen')::boolean or coalesce(d ->> 'beta', '') = 'true'
+    when 'secret' then nsec > 0
+    when 'sflag' then coalesce(d -> 'stats' ->> (def ->> 's'), '') not in ('', '0', 'false', 'null')
+    when 'stat' then coalesce((d -> 'stats' ->> (def ->> 's'))::numeric, 0) >= (def ->> 'n')::numeric
+    when 'dex' then nmaster >= (def ->> 'n')::int
+    when 'rar' then byr[(def ->> 'r')::int + 1] >= (def ->> 'n')::int
+    when 'gen' then gencnt[(def ->> 'g')::int] >= (def ->> 'n')::int
+    when 'type' then typecnt[(def ->> 't')::int] >= (def ->> 'n')::int
+    when 'ids' then (select count(*) from jsonb_array_elements_text(def -> 'ids') x where newcoll ? x) >= (def ->> 'n')::int
+    when 'evo' then (select count(distinct x) from jsonb_each(cfg -> 'evo') e, jsonb_array_elements_text(e.value) x where newcoll ? x) >= (def ->> 'n')::int  -- Darwiniste (1.1.3)
+    when 'cos' then coalesce(d -> 'cos', '{}') ? (def ->> 'i')
+    else false end $$;
+
 -- champs calculés (classement, titres…) : jamais fournis par le joueur
 create or replace function public.dc__stamp(d jsonb, own boolean) returns jsonb language plpgsql volatile as $$
 declare
@@ -213,24 +230,19 @@ begin
   end if;
   -- titres affichés à côté du nom (shown) : les titres choisis, ou ceux par défaut, réellement obtenus.
   -- Calculés ici pour que les autres joueurs n'aient pas à télécharger toute la collection.
+  -- Prestige (1.5.0) : tout titre obtenu est acquis pour toujours (titlesKept), même après la remise à zéro du Pokédex
+  -- ou l'ajout de nouveaux Pokémon
+  if coalesce((d ->> 'prestige')::int, 0) > 0 then
+    d := jsonb_set(d, '{titlesKept}', (select coalesce(jsonb_agg(distinct k), '[]') from (
+      select jsonb_array_elements_text(case when jsonb_typeof(d -> 'titlesKept') = 'array' then d -> 'titlesKept' else '[]' end) k
+      union select k from jsonb_array_elements_text(cfg -> 'titleKeys') k
+        where public.dc__title_ok(cfg, cfg -> 'titleDefs' -> k, d, newcoll, nmaster, byr, gencnt, typecnt, myth + trans)) s));
+  end if;
   for r in select value #>> '{}' as k, ordinality as i
            from jsonb_array_elements(case when jsonb_typeof(d -> 'titles') = 'array' then d -> 'titles' else cfg -> 'titleDefault' end) with ordinality loop
     def := cfg -> 'titleDefs' -> r.k;
     if def is null then continue; end if;
-    ok := case def ->> 'c'
-      when 'flag' then coalesce(d ->> (def ->> 'f'), '') = 'true'
-      when 'beta' then (cfg ->> 'betaOpen')::boolean or coalesce(d ->> 'beta', '') = 'true'
-      when 'secret' then myth + trans > 0
-      when 'sflag' then coalesce(d -> 'stats' ->> (def ->> 's'), '') not in ('', '0', 'false', 'null')
-      when 'stat' then coalesce((d -> 'stats' ->> (def ->> 's'))::numeric, 0) >= (def ->> 'n')::numeric
-      when 'dex' then nmaster >= (def ->> 'n')::int
-      when 'rar' then byr[(def ->> 'r')::int + 1] >= (def ->> 'n')::int
-      when 'gen' then gencnt[(def ->> 'g')::int] >= (def ->> 'n')::int
-      when 'type' then typecnt[(def ->> 't')::int] >= (def ->> 'n')::int
-      when 'ids' then (select count(*) from jsonb_array_elements_text(def -> 'ids') x where newcoll ? x) >= (def ->> 'n')::int
-      when 'evo' then (select count(distinct x) from jsonb_each(cfg -> 'evo') e, jsonb_array_elements_text(e.value) x where newcoll ? x) >= (def ->> 'n')::int  -- Darwiniste (1.1.3)
-      when 'cos' then coalesce(d -> 'cos', '{}') ? (def ->> 'i')
-      else false end;
+    ok := coalesce(d -> 'titlesKept' ? r.k, false) or public.dc__title_ok(cfg, def, d, newcoll, nmaster, byr, gencnt, typecnt, myth + trans);
     if ok then shown := shown || jsonb_build_array(jsonb_build_object('k', r.k, 'o', case r.k when 'alpha' then 0 when 'beta' then 1 else 2 end, 'i', r.i)); end if;
   end loop;
   select coalesce(jsonb_agg(x -> 'k' order by (x ->> 'o')::int, (x ->> 'i')::int), '[]') into shown
@@ -409,7 +421,7 @@ begin
       -- jamais pour une mythique, une transcendante ou une carte sans illustration shiny (shinyNo)
       sh := false;
       if r <= 5 and cfg ? 'shinyBase' and not (cfg -> 'shinyNo' @> to_jsonb(id)) and not (d -> 'shiny' ? id::text) then
-        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0), (cfg ->> 'shinyMax')::int - 1);
+        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 40) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1);   -- + Charmes Chroma (1.5.0)
       end if;
       if sh then d := jsonb_set(d, '{shiny}', (d -> 'shiny') || jsonb_build_object(id::text, now_ms)); end if;
       drawn := drawn || jsonb_build_array(jsonb_build_object('id', id, 'isNew', public.dc__count(d, id) = 0)
@@ -561,6 +573,7 @@ revoke all on function public.dc_set_pseudo(text) from public, anon;
 grant execute on function public.dc_set_pseudo(text) to authenticated;
 revoke all on function public.dc_set_titles(jsonb) from public, anon;
 grant execute on function public.dc_set_titles(jsonb) to authenticated;
+revoke all on function public.dc__title_ok(jsonb,jsonb,jsonb,jsonb,integer,integer[],integer[],integer[],integer) from public, anon, authenticated;
 revoke all on function public.dc_toggle_fav(integer) from public, anon;
 grant execute on function public.dc_toggle_fav(integer) to authenticated;
 

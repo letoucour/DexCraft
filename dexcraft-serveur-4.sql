@@ -58,7 +58,7 @@ begin
       -- shiny : même règle que dc_open
       sh := false;
       if r <= 5 and cfg ? 'shinyBase' and not (cfg -> 'shinyNo' @> to_jsonb(id)) and not (d -> 'shiny' ? id::text) then
-        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0), (cfg ->> 'shinyMax')::int - 1);
+        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 40) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1);   -- + Charmes Chroma (1.5.0)
       end if;
       if sh then d := jsonb_set(d, '{shiny}', (d -> 'shiny') || jsonb_build_object(id::text, now_ms)); end if;
       drawn := drawn || jsonb_build_array(jsonb_build_object('id', id, 'isNew', public.dc__count(d, id) = 0)
@@ -186,6 +186,35 @@ create or replace function public.dc_market_since(p_since timestamptz) returns j
     'now', now()) $$;
 
 -- ============================================================
+--  Prestige (1.5.0, demande de Theo) : Pokédex complet → la collection du Pokédex repart de zéro, le joueur garde tout le
+--  reste (titres acquis pour toujours, shiny, cartes secrètes, crédits, boosters, rencontres got, cosmétiques, statistiques)
+--  et gagne un Charme Chroma (+presCharm rencontres sur tous les Pokémon pour la chance de shiny, cumulable).
+--  Ses annonces de cartes du Pokédex sont retirées et ses propositions chez les autres annulées (cartes rendues puis
+--  effacées avec le reste) ; cartes recherchées (cloches) retirées ; favoris et vitrine nettoyés par dc__stamp.
+-- ============================================================
+create or replace function public.dc_prestige() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); cfg jsonb := public.dc__cfg(); d jsonb := public.dc__lock(u, true); m record; n int;
+begin
+  if (select count(*) from jsonb_array_elements_text(cfg -> 'dexOrder') x where coalesce((d -> 'coll' ->> x)::int, 0) > 0) < jsonb_array_length(cfg -> 'dexOrder') then
+    raise exception 'Complétez d’abord tout le Pokédex pour passer au prestige suivant.'; end if;
+  for m in select substr(path, 8) mid from public.docs where coll = 'market' and data ->> 'owner' = u::text and data ->> 'status' = 'open'
+      and cfg -> 'dexOrder' @> (data -> 'card') loop
+    perform public.dc_trade_cancel(m.mid);
+  end loop;
+  for m in select substr(p.path, 8) mid, e.key oid from public.docs p, jsonb_each(case when jsonb_typeof(p.data -> 'offers') = 'object' then p.data -> 'offers' else '{}' end) e
+      where p.coll = 'market' and e.value ->> 'by' = u::text and e.value ->> 'status' = 'pending' and cfg -> 'dexOrder' @> (e.value -> 'card') loop
+    perform public.dc_trade_withdraw(m.mid, m.oid);
+  end loop;
+  d := public.dc__lock(u, true);
+  n := coalesce((d ->> 'prestige')::int, 0) + 1;
+  -- d'abord le prestige posé sur la collection complète : dc__stamp y range tous les titres obtenus (titlesKept)
+  d := public.dc__stamp(jsonb_set(d || jsonb_build_object('prestige', n), '{stats,prestige}', to_jsonb(n)), false);
+  d := d || jsonb_build_object('wish', '{}'::jsonb, 'presTs', public.dc__now(),
+    'coll', (select coalesce(jsonb_object_agg(key, value), '{}') from jsonb_each(d -> 'coll') where not cfg -> 'dexOrder' @> to_jsonb(key::int)));
+  return jsonb_build_object('profile', public.dc__save(u, d), 'prestige', n);
+end $$;
+
+-- ============================================================
 --  Allègement du serveur (1.3.20) : les lectures fréquentes ne décompressent plus tout le profil.
 --  - upd     : date de mise à jour du profil (« mon profil a-t-il changé ? », dates des auteurs d'annonces) ;
 --  - summary : résumé du classement (pseudo, image, titres affichés, compteurs), lu toutes les 5 minutes par chaque joueur.
@@ -196,7 +225,8 @@ create or replace function public.dc_market_since(p_since timestamptz) returns j
 create or replace function public.dc__summary(d jsonb) returns jsonb language sql immutable as $$
   select jsonb_strip_nulls(jsonb_build_object('pseudo', d -> 'pseudo', 'avatar', d -> 'avatar', 'alpha', d -> 'alpha', 'beta', d -> 'beta',
     'shown', d -> 'shown', 'unique', d -> 'unique', 'total', d -> 'total', 'credits', d -> 'credits', 'myth', d -> 'myth', 'trans', d -> 'trans',
-    'byr', d -> 'byr', 'byrV', d -> 'byrV', 'masterTs', d -> 'masterTs', 'vis', d -> 'vis', 'shinyN', d -> 'shinyN', 'avaS', d -> 'avaS')) $$;
+    'byr', d -> 'byr', 'byrV', d -> 'byrV', 'masterTs', d -> 'masterTs', 'vis', d -> 'vis', 'shinyN', d -> 'shinyN', 'avaS', d -> 'avaS',
+    'prestige', d -> 'prestige', 'packs', d -> 'stats' -> 'packs')) $$;   -- prestige et boosters ouverts : tri du classement (1.5.0)
 alter table public.docs add column if not exists upd bigint generated always as ((data ->> 'updated')::numeric::bigint) stored;
 alter table public.docs add column if not exists summary jsonb generated always as (case when coll = 'players' then public.dc__summary(data) end) stored;
 create index if not exists docs_market_upd_idx on public.docs (updated_at) where coll = 'market';
@@ -223,6 +253,8 @@ revoke all on function public.dc_buy_special(text,integer,integer) from public, 
 grant execute on function public.dc_buy_special(text,integer,integer) to authenticated;
 revoke all on function public.dc_admin_give_booster(uuid,text,integer,integer) from public, anon;
 grant execute on function public.dc_admin_give_booster(uuid,text,integer,integer) to authenticated;
+revoke all on function public.dc_prestige() from public, anon;
+grant execute on function public.dc_prestige() to authenticated;
 do $$ declare f record; begin
   for f in select p.oid::regprocedure as sig from pg_proc p join pg_namespace n on n.oid = p.pronamespace
            where n.nspname = 'public' and p.proname like 'dc%' and (p.proconfig is null or not exists
