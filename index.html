@@ -953,6 +953,8 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 .ar-bench{display:grid;grid-template-columns:repeat(9,var(--b));gap:4px}
 .ar-shop{display:grid;grid-template-columns:repeat(5,var(--o));gap:5px;border-radius:12px;border:2px solid transparent}
 .ar-shop.locked{border-color:var(--gold)}
+.ar-shop{position:relative}.ar-shop.ar-sellover::after{content:attr(data-sell);position:absolute;inset:0;display:grid;place-items:center;border-radius:10px;
+  background:color-mix(in srgb,#c62828 62%,transparent);color:#fff;font-weight:800;font-size:1.05rem;text-shadow:0 1px 3px rgba(0,0,0,.5);pointer-events:none}
 .ar-offer{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:3px 3px 4px;cursor:pointer;font:inherit;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;touch-action:none;user-select:none;-webkit-user-select:none}
 .ar-pic{position:relative;width:100%;aspect-ratio:1.25;border-radius:8px;background:linear-gradient(160deg,var(--c1),var(--c2))}
 .ar-pic img{position:absolute;inset:4%;width:92%;height:92%;object-fit:contain;pointer-events:none}
@@ -1403,6 +1405,7 @@ nav.tabs .ti{display:none}
    découpés par elle (.so-it : --w, --h taille, --x, --y part de l'objet). Palette propre au mur, la même dans les deux thèmes. */
 .souterrain{--cs:min(calc((100vw - 28px) / 13),calc((100vh - 330px) / 10),50px);max-width:1180px;margin:0 auto}
 .so-top h1{margin:0}
+.souterrain.playing .so-stage{margin-top:14px} /* 1.5.11 : la fissure collait aux réglages du son */
 .so-stage{display:flex;flex-direction:column;align-items:center;gap:12px}
 .so-main{display:flex;flex-direction:column;gap:8px;align-items:stretch}
 .so-crack{position:relative;height:30px;border-radius:8px;overflow:hidden;
@@ -1727,7 +1730,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.10";
+const APP_VERSION="1.5.11";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -5228,7 +5231,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v3.9</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.0</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène, cagnotte de la partie en cours comprise">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -5368,20 +5371,22 @@ document.addEventListener("pointermove",e=>{
     Object.assign(g.ghost.style,{width:r.width+"px",height:r.height+"px",left:r.left+"px",top:r.top+"px"});g.dx=e.clientX-r.left;g.dy=e.clientY-r.top;
     document.body.append(g.ghost);g.src.classList.add("ar-dragging");if(g.kind==="u")arSellZone(g.unit)}
   g.ghost.style.left=e.clientX-g.dx+"px";g.ghost.style.top=e.clientY-g.dy+"px";
-  const t=document.elementFromPoint(e.clientX,e.clientY),d=t&&t.closest(g.kind==="u"?".ar-slot[data-ar-drop],.ar-sellz":".ar-slot[data-ar-drop],.ar-shop");
-  if(g.over!==d){if(g.over)g.over.classList.remove("ar-over");g.over=d;if(d)d.classList.add("ar-over")}
+  // 1.5.11 (demande de Theo) : un Pokémon de l'équipe glissé sur la boutique y est vendu (« Vendre (+N or) » s'affiche dessus)
+  const t=document.elementFromPoint(e.clientX,e.clientY),d=t&&t.closest(g.kind==="u"?".ar-slot[data-ar-drop],.ar-sellz,.ar-shop":".ar-slot[data-ar-drop],.ar-shop");
+  if(g.over!==d){if(g.over)g.over.classList.remove("ar-over","ar-sellover");g.over=d;
+    if(d){d.classList.add("ar-over");if(g.kind==="u"&&d.classList.contains("ar-shop")){d.dataset.sell=`Vendre (+${arCost(g.unit)} or)`;d.classList.add("ar-sellover")}}}
   // comparaison : le Pokémon survolé, avec les écarts par rapport à celui qu'on glisse
   const un=t&&t.closest(".ar-unit:not(.ar-ghost)"),r=arRun();
   const x=un&&[...r.board,...r.bench,...r.enemy.board].find(v=>v&&v.u===+un.dataset.uid);
   const p=$(".ar-infop");if(p)p.innerHTML=x&&x!==g.unit?arInfoInner(x,g.kind==="s"?Object.assign({shop:1},g.unit):g.unit):arInfoInner(g.unit);
 });
-function arDragEnd(g){g.ghost.remove();g.src.classList.remove("ar-dragging");if(g.over)g.over.classList.remove("ar-over");arSellZone(null);arInfoShow(null)}
+function arDragEnd(g){g.ghost.remove();g.src.classList.remove("ar-dragging");if(g.over)g.over.classList.remove("ar-over","ar-sellover");arSellZone(null);arInfoShow(null)}
 function arDrop(e){
   const g=arDrag;arDrag=null;if(!g||!g.on)return;
   arNoClick=true;setTimeout(()=>{arNoClick=false},80);arDragEnd(g);
   const d=g.over,drop=d&&d.dataset.arDrop,[zone,i]=(drop||"").split(":");
   if(g.kind==="u"){
-    if(d&&d.classList.contains("ar-sellz"))arSell(g.v);        // sur « Vendre »
+    if(d&&(d.classList.contains("ar-sellz")||d.classList.contains("ar-shop")))arSell(g.v); // sur « Vendre » ou sur la boutique (1.5.11)
     else if(zone==="board"||zone==="bench")arMove(g.v,zone,+i); // sur une case (refusé si le terrain est complet)
     // ailleurs : il reste à sa place
   }else if(!(d&&d.classList.contains("ar-shop")))arBuy(g.v,zone,+i); // offre : achetée, sauf si relâchée sur la boutique
@@ -5401,7 +5406,8 @@ document.addEventListener("pointercancel",()=>{const g=arDrag;arDrag=null;if(g&&
    le jeu d'origine, sans limite de parties). */
 // 1.5.10 (demande de Theo, gains trop faibles à l’essai) : fouille plus facile (8 plaques au lieu de 12, 0 à 2 blocs de fer au lieu de 3),
 // trouvailles plus rares (Petites bleues 23 % au lieu de 30 %) et valeurs ×1,375 : environ 215 crédits rendus pour 100 misés en moyenne
-const SOUT={v:"v1.1",open:false,cost:100,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:8,irons:[0,2],n:[2,4],
+// 1.5.11 (demande de Theo) : ouvert à tous ; mise à 150 crédits (difficulté jugée parfaite, gains un peu trop hauts à 100)
+const SOUT={v:"v1.2",open:true,cost:150,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:8,irons:[0,2],n:[2,4],
   // s : taille (colonnes, lignes) ; w : poids du tirage (sur 100 × %) ; v : éclats ; cr : crédits ; c : couleurs
   items:{pb:{n:"Petite Sphère bleue",s:[2,2],w:4800,v:25,c:["#a9d2ff","#1d5fd6"]},gb:{n:"Grande Sphère bleue",s:[3,3],w:3000,v:58,c:["#a9d2ff","#1d5fd6"]},
     pr:{n:"Petite Sphère rouge",s:[2,2],w:3000,v:50,c:["#ffb3aa","#cf2419"]},gr:{n:"Grande Sphère rouge",s:[3,3],w:1500,v:140,c:["#ffb3aa","#cf2419"]},
