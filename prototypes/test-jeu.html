@@ -34,6 +34,32 @@ function setup(scene){
         const r=A.round;A.wins++;A.credits+=80;W.__arG=(W.__arG||0)+80;A.round++;A.gold+=7;A.enemy={board:[U(21),U(23),U(27),null,null,null],power:.7};if(!A.locked)A.shop=shop();
         return {data:Object.assign(view().data,{before,log,win:true,added:80,bonus:0,auto:[],round:r,profile:stamp(d)}),error:null}}
     }
+    // Souterrain : faux serveur (même logique que dexcraft-serveur-6.sql) ; ?scene=sout
+    if(/^dc_sout_/.test(n)){const W=window,A=SOUT,R=k=>Math.floor(Math.random()*k);
+      const vw=(st,p)=>{if(!st)return {run:null,sout:(p||S).sout||{}};const r=st.d.map((dd,i)=>dd>0?null:st.o[i]===-1?0:st.o[i]===-2?"f":(o=>[o.k,i%st.w-o.x,Math.floor(i/st.w)-o.y,st.o[i]])(st.objs[st.o[i]]));
+        return {run:{w:st.w,h:st.h,hp:st.hp,hp0:st.hp0,n:st.objs.length,d:st.d.slice(),r,over:st.over,end:st.end,res:st.res,objs:st.objs.map((o,i)=>({...o,i})).filter(o=>st.over||o.done)},sout:(p||S).sout||{}}};
+      if(n==="dc_sout_state")return {data:vw(W.__so),error:null};
+      if(n==="dc_sout_start"){if(!W.__so||W.__so.over){const w=13,h=10,dd=Array(w*h).fill(A.base),oo=Array(w*h).fill(-1),objs=[];
+          for(let k=0;k<A.plaq;k++){const cx=R(w),cy=R(h),rr=1+R(3);for(let y=0;y<h;y++)for(let x=0;x<w;x++)if((x-cx)**2+(y-cy)**2<=rr*rr)dd[y*w+x]=Math.min(6,dd[y*w+x]+1)}
+          const tot=SO_ORDER.reduce((s,k)=>s+A.items[k].w,0),nb=A.n[0]+R(A.n[1]-A.n[0]+1),ni=A.irons[0]+R(A.irons[1]-A.irons[0]+1);
+          for(let i=0;i<nb+ni;i++){let key=null,ow,oh;if(i<nb){let r=R(tot);for(const k of [...SO_ORDER].sort()){r-=A.items[k].w;if(r<0){key=k;[ow,oh]=A.items[k].s;break}}}else[ow,oh]=[[1,1],[2,1],[1,2],[2,2],[3,1]][R(5)];
+            for(let t=0;t<200;t++){const x=R(w-ow+1),y=R(h-oh+1);let ok=true;for(let j=0;j<ow*oh;j++)if(oo[(y+Math.floor(j/ow))*w+x+j%ow]!==-1){ok=false;break}
+              if(ok){for(let j=0;j<ow*oh;j++)oo[(y+Math.floor(j/ow))*w+x+j%ow]=key?objs.length:-2;if(key)objs.push({k:key,x,y,w:ow,h:oh,done:false});break}}}
+          W.__so={w,h,d:dd,o:oo,objs,hp:A.hp,hp0:A.hp,over:false,ir:0};d.credits-=A.cost}
+        return {data:Object.assign(vw(W.__so,d),{profile:stamp(d)}),error:null}}
+      if(n==="dc_sout_hit"){const st=W.__so;if(!st||st.over)return {data:null,error:{message:"Aucune fouille en cours."}};
+        const c=a.p_y*st.w+a.p_x,iron=st.o[c]===-2,dmg=(a.p_tool==="h"?A.hammer:A.pick)*(iron?2:1),fresh=[];st.d[c]-=2;
+        if(a.p_tool==="h")[[-1,0],[1,0],[0,-1],[0,1]].forEach(([x,y])=>{const X=a.p_x+x,Y=a.p_y+y;if(X>=0&&Y>=0&&X<st.w&&Y<st.h)st.d[Y*st.w+X]-=1});
+        let all=true;st.objs.forEach((o,i)=>{if(o.done)return;let ok=true;for(let j=0;j<o.w*o.h;j++)if(st.d[(o.y+Math.floor(j/o.w))*st.w+o.x+j%o.w]>0)ok=false;if(ok){o.done=true;fresh.push(i)}else all=false});
+        st.hp=Math.max(0,st.hp-dmg);if(iron)st.ir++;
+        await new Promise(r=>setTimeout(r,90)); // délai du réseau
+        if(st.hp<=0||all){st.over=true;st.end=all?"all":"wall";const res={ec:0,cr:0,items:[]};d.sout=d.sout||{ec:0,got:{}};d.sout.got=d.sout.got||{};
+          st.objs.filter(o=>o.done).forEach(o=>{const it=A.items[o.k];res.items.push(o.k);res.ec+=it.v||0;res.cr+=it.cr||0;d.sout.got[o.k]=(d.sout.got[o.k]||0)+1});
+          d.sout.ec=(d.sout.ec||0)+res.ec;d.credits+=res.cr;st.res=res;return {data:Object.assign(vw(st,d),{profile:stamp(d),iron,fresh,dmg}),error:null}}
+        const v=vw(st);delete v.sout;return {data:Object.assign(v,{iron,fresh,dmg}),error:null}}
+      if(n==="dc_sout_buy"){const l=A.lots.find(x=>x.k===a.p_lot);d.sout=d.sout||{};if((d.sout.ec||0)<l.p)return {data:null,error:{message:`Il vous manque ${l.p-(d.sout.ec||0)} éclats.`}};
+        d.sout.ec-=l.p;if(l.packs)d.bonus=(d.bonus||0)+l.packs;else{const k=spKey(l.sp,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)+1}return {data:{profile:stamp(d)},error:null}}
+    }
     if(n==="dc_buy_special"){const k=spKey(a.p_kind,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)+a.p_q;return {data:{profile:stamp(d)},error:null}}
     if(n==="dc_open_special"){const k=spKey(a.p_kind,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)-a.p_k;if(d.spInv[k]<=0)delete d.spInv[k];
       const l=a.p_kind==="prem"?DEX_ORDER.filter(id=>rar(id)>=2):spList(a.p_kind,a.p_val),drawn=Array.from({length:5*a.p_k},()=>({id:l[Math.floor(Math.random()*l.length)],isNew:true}));
@@ -63,6 +89,7 @@ function setup(scene){
   if(scene==="hand"){view="booster";reveal=[1,4,7,25,6].map(id=>({id,isNew:false,shown:false}));renderAll()}
   if(scene==="ranking"){view="ranking";renderAll()}
   if(scene==="volto"){view="volto";renderAll()}
+  if(scene==="sout"){localStorage.setItem("dc-mute","1");S.dev=true;S.sout={ec:640,got:{pb:5,gb:2,pr:3,or:4,pv:1}};view="sout";renderAll()} // Souterrain (1.5.9), mode développeur
   if(scene==="coll"){view="collection";renderAll()}
   if(scene==="shiny"){S.shiny={25:Date.now()-864e5,6:Date.now(),4007:Date.now()};S.got={25:14,6:3,1:40,4:2,7:1,129:1,150:1,4007:1};S.shinyN=3;S.stats.shinyN=3;S.avaS=true;PLAYERS.me.shinyN=3;PLAYERS.me.avaS=true;PLAYERS.a.shinyN=420;PLAYERS.b.shinyN=60;Object.values(PLAYERS).forEach(p=>p.byrV=BYR_V);view=new URLSearchParams(parent.location.search).get("v")||"collection";renderAll()}
   if(scene==="shinyhand"){S.got={25:14};view="booster";reveal=[1,25,7,150,6].map(id=>({id,isNew:false,shiny:id===25||id===150,shown:false}));renderAll()}
