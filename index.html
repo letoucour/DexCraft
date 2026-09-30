@@ -11,10 +11,17 @@ try{const t=localStorage.getItem("dc-theme");if(t==="light"||t==="dark")document
 <!-- sécurité (0.8.7) : la page ne charge du code que depuis ces adresses et n'envoie des données qu'à Supabase.
      Nouvelle ressource externe (police, script…) : l'ajouter ici, sinon le navigateur la bloque. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
-<title>DexCraft</title>
+<title>DexCraft · Jeu de cartes Pokémon gratuit en ligne : boosters, shiny et échanges</title>
 <!-- aperçu du lien sur Discord, WhatsApp, les réseaux et Google (1.3.12) : adresses absolues, obligatoires pour ces aperçus -->
 <meta name="description" content="Jeu de cartes Pokémon gratuit en français : ouvrez des boosters, complétez votre Pokédex, chassez les shiny et échangez avec les autres dresseurs.">
 <link rel="canonical" href="https://dexcraft.fr/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<!-- référencement (1.5.1) : fiche du jeu lisible par Google (données structurées schema.org) -->
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"DexCraft","url":"https://dexcraft.fr/",
+"description":"Jeu de cartes Pokémon gratuit en français : ouvrez des boosters, complétez votre Pokédex, chassez les shiny et échangez avec les autres dresseurs.",
+"image":"https://dexcraft.fr/images/app/apercu.jpg","inLanguage":"fr","genre":["Jeu de cartes à collectionner","Jeu en ligne"],
+"gamePlatform":["Navigateur web","Android","iOS","PC"],"applicationCategory":"GameApplication","operatingSystem":"Tous (navigateur web)",
+"playMode":"MultiPlayer","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"publisher":{"@type":"Organization","name":"Duellia"}}</script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="DexCraft">
 <meta property="og:locale" content="fr_FR">
@@ -786,12 +793,16 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .evo-anim{animation:evoIn 1.1s cubic-bezier(.2,.9,.3,1) both}
 @keyframes evoIn{0%{transform:scale(.3);filter:brightness(6) saturate(0);opacity:0}45%{transform:scale(1.08);filter:brightness(3) saturate(0);opacity:1}100%{transform:scale(1);filter:none}}
 .snd-chip{cursor:pointer;padding:4px 10px;font-size:1rem}
-.gate{position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+.gate{position:fixed;inset:0;z-index:900;display:none;align-items:safe center;overflow-y:auto;justify-content:center;padding:20px;background:var(--bg)}
 .gate.on{display:flex}
 .gate-box{width:min(420px,100%);background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px;display:flex;flex-direction:column;gap:14px;text-align:center}
 .gate-box form{display:flex;flex-direction:column;gap:12px;text-align:left}
 .gate-box form[hidden],.gate-alt[hidden]{display:none}
 .gate-box .field input{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px}
+.gate-h1{margin:0;line-height:1.2}
+.gate-about{margin-top:4px;padding-top:14px;border-top:1px solid var(--line);text-align:left;font-size:.84rem;color:var(--ink-soft)}
+.gate-about h2{margin:0 0 6px;font-size:.95rem;color:var(--ink);text-align:center}
+.gate-about ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}.gate-about p{margin:8px 0 0;text-align:center}
 .gate-alt{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px}
 .gate-alt .btn{background:none;color:var(--gold);text-decoration:underline}
 .gate-captcha{display:flex;justify-content:center}.gate-captcha:empty{display:none}
@@ -1126,6 +1137,9 @@ dialog,.modal{overscroll-behavior:contain}
 .pick-head{grid-column:1/-1;font-weight:800;font-size:.85rem;color:var(--ink-soft);margin-top:4px}
 .pick-head.pick-uniq{margin-top:10px;padding:8px 10px;border-radius:10px;background:rgba(220,60,60,.16);border:1px solid rgba(220,60,60,.6);color:#ff6b6b;font-size:.92rem}
 :root[data-theme="light"] .pick-head.pick-uniq{color:#c0282d}
+.pick-head.pick-wish{margin-top:10px;padding:8px 10px;border-radius:10px;background:rgba(230,150,30,.16);border:1px solid rgba(230,150,30,.6);color:#f0a93a;font-size:.92rem}
+:root[data-theme="light"] .pick-head.pick-wish{color:#a3620a}
+.pick.wishc:not(.choice){border-color:rgba(230,150,30,.55)}
 .pick.uniq:not(.choice){border-color:rgba(220,60,60,.55)}.uniq-n{color:#ff6b6b}:root[data-theme="light"] .uniq-n{color:#c0282d}
 .pick[hidden]{display:none}
 /* choix de plusieurs cartes demandées (1.0.3) */
@@ -1557,7 +1571,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 <div id="version" aria-label="Version du jeu"></div>
 <button id="cgu-link" type="button" data-act="cgu" aria-label="Conditions générales d’utilisation">CGU</button>
 <div id="gate" class="gate"><div class="gate-box">
-  <div class="brand" style="justify-content:center;font-size:1.6rem"><span class="gem">◆</span>DexCraft</div>
+  <h1 class="brand gate-h1" style="justify-content:center;font-size:1.6rem"><span class="gem">◆</span>DexCraft</h1>
   <p class="muted" id="gate-sub">Ouvrez des boosters, complétez votre collection et échangez avec les autres joueurs.</p>
   <form id="gate-form" autocomplete="on">
     <label class="field">Adresse e-mail<input type="email" id="gate-mail" required autocomplete="email" placeholder="vous@exemple.com"></label>
@@ -1574,6 +1588,15 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
     <button class="btn small" id="gate-forgot" type="button">Mot de passe oublié ?</button></p>
   <p class="gate-cgu" id="gate-cgu" hidden>En créant un compte, vous acceptez les <button type="button" data-act="cgu">conditions d’utilisation</button>.</p>
   <p class="gate-msg" id="gate-msg"></p>
+  <section class="gate-about" aria-label="Présentation de DexCraft">
+    <h2>Le jeu de cartes Pokémon gratuit, en français</h2>
+    <ul><li>📦 Un booster gratuit toutes les 10 minutes et une récompense chaque jour</li>
+      <li>📚 Plus de 1 300 cartes à collectionner : les Pokémon des 9 générations, formes régionales, Méga-évolutions et Gigamax</li>
+      <li>✨ Des shiny à chasser, un peu plus fréquents à chaque rencontre</li>
+      <li>🔁 Des échanges entre dresseurs pour compléter votre Pokédex</li>
+      <li>🎮 Des mini-jeux pour gagner des crédits : la VoltoBataille et l’Arène</li></ul>
+    <p>Gratuit, sur ordinateur comme sur téléphone, avec une appli à installer en un geste.</p>
+  </section>
 </div></div>
 
 <!-- empreinte (SRI) : si le fichier du CDN était modifié, le navigateur refuserait de l'exécuter. À recalculer si on change de version :
@@ -1583,7 +1606,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.0";
+const APP_VERSION="1.5.1";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -4335,16 +4358,18 @@ async function shareAct(a){
 let tradeGive=null;
 function tradeDlg(mid_){
   const m=MARKET[mid_];if(!m)return;tradeGive=null;
-  // les cartes qu’on a en plus grand nombre d’abord (1.2.0), donc les doubles avant les exemplaires uniques
-  const mine=Object.keys(S.coll).map(Number).filter(c=>canOffer(m,c)).sort((a,b)=>S.coll[b]-S.coll[a]||a-b);
-  const nDbl=mine.filter(c=>S.coll[c]>1).length,head=t=>`<div class="pick-head">${t}</div>`;
+  // les cartes qu’on a en plus grand nombre d’abord (1.2.0), donc les doubles avant les exemplaires uniques ;
+  // 1.5.1 (demande de Theo) : les cartes recherchées 🔔 ne sont plus rangées dans les doubles, mais à part, en dernier
+  const all=Object.keys(S.coll).map(Number).filter(c=>canOffer(m,c)).sort((a,b)=>S.coll[b]-S.coll[a]||a-b);
+  const dbl=all.filter(c=>S.coll[c]>1&&!wished(c)),uni=all.filter(c=>S.coll[c]<=1&&!wished(c)),wsh=all.filter(c=>wished(c)),mine=[...dbl,...uni,...wsh];
+  const nDbl=dbl.length,nUni=uni.length,head=t=>`<div class="pick-head">${t}</div>`;
   openDlg(`<div class="side pick-dlg" style="gap:12px">
     <button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <div><h2>Proposer une carte contre ${esc(nm(m.card))}</h2>
       <p class="muted">${esc(who(m.owner))} demande ${tradeWants(m)}. ${m.auto?"<b>⚡ Acceptation automatique</b> : l’échange se fait dès que vous proposez une carte.":"Il recevra votre proposition et décidera de l’accepter ou non. Votre carte est mise de côté en attendant sa réponse."}</p></div>
     ${mine.length>8?`<input type="search" class="pick-search" data-pick-search placeholder="Rechercher parmi vos ${mine.length} cartes" aria-label="Rechercher une carte à proposer">`:""}
     <div class="picker" id="picker">${mine.length?mine.map((c,i)=>{const his=ownerHas(m.owner,c);
-      return `${i===0&&nDbl?head(`Vos doubles (${nDbl})`):""}${i===nDbl?`<div class="pick-head pick-uniq">⚠️ Vos exemplaires <b>UNIQUES</b> (${mine.length-nDbl}) : si vous les échangez, vous ne les aurez plus</div>`:""}<button class="pick${S.coll[c]>1?"":" uniq"}" data-act="give" data-id="${c}" data-n="${esc(norm2(nm(c))+" "+c)}">
+      return `${i===0&&nDbl?head(`Vos doubles (${nDbl})`):""}${i===nDbl&&nUni?`<div class="pick-head pick-uniq">⚠️ Vos exemplaires <b>UNIQUES</b> (${nUni}) : si vous les échangez, vous ne les aurez plus</div>`:""}${i===nDbl+nUni?`<div class="pick-head pick-wish">🔔 Vos cartes <b>RECHERCHÉES</b> (${wsh.length}) : vous en cherchez d’autres exemplaires</div>`:""}<button class="pick${wished(c)?" wishc":S.coll[c]>1?"":" uniq"}" data-act="give" data-id="${c}" data-n="${esc(norm2(nm(c))+" "+c)}">
         <span class="pick-tag ${his?"ok":"missing"}">${his?"Il l’a déjà":"Il ne l’a pas"}</span>
         ${evoTile(c)}<span class="pick-n">${S.coll[c]>1?`Vous en avez ${S.coll[c]}`:`<b class="uniq-n">⚠️ Votre seul exemplaire</b>`}</span></button>`}).join("")
       :`<div class="empty" style="grid-column:1/-1">Aucune carte de votre collection ne correspond à cette demande.</div>`}</div>
