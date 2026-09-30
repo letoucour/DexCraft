@@ -1406,24 +1406,30 @@ nav.tabs .ti{display:none}
 .so-stage{display:flex;flex-direction:column;align-items:center;gap:12px}
 .so-main{display:flex;flex-direction:column;gap:8px;align-items:stretch}
 .so-crack{position:relative;height:30px;border-radius:8px;overflow:hidden;
-  background:repeating-linear-gradient(100deg,rgba(255,255,255,.05) 0 7px,transparent 7px 15px),linear-gradient(#7b6650,#574433);box-shadow:inset 0 2px 5px rgba(0,0,0,.45)}
+  background:var(--so-rock,none) 0 0/120px auto,linear-gradient(#7b6650,#4f3d2d);box-shadow:inset 0 3px 6px rgba(0,0,0,.55),inset 0 -1px 0 rgba(255,255,255,.12)}
 .so-crack svg{position:absolute;inset:0;width:100%;height:100%;transition:clip-path .3s ease-out}
-.so-crack path{fill:none;stroke:#140b04;stroke-width:5;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.so-crack path{fill:none;stroke:#0d0703;stroke-width:5;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.so-crack path.e{stroke:rgba(255,232,196,.3);stroke-width:2;transform:translateY(3px)}
 .so-crack.warn{box-shadow:inset 0 2px 5px rgba(0,0,0,.45),0 0 0 2px #e0492f}
 .so-info{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:.92rem;min-height:30px}
 .so-found{display:flex;gap:4px}
-.so-wall{display:grid;grid-template-columns:repeat(var(--cols),var(--cs));grid-auto-rows:var(--cs);padding:6px;border-radius:12px;
-  background:#2f2116;box-shadow:0 8px 24px rgba(0,0,0,.35),inset 0 0 0 2px #4a3421;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.so-wall{display:grid;grid-template-columns:repeat(var(--cols),var(--cs));grid-auto-rows:var(--cs);padding:8px;border-radius:14px;
+  background:var(--so-rock,none) 0 0/120px auto,linear-gradient(160deg,#3d2a19,#1d130a);box-shadow:0 10px 28px rgba(0,0,0,.45),inset 0 0 0 2px rgba(0,0,0,.5),inset 0 2px 0 rgba(255,255,255,.08);
+  touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .so-wall.shake{animation:soShake .18s}
 @keyframes soShake{25%{transform:translate(2px,1px)}50%{transform:translate(-2px,-1px)}75%{transform:translate(1px,-1px)}}
+/* 1.5.10 (demande de Theo : plus réaliste) : textures dessinées au chargement (soTex : terre granuleuse, roche à cailloux pour
+   les couches profondes, roche claire veinée sous la terre, fer brossé), décalées d'une case à l'autre (--bx, --by), relief de chaque bloc */
 .so-c{position:relative;overflow:hidden;border:0;margin:0;padding:0;display:block;cursor:pointer;
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);background-image:radial-gradient(circle at 28% 32%,rgba(255,255,255,.14) 0 6%,transparent 7%),radial-gradient(circle at 70% 68%,rgba(0,0,0,.18) 0 7%,transparent 8%)}
-.so-c:nth-child(3n){background-position:6px 3px,-4px 5px}.so-c:nth-child(4n+1){background-position:-5px 6px,3px -6px}.so-c:nth-child(7n+2){background-position:4px -5px,-6px -2px}
-.so-c.l1{background-color:#c29466}.so-c.l2{background-color:#aa7c50}.so-c.l3{background-color:#916640}
-.so-c.l4{background-color:#795233}.so-c.l5{background-color:#624128}.so-c.l6{background-color:#4c321f}
-.so-c.open{background:#e6d6b4;box-shadow:inset 0 2px 4px rgba(0,0,0,.28);cursor:default}
-.so-c.pend{background:#dccba6}
-.so-c.iron{background:linear-gradient(135deg,#d3d8de,#8a939d 55%,#66707a);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),inset -2px -2px 0 rgba(0,0,0,.25)}
+  background:var(--so-soil,none) var(--bx,0) var(--by,0)/96px auto,var(--sc,#a67a4d);
+  box-shadow:inset 1px 1px 0 rgba(255,255,255,.18),inset -1px -1px 0 rgba(0,0,0,.32),inset 0 0 6px rgba(0,0,0,.12)}
+.so-c.l1{--sc:#c9a071}.so-c.l2{--sc:#b0845a}.so-c.l3{--sc:#946b45}.so-c.l4{--sc:#7a5636}.so-c.l5{--sc:#5f422a}.so-c.l6{--sc:#46301f}
+.so-c.l4,.so-c.l5,.so-c.l6{background:var(--so-rock,none) var(--bx,0) var(--by,0)/96px auto,var(--sc)}
+.so-c.open{background:var(--so-stone,none) var(--bx,0) var(--by,0)/96px auto,#d8c5a0;box-shadow:inset 0 3px 6px rgba(0,0,0,.38),inset 0 -1px 0 rgba(255,255,255,.22);cursor:default}
+.so-c.pend{background:var(--so-stone,none) var(--bx,0) var(--by,0)/96px auto,#c9b690}
+.so-c.iron{background:var(--so-metal,none) 0 0/64px auto,linear-gradient(135deg,#cfd4da,#838c95 55%,#59616a);box-shadow:inset 1px 1px 0 rgba(255,255,255,.6),inset -2px -2px 0 rgba(0,0,0,.4)}
+.so-c.iron::before{content:"";position:absolute;inset:12%;background:radial-gradient(circle at 12% 12%,#eef1f4 0 6%,#3c4248 9%,transparent 12%),radial-gradient(circle at 88% 12%,#eef1f4 0 6%,#3c4248 9%,transparent 12%),
+  radial-gradient(circle at 12% 88%,#eef1f4 0 6%,#3c4248 9%,transparent 12%),radial-gradient(circle at 88% 88%,#eef1f4 0 6%,#3c4248 9%,transparent 12%)}
 .so-c.aim{outline:2px solid rgba(255,236,160,.9);outline-offset:-2px;z-index:1}
 .so-wall.tool-h .so-c:not(.open):hover,.so-wall.tool-p .so-c:not(.open):hover{filter:brightness(1.12)}
 .so-c.hit{animation:soHit .2s}
@@ -1438,7 +1444,9 @@ nav.tabs .ti{display:none}
 /* objets : sphères (dégradé de leur couleur), pièce d'or, billet vert */
 .so-it{position:absolute;display:block;width:calc(var(--w) * 100%);height:calc(var(--h) * 100%);left:calc(var(--x) * -100%);top:calc(var(--y) * -100%);pointer-events:none}
 .so-sph::before{content:"";position:absolute;inset:6%;border-radius:50%;
-  background:radial-gradient(circle at 34% 30%,#fff 0 7%,var(--c1) 22%,var(--c2) 72%,color-mix(in srgb,var(--c2) 60%,#000) 100%);box-shadow:0 2px 6px rgba(0,0,0,.35),inset 0 -5px 10px rgba(0,0,0,.2)}
+  background:radial-gradient(circle at 33% 27%,rgba(255,255,255,.95) 0 4%,rgba(255,255,255,.35) 8%,transparent 15%),radial-gradient(circle at 50% 60%,var(--c1) 0,var(--c2) 58%,color-mix(in srgb,var(--c2) 55%,#000) 100%);
+  box-shadow:0 3px 6px rgba(0,0,0,.5),inset -5px -7px 12px rgba(0,0,0,.35),inset 3px 3px 8px rgba(255,255,255,.3)}
+.so-sph:not(.so-pd):not(.so-gd)::after{content:"";position:absolute;inset:6%;border-radius:50%;background:radial-gradient(30% 14% at 64% 80%,rgba(255,255,255,.35),transparent 70%)}
 .so-pd::after,.so-gd::after{content:"";position:absolute;inset:6%;border-radius:50%;mix-blend-mode:screen;
   background:conic-gradient(from 20deg,transparent 0 12%,rgba(255,255,255,.75) 14%,transparent 17% 45%,rgba(160,230,255,.6) 48%,transparent 52% 78%,rgba(255,255,255,.7) 80%,transparent 83%)}
 .so-or::before{content:"";position:absolute;inset:7%;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff7c9 0 10%,#f7cb2b 40%,#b7860b 100%);
@@ -1459,7 +1467,8 @@ nav.tabs .ti{display:none}
 .so-tool[aria-pressed="true"]{border-color:#ffe27a;transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.3),0 0 0 3px rgba(255,226,122,.35)}
 .so-tool[aria-pressed="false"]{opacity:.72}
 /* accueil : lancer une fouille, dernière fouille, comptoir et trouvailles */
-.so-intro{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.so-intro{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:20px}
+.so-h3{display:flex;justify-content:space-between;align-items:center;gap:8px}.so-h3 .so-ec{font-size:.95rem;font-weight:700}
 .so-start{display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
 .so-start>p{max-width:560px;margin:0}
 .so-last{display:flex;flex-direction:column;align-items:center;gap:6px}.so-last h3{margin:6px 0 0}
@@ -1718,7 +1727,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.9";
+const APP_VERSION="1.5.10";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -5390,14 +5399,16 @@ document.addEventListener("pointercancel",()=>{const g=arDrag;arDrag=null;if(g&&
    Économie réglée par simulation (joueur automatique, 25 000 murs) : 2 objets déterrés sur 3 en moyenne, 117 crédits rendus
    pour 100 misés, 43 % des murs rentrent dans leurs frais, 0,7 % dépassent 1 000 (demande de Theo : un peu plus facile que
    le jeu d'origine, sans limite de parties). */
-const SOUT={v:"v1.0",open:false,cost:100,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:12,irons:[0,3],n:[2,4],
+// 1.5.10 (demande de Theo, gains trop faibles à l’essai) : fouille plus facile (8 plaques au lieu de 12, 0 à 2 blocs de fer au lieu de 3),
+// trouvailles plus rares (Petites bleues 23 % au lieu de 30 %) et valeurs ×1,375 : environ 215 crédits rendus pour 100 misés en moyenne
+const SOUT={v:"v1.1",open:false,cost:100,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:8,irons:[0,2],n:[2,4],
   // s : taille (colonnes, lignes) ; w : poids du tirage (sur 100 × %) ; v : éclats ; cr : crédits ; c : couleurs
-  items:{pb:{n:"Petite Sphère bleue",s:[2,2],w:5800,v:18,c:["#a9d2ff","#1d5fd6"]},gb:{n:"Grande Sphère bleue",s:[3,3],w:2700,v:42,c:["#a9d2ff","#1d5fd6"]},
-    pr:{n:"Petite Sphère rouge",s:[2,2],w:2700,v:36,c:["#ffb3aa","#cf2419"]},gr:{n:"Grande Sphère rouge",s:[3,3],w:1100,v:100,c:["#ffb3aa","#cf2419"]},
-    pv:{n:"Petite Sphère verte",s:[2,2],w:1100,v:65,c:["#b7f5c6","#12914a"]},gv:{n:"Grande Sphère verte",s:[3,3],w:1100,v:100,c:["#b7f5c6","#12914a"]},
-    pj:{n:"Petite Sphère jaune",s:[2,2],w:1100,v:80,c:["#fff4a8","#d49c00"]},gj:{n:"Grande Sphère jaune",s:[3,3],w:260,v:425,c:["#fff4a8","#d49c00"]},
-    pd:{n:"Petite Sphère diamant",s:[2,2],w:260,v:250,c:["#ffffff","#7fcff5"]},gd:{n:"Grande Sphère diamant",s:[3,3],w:55,v:1300,c:["#ffffff","#7fcff5"]},
-    or:{n:"Pièce d’or",s:[2,2],w:2700,cr:30},billet:{n:"Billet vert",s:[3,2],w:260,cr:200}},
+  items:{pb:{n:"Petite Sphère bleue",s:[2,2],w:4800,v:25,c:["#a9d2ff","#1d5fd6"]},gb:{n:"Grande Sphère bleue",s:[3,3],w:3000,v:58,c:["#a9d2ff","#1d5fd6"]},
+    pr:{n:"Petite Sphère rouge",s:[2,2],w:3000,v:50,c:["#ffb3aa","#cf2419"]},gr:{n:"Grande Sphère rouge",s:[3,3],w:1500,v:140,c:["#ffb3aa","#cf2419"]},
+    pv:{n:"Petite Sphère verte",s:[2,2],w:1500,v:90,c:["#b7f5c6","#12914a"]},gv:{n:"Grande Sphère verte",s:[3,3],w:1500,v:140,c:["#b7f5c6","#12914a"]},
+    pj:{n:"Petite Sphère jaune",s:[2,2],w:1500,v:110,c:["#fff4a8","#d49c00"]},gj:{n:"Grande Sphère jaune",s:[3,3],w:400,v:580,c:["#fff4a8","#d49c00"]},
+    pd:{n:"Petite Sphère diamant",s:[2,2],w:400,v:345,c:["#ffffff","#7fcff5"]},gd:{n:"Grande Sphère diamant",s:[3,3],w:90,v:1800,c:["#ffffff","#7fcff5"]},
+    or:{n:"Pièce d’or",s:[2,2],w:3000,cr:40},billet:{n:"Billet vert",s:[3,2],w:400,cr:275}},
   // comptoir : éclats contre boosters (mêmes prix qu'en crédits : rien n'est plus rentable d'un côté que de l'autre)
   lots:[{k:"b1",n:"1 booster",p:200,packs:1},{k:"b3",n:"3 boosters",p:600,packs:3},{k:"b5",n:"5 boosters",p:1000,packs:5},
     {k:"gen",n:"Booster Génération",p:300,sp:"gen"},{k:"type",n:"Booster Type",p:300,sp:"type"},{k:"prem",n:"Booster Premium",p:750,sp:"prem"}]};
@@ -5413,43 +5424,63 @@ function soLoad(){if(soLoading)return;soLoading=true;rpc("dc_sout_state",{},{ren
 // dessin d'un objet (sphère, pièce, billet) : l'élément couvre tout l'objet, chaque case n'en montre que sa part
 const soItemEl=(k,ox,oy,extra="")=>{const it=SOUT.items[k];return `<i class="so-it so-${k}${it.c?" so-sph":""}${extra}" style="--w:${it.s[0]};--h:${it.s[1]};--x:${ox};--y:${oy}${it.c?`;--c1:${it.c[0]};--c2:${it.c[1]}`:""}"></i>`};
 const soIco=k=>`<span class="so-ico" title="${esc(SOUT.items[k].n)}">${soItemEl(k,0,0)}</span>`;
+const soBg=i=>` style="--bx:${-(i*37%96)}px;--by:${-(i*53%96)}px"`; // texture décalée d’une case à l’autre
 function soCell(r,i){
-  const d=r.d[i],c=r.r[i],fx=soFx[i]||"",aim=soAim>=0&&soAimSet().has(i)?" aim":"";
-  if(d>0)return `<button class="so-c l${Math.min(6,d)}${fx}${aim}" data-so="hit" data-i="${i}" aria-label="Case couverte, ${d} couche${d>1?"s":""}"></button>`;
-  if(c==null)return `<button class="so-c open pend${fx}${aim}" data-so="hit" data-i="${i}" aria-label="Case dégagée"></button>`;
+  const d=r.d[i],c=r.r[i],fx=soFx[i]||"",aim=soAim>=0&&soAimSet().has(i)?" aim":"",bg=soBg(i);
+  if(d>0)return `<button class="so-c l${Math.min(6,d)}${fx}${aim}"${bg} data-so="hit" data-i="${i}" aria-label="Case couverte, ${d} couche${d>1?"s":""}"></button>`;
+  if(c==null)return `<button class="so-c open pend${fx}${aim}"${bg} data-so="hit" data-i="${i}" aria-label="Case dégagée"></button>`;
   if(c==="f")return `<button class="so-c open iron${fx}${aim}" data-so="hit" data-i="${i}" aria-label="Bloc de fer"></button>`;
-  if(c===0)return `<button class="so-c open${fx}${aim}" data-so="hit" data-i="${i}" aria-label="Case vide"></button>`;
+  if(c===0)return `<button class="so-c open${fx}${aim}"${bg} data-so="hit" data-i="${i}" aria-label="Case vide"></button>`;
   const [k,ox,oy,idx]=c,done=r.objs.some(o=>o.i===idx&&o.done);
-  return `<button class="so-c open obj${done?" done":""}${fx}${aim}" data-so="hit" data-i="${i}" aria-label="${esc(SOUT.items[k].n)}">${soItemEl(k,ox,oy)}</button>`;
+  return `<button class="so-c open obj${done?" done":""}${fx}${aim}"${bg} data-so="hit" data-i="${i}" aria-label="${esc(SOUT.items[k].n)}">${soItemEl(k,ox,oy)}</button>`;
 }
 // mur de fin de partie : tous les objets, ceux manqués en fantôme
 function soFinalWall(r){
   const own={};r.objs.forEach(o=>{for(let j=0;j<o.h;j++)for(let i=0;i<o.w;i++)own[(o.y+j)*r.w+o.x+i]=[o.k,i,j,o.done]});
   return `<div class="so-wall final" style="--cols:${r.w}">${r.d.map((d,i)=>{const o=own[i],c=r.r[i];
-    if(o)return `<span class="so-c open obj${o[3]?" done":" missed"}">${soItemEl(o[0],o[1],o[2])}</span>`;
-    return `<span class="so-c ${c==="f"?"open iron":d>0?"l"+Math.min(6,d):"open"}"></span>`}).join("")}</div>`;
+    if(o)return `<span class="so-c open obj${o[3]?" done":" missed"}"${soBg(i)}>${soItemEl(o[0],o[1],o[2])}</span>`;
+    return `<span class="so-c ${c==="f"?"open iron":d>0?"l"+Math.min(6,d):"open"}"${soBg(i)}></span>`}).join("")}</div>`;
 }
 function soAimSet(){const r=SO&&SO.run,s=new Set();if(!r||soAim<0)return s;s.add(soAim);if(soTool==="h"){const x=soAim%r.w,y=Math.floor(soAim/r.w);[[-1,0],[1,0],[0,-1],[0,1]].forEach(([a,b])=>{const X=x+a,Y=y+b;if(X>=0&&Y>=0&&X<r.w&&Y<r.h)s.add(Y*r.w+X)})}return s}
 // fissure : dessinée une fois, découverte de droite à gauche selon les points perdus
 const SO_CRACK=(()=>{let p="M1000 20",x=1000,y=20,s=7;const rnd=()=>{s=(s*9301+49297)%233280;return s/233280};
   while(x>0){x-=18+rnd()*26;y=Math.max(5,Math.min(35,y+(rnd()-.5)*22));p+=` L${Math.max(0,x).toFixed(0)} ${y.toFixed(0)}`}return p})();
-function soCrackHTML(r){const k=1-r.hp/r.hp0;return `<div class="so-crack${k>=.75?" warn":""}" title="Fissure : ${r.hp0-r.hp} / ${r.hp0}"><svg viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true" style="clip-path:inset(0 0 0 ${((1-k)*100).toFixed(1)}%)"><path d="${SO_CRACK}"/></svg></div>`}
+function soCrackHTML(r){const k=1-r.hp/r.hp0;return `<div class="so-crack${k>=.75?" warn":""}" title="Fissure : ${r.hp0-r.hp} / ${r.hp0}"><svg viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true" style="clip-path:inset(0 0 0 ${((1-k)*100).toFixed(1)}%)"><path class="e" d="${SO_CRACK}"/><path d="${SO_CRACK}"/></svg></div>`}
 function soInfoHTML(r){const done=r.objs.filter(o=>o.done);
   return `<div class="so-info"><span><b>${r.n}</b> objet${r.n>1?"s":""} dans ce mur · déterré${done.length>1?"s":""} : <b>${done.length}</b>/${r.n}</span><span class="so-found">${done.map(o=>soIco(o.k)).join("")}</span></div>`}
 function soWallHTML(r){return `<div class="so-wall tool-${soTool}" id="so-wall" style="--cols:${r.w}">${r.d.map((_,i)=>soCell(r,i)).join("")}</div>`}
 function soTopHTML(){
   return `<div class="ar-top so-top"><h1>💎 Souterrain <span class="ar-v">${SOUT.v}</span></h1>
-    <span class="ar-chip" title="Éclats : à échanger au comptoir contre des boosters">💠 <b>${fmtN(soEc())}</b> éclats</span>
     <button class="btn small" data-so="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${musicSlider("sout","somus","ar-music","")}${sfxSlider("sout","sosfx")}</div>`}
 function soShopHTML(){
   const ec=soEc(),got=soGot();
   const lot=l=>{const can=ec>=l.p,sel=l.sp==="gen"?`<select data-so-sel="gen" aria-label="Génération">${REGIONS.slice(1).map((reg,i)=>`<option value="${i+1}"${soGen===i+1?" selected":""}>${ROMAN[i+1]} · ${reg}</option>`).join("")}</select>`
       :l.sp==="type"?`<select data-so-sel="type" aria-label="Type">${TYPES.slice(1).map(([tn],i)=>`<option value="${i+1}"${soType===i+1?" selected":""}>${tn}</option>`).join("")}</select>`:"";
     return `<div class="so-lot"><b>${esc(l.n)}</b>${sel}<button class="btn small${can?" primary":""}" data-so="buy" data-k="${l.k}"${can?"":" disabled"}>💠 ${fmtN(l.p)}</button></div>`};
-  return `<div class="so-side"><div class="so-box"><h3>🏪 Comptoir</h3><p class="muted ar-small">Vos sphères sont changées en éclats à la fin de chaque fouille. Vous avez <b>${fmtN(ec)} éclats</b>.</p>
+  return `<div class="so-side"><div class="so-box"><h3 class="so-h3">🏪 Comptoir<span class="so-ec" title="Vos éclats">💠 ${fmtN(ec)} éclats</span></h3><p class="muted ar-small">Vos sphères sont changées en éclats à la fin de chaque fouille.</p>
     <div class="so-lots">${SOUT.lots.map(lot).join("")}</div></div>
     <div class="so-box"><h3>🎒 Vos trouvailles</h3><div class="so-got">${SO_ORDER.map(k=>`<div class="${got[k]?"":"none"}">${soIco(k)}<span>${esc(SOUT.items[k].n)}</span><b>${fmtN(got[k]||0)}</b></div>`).join("")}</div></div></div>`}
+/* textures du Souterrain (1.5.10), dessinées une fois dans un canvas : grains et cailloux en surimpression sur la couleur de la
+   couche, roche claire veinée, fer brossé ; posées en variables CSS (--so-soil, --so-rock, --so-stone, --so-metal) */
+function soTex(){
+  if(soTex.done)return;soTex.done=true;
+  const mk=(n,fn)=>{try{const c=document.createElement("canvas");c.width=c.height=n;fn(c.getContext("2d"),n);return `url(${c.toDataURL()})`}catch(e){return "none"}};
+  const grain=(x,n,dark,light,soft)=>{const im=x.createImageData(n,n);for(let i=0;i<n*n;i++){const r=Math.random();let v=0,a=0;
+    if(r<dark){v=0;a=40+Math.random()*60}else if(r>1-light){v=255;a=25+Math.random()*45}else{v=r<.5?0:255;a=Math.random()*soft}im.data.set([v,v,v,a],i*4)}x.putImageData(im,0,0)};
+  const pebbles=(x,n,k,r0,r1,tint)=>{for(let j=0;j<k;j++){const px=Math.random()*n,py=Math.random()*n,pr=r0+Math.random()*(r1-r0);
+    const g=x.createRadialGradient(px-pr*.35,py-pr*.35,0,px,py,pr);g.addColorStop(0,`rgba(${tint},.5)`);g.addColorStop(.65,`rgba(${tint},.18)`);g.addColorStop(1,"rgba(0,0,0,.35)");
+    x.fillStyle=g;x.beginPath();x.ellipse(px,py,pr,pr*(.6+Math.random()*.35),Math.random()*3,0,Math.PI*2);x.fill()}};
+  const set=(k,v)=>document.documentElement.style.setProperty(k,v);
+  set("--so-soil",mk(96,(x,n)=>{grain(x,n,.1,.07,16);pebbles(x,n,6,1.2,3.2,"255,240,220")}));
+  set("--so-rock",mk(96,(x,n)=>{grain(x,n,.13,.06,18);pebbles(x,n,13,2,6,"205,200,195")}));
+  set("--so-stone",mk(96,(x,n)=>{for(let j=0;j<10;j++){const g=x.createRadialGradient(Math.random()*n,Math.random()*n,0,Math.random()*n,Math.random()*n,20+Math.random()*30);
+      g.addColorStop(0,`rgba(${Math.random()<.5?"255,255,255":"90,60,30"},.1)`);g.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=g;x.fillRect(0,0,n,n)}
+    const im=x.getImageData(0,0,n,n);for(let i=0;i<n*n;i++){if(Math.random()<.06){const v=Math.random()<.5?60:255;im.data.set([v,v*.85,v*.6,30+Math.random()*30],i*4)}}x.putImageData(im,0,0);
+    x.strokeStyle="rgba(110,80,45,.28)";x.lineWidth=1;for(let j=0;j<3;j++){x.beginPath();x.moveTo(Math.random()*n,0);x.quadraticCurveTo(Math.random()*n,Math.random()*n,Math.random()*n,n);x.stroke()}}));
+  set("--so-metal",mk(64,(x,n)=>{for(let y=0;y<n;y++){x.fillStyle=`rgba(${Math.random()<.5?"255,255,255":"0,0,0"},${(Math.random()*.1).toFixed(3)})`;x.fillRect(0,y,n,1)}}));
+}
 function vSout(){
+  soTex();
   if(!soOn())return `<div class="empty">Ce jeu n’est pas encore ouvert.</div>`;
   if(!SO){soLoad();return `<div class="empty">Chargement du Souterrain…</div>`}
   const r=SO.run;
