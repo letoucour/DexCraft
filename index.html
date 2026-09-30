@@ -356,6 +356,13 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 @keyframes cardIn{0%{transform:perspective(900px) translateY(40vh) rotateY(900deg) scale(.2);opacity:0}70%{opacity:1}100%{transform:perspective(900px) translateY(0) rotateY(0) scale(1)}}
 .legend .lg-sub{position:relative;color:#fff4c2;font-weight:700;animation:lgIn .5s 1.4s both}
 .legend .lg-share{position:relative;z-index:1;background:#ffcf3f;color:#3a2a00;animation:lgIn .5s 1.2s both;box-shadow:0 4px 18px rgba(255,207,63,.45)}
+/* 1.5.6 : scène Légendaire aux couleurs Méga et Gigamax (LEG_SPECIAL) */
+.legend.mega{background:radial-gradient(circle,rgba(0,60,58,.85),rgba(6,12,20,.96) 70%)}
+.legend.mega .rays{background:repeating-conic-gradient(from 0deg,rgba(62,227,214,.28) 0 6deg,transparent 6deg 18deg)}
+.legend.mega .lg-title{background:linear-gradient(100deg,#d8fffb 0%,#3ee3d6 30%,#fff 50%,#0fb5a9 70%,#d8fffb 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 4px 18px rgba(40,210,200,.7))}
+.legend.mega .lg-card{filter:drop-shadow(0 0 30px rgba(62,227,214,.9))}
+.legend.mega .lg-sub{color:#d8fffb}
+.legend.mega .lg-share{background:#3ee3d6;color:#063a36;box-shadow:0 4px 18px rgba(62,227,214,.45)}
 /* scène d'un shiny (1.3.9) : la scène Légendaire en plus léger, couleurs pastel du ✨ Shiny */
 .legend.shiny{background:radial-gradient(circle,rgba(50,35,80,.78),rgba(8,8,20,.9) 70%)}
 .legend.shiny .rays{background:repeating-conic-gradient(from 0deg,rgba(255,230,138,.2) 0 5deg,transparent 5deg 15deg,rgba(159,212,255,.18) 15deg 20deg,transparent 20deg 30deg,rgba(255,159,216,.18) 30deg 35deg,transparent 35deg 45deg);animation-duration:22s}
@@ -601,6 +608,14 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
   background:linear-gradient(115deg,transparent 28%,rgba(255,255,255,.75) 46%,rgba(255,250,220,.9) 50%,rgba(255,255,255,.75) 54%,transparent 72%);
   background-size:250% 100%;animation:holo 3s linear infinite}
 @keyframes holo{from{background-position:120% 0}to{background-position:-120% 0}}
+/* 1.5.6 (demande de Theo) : Méga et Gigamax des légendaires (LEG_SPECIAL, tirées comme des Légendaires) : le fond des Légendaires,
+   en turquoise Méga */
+.card.r4.legsp{background:repeating-linear-gradient(115deg,transparent 0 16px,color-mix(in srgb,var(--c1) 42%,transparent) 16px 19px,transparent 19px 34px,color-mix(in srgb,var(--c2) 42%,transparent) 34px 37px),
+  linear-gradient(160deg,#d8fffb,#86efe6 35%,#3fcfc3 62%,#c9fbf6)}
+.card.r4.legsp .card-top,.card.r4.legsp .genus,.card.r4.legsp .card-foot,.card.r4.legsp .stats span{color:#0d4d49}
+.card.r4.legsp .stats i{background:rgba(255,255,255,.55)}
+.card.r4.legsp::after{mix-blend-mode:normal;background:linear-gradient(115deg,transparent 28%,rgba(255,255,255,.75) 46%,rgba(220,255,252,.9) 50%,rgba(255,255,255,.75) 54%,transparent 72%);
+  background-size:250% 100%;animation:holo 3s linear infinite}
 .card.lg{font-size:17px}
 .card.lg .stats{grid-template-columns:auto 1fr auto;font-size:.68rem;gap:0 8px;padding-top:4px}
 .card.lg .art{flex:0 0 34%}
@@ -1618,7 +1633,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.5";
+const APP_VERSION="1.5.6";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2395,7 +2410,7 @@ function cardHTML(id,lg,sh){ // sh : version shiny (1.1.0)
   const kind=ex&&ex.base?(ex.kind?formTag(ex):"Méga"):"";
   const label=r===8?"Carte spéciale":r===7?"Carte transcendante":r===6?"Carte mythique":kind?"№ "+pad(ex.base)+" "+kind:"№ "+pad(id);
   const edition=r===8?"Édition spéciale":r===7?"Édition transcendante":r===6?"Édition mythique":ex&&ex.kind==="gmax"?"Gigamax":ex&&ex.kind==="zarbi"?"Forme "+ex.letter:ex&&ex.kind==="forme"?ex.fn:ex&&ex.kind?(ex.kind==="alola"?"Forme d’Alola":"Forme de "+FORM_KIND[ex.kind]):r===4?"Méga-évolution":"Génération "+ROMAN[gen];
-  return `<div class="card r${r}${lg?" lg":""}${sh?" shiny":""}${ex&&ex.skin?" skin-"+ex.skin:""}${ex&&ex.full?" art-full":""}" style="--c1:${c1};--c2:${c2}">
+  return `<div class="card r${r}${LEG_SPECIAL.has(+id)?" legsp":""}${lg?" lg":""}${sh?" shiny":""}${ex&&ex.skin?" skin-"+ex.skin:""}${ex&&ex.full?" art-full":""}" style="--c1:${c1};--c2:${c2}">
   <div class="card-top"><span>${sh?`<b class="sh-mark" title="Shiny">✨</b> `:""}${label}</span><span class="gems" aria-label="${rarName(id)}">${gems(r)}</span></div>
   <div class="art">${imgFor(id,sh)?`<img class="art-img" src="${esc(imgFor(id,sh))}" alt="" onerror="this.remove()">`:""}<span class="art-initial" aria-hidden="true">${esc(n[0])}</span><span class="art-no" aria-hidden="true">${r===8?"✵":r===7?"❖":r===6?"✦":ex&&ex.base?ex.base:id}</span><span class="art-gen">${edition}</span></div>
   <div class="card-name">${esc(n)}</div>
@@ -4302,13 +4317,14 @@ async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
   x.shadowColor="rgba(0,0,0,.45)";x.shadowBlur=24;x.shadowOffsetY=8;rr(0,0,300,420,14);x.fillStyle=rc;x.fill();x.shadowColor="transparent";
   // fond de la carte
   rr(6,6,288,408,9);x.save();x.clip();
-  if(r===5){const gd=x.createLinearGradient(6,6,160,414);[["#fff6cf",0],["#ffe27a",.35],["#f3c440",.62],["#fff0b3",1]].forEach(([c,o])=>gd.addColorStop(o,c));x.fillStyle=gd;x.fillRect(0,0,300,420);
+  const lsp=LEG_SPECIAL.has(+id); // 1.5.6 : Méga et Gigamax des légendaires, fond des Légendaires en turquoise
+  if(r===5||lsp){const gd=x.createLinearGradient(6,6,160,414);(lsp?[["#d8fffb",0],["#86efe6",.35],["#3fcfc3",.62],["#c9fbf6",1]]:[["#fff6cf",0],["#ffe27a",.35],["#f3c440",.62],["#fff0b3",1]]).forEach(([c,o])=>gd.addColorStop(o,c));x.fillStyle=gd;x.fillRect(0,0,300,420);
     x.globalAlpha=.42;x.lineWidth=3;for(let i=-420,k=0;i<460;i+=18,k++){x.strokeStyle=k%2?c2:c1;x.beginPath();x.moveTo(i,420);x.lineTo(i+196,0);x.stroke()}x.globalAlpha=1}
   else if(r===7){const gd=x.createLinearGradient(0,6,0,414);gd.addColorStop(0,"#f7f8fb");gd.addColorStop(1,"#e8ebf2");x.fillStyle=gd;x.fillRect(0,0,300,420)}
   else{x.fillStyle="#fbfaf6";x.fillRect(0,0,300,420);
     if(r===3){const gd=x.createRadialGradient(150,190,10,150,190,220);gd.addColorStop(0,"rgba(168,110,240,.38)");gd.addColorStop(.55,"rgba(168,110,240,.12)");gd.addColorStop(1,"rgba(168,110,240,0)");x.fillStyle=gd;x.fillRect(0,0,300,420)}}
   x.restore();
-  const ink="#1c2042",soft=r===5?"#5a4410":"#5b6088";
+  const ink="#1c2042",soft=r===5?"#5a4410":lsp?"#0d4d49":"#5b6088";
   // haut : numéro et gemmes
   x.textBaseline="middle";x.font=body(700,12);x.fillStyle=soft;x.textAlign="left";x.fillText((sh?"✨ Shiny · ":"")+label,16,21);
   x.textAlign="right";x.font=body(700,r>=6?17:13);x.fillStyle=SHARE_GEM[r];x.fillText(gems(r),284,21);
@@ -4962,7 +4978,7 @@ function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
   legendSoon=true;
   const app=$("#app");app.classList.remove("shake");void app.offsetWidth;if(!RM())app.classList.add("shake");
   if(navigator.vibrate)try{vib([80,60,160])}catch(e){}
-  const ov=document.createElement("div");ov.className="legend";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Carte légendaire obtenue");
+  const ov=document.createElement("div");const mg=LEG_SPECIAL.has(+id);ov.className="legend"+(mg?" mega":"");ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Carte légendaire obtenue");
   ov.innerHTML=`<div class="rays"></div><canvas></canvas><div class="lg-title">${LEG_SPECIAL.has(+id)?rarName(id)+(sh?" shiny":"")+" !":sh?"Légendaire shiny !":"Légendaire !"}</div><div class="lg-card">${cardHTML(id,true,sh)}</div><button class="btn lg-share" data-act="share-card" data-id="${id}" data-fresh="1"${sh?' data-sh="1"':""}>📤 Partager</button><div class="lg-sub">Touchez pour continuer</div>`;
   document.body.append(ov);legendSoon=false;
   let alive=true;
@@ -4972,7 +4988,7 @@ function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
   if(RM())return;
   const cv=ov.querySelector("canvas"),ctx=cv.getContext("2d"),dpr=Math.min(2,devicePixelRatio||1);
   const W=cv.width=innerWidth*dpr,H=cv.height=innerHeight*dpr;
-  const cols=["#ffcf3f","#fff4c2","#ffffff","#ffb000","#ffe27a"];
+  const cols=mg?["#3ee3d6","#d8fffb","#ffffff","#0fb5a9","#86efe6"]:["#ffcf3f","#fff4c2","#ffffff","#ffb000","#ffe27a"],glow=mg?"#3ee3d6":"#ffcf3f";
   const P=[];const burst=(n,x,y)=>{for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=(4+Math.random()*10)*dpr;P.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-6*dpr,r:(3+Math.random()*5)*dpr,rot:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[i%cols.length],life:1})}};
   setTimeout(()=>burst(160,W/2,H/2),700);setTimeout(()=>burst(90,W*.2,H*.35),1300);setTimeout(()=>burst(90,W*.8,H*.35),1600);
   let last=performance.now();
@@ -4980,7 +4996,7 @@ function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
     if(Math.random()<.35)P.push({x:Math.random()*W,y:-10,vx:(Math.random()-.5)*dpr,vy:(1+Math.random()*2)*dpr,r:(2+Math.random()*3)*dpr,rot:0,vr:.1,c:cols[rnd(5)],life:1});
     for(let i=P.length-1;i>=0;i--){const p=P[i];p.vy+=.18*dpr*dt;p.vx*=.99;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=p.vr*dt;p.life-=.004*dt;
       if(p.y>H+20||p.life<=0){P.splice(i,1);continue}
-      ctx.save();ctx.globalAlpha=Math.max(0,p.life);ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;ctx.shadowColor="#ffcf3f";ctx.shadowBlur=8*dpr;
+      ctx.save();ctx.globalAlpha=Math.max(0,p.life);ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;ctx.shadowColor=glow;ctx.shadowBlur=8*dpr;
       ctx.beginPath();for(let k=0;k<8;k++){const rr=k%2?p.r*.45:p.r*1.3,a=k*Math.PI/4;ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}ctx.fill();ctx.restore()}
     requestAnimationFrame(loop)})(last);
 }
