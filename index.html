@@ -1140,6 +1140,9 @@ dialog,.modal{overscroll-behavior:contain}
 .pick-head.pick-wish{margin-top:10px;padding:8px 10px;border-radius:10px;background:rgba(230,150,30,.16);border:1px solid rgba(230,150,30,.6);color:#f0a93a;font-size:.92rem}
 :root[data-theme="light"] .pick-head.pick-wish{color:#a3620a}
 .pick.wishc:not(.choice){border-color:rgba(230,150,30,.55)}
+.pick-head.pick-lst{margin-top:10px;padding:8px 10px;border-radius:10px;background:rgba(80,150,240,.14);border:1px solid rgba(80,150,240,.55);color:#7fb4ff;font-size:.92rem}
+:root[data-theme="light"] .pick-head.pick-lst{color:#1f5fbf}
+.pick.lstc:not(.choice){border-color:rgba(80,150,240,.5)}
 .pick.uniq:not(.choice){border-color:rgba(220,60,60,.55)}.uniq-n{color:#ff6b6b}:root[data-theme="light"] .uniq-n{color:#c0282d}
 .pick[hidden]{display:none}
 /* choix de plusieurs cartes demandées (1.0.3) */
@@ -1606,7 +1609,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.1";
+const APP_VERSION="1.5.2";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2284,6 +2287,11 @@ function otLine(id,c){ // fiche d'une carte : d'où viennent ses exemplaires
 function canOffer(m,c){
   if(rar(c)!==rar(m.card))return false;
   if((S.coll[c]||0)-otFrom(c,m.owner)<1)return false; // seul exemplaire venu du propriétaire de l'annonce : il ne peut pas le récupérer
+  return wantsCard(m,c);
+}
+/* l'annonce accepte-t-elle cette carte, quel que soit le nombre d'exemplaires possédés ? (1.5.2 : aussi pour ses cartes en annonce) */
+function wantsCard(m,c){
+  if(rar(c)!==rar(m.card))return false;
   if(Array.isArray(m.wantList)&&m.wantList.length)return m.wantList.includes(c); // liste de cartes demandées (1.0.3)
   if(m.want)return m.want===c;
   if(m.wantMode==="missing"&&!ownerHasAll(m.owner,rar(c)))return !ownerHas(m.owner,c)||(m.wantWish||[]).includes(c); // 1.4.11 : ou recherchée (wantWish)
@@ -2327,10 +2335,10 @@ function wantPickAct(a,b){
   if(a==="wp-go"){if(!w.sel.size){toast("Choisissez au moins une carte.");return}wantPick=null;w.done([...w.sel])}
 }
 /* --- proposer une carte sur une annonce --- */
-function proposeTrade(mid_,give){
+function proposeTrade(mid_,give,from){ // from (1.5.2) : la carte vient d'une de ses annonces, retirée par le serveur
   const m=MARKET[mid_];
   return run(async()=>{
-    const r=await rpc("dc_trade_propose",{p_mid:mid_,p_card:give});
+    const r=await rpc("dc_trade_propose",from?{p_mid:mid_,p_card:give,p_from:from}:{p_mid:mid_,p_card:give});
     closeDlg();
     if(r.accepted){quiet([give,r.card]);toast(`⚡ Échange conclu tout de suite avec ${m?who(m.owner):"le propriétaire"} : ${nm(+r.card)} rejoint votre collection contre ${nm(give)} !`)}
     else toast(m?`Proposition envoyée. ${nm(m.card)} reste à ${who(m.owner)} tant qu’il n’a pas accepté.`:"Proposition envoyée.");
@@ -4355,13 +4363,17 @@ async function shareAct(a){
   try{await navigator.clipboard.write([new ClipboardItem({"image/png":shareBlob})]);toast("Image copiée. Ce navigateur ne copie pas l’image et le texte ensemble : copiez le texte à part.");return}catch(e){}
   try{await navigator.clipboard.writeText(txt);toast("Texte copié. Ce navigateur ne copie pas les images : utilisez « Télécharger l’image ».")}catch(e){toast("Copie impossible : utilisez « Télécharger l’image » et copiez le texte à la main.")}
 }
-let tradeGive=null;
+let tradeGive=null,tradeFrom=null; // tradeFrom (1.5.2) : annonce d'où vient la carte proposée
 function tradeDlg(mid_){
-  const m=MARKET[mid_];if(!m)return;tradeGive=null;
+  const m=MARKET[mid_];if(!m)return;tradeGive=null;tradeFrom=null;
   // les cartes qu’on a en plus grand nombre d’abord (1.2.0), donc les doubles avant les exemplaires uniques ;
   // 1.5.1 (demande de Theo) : les cartes recherchées 🔔 ne sont plus rangées dans les doubles, mais à part, en dernier
   const all=Object.keys(S.coll).map(Number).filter(c=>canOffer(m,c)).sort((a,b)=>S.coll[b]-S.coll[a]||a-b);
   const dbl=all.filter(c=>S.coll[c]>1&&!wished(c)),uni=all.filter(c=>S.coll[c]<=1&&!wished(c)),wsh=all.filter(c=>wished(c)),mine=[...dbl,...uni,...wsh];
+  // 1.5.2 (demande de Theo) : ses cartes en annonce qui correspondent à la demande, si on n'en a plus dans la collection ;
+  // les proposer retire l'annonce (le serveur la retire d'abord, dans la même opération)
+  const lst=[],seen=new Set(all);
+  for(const [lid,l] of Object.entries(MARKET))if(l.kind==="t"&&l.status==="open"&&l.owner===ME&&!seen.has(+l.card)&&l.ot!==m.owner&&wantsCard(m,+l.card)){seen.add(+l.card);lst.push([+l.card,lid])}
   const nDbl=dbl.length,nUni=uni.length,head=t=>`<div class="pick-head">${t}</div>`;
   openDlg(`<div class="side pick-dlg" style="gap:12px">
     <button class="close-x" data-act="close" aria-label="Fermer">×</button>
@@ -4372,7 +4384,11 @@ function tradeDlg(mid_){
       return `${i===0&&nDbl?head(`Vos doubles (${nDbl})`):""}${i===nDbl&&nUni?`<div class="pick-head pick-uniq">⚠️ Vos exemplaires <b>UNIQUES</b> (${nUni}) : si vous les échangez, vous ne les aurez plus</div>`:""}${i===nDbl+nUni?`<div class="pick-head pick-wish">🔔 Vos cartes <b>RECHERCHÉES</b> (${wsh.length}) : vous en cherchez d’autres exemplaires</div>`:""}<button class="pick${wished(c)?" wishc":S.coll[c]>1?"":" uniq"}" data-act="give" data-id="${c}" data-n="${esc(norm2(nm(c))+" "+c)}">
         <span class="pick-tag ${his?"ok":"missing"}">${his?"Il l’a déjà":"Il ne l’a pas"}</span>
         ${evoTile(c)}<span class="pick-n">${S.coll[c]>1?`Vous en avez ${S.coll[c]}`:`<b class="uniq-n">⚠️ Votre seul exemplaire</b>`}</span></button>`}).join("")
-      :`<div class="empty" style="grid-column:1/-1">Aucune carte de votre collection ne correspond à cette demande.</div>`}</div>
+      :""}${lst.length?`<div class="pick-head pick-lst">📌 Vos cartes <b>EN ANNONCE</b> (${lst.length}) : la proposer retire son annonce</div>`+lst.map(([c,lid])=>{const his=ownerHas(m.owner,c),l=MARKET[lid],no=offersOf(l).length;
+        return `<button class="pick lstc" data-act="give" data-id="${c}" data-from="${esc(lid)}" data-n="${esc(norm2(nm(c))+" "+c)}">
+        <span class="pick-tag ${his?"ok":"missing"}">${his?"Il l’a déjà":"Il ne l’a pas"}</span>
+        ${evoTile(c)}<span class="pick-n">En annonce${no?` · ${no} proposition${no>1?"s":""} rendue${no>1?"s":""}`:""}</span></button>`}).join(""):""}
+      ${!mine.length&&!lst.length?`<div class="empty" style="grid-column:1/-1">Aucune carte de votre collection ne correspond à cette demande.</div>`:""}</div>
     <div class="actions"><button class="btn primary" id="give-go" data-act="give-go" data-mid="${mid_}" disabled>Choisissez une carte</button></div></div>`,true);
 }
 
@@ -5440,8 +5456,8 @@ document.addEventListener("click",e=>{
     case"trd-filter":{const v=b.dataset.v;if(v==="0")trdM=trdE=false;else if(v==="1")trdM=!trdM;else trdE=!trdE}renderView();break;
     case"trd-dbl":trdDbl=!trdDbl;renderView();break;
     case"wish-dbl":wishDbl=!wishDbl;renderView();break;
-    case"give":tradeGive=id;document.querySelectorAll("#picker .pick").forEach(x=>x.classList.toggle("choice",+x.dataset.id===id));{const g=$("#give-go");g.disabled=false;g.textContent=`Proposer ${nm(id)}`}break;
-    case"give-go":if(tradeGive){const g=tradeGive;keepConfirm(g,()=>proposeTrade(mid,g),()=>tradeDlg(mid))}break;
+    case"give":tradeGive=id;tradeFrom=b.dataset.from||null;document.querySelectorAll("#picker .pick").forEach(x=>x.classList.toggle("choice",x===b));{const g=$("#give-go");g.disabled=false;g.textContent=`Proposer ${nm(id)}`}break;
+    case"give-go":if(tradeGive){const g=tradeGive,f=tradeFrom;keepConfirm(g,()=>proposeTrade(mid,g,f),()=>tradeDlg(mid))}break;
     case"keep-go":if(keepConfirm.go){const g=keepConfirm.go;keepConfirm.go=keepConfirm.back=null;g()}break;
     case"keep-back":{const k=keepConfirm.back;keepConfirm.go=keepConfirm.back=null;k?k():closeDlg();break}
     case"offer-yes":closeDlg();answerOffer(mid,b.dataset.oid,true);break;

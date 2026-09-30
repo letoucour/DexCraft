@@ -83,7 +83,9 @@ begin
   return jsonb_build_object('profile', public.dc__save(u, d), 'mid', mid);
 end $$;
 
-create or replace function public.dc_trade_propose(p_mid text, p_card int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+drop function if exists public.dc_trade_propose(text, int);
+-- p_from (1.5.2) : carte prise dans une de ses annonces, retirée d'abord
+create or replace function public.dc_trade_propose(p_mid text, p_card int, p_from text default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); m jsonb := public.dc__market(p_mid); cfg jsonb := public.dc__cfg(); d jsonb; ow jsonb; oid text := public.dc__mid(); t jsonb;
 begin
   if m is null or m ->> 'kind' <> 't' or m ->> 'status' <> 'open' then raise exception 'Cet échange n’est plus disponible.'; end if;
@@ -102,6 +104,11 @@ begin
   end if;
   if exists (select 1 from jsonb_each(m -> 'offers') where value ->> 'by' = u::text and value ->> 'status' = 'pending') then
     raise exception 'Vous avez déjà une proposition en attente sur cet échange.';
+  end if;
+  if p_from is not null then
+    if not exists (select 1 from public.docs where path = 'market/' || p_from and data ->> 'owner' = u::text and data ->> 'status' = 'open' and data ->> 'card' = p_card::text) then
+      raise exception 'Votre annonce de cette carte n’est plus disponible.'; end if;
+    perform public.dc_trade_cancel(p_from);
   end if;
   d := public.dc__lock(u, true);
   t := public.dc__ot_take(d, u, p_card, m ->> 'owner'); d := t -> 'd';   -- jamais un exemplaire dont le propriétaire de l'annonce est le dresseur d'origine
@@ -253,7 +260,7 @@ declare cap bigint := (public.dc__cfg() ->> 'vbCap')::bigint; day text := public
 begin
   nl := case when kind = 'won' then least(8, v.level + 1) else greatest(1, least(v.level, v.flipped)) end;
   if kind <> 'lost' and v.score > 0 then added := least(v.score, greatest(0, cap - gained)); end if;
-  -- 1.3.14 : plafond du jour déjà atteint, une manche gagnée rapporte encore vbAfter (10) crédits par niveau, hors compteur du jour
+  -- 1.3.14 : plafond atteint, vbAfter crédits par niveau en plus
   -- 1.3.15 : aussi quand c'est cette manche qui atteint le plafond
   if kind = 'won' and gained + added >= cap then extra := coalesce((public.dc__cfg() ->> 'vbAfter')::int, 0) * v.level; end if;
   d := jsonb_set(d, '{credits}', to_jsonb(public.dc__int(d, 'credits') + added + extra));
@@ -320,7 +327,7 @@ end $$;
 create or replace function public.dc_admin_grant(p_uid uuid, p_cr bigint, p_pk int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare a uuid := public.dc__admin(); d jsonb := public.dc__lock(p_uid, p_uid = a); g jsonb; cr bigint := coalesce(p_cr, 0); pk int := coalesce(p_pk, 0);
 begin
-  -- dons (valeurs positives) : dans la boîte cadeau du joueur, qu'il ouvre depuis l'écran des boosters (dc_gift_open, partie 3)
+  -- dons : dans la boîte cadeau du joueur (dc_gift_open, partie 3)
   g := case when jsonb_typeof(d -> 'gifts') = 'array' then d -> 'gifts' else '[]' end;
   if cr > 0 then g := g || jsonb_build_array(jsonb_build_object('cr', cr)); end if;
   if pk > 0 then g := g || jsonb_build_array(jsonb_build_object('pk', pk)); end if;
@@ -512,8 +519,8 @@ grant execute on function public.dc_trade_cancel(text) to authenticated;
 revoke all on function public.dc_trade_create(integer,integer,text,integer[]) from public, anon;
 grant execute on function public.dc_trade_create(integer,integer,text,integer[]) to authenticated;
 revoke all on function public.dc__want_list(jsonb,integer[],integer) from public, anon, authenticated;
-revoke all on function public.dc_trade_propose(text,integer) from public, anon;
-grant execute on function public.dc_trade_propose(text,integer) to authenticated;
+revoke all on function public.dc_trade_propose(text,integer,text) from public, anon;
+grant execute on function public.dc_trade_propose(text,integer,text) to authenticated;
 revoke all on function public.dc_trade_withdraw(text,text) from public, anon;
 grant execute on function public.dc_trade_withdraw(text,text) to authenticated;
 revoke all on function public.dc_vb_flip(integer) from public, anon;
