@@ -45,7 +45,7 @@ function setup(scene){
           const tot=SO_ORDER.reduce((s,k)=>s+A.items[k].w,0),nb=A.n[0]+R(A.n[1]-A.n[0]+1),ni=A.irons[0]+R(A.irons[1]-A.irons[0]+1);
           for(let i=0;i<nb+ni;i++){let key=null,ow,oh,mk=null;if(i<nb){let r=R(tot);for(const k of [...SO_ORDER].sort()){r-=A.items[k].w;if(r<0){key=k;[ow,oh]=A.items[k].s;mk=A.items[k].m||null;break}}}else[ow,oh]=[[1,1],[2,1],[1,2],[2,2],[3,1]][R(5)];
             for(let t=0;t<200;t++){const x=R(w-ow+1),y=R(h-oh+1);let ok=true;for(let j=0;j<ow*oh;j++)if((!mk||mk[j]==="1")&&oo[(y+Math.floor(j/ow))*w+x+j%ow]!==-1){ok=false;break}
-              if(ok){for(let j=0;j<ow*oh;j++)if(!mk||mk[j]==="1")oo[(y+Math.floor(j/ow))*w+x+j%ow]=key?objs.length:-2;if(key)objs.push(Object.assign({k:key,x,y,w:ow,h:oh,done:false},mk?{m:mk}:{},A.items[key].pl?{t:2+R(17)}:{}));break}}}
+              if(ok){for(let j=0;j<ow*oh;j++)if(!mk||mk[j]==="1")oo[(y+Math.floor(j/ow))*w+x+j%ow]=key?objs.length:-2;if(key)objs.push(Object.assign({k:key,x,y,w:ow,h:oh,done:false},mk?{m:mk}:{},A.items[key].pl?{t:1+R(18)}:{}));break}}}
           W.__so={w,h,d:dd,o:oo,objs,hp:A.hp,hp0:A.hp,over:false,ir:0};d.credits-=A.cost}
         return {data:Object.assign(vw(W.__so,d),{profile:stamp(d)}),error:null}}
       if(n==="dc_sout_hit"){const st=W.__so;if(!st||st.over)return {data:null,error:{message:"Aucune fouille en cours."}};

@@ -1755,7 +1755,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.6.0";
+const APP_VERSION="1.6.1";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2739,7 +2739,7 @@ const TITLES=[
     .map(([stat,need,n,d])=>({k:stat+need,n,ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d,stat,need,get hidden(){return !soOn()}})),
   {k:"souClean",n:"Sans une égratignure",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A vidé un mur du Souterrain sans toucher un seul bloc de fer",test:p=>!!(p.stats&&p.stats.souClean),get hidden(){return !soOn()}},
   {k:"souRainbow",n:"Arc-en-ciel",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A déterré au moins une fois chaque sorte de sphère",test:p=>!!(p.stats&&p.stats.souRainbow),get hidden(){return !soOn()}},
-  {k:"souArceus",n:"Élu d’Arceus",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A réuni les 17 plaques du Souterrain",test:p=>!!(p.stats&&p.stats.souArceus),get hidden(){return !soOn()}},
+  {k:"souArceus",n:"Élu d’Arceus",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A réuni les 18 plaques du Souterrain",test:p=>!!(p.stats&&p.stats.souArceus),get hidden(){return !soOn()}},
   {k:"souKey",n:"Ruinemaniac",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A déterré une Clef de voûte",test:p=>!!(p.stats&&p.stats.souKey),get hidden(){return !soOn()}},
   {k:"souGd",n:"Diamantaire",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A déterré une Grande Sphère diamant dans le Souterrain",test:p=>!!(p.stats&&p.stats.souGd),get hidden(){return !soOn()}},
   /* Prestige (1.5.0) : un titre par niveau (stats.prestige, posé par dc_prestige) */
@@ -5475,7 +5475,7 @@ document.addEventListener("pointercancel",()=>{const g=arDrag;arDrag=null;if(g&&
 // 1.5.12 : retour à 100 crédits (demande de Theo)
 // 1.6.0 (demande de Theo) : mise à 150, fouille un peu plus dure (9 plaques, 0 à 3 blocs de fer), trouvailles plus rares un peu
 // plus fréquentes (poids 4 300 / 3 000 / 1 750 / 500 / 120) : simulation, 225 crédits rendus pour 150 misés, 54 % des murs remboursent la mise
-const SOUT={v:"v1.5",open:true,cost:150,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:9,irons:[0,3],n:[2,4],
+const SOUT={v:"v1.6",open:true,cost:150,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:9,irons:[0,3],n:[2,4],
   // s : taille (colonnes, lignes) ; w : poids du tirage (sur 100 × %) ; v : éclats ; cr : crédits ; c : couleurs
   // 1.6.0 (demandes de Theo) : trouvailles rares un peu plus fréquentes (poids 3 700 / 3 000 / 2 050 / 650 / 170 / 20 selon la
   // rareté 1 à 6), Plaques (pl : un des 17 types, rangées dans le sac), Morceau d’Étoile (m : masque des cases, en croix),
@@ -5491,8 +5491,19 @@ const SOUT={v:"v1.5",open:true,cost:150,hp:100,pick:2,hammer:4,w:13,h:10,base:1,
   lots:[{k:"b1",n:"1 booster",p:200,packs:1},{k:"b3",n:"3 boosters",p:600,packs:3},{k:"b5",n:"5 boosters",p:1000,packs:5},
     {k:"gen",n:"Booster Génération",p:300,sp:"gen"},{k:"type",n:"Booster Type",p:300,sp:"type"},{k:"prem",n:"Booster Premium",p:750,sp:"prem"}]};
 const SO_ORDER=["pb","gb","pr","gr","pv","gv","pj","gj","pd","gd","or","billet","etoile","plaque","clef"];
-// Plaques d’Arceus (1.6.0) : une par type, Normal excepté (types 2 à 18)
-const SO_PLATE={2:"Poing",3:"Ciel",4:"Toxic",5:"Terre",6:"Roc",7:"Insecte",8:"Fantôme",9:"Fer",10:"Flamme",11:"Hydro",12:"Herbe",13:"Volt",14:"Esprit",15:"Glace",16:"Draco",17:"Ombre",18:"Pixie"};
+// Plaques d’Arceus : 18 depuis la 1.6.1 (type 1 = Plaque Légende, échangée contre un Booster Type Normal ; 17 en 1.6.0), texte au survol dans le sac
+const SO_PLATE={1:"Légende",2:"Poing",3:"Ciel",4:"Toxik",5:"Terre",6:"Roc",7:"Insecte",8:"Fantôme",9:"Fer",10:"Flamme",11:"Hydro",12:"Herbe",13:"Volt",14:"Esprit",15:"Glace",16:"Draco",17:"Ombre",18:"Pixie"};
+const SO_PLATE_D={10:"Cette Plaque renferme le pouvoir des géants vaincus.",11:"Le détenteur légitime des plaques peut maîtriser leur pouvoir et adopter de nombreuses formes.",
+  13:"La créature enragée fit s’abattre des éclairs de fureur.",12:"Le pouvoir des plaques fut conféré au Pokémon qui naquit de l’Œuf.",
+  15:"L’être originel donna naissance à deux êtres du temps et de l’espace.",2:"La faille fut engendrée par le chaos du monde qui se trouve à l’envers du nôtre.",
+  4:"Le temps et l’espace n’ont pas cours dans le monde qui se trouve à l’envers du nôtre.",5:"Quand l’univers fut créé, ses fragments formèrent cette plaque.",
+  3:"L’être originel incorpora une partie de ses pouvoirs dans une pierre qu’il enfouit dans le sol.",14:"Seul l’être originel respirait avant que l’univers ne soit.",
+  7:"Là où naquit l’univers. Là où naquit l’être originel.",6:"L’être originel accumule de la puissance grâce aux plaques et écoute le son de la flûte.",
+  8:"La créature enragée née de l’être originel est cloîtrée dans le monde à l’envers du nôtre.",16:"L’être originel engendra trois êtres afin de lier le temps et l’espace.",
+  17:"Deux êtres prièrent pour créer la matière, et trois êtres prièrent pour créer l’esprit. Ils façonnèrent ainsi le monde.",
+  9:"Ce qui est dans le monde à l’envers du nôtre permet à l’être qui respire de changer de forme.",18:"L’être originel est en chaque chose. L’être originel n’est nulle part.",
+  1:"L’être originel observe les Pokémon et les êtres humains depuis tous les univers existants."};
+const soPlateCol=t=>t===1?"#d8bd6a":TYPES[t][1]; // Plaque Légende : dorée
 const soName=(k,t)=>k==="plaque"&&t?`Plaque ${SO_PLATE[t]}`:SOUT.items[k].n;
 const soOn=()=>SOUT.open||devOn();
 // 1.5.13 : bouton de fouille grisé s'il manque des crédits (un joueur cliquait en boucle, chaque refus du serveur comptait comme une erreur de la base)
@@ -5507,7 +5518,7 @@ const soChance=k=>{const t=SO_ORDER.reduce((a,x)=>a+SOUT.items[x].w,0);return SO
 const soGain=k=>{const it=SOUT.items[k];return it.pl||it.key?"dans votre sac":it.cr?`${fmtN(it.cr)} crédits`:`${fmtN(it.v)} éclats`};
 function soLoad(){if(soLoading)return;soLoading=true;rpc("dc_sout_state",{},{render:false}).then(v=>{SO=v;renderView()}).catch(e=>toast(e.message)).finally(()=>{soLoading=false})}
 // dessin d'un objet (sphère, pièce, billet) : l'élément couvre tout l'objet, chaque case n'en montre que sa part
-const soItemEl=(k,ox,oy,extra="",t)=>{const it=SOUT.items[k];return `<i class="so-it so-${k}${it.c?" so-sph":""}${extra}" style="--w:${it.s[0]};--h:${it.s[1]};--x:${ox};--y:${oy}${it.c?`;--c1:${it.c[0]};--c2:${it.c[1]}`:""}${t?`;--c1:${TYPES[t][1]}`:""}"></i>`};
+const soItemEl=(k,ox,oy,extra="",t)=>{const it=SOUT.items[k];return `<i class="so-it so-${k}${it.c?" so-sph":""}${extra}" style="--w:${it.s[0]};--h:${it.s[1]};--x:${ox};--y:${oy}${it.c?`;--c1:${it.c[0]};--c2:${it.c[1]}`:""}${t?`;--c1:${soPlateCol(t)}`:""}"></i>`};
 const soIco=(k,t)=>`<span class="so-ico${k==="plaque"?" wide":""}" title="${esc(soName(k,t))}">${soItemEl(k,0,0,"",k==="plaque"?t||10:0)}</span>`;
 const soBg=i=>` style="--bx:${-(i*37%96)}px;--by:${-(i*53%96)}px"`; // texture décalée d’une case à l’autre
 function soCell(r,i){
@@ -5550,9 +5561,9 @@ function soShopHTML(){
    une fois débloqué par le serveur (stats.souPlateX), 2 plaques d’un même type s’échangent contre 1 Booster Type (dc_sout_plate) */
 function soBagHTML(){
   const so=(S&&S.sout)||{},pl=so.pl||{},ts=Object.keys(SO_PLATE).map(Number),n=ts.filter(t=>(pl[t]||0)>0).length,open=!!(S&&S.stats&&S.stats.souPlateX);
-  return `<div class="so-box"><h3 class="so-h3">🛡️ Plaques<span class="so-ec">${n} / 17</span></h3>
-    <p class="muted ar-small">${open?"Échangez 2 plaques d’un même type contre 1 Booster Type de ce type.":"Réunissez les 17 plaques du Souterrain pour devenir l’Élu d’Arceus."}</p>
-    <div class="so-pls">${ts.map(t=>`<div class="so-pl${pl[t]?"":" none"}">${soIco("plaque",t)}<span>${SO_PLATE[t]}</span><b>×${pl[t]||0}</b>${open&&(pl[t]||0)>=2?`<button class="btn small" data-so="plate" data-t="${t}" title="2 Plaques ${SO_PLATE[t]} contre 1 Booster Type ${TYPES[t][0]}">→ Booster</button>`:""}</div>`).join("")}</div>
+  return `<div class="so-box"><h3 class="so-h3">🛡️ Plaques<span class="so-ec">${n} / 18</span></h3>
+    <p class="muted ar-small">${open?"Échangez 2 plaques d’un même type contre 1 Booster Type de ce type.":"Réunissez les 18 plaques du Souterrain pour devenir l’Élu d’Arceus."}</p>
+    <div class="so-pls">${ts.map(t=>`<div class="so-pl${pl[t]?"":" none"}" title="Plaque ${SO_PLATE[t]} : « ${SO_PLATE_D[t]} »">${soIco("plaque",t)}<span>${SO_PLATE[t]}</span><b>×${pl[t]||0}</b>${open&&(pl[t]||0)>=2?`<button class="btn small" data-so="plate" data-t="${t}" title="2 Plaques ${SO_PLATE[t]} contre 1 Booster Type ${TYPES[t][0]}">→ Booster</button>`:""}</div>`).join("")}</div>
     ${so.key?`<div class="so-keyrow">${soIco("clef")}<span><b>Clef de voûte</b> : elle semble ouvrir un passage, quelque part…</span></div>`:""}</div>`;
 }
 /* textures du Souterrain (1.5.10), dessinées une fois dans un canvas : grains et cailloux en surimpression sur la couleur de la
@@ -5647,7 +5658,7 @@ function soEnd(v){
   },r.end==="wall"&&!RM()?1500:700);
 }
 function soRules(){
-  const row=k=>{const it=SOUT.items[k];return `<tr><td>${soIco(k)} ${esc(it.n)}</td><td>${it.s[0]}×${it.s[1]}${it.m?" (étoile)":""}</td><td>${soChance(k).toLocaleString("fr-FR",{maximumFractionDigits:2})} %</td><td>${k==="clef"?"???":k==="plaque"?"dans votre sac (17 à réunir)":soGain(k)}</td></tr>`};
+  const row=k=>{const it=SOUT.items[k];return `<tr><td>${soIco(k)} ${esc(it.n)}</td><td>${it.s[0]}×${it.s[1]}${it.m?" (étoile)":""}</td><td>${soChance(k).toLocaleString("fr-FR",{maximumFractionDigits:2})} %</td><td>${k==="clef"?"???":k==="plaque"?"dans votre sac (18 à réunir)":soGain(k)}</td></tr>`};
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Règles du Souterrain</h2><ul class="ar-rules">
     <li>Un mur coûte ${fmtN(SOUT.cost)} crédits. Il cache ${SOUT.n[0]} à ${SOUT.n[1]} objets sous 1 à 6 couches de terre : plus la case est sombre, plus elle est épaisse. Une fouille quittée en cours vous attend à votre retour.</li>
     <li>🔨 <b>Marteau</b> : retire 2 couches sur la case touchée et 1 sur les 4 cases autour (en croix). Fissure : ${SOUT.hammer} points par coup.</li>

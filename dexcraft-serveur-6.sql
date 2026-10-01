@@ -78,10 +78,10 @@ begin
             oo[(y + j / ow) * w + x + j % ow + 1] := case when key is null then -2 else jsonb_array_length(objs) end;
           end if;
         end loop;
-        -- 1.6.0 : plaque (pl) : un des 17 types d'Arceus, Normal excepté (types 2 à 18)
+        -- plaque (pl) : une des 18 plaques d'Arceus (1.6.1 : type 1 = Plaque Légende ; 17 plaques en 1.6.0)
         if key is not null then objs := objs || jsonb_build_array(jsonb_build_object('k', key, 'x', x, 'y', y, 'w', ow, 'h', oh, 'done', false)
           || case when mk is not null then jsonb_build_object('m', mk) else '{}' end
-          || case when (a -> 'items' -> key) ? 'pl' then jsonb_build_object('t', 2 + public.dc__rnd(17)) else '{}' end); end if;
+          || case when (a -> 'items' -> key) ? 'pl' then jsonb_build_object('t', 1 + public.dc__rnd(18)) else '{}' end); end if;
         exit;
       end if;
     end loop;
@@ -141,11 +141,11 @@ begin
   end loop;
   if nd > 0 then d := public.dc__bump(d, 'souItems', nd); end if;
   if (st ->> 'ir')::int > 0 then d := public.dc__bump(d, 'souIron', (st ->> 'ir')::int); end if;
-  -- titres : mur à 4 objets vidé, mur vidé sans toucher de fer, toutes les sphères, les 17 plaques (Élu d'Arceus)
+  -- titres : mur à 4 objets vidé, mur vidé sans toucher de fer, toutes les sphères, les 18 plaques (Élu d'Arceus)
   if nd = 4 and jsonb_array_length(st -> 'objs') = 4 then d := jsonb_set(d, '{stats,souFull}', '1'); end if;
   if nd = jsonb_array_length(st -> 'objs') and (st ->> 'ir')::int = 0 then d := jsonb_set(d, '{stats,souClean}', '1'); end if;
   if (select count(*) from unnest(array['pb','gb','pr','gr','pv','gv','pj','gj','pd','gd']) z where got ? z) = 10 then d := jsonb_set(d, '{stats,souRainbow}', '1'); end if;
-  if (select count(*) from generate_series(2, 18) z where coalesce((pl ->> z::text)::int, 0) > 0) = 17 then d := jsonb_set(d, '{stats,souArceus}', '1'); end if;
+  if (select count(*) from generate_series(1, 18) z where coalesce((pl ->> z::text)::int, 0) > 0) = 18 then d := jsonb_set(d, '{stats,souArceus}', '1'); end if;
   d := d || jsonb_build_object('credits', public.dc__int(d, 'credits') + cr,
     'sout', so || jsonb_build_object('ec', coalesce((so ->> 'ec')::bigint, 0) + ec, 'got', got, 'pl', pl));
   st := st || jsonb_build_object('over', true, 'res', jsonb_build_object('ec', ec, 'cr', cr, 'items', items));
@@ -224,7 +224,7 @@ create or replace function public.dc_sout_plate(p_type int) returns jsonb langua
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); so jsonb; n int; k text; inv jsonb;
 begin
   if coalesce(d -> 'stats' ->> 'souPlateX', '') = '' then raise exception 'Les plaques ne s’échangent pas encore.'; end if;
-  if p_type is null or p_type not between 2 and 18 then raise exception 'Plaque inconnue.'; end if;
+  if p_type is null or p_type not between 1 and 18 then raise exception 'Plaque inconnue.'; end if;  -- 1 : Plaque Légende, Booster Type Normal
   so := case when jsonb_typeof(d -> 'sout') = 'object' then d -> 'sout' else '{}' end;
   n := coalesce((so -> 'pl' ->> p_type::text)::int, 0);
   if n < 2 then raise exception 'Il vous faut 2 plaques de ce type.'; end if;
