@@ -201,14 +201,22 @@ begin
 end $$;
 
 -- ---------- nouvelle manche : adversaire, et boutique sauf si elle est verrouillée ----------
+-- boutique de la manche suivante (pshop : en attente) ; verrouillée : gardée pour cette manche seulement, puis déverrouillée
+-- d'office (1.3.15, demande de Theo). 1.5.15 : après un combat, elle ne change qu'à la fin de l'animation (dc_ar_next), pour
+-- qu'on puisse acheter et relancer pendant le combat dans la boutique d'avant (demande de Theo)
+create or replace function public.dc__ar_pshop(cfg jsonb, st jsonb, coll jsonb) returns jsonb language plpgsql volatile as $$
+begin
+  if not coalesce((st ->> 'pshop')::boolean, false) then return st; end if;
+  st := st - 'pshop';
+  if not coalesce((st ->> 'locked')::boolean, false) then st := jsonb_set(st, '{shop}', public.dc__ar_shop(cfg, st, coll));
+  else st := jsonb_set(st, '{locked}', 'false'); end if;
+  return st;
+end $$;
 create or replace function public.dc__ar_round(cfg jsonb, st jsonb, coll jsonb) returns jsonb language plpgsql volatile as $$
 declare e jsonb;
 begin
   e := public.dc__ar_enemy(cfg, st);
-  st := st || jsonb_build_object('enemy', jsonb_build_object('board', e -> 'board', 'power', e -> 'power'), 'n', e -> 'n');
-  -- boutique verrouillée : gardée pour cette manche seulement, puis déverrouillée d'office (1.3.15, demande de Theo)
-  if not coalesce((st ->> 'locked')::boolean, false) then st := jsonb_set(st, '{shop}', public.dc__ar_shop(cfg, st, coll));
-  else st := jsonb_set(st, '{locked}', 'false'); end if;
+  st := st || jsonb_build_object('enemy', jsonb_build_object('board', e -> 'board', 'power', e -> 'power'), 'n', e -> 'n', 'pshop', true);
   return st;
 end $$;
 
@@ -222,7 +230,20 @@ create or replace function public.dc__ar_view(d jsonb, st jsonb) returns jsonb l
 create or replace function public.dc_ar_state() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, false); st jsonb;
 begin
-  select data into st from public.ar_runs where uid = u;
+  select data into st from public.ar_runs where uid = u for update;
+  -- boutique en attente (page fermée pendant un combat) : posée maintenant
+  if coalesce((st ->> 'pshop')::boolean, false) and not coalesce((st ->> 'over')::boolean, false) then
+    st := public.dc__ar_pshop(public.dc__cfg(), st, d -> 'coll'); perform public.dc__ar_put(u, st);
+  end if;
+  return public.dc__ar_view(d, st);
+end $$;
+
+-- fin de l'animation d'un combat (1.5.15) : la boutique de la nouvelle manche
+create or replace function public.dc_ar_next(p_board jsonb default null, p_bench jsonb default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, false); st jsonb := public.dc__ar_get(u);
+begin
+  st := public.dc__ar_pshop(public.dc__cfg(), public.dc__ar_layout(st, p_board, p_bench) - 'msg', d -> 'coll');
+  perform public.dc__ar_put(u, st);
   return public.dc__ar_view(d, st);
 end $$;
 
@@ -244,7 +265,7 @@ begin
   st := jsonb_build_object('round', 1, 'hp', (a ->> 'lives')::int, 'gold', (a ->> 'startGold')::int, 'wins', 0, 'credits', 0, 'n', 0,
     'board', '[null,null,null,null,null,null]'::jsonb, 'bench', (select jsonb_agg('null'::jsonb) from generate_series(1, public.dc__ar_bench())),
     'locked', false, 'over', false, 'shop', '[]'::jsonb);
-  st := public.dc__ar_round(cfg, st, d -> 'coll');
+  st := public.dc__ar_pshop(cfg, public.dc__ar_round(cfg, st, d -> 'coll'), d -> 'coll');
   insert into public.ar_runs (uid, data) values (u, st) on conflict (uid) do update set data = excluded.data, updated_at = now();
   d := public.dc__save(u, public.dc__bump(d, 'arRuns'));
   return public.dc__ar_view(d, st) || jsonb_build_object('profile', d);
@@ -417,7 +438,7 @@ declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jso
   st jsonb := public.dc__ar_get(u); rd int; res jsonb; auto_ jsonb := '[]'; v jsonb; k int; before jsonb; oe jsonb; day text := public.dc__day();
   gained bigint; pend bigint := coalesce((st ->> 'pend')::bigint, 0); added bigint := 0; bonus bigint := 0; post bigint := 0; cap bigint := (a ->> 'cap')::bigint; win boolean; nr int;
 begin
-  st := public.dc__ar_layout(st, p_board, p_bench) - 'msg'; rd := (st ->> 'round')::int;
+  st := public.dc__ar_layout(public.dc__ar_pshop(cfg, st, d -> 'coll'), p_board, p_bench) - 'msg'; rd := (st ->> 'round')::int;
   -- places libres : les Pokémon les plus forts du banc (total des statistiques, étoile comprise)
   while (select count(*) from jsonb_array_elements(st -> 'board') x where x <> 'null') < public.dc__ar_max(rd) loop
     select x, j - 1 into v, k from jsonb_array_elements(st -> 'bench') with ordinality e(x, j) where x <> 'null'
