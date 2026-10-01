@@ -29,10 +29,10 @@ function setup(scene){
       if(n==="dc_ar_reroll"){A.gold-=2;A.shop=shop();return view()}
       if(n==="dc_ar_lock"){A.locked=a.p_on;return view()}
       if(n==="dc_ar_layout")return {data:{ok:true},error:null};
-      if(n==="dc_ar_next"){if(A.pshop){delete A.pshop;if(!A.locked)A.shop=shop();else A.locked=false}return view()}
+      if(n==="dc_ar_next"){if(A.pshop){delete A.pshop;A.gold+=A.pgold||0;delete A.pgold;if(!A.locked)A.shop=shop();else A.locked=false}return view()}
       if(n==="dc_ar_fight"){const before={board:A.board.map(x=>x),bench:A.bench.map(x=>x),enemy:A.enemy};const mine=A.board.filter(Boolean),en=A.enemy.board.filter(Boolean),log=[];
         const hp={};[...mine,...en].forEach(u=>hp[u.u]=100);for(let k=0;k<12;k++){const a1=mine[k%mine.length],t=en[k%en.length];if(!a1||!t)break;hp[t.u]=Math.max(0,hp[t.u]-40);log.push([a1.u,t.u,40,k%3?1:2,hp[t.u],100])}
-        const r=A.round;A.wins++;A.credits+=80;W.__arG=(W.__arG||0)+80;A.round++;A.gold+=7;A.enemy={board:[U(21),U(23),U(27),null,null,null],power:.7};A.pshop=true; // 1.5.15 : boutique changée à la fin (dc_ar_next)
+        const r=A.round;A.wins++;A.credits+=80;W.__arG=(W.__arG||0)+80;A.round++;A.gold+=7;A.enemy={board:[U(21),U(23),U(27),null,null,null],power:.7};A.pshop=true;A.gold-=7;A.pgold=7; // 1.5.15 : boutique changée à la fin (dc_ar_next)
         return {data:Object.assign(view().data,{before,log,win:true,added:80,bonus:0,auto:[],round:r,profile:stamp(d)}),error:null}}
     }
     // Souterrain : faux serveur (même logique que dexcraft-serveur-6.sql) ; ?scene=sout

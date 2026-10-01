@@ -207,7 +207,7 @@ end $$;
 create or replace function public.dc__ar_pshop(cfg jsonb, st jsonb, coll jsonb) returns jsonb language plpgsql volatile as $$
 begin
   if not coalesce((st ->> 'pshop')::boolean, false) then return st; end if;
-  st := st - 'pshop';
+  st := jsonb_set(st - 'pshop' - 'pgold', '{gold}', to_jsonb((st ->> 'gold')::int + coalesce((st ->> 'pgold')::int, 0)));
   if not coalesce((st ->> 'locked')::boolean, false) then st := jsonb_set(st, '{shop}', public.dc__ar_shop(cfg, st, coll));
   else st := jsonb_set(st, '{locked}', 'false'); end if;
   return st;
@@ -436,9 +436,9 @@ end $$;
 create or replace function public.dc_ar_fight(p_board jsonb default null, p_bench jsonb default null) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); a jsonb := cfg -> 'arena';
   st jsonb := public.dc__ar_get(u); rd int; res jsonb; auto_ jsonb := '[]'; v jsonb; k int; before jsonb; oe jsonb; day text := public.dc__day();
-  gained bigint; pend bigint := coalesce((st ->> 'pend')::bigint, 0); added bigint := 0; bonus bigint := 0; post bigint := 0; cap bigint := (a ->> 'cap')::bigint; win boolean; nr int;
+  gained bigint; pend bigint := coalesce((st ->> 'pend')::bigint, 0); added bigint := 0; bonus bigint := 0; post bigint := 0; cap bigint := (a ->> 'cap')::bigint; win boolean; nr int; g0 int;
 begin
-  st := public.dc__ar_layout(public.dc__ar_pshop(cfg, st, d -> 'coll'), p_board, p_bench) - 'msg'; rd := (st ->> 'round')::int;
+  st := public.dc__ar_layout(public.dc__ar_pshop(cfg, st, d -> 'coll'), p_board, p_bench) - 'msg'; rd := (st ->> 'round')::int; g0 := (st ->> 'gold')::int;
   -- places libres : les Pokémon les plus forts du banc (total des statistiques, étoile comprise)
   while (select count(*) from jsonb_array_elements(st -> 'board') x where x <> 'null') < public.dc__ar_max(rd) loop
     select x, j - 1 into v, k from jsonb_array_elements(st -> 'bench') with ordinality e(x, j) where x <> 'null'
@@ -495,6 +495,9 @@ begin
     st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + floor(nr * coalesce((a ->> 'incStep')::numeric, .5))::int
       - case when nr >= 5 then coalesce((a ->> 'incLate')::int, 0) else 0 end
       + coalesce((a -> 'interest' ->> least(3, (st ->> 'gold')::int / 10))::int, least(3, (st ->> 'gold')::int / 10))));
+    -- 1.5.16 (demande de Theo) : l'or gagné par cette manche (victoire ou relance après défaite, or de la manche suivante,
+    -- intérêts) n'est versé qu'à la fin du combat, avec la nouvelle boutique (pgold, dc__ar_pshop)
+    st := st || jsonb_build_object('pgold', (st ->> 'gold')::int - g0, 'gold', g0);
     oe := st -> 'enemy';
     st := public.dc__ar_round(cfg, st, d -> 'coll');
     -- 1.4.8 (demande de Theo) : une manche perdue se rejoue contre la même équipe (nouvel adversaire de la 1.4.2 à la 1.4.7)

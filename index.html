@@ -1730,7 +1730,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.15";
+const APP_VERSION="1.5.16";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -5140,7 +5140,7 @@ function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
    adversaires, combat et crédits (AR.cap par jour). La page affiche la partie (AR_V.run), gère le placement
    (toucher puis case, ou glisser-déposer ; envoyé au serveur avec chaque action) et anime le combat renvoyé. */
 /* 1.5.14 (demande de Theo) : pendant l'animation d'un combat, la partie affichée (AR_V) est déjà celle renvoyée par le serveur
-   (or de la manche suivante ; boutique d'avant le combat, 1.5.15, la nouvelle n'arrive qu'à la fin par dc_ar_next) : boutique, banc et or utilisables (acheter, vendre un Pokémon du banc, relancer, verrouiller) ; le
+   (boutique d'avant le combat, 1.5.15, et or d'avant le combat, 1.5.16 : la nouvelle boutique et l'or gagné n'arrivent qu'à la fin, par dc_ar_next) : boutique, banc et or utilisables (acheter, vendre un Pokémon du banc, relancer, verrouiller) ; le
    terrain montre le combat (arFightView : équipes et manche du combat) jusqu'à la fin de l'animation ; mises à jour partielles
    (arRefresh, sans toucher au terrain animé). */
 let arFightView=null;
@@ -5241,7 +5241,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.2</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.3</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${arFightView?arFightView.round:r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène, cagnotte de la partie en cours comprise">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
