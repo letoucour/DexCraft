@@ -1730,7 +1730,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.13";
+const APP_VERSION="1.5.14";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2672,6 +2672,9 @@ const TITLES=[
   /* Shiny (1.1.0) : nombre de shiny débloqués (stats.shinyN, tenu par le serveur) */
   ...[[1,"Première étoile","A trouvé son premier shiny"],[10,"Daltonien","A trouvé {n} shiny"],[50,"Shiny Hunter","A trouvé {n} shiny"],[200,"Légende Chromatique","A trouvé {n} shiny"]]
     .map(([need,n,d])=>({k:"shinyN"+need,n,ic:"✨",g:"Shiny",cls:"tc",c:"#c9a227",d:d.replace("{n}",fmtN(need)),stat:"shinyN",need})),
+  // 1.5.14 (demande de Theo) : collections en shiny (shids : cartes dont il faut avoir débloqué le shiny ; serveur : condition shids)
+  {k:"globeSh",n:"Globetrotter étincelant",ic:"🌍",g:"Shiny",cls:"tc",c:"#c9a227",d:"Possède les 20 motifs de Prismillon en shiny",shids:[666,...VIV_IDS]},
+  {k:"alphaSh",n:"Alphabétiste étincelant",ic:"✎",g:"Shiny",cls:"tc",c:"#c9a227",d:"Possède les 28 formes de Zarbi en shiny",shids:[201,...UNOWN_IDS]},
   {k:"shinyAll",n:"Dormir n’est pas une option",ic:"✨",g:"Shiny",cls:"tc",c:"#c9a227",d:"A trouvé tous les shiny du jeu",stat:"shinyN",need:shinyTotal()},
   {k:"luck",n:"Chanceux",ic:"▲",g:"Activité",cls:"tc",c:"#3f5bb5",d:"A obtenu 2 Légendaires dans un même booster",test:p=>!!(p.stats&&p.stats.luck)},
   /* Échanges (1.3.6) : paliers et noms choisis par Theo (avant : Négociant 20, Diplomate 80, Charismatique 200) */
@@ -2703,7 +2706,7 @@ const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
 const TITLE_MAX=3,TITLE_DEFAULT=["maitre"]; // Alpha et Bêta testeur : badges à côté du pseudo depuis la 1.0.1, plus des titres
 const profOf=id=>id===ME?S:PLAYERS[id];
 const ownCount=(ids,coll)=>ids.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
-function titleProgress(t,p){if(t.nt)return [Math.min(TITLES.filter(x=>x!==t&&titleEarned(x,p)).length,t.nt),t.nt];if(t.stat)return [Math.min(((p.stats||{})[t.stat])||0,t.need),t.need];const need=t.need||(t.ids?t.ids.length:1);return [t.ids?ownCount(t.ids,p.coll||{}):titleEarned(t,p)?1:0,need]}
+function titleProgress(t,p){if(t.shids)return [t.shids.filter(i=>p.shiny&&p.shiny[i]).length,t.shids.length];if(t.nt)return [Math.min(TITLES.filter(x=>x!==t&&titleEarned(x,p)).length,t.nt),t.nt];if(t.stat)return [Math.min(((p.stats||{})[t.stat])||0,t.need),t.need];const need=t.need||(t.ids?t.ids.length:1);return [t.ids?ownCount(t.ids,p.coll||{}):titleEarned(t,p)?1:0,need]}
 function titleEarned(t,p){if(!p)return false;if(Array.isArray(p.titlesKept)&&p.titlesKept.includes(t.k))return true; // acquis au prestige (1.5.0)
 if(t.test)return t.test(p);const [n,need]=titleProgress(t,p);return need>0&&n>=need} // need 0 : liste vide (cartes secrètes pas encore reçues du serveur), jamais obtenu
 /* Titres choisis par le joueur (3 au plus), sinon ceux par défaut, dans l'ordre de sélection. */
@@ -3190,10 +3193,10 @@ function vCollection(){
   </div>
   ${discardSel?(()=>{
     const dup=[0,0,0,0,0,0,0,0,0];let favSkipped=0;
-    for(const [k,v] of Object.entries(S.coll)){if(v<2)continue;if(S.fav&&S.fav[k]){favSkipped+=v-1;continue}dup[rar(+k)]+=v-1}
+    for(const [k,v] of Object.entries(S.coll)){if(v<2||rar(+k)>=6)continue;if(S.fav&&S.fav[k]){favSkipped+=v-1;continue}dup[rar(+k)]+=v-1} // 1.5.14 : raretés 6 à 8 jamais défaussées
     const selR=i=>{let n=0;for(const [k,v] of Object.entries(discardSel))if(rar(+k)===i)n+=v;return n};
     return `<div class="discard-help">
-      <p class="muted" style="margin:0 0 8px">Choisissez les raretés dont vous voulez défausser les doubles, ou touchez les cartes une par une. Chaque exemplaire rapporte ${DISCARD.map((v,i)=>i<6||per[i]?`${cr(v)} en ${RAR[i].toLowerCase()}`:"").filter(Boolean).join(", ")}.</p>
+      <p class="muted" style="margin:0 0 8px">Choisissez les raretés dont vous voulez défausser les doubles, ou touchez les cartes une par une. Chaque exemplaire rapporte ${DISCARD.map((v,i)=>i<6?`${cr(v)} en ${RAR[i].toLowerCase()}`:"").filter(Boolean).join(", ")}.</p>
       <div class="rar-picks">${RAR.map((r,i)=>dup[i]?`<button class="rar-pick r${i}" data-act="sel-rar" data-r="${i}" aria-pressed="${selR(i)>=dup[i]}">
         <b>${gems(i)} ${r}</b><span>${dup[i]} double${dup[i]>1?"s":""}, ${cr(dup[i]*DISCARD[i])}</span></button>`:"").join("")||`<span class="muted">Vous n’avez aucun double pour l’instant.</span>`}</div>
       <div class="actions" style="margin-top:10px"><button class="btn small" data-act="sel-dups">Tous les doubles</button><button class="btn small" data-act="sel-clear">Tout désélectionner</button></div>
@@ -5136,6 +5139,13 @@ function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
    Le serveur arbitre tout (partie 5 : dc_ar_*) : boutique tirée dans la collection, or, évolutions par 3 exemplaires,
    adversaires, combat et crédits (AR.cap par jour). La page affiche la partie (AR_V.run), gère le placement
    (toucher puis case, ou glisser-déposer ; envoyé au serveur avec chaque action) et anime le combat renvoyé. */
+/* 1.5.14 (demande de Theo) : pendant l'animation d'un combat, la partie affichée (AR_V) est déjà celle de la manche suivante
+   renvoyée par le serveur : boutique, banc et or utilisables (acheter, vendre un Pokémon du banc, relancer, verrouiller) ; le
+   terrain montre le combat (arFightView : équipes et manche du combat) jusqu'à la fin de l'animation ; mises à jour partielles
+   (arRefresh, sans toucher au terrain animé). */
+let arFightView=null;
+const arRefresh=()=>{if(!arFighting){renderView();return}const t=document.createElement("div");t.innerHTML=vArena();
+  [".ar-dock",".ar-top"].forEach(c=>{const o=document.querySelector(".arena "+c),n=t.querySelector(c);if(o&&n)o.replaceWith(n)})};
 let AR_V=null,arSel=null,arHover=null,arFighting=false,arLoading=false,arLayoutT=0,arNoClick=false,arDrag=null;
 let arSpeed=(()=>{try{return Math.min(4,+localStorage.getItem("dc-ar-speed")||1)}catch(e){return 1}})(); // « Instantané » retiré en 1.4.1 (il cassait le jeu, avis de Theo) : ×4 au plus
 const AR_SPEEDS=[[1,"×1"],[2,"×2"],[4,"×4"]],AR_RARN={0:"Commune",1:"Peu commune",2:"Rare",3:"Épique",5:"Légendaire"};
@@ -5156,7 +5166,7 @@ function arSet(v){ // réponse du serveur : partie, crédits du jour, message d'
 function arLoad(){if(arLoading)return;arLoading=true;rpc("dc_ar_state",{},{render:false}).then(v=>{arSet(v);renderView()}).catch(e=>toast(e.message)).finally(()=>{arLoading=false})}
 function arAct(name,args){ // action sur le serveur, avec le placement actuel
   clearTimeout(arLayoutT);
-  return run(async()=>{const v=await rpc(name,Object.assign(arLayout(),args||{}),{render:false});arSet(v);arSel=null;renderView()});
+  return run(async()=>{const v=await rpc(name,Object.assign(arLayout(),args||{}),{render:false});arSet(v);arSel=null;arRefresh()});
 }
 function arSaveLayout(){clearTimeout(arLayoutT);arLayoutT=setTimeout(()=>{if(arRun()&&!arRun().over)rpc("dc_ar_layout",arLayout(),{render:false}).catch(()=>arLoad())},700)}
 /* déplacer une unité vers une case (échange si la case est prise) */
@@ -5167,13 +5177,13 @@ function arMove(uid,zone,i){
   r[from][fi]=dest||null;r[zone][i]=u;arSel=null;renderView();arSaveLayout();return true;
 }
 function arBuy(i,zone,slot){
-  const r=arRun(),id=r.shop[i];if(!id||arFighting)return;
+  const r=arRun(),id=r.shop[i];if(!id)return;
   if(r.gold<AR.cost[rar(id)]){toast("Pas assez d’or.");return}
   const before=new Set(arUnits().map(u=>u.u));
   arAct("dc_ar_buy",{p_slot:i}).then(()=>{ // lâché sur une case libre (terrain ou banc) : le nouveau Pokémon y va
     const nu=arUnits().find(u=>!before.has(u.u)),r=arRun();if(!nu||!r.bench.includes(nu)||(zone!=="board"&&zone!=="bench")||r[zone][slot])return;arMove(nu.u,zone,slot)});
 }
-function arSell(uid){if(!arFind(uid)||arFighting)return;arAct("dc_ar_sell",{p_u:uid})}
+function arSell(uid){if(!arFind(uid))return;if(arFighting&&arRun().board.some(u=>u&&u.u===uid)){toast("Attendez la fin du combat pour vendre un Pokémon du terrain.");return}arAct("dc_ar_sell",{p_u:uid})}
 /* ---------- synergies et fiche ---------- */
 function arSyn(units){const c={};for(const id of new Set(units.map(u=>u.i)))for(const t of D(id)[3])c[t]=(c[t]||0)+1;return c}
 /* Synergies (1.3.14, demande de Theo) : juste un compteur par type des Pokémon du terrain (différents), à gauche du champ de bataille */
@@ -5231,7 +5241,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.0</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.1</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène, cagnotte de la partie en cours comprise">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -5241,17 +5251,18 @@ function vArena(){
     ${r&&r.over?`<p class="muted">Dernière partie : ${r.wins} manche${r.wins>1?"s":""} gagnée${r.wins>1?"s":""}, +${fmtN(r.credits)} crédits.</p>`:""}
     <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:`Plafond du jour atteint : jusqu’à minuit, chaque manche gagnée du premier coup rapporte encore ${AR.afterRound} crédits, et l’Arène réussie ${AR.afterCap} de plus (${AR.afterCapPerfect} sans perdre de vie).`}</p>
     <button class="btn primary ar-fight" data-ar="start">⚔️ ${r?"Nouvelle partie":"Lancer une partie"}</button></div></div>`;
-  const on=r.board.filter(Boolean).length,max=arMax(r.round),counts={},c1s={},owned=new Set();arUnits().forEach(u=>{owned.add(u.i);if(!u.s)counts[u.i]=(counts[u.i]||0)+1;else if(u.s===1)c1s[u.i]=(c1s[u.i]||0)+1}); // 1.4.9 : offres d’un Pokémon déjà dans l’équipe en surbrillance (owned), progrès vers les deux étoiles (c1s)
-  const empt=[0,1,2,3,4,5].filter(i=>!r.board[i]).slice(0,Math.max(0,max-on)),sel=arSel&&arFind(arSel);
+  const F=arFightView||{board:r.board,enemy:r.enemy,round:r.round}; // 1.5.14 : terrain du combat pendant l'animation
+  const on=F.board.filter(Boolean).length,max=arMax(F.round),counts={},c1s={},owned=new Set();arUnits().forEach(u=>{owned.add(u.i);if(!u.s)counts[u.i]=(counts[u.i]||0)+1;else if(u.s===1)c1s[u.i]=(c1s[u.i]||0)+1}); // 1.4.9 : offres d’un Pokémon déjà dans l’équipe en surbrillance (owned), progrès vers les deux étoiles (c1s)
+  const empt=[0,1,2,3,4,5].filter(i=>!F.board[i]).slice(0,Math.max(0,max-on)),sel=arSel&&arFind(arSel);
   return `<div class="arena">${top}
   <div class="ar-stage"><div class="ar-colL">${arSideInfo()}</div><div class="ar-play">
-    <div class="ar-fieldrow"><div class="ar-syncol">${arSynCount(r.board,"Vous :")}</div><div class="ar-field">
-      <div class="ar-lbl"><span>Adversaire</span><span>manche ${r.round}</span></div>
-      <div class="ar-side">${[3,4,5,0,1,2].map(i=>`<div class="ar-slot">${arUnitHTML(r.enemy.board[i],true)}</div>`).join("")}</div>
+    <div class="ar-fieldrow"><div class="ar-syncol">${arSynCount(F.board,"Vous :")}</div><div class="ar-field">
+      <div class="ar-lbl"><span>Adversaire</span><span>manche ${F.round}</span></div>
+      <div class="ar-side">${[3,4,5,0,1,2].map(i=>`<div class="ar-slot">${arUnitHTML(F.enemy.board[i],true)}</div>`).join("")}</div>
       <div class="ar-sep"></div>
       <div class="ar-lbl"><span>Votre équipe ${on}/${max}</span><span class="ar-places${on<max?" free":""}">${on<max?`${max-on} place${max-on>1?"s":""} libre${max-on>1?"s":""}`:"Équipe complète"}</span></div>
-      <div class="ar-side">${[0,1,2,3,4,5].map(i=>{const u=r.board[i],free=empt.includes(i);return `<div class="ar-slot${free?" free":""}${!u&&on>=max?" closed":""}${sel&&!u&&(on<max||r.board.includes(sel))?" drop":""}" data-ar="slot" data-zone="board" data-i="${i}" data-ar-drop="board:${i}">${arUnitHTML(u)}${free?`<span class="ar-tag">+ libre</span>`:!u&&on>=max?`<span class="ar-tag">🔒</span>`:""}</div>`}).join("")}</div>
-    </div><div class="ar-frsp ar-syncol ar-mirror">${arSynCount(r.enemy.board,"Adversaire :")}</div></div>
+      <div class="ar-side">${[0,1,2,3,4,5].map(i=>{const u=F.board[i],free=empt.includes(i);return `<div class="ar-slot${free?" free":""}${!u&&on>=max?" closed":""}${sel&&!u&&(on<max||r.board.includes(sel))?" drop":""}" data-ar="slot" data-zone="board" data-i="${i}" data-ar-drop="board:${i}">${arUnitHTML(u)}${free?`<span class="ar-tag">+ libre</span>`:!u&&on>=max?`<span class="ar-tag">🔒</span>`:""}</div>`}).join("")}</div>
+    </div><div class="ar-frsp ar-syncol ar-mirror">${arSynCount(F.enemy.board,"Adversaire :")}</div></div>
     ${arSynLine()}
     <div class="ar-log" id="ar-log">${sel?`${esc(nm(arD(sel.i)))} choisi : touchez une case, ou glissez-le.`:`Touchez ou glissez un Pokémon pour le placer<span class="ar-wide"> ; glissez-le sur la boutique pour le vendre</span>.`}</div>
     <div class="ar-dock">
@@ -5288,7 +5299,9 @@ async function arFight(){
   if(arFighting)return;clearTimeout(arLayoutT);
   let res;
   try{res=await rpc("dc_ar_fight",arLayout(),{render:false})}catch(e){toast(e.message);return}
-  const r=arRun();Object.assign(r,{board:res.before.board,bench:res.before.bench,enemy:res.before.enemy});arSel=null;arHover=null;
+  arSel=null;arHover=null;
+  if(res.run&&!res.run.over){arSet(res);arFightView={board:res.before.board,enemy:res.before.enemy,round:res.round}} // 1.5.14 : la manche suivante est déjà là
+  else{const r=arRun();Object.assign(r,{board:res.before.board,bench:res.before.bench,enemy:res.before.enemy})}
   arFighting=false;renderView();arFighting=true;
   if(res.auto&&res.auto.length)$("#ar-log").textContent=`Placé${res.auto.length>1?"s":""} d’office : ${res.auto.map(nm).join(", ")}.`;
   for(const [a,t,dmg,m,hp,mx] of res.log||[]){
@@ -5303,7 +5316,7 @@ async function arFight(){
     if(arSpeed<9){await sleep(260/arSpeed);ea&&ea.classList.remove("act")}
   }
   await sleep(arSpeed<9?500:150);
-  arFighting=false;arSet(res);renderAll();
+  arFighting=false;if(arFightView)arFightView=null;else arSet(res);renderAll(); // achats faits pendant le combat : gardés (AR_V à jour)
   const nr=arRun(),msg=res.win?`Manche ${res.round} gagnée !${res.added?` +${fmtN(res.added)} crédits${nr.over?"":" dans la cagnotte"}.`:res.post&&!nr.over?` +${fmtN(res.post)} crédits dans la cagnotte.`:""}`:`Manche ${res.round} perdue : −1 vie.${nr.over?"":` Vous la rejouez contre la même équipe, avec ${AR.lossGold} or de plus pour vous relancer.`}`;
   if(nr.over){
     openDlg(`<div class="side" style="align-items:center;text-align:center"><div style="font-size:3rem" aria-hidden="true">${nr.done?"🏆":"💥"}</div>
@@ -5332,7 +5345,8 @@ document.addEventListener("click",e=>{
   if(a==="speed"){arSpeed=+b.dataset.v;try{localStorage.setItem("dc-ar-speed",arSpeed)}catch(x){}document.querySelectorAll('[data-ar="speed"]').forEach(x=>x.setAttribute("aria-pressed",+x.dataset.v===arSpeed));return}
   if(a==="rules"){arRules();return}
   if(a==="start"){closeDlg();run(async()=>{arSet(await rpc("dc_ar_start",{p_new:true},{render:false}));arSel=null;renderView()});return}
-  if(arFighting||!r||r.over)return;
+  if(!r||r.over)return;
+  if(arFighting&&!["buy","reroll","lock","sell","slot"].includes(a))return; // 1.5.14 : la boutique reste utilisable pendant le combat
   if(a==="new"){if(confirm(`Abandonner la partie en cours et en commencer une nouvelle ?${arRun()&&arRun().credits?` La cagnotte (${fmtN(arRun().credits)} crédits) vous sera versée.`:""}`))run(async()=>{arSet(await rpc("dc_ar_start",{p_new:true},{render:false}));arSel=null;renderView()});return}
   if(a==="buy"){arBuy(+b.dataset.i);return}
   if(a==="reroll"){arAct("dc_ar_reroll");return}
@@ -5340,8 +5354,10 @@ document.addEventListener("click",e=>{
   if(a==="sell"){arSell(arSel);return}
   if(a==="fight"){arFight();return}
   if(a==="slot"){const z=b.dataset.zone,i=+b.dataset.i,u=r[z][i];
-    if(!arSel){if(u){arSel=u.u;renderView()}return}
-    if(u&&u.u===arSel){arSel=null;renderView();return}
+    if(arFighting&&z!=="bench")return; // pendant le combat : seulement le banc (pour vendre)
+    if(!arSel){if(u){arSel=u.u;arRefresh()}return}
+    if(u&&u.u===arSel){arSel=null;arRefresh();return}
+    if(arFighting){arSel=u?u.u:null;arRefresh();return}
     arMove(arSel,z,i)}
 },true);
 document.addEventListener("mouseover",e=>{
@@ -5356,7 +5372,8 @@ document.addEventListener("mouseover",e=>{
    Offre de la boutique : lâchée n'importe où elle est achetée (sur une case libre, elle y va), sur la boutique elle y reste.
    Pendant le glisser, survoler un autre Pokémon compare leurs statistiques dans la fiche. */
 document.addEventListener("pointerdown",e=>{
-  if(view!=="arena"||arFighting||e.button>0)return;const src=e.target.closest("[data-ar-drag]");if(!src||src.disabled)return;
+  if(view!=="arena"||e.button>0)return;const src=e.target.closest("[data-ar-drag]");if(!src||src.disabled)return;
+  if(arFighting&&!src.closest(".ar-dock"))return; // pendant le combat : le banc et la boutique seulement
   const [kind,v]=src.dataset.arDrag.split(":"),r=arRun();
   arDrag={src,kind,v:+v,unit:kind==="u"?arFind(+v):{i:r.shop[+v],s:0},x:e.clientX,y:e.clientY,on:false,ghost:null,over:null};
 });
@@ -5788,7 +5805,7 @@ document.addEventListener("click",e=>{
     case"discard-cancel":discardSel=null;renderView();break;
     case"sel-clear":discardSel={};renderView();break;
     case"sel-dups":{discardSel={};let skipped=0;
-      for(const [k,v] of Object.entries(S.coll)){if(v<2)continue;if(keepCard(+k)){skipped++;continue}discardSel[k]=v-1}
+      for(const [k,v] of Object.entries(S.coll)){if(v<2||rar(+k)>=6)continue;if(keepCard(+k)){skipped++;continue}discardSel[k]=v-1}
       renderView();keptToast(skipped);break}
     case"sel-rar":{const ri=+b.dataset.r;let dup=0,sel=0;
       for(const [k,v] of Object.entries(S.coll))if(rar(+k)===ri&&v>1)dup+=v-1;
@@ -5799,7 +5816,7 @@ document.addEventListener("click",e=>{
         if(on){if(v>1&&keepCard(+k)){skipped++;continue}if(v>1)discardSel[k]=v-1}else delete discardSel[k]}
       if(on)keptToast(skipped);
       renderView();break}
-    case"pick":{const c=S.coll[id]||0;if(!c)break;
+    case"pick":{const c=S.coll[id]||0;if(!c)break;if(rar(id)>=6){toast("Cette carte ne peut pas être défaussée.");break} // 1.5.14
       if(S.fav&&S.fav[id]){toast(`${nm(id)} est dans vos favoris : retirez-le des favoris pour pouvoir le défausser.`);break}const cur=discardSel[id]||0;const nx=cur>=c?0:cur+1;if(nx)discardSel[id]=nx;else delete discardSel[id];
       const y=window.scrollY;renderView();window.scrollTo(0,y);break}
     case"discard-go":{const n=Object.values(discardSel).reduce((x,y)=>x+y,0);if(!n)break;
@@ -6374,7 +6391,8 @@ function gameConfig(){
 function titleDef(t){
   const same=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
   if(t.stat)return {c:"stat",s:t.stat,n:t.need};
-  if(t.nt)return {c:"ntitles",n:t.nt}; // Titré (1.5.8) : compté par le serveur (dc__title_ok)
+  if(t.nt)return {c:"ntitles",n:t.nt};
+  if(t.shids)return {c:"shids",ids:t.shids,n:t.shids.length}; // 1.5.14 : shiny débloqués de ces cartes // Titré (1.5.8) : compté par le serveur (dc__title_ok)
   const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},arPerf:{c:"sflag",s:"arPerf"},souFull:{c:"sflag",s:"souFull"},souGd:{c:"sflag",s:"souGd"},lord:{c:"cos",i:"titre.lord"},fortune:{c:"cos",i:"titre.fortune"}};
   if(fixed[t.k])return fixed[t.k];
   if(t.k==="darwin")return {c:"evo",n:t.ids.length}; // cibles de cfg.evo, comptées par le serveur (1.1.3)

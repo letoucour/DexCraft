@@ -82,9 +82,7 @@ begin
   return jsonb_set(d, '{coll}', coalesce(d -> 'coll', '{}') || jsonb_build_object(k, c));
 end $$;
 
--- carte reçue (booster, évolution, échange, cadeau) : ajoutée à la collection ET comptée dans got, le nombre de fois
--- où le joueur l'a obtenue au total, qui ne baisse jamais (1.1.0 : chance shiny). Une carte rendue (annonce retirée,
--- proposition refusée) passe par dc__add seul : elle n'est pas comptée deux fois.
+-- carte reçue : ajoutée et comptée dans got (chance shiny, 1.1.0) ; une carte rendue passe par dc__add seul
 create or replace function public.dc__gain(d jsonb, id int, n int) returns jsonb language sql immutable as
 $$ select jsonb_set(public.dc__add(d, id, n), '{got}', coalesce(d -> 'got', '{}') || jsonb_build_object(id::text, coalesce((d -> 'got' ->> id::text)::int, 0) + n)) $$;
 
@@ -126,6 +124,7 @@ create or replace function public.dc__title_ok(cfg jsonb, def jsonb, d jsonb, ne
     when 'ids' then (select count(*) from jsonb_array_elements_text(def -> 'ids') x where newcoll ? x) >= (def ->> 'n')::int
     when 'evo' then (select count(distinct x) from jsonb_each(cfg -> 'evo') e, jsonb_array_elements_text(e.value) x where newcoll ? x) >= (def ->> 'n')::int  -- Darwiniste (1.1.3)
     when 'cos' then coalesce(d -> 'cos', '{}') ? (def ->> 'i')
+    when 'shids' then (select count(*) from jsonb_array_elements_text(def -> 'ids') x where coalesce(d -> 'shiny', '{}') ? x) >= (def ->> 'n')::int  -- 1.5.14 : shiny de ces cartes
     -- Titré (1.5.8) : n titres différents obtenus (acquis au prestige compris), lui-même exclu
     when 'ntitles' then (select count(*) from jsonb_array_elements_text(cfg -> 'titleKeys') k where cfg -> 'titleDefs' -> k ->> 'c' <> 'ntitles'
       and (coalesce(d -> 'titlesKept' ? k, false) or public.dc__title_ok(cfg, cfg -> 'titleDefs' -> k, d, newcoll, nmaster, byr, gencnt, typecnt, nsec))) >= (def ->> 'n')::int
@@ -231,8 +230,7 @@ begin
   end if;
   -- titres affichés à côté du nom (shown) : les titres choisis, ou ceux par défaut, réellement obtenus.
   -- Calculés ici pour que les autres joueurs n'aient pas à télécharger toute la collection.
-  -- Prestige (1.5.0) : tout titre obtenu est acquis pour toujours (titlesKept), même après la remise à zéro du Pokédex
-  -- ou l'ajout de nouveaux Pokémon
+  -- Prestige (1.5.0) : tout titre obtenu est acquis pour toujours (titlesKept)
   if coalesce((d ->> 'prestige')::int, 0) > 0 then
     d := jsonb_set(d, '{titlesKept}', (select coalesce(jsonb_agg(distinct k), '[]') from (
       select jsonb_array_elements_text(case when jsonb_typeof(d -> 'titlesKept') = 'array' then d -> 'titlesKept' else '[]' end) k
@@ -356,8 +354,7 @@ declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); h jsonb
 begin
   if public.dc__count(d, p_id) < 1 then raise exception 'Ce Pokémon n’est plus dans votre collection.'; end if;
   if p_shiny and not (d -> 'shiny' ? p_id::text) then raise exception 'Vous n’avez pas encore ce Pokémon en shiny.'; end if;
-  -- historique des 5 dernières images (avaHist), de la plus récente à la plus ancienne, gardé dans le profil (0.6.9) ;
-  -- une image shiny (1.2.0) s'y note {"i": n°, "s": 1}
+  -- 5 dernières images (avaHist, 0.6.9) ; une image shiny s'y note {"i": n°, "s": 1}
   e := case when p_shiny then jsonb_build_object('i', p_id, 's', 1) else to_jsonb(p_id) end;
   h := case when jsonb_typeof(d -> 'avaHist') = 'array' then d -> 'avaHist' else '[]' end;
   if jsonb_array_length(h) = 0 and d ->> 'avatar' is not null and d -> 'avatar' <> 'null' then h := jsonb_build_array(d -> 'avatar'); end if;
@@ -418,8 +415,7 @@ begin
       end loop;
       pool := coalesce(cfg -> 'pool' -> (r::text), cfg -> 'byr' -> r); -- réserves de tirage (1.1.8) : Méga et Gigamax de légendaires tirées avec les Légendaires
       id := (pool ->> public.dc__rnd(jsonb_array_length(pool)))::int;
-      -- shiny (1.1.0) : (1 + fois où la carte a déjà été obtenue) sur 4 096, 100 sur 4 096 au plus ; une fois par carte,
-      -- jamais pour une mythique, une transcendante ou une carte sans illustration shiny (shinyNo)
+      -- shiny (1.1.0) : (1 + fois obtenue) sur 4 096 ; jamais pour une carte secrète ou sans illustration shiny
       sh := false;
       if r <= 5 and cfg ? 'shinyBase' and not (cfg -> 'shinyNo' @> to_jsonb(id)) and not (d -> 'shiny' ? id::text) then
         sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 40) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1);   -- + Charmes Chroma (1.5.0)
@@ -433,7 +429,7 @@ begin
     d := public.dc__bump(d, 'packs');
     if legend >= 2 then d := jsonb_set(d, '{stats,luck}', '1'); end if;
   end loop;
-  -- dernier tirage gardé dans le profil : si la réponse se perd (réseau mobile coupé), le jeu le relit et l'affiche quand même
+  -- dernier tirage gardé : si la réponse se perd, le jeu le relit
   d := d || jsonb_build_object('lastOpen', jsonb_build_object('t', now_ms, 'drawn', drawn));
   -- 50 dernières cartes tirées (1.2.0), les plus récentes d'abord, à revoir depuis l'écran des boosters
   d := d || jsonb_build_object('recent', (select jsonb_agg(v order by o) from jsonb_array_elements(drawn || coalesce(d -> 'recent', '[]'))
@@ -449,6 +445,7 @@ begin
     q := (r.value #>> '{}')::int;
     if q is null or q < 1 then raise exception 'Sélection invalide.'; end if;
     if d -> 'fav' ? r.key then raise exception 'Une carte favorite est protégée de la défausse.'; end if;
+    if public.dc__rar(cfg, r.key::int) >= 6 then raise exception 'Cette carte ne peut pas être défaussée.'; end if;  -- 1.5.14 : raretés 6 à 8
     if public.dc__count(d, r.key::int) < q then raise exception 'Certaines cartes ne sont plus dans votre collection.'; end if;
     d := public.dc__add(d, r.key::int, -q);
     gained := gained + q * (cfg -> 'discard' ->> public.dc__rar(cfg, r.key::int))::int; n := n + q;
