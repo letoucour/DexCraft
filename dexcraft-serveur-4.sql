@@ -12,15 +12,17 @@
 -- sans aucune carte du choix est retirée du tirage, pour que le booster respecte toujours ce qui a été acheté.
 create or replace function public.dc__open_special(d jsonb, cfg jsonb, p_kind text, p_val int, p_k int) returns jsonb language plpgsql volatile as $$
 declare now_ms bigint := public.dc__now(); sc text := cfg ->> 'spCard'; lst jsonb; pools jsonb := '[]'; pool jsonb;
-  odds bigint[] := '{}'; tot bigint := 0; b int; i int; r int; x bigint; id int; sh boolean; drawn jsonb := '[]'; legend int; spc int;
+  odds bigint[] := '{}'; tot bigint := 0; b int; i int; r int; x bigint; id int; sh boolean; drawn jsonb := '[]'; legend int; spc int; spset text;
 begin
   -- cartes spéciales (1.4.17, rareté 8, jamais tirées au hasard) : condition dans secret_cards (unlock : need = cartes à posséder,
   -- sp = booster spécial) ; la première fois qu'un joueur qui la remplit ouvre ce booster, sa dernière carte est la carte spéciale.
   -- Une seule fois par joueur (spGot), même s'il l'échange ou la défausse ensuite. 1.5.8 : unlock.title = titre qui doit être
   -- équipé (choisi dans titles) au moment d'ouvrir le booster.
-  select c.id into spc from public.secret_cards c
+  -- 1.6.0 : unlock.stat = drapeau de stats requis (titre obtenu), unlock.set = drapeau posé quand la carte est donnée
+  select c.id, c.data -> 8 -> 'unlock' ->> 'set' into spc, spset from public.secret_cards c
     where c.data -> 8 -> 'unlock' ->> 'sp' = p_kind || ':' || p_val and not coalesce(d -> 'spGot', '{}') ? c.id::text
       and (c.data -> 8 -> 'unlock' ->> 'title' is null or (jsonb_typeof(d -> 'titles') = 'array' and d -> 'titles' ? (c.data -> 8 -> 'unlock' ->> 'title')))
+      and (c.data -> 8 -> 'unlock' ->> 'stat' is null or coalesce(d -> 'stats' ->> (c.data -> 8 -> 'unlock' ->> 'stat'), '') not in ('', '0', 'false'))
       and not exists (select 1 from jsonb_array_elements_text(c.data -> 8 -> 'unlock' -> 'need') n where public.dc__count(d, n::int) < 1)
     order by c.id limit 1;
   if p_kind = 'gen' and p_val between 1 and 9 then
@@ -56,6 +58,7 @@ begin
       id := (pool ->> public.dc__rnd(jsonb_array_length(pool)))::int;
       if spc is not null and b = 1 and i = (cfg ->> 'cards')::int then
         id := spc; r := 8; d := jsonb_set(d, '{spGot}', coalesce(d -> 'spGot', '{}') || jsonb_build_object(spc::text, now_ms));
+        if spset is not null then d := jsonb_set(d, array['stats', spset], '1'); end if;
       end if;
       -- shiny : même règle que dc_open
       sh := false;

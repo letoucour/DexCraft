@@ -516,30 +516,33 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 
 /* Mythique : la totale */
 /* scène d'une carte spéciale (1.4.17) : noir, brume violette, anneaux de runes, la carte sort de l'ombre */
-.legend.special{background:#05020b;animation:lgIn .6s ease-out;overflow:hidden}
-.legend.special .s-fog{position:absolute;inset:-25%;background:radial-gradient(circle at 50% 47%,rgba(124,58,237,.5),rgba(46,16,101,.32) 28%,transparent 58%);filter:blur(24px);opacity:0;animation:sFog 2.2s .2s ease-out forwards,sBreath 5s 2.4s ease-in-out infinite alternate}
+.legend.special{background:var(--sBg,#05020b);animation:lgIn .6s ease-out;overflow:hidden}
+.legend.special .s-fog{position:absolute;inset:-25%;background:radial-gradient(circle at 50% 47%,rgba(var(--sA,124,58,237),.5),rgba(var(--sB,46,16,101),.32) 28%,transparent 58%);filter:blur(24px);opacity:0;animation:sFog 2.2s .2s ease-out forwards,sBreath 5s 2.4s ease-in-out infinite alternate}
 @keyframes sFog{to{opacity:1}}
 @keyframes sBreath{from{transform:scale(1)}to{transform:scale(1.1)}}
 .legend.special .s-ring{position:absolute;left:50%;top:45%;width:min(92vmin,660px);aspect-ratio:1;translate:-50% -50%;border-radius:50%;
-  background:repeating-conic-gradient(from 0deg,rgba(196,163,255,.5) 0 1.5deg,transparent 1.5deg 7deg,rgba(139,92,246,.35) 7deg 9deg,transparent 9deg 16deg);
+  background:repeating-conic-gradient(from 0deg,rgba(var(--sC,196,163,255),.5) 0 1.5deg,transparent 1.5deg 7deg,rgba(var(--sD,139,92,246),.35) 7deg 9deg,transparent 9deg 16deg);
   -webkit-mask:radial-gradient(circle,transparent 63%,#000 64%,#000 67%,transparent 68%);mask:radial-gradient(circle,transparent 63%,#000 64%,#000 67%,transparent 68%);
   opacity:0;animation:sRing 1.4s 1.3s ease-out forwards,spin 60s linear infinite}
 .legend.special .s-ring.r2{width:min(74vmin,520px);animation:sRing 1.4s 1.5s ease-out forwards,spin 38s linear infinite reverse;
-  background:repeating-conic-gradient(from 5deg,rgba(233,213,255,.4) 0 .8deg,transparent .8deg 4deg,rgba(124,58,237,.45) 4deg 12deg,transparent 12deg 20deg)}
+  background:repeating-conic-gradient(from 5deg,rgba(var(--sE,233,213,255),.4) 0 .8deg,transparent .8deg 4deg,rgba(var(--sA,124,58,237),.45) 4deg 12deg,transparent 12deg 20deg)}
 @keyframes sRing{from{opacity:0;scale:.82}to{opacity:.85;scale:1}}
 .legend.special .s-pulse{position:absolute;left:50%;top:45%;width:24px;height:24px;translate:-50% -50%;border-radius:50%;
-  background:radial-gradient(circle,rgba(233,213,255,.85),rgba(124,58,237,.45) 40%,transparent 70%);opacity:0;animation:sPulse 1.8s 1.3s ease-out forwards}
+  background:radial-gradient(circle,rgba(var(--sE,233,213,255),.85),rgba(var(--sA,124,58,237),.45) 40%,transparent 70%);opacity:0;animation:sPulse 1.8s 1.3s ease-out forwards}
 @keyframes sPulse{0%{opacity:0;transform:scale(1)}12%{opacity:1}100%{opacity:0;transform:scale(55)}}
 .legend.special .lg-title{font-size:clamp(1.6rem,6.5vw,3.2rem);letter-spacing:.34em;text-transform:uppercase;padding-left:.34em;
-  background:linear-gradient(100deg,#6d28d9 0%,#c4a3ff 35%,#f5f0ff 50%,#a78bfa 65%,#6d28d9 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 14px rgba(139,92,246,.85));animation:sTitle 1.6s 1.6s ease-out both,shine 3.4s 3.2s linear infinite}
+  background:linear-gradient(100deg,rgb(var(--sA,109,40,217)) 0%,rgb(var(--sC,196,163,255)) 35%,rgb(var(--sE,245,240,255)) 50%,rgb(var(--sG,167,139,250)) 65%,rgb(var(--sA,109,40,217)) 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 14px rgba(var(--sD,139,92,246),.85));animation:sTitle 1.6s 1.6s ease-out both,shine 3.4s 3.2s linear infinite}
 @keyframes sTitle{from{opacity:0;letter-spacing:.9em}to{opacity:1;letter-spacing:.34em}}
-.legend.special .lg-card{width:min(280px,70vw);animation:sCard 2s 1.4s cubic-bezier(.2,.8,.25,1) both;filter:drop-shadow(0 0 26px rgba(139,92,246,.85)) drop-shadow(0 0 60px rgba(76,29,149,.8))}
+.legend.special .lg-card{width:min(280px,70vw);animation:sCard 2s 1.4s cubic-bezier(.2,.8,.25,1) both;filter:drop-shadow(0 0 26px rgba(var(--sD,139,92,246),.85)) drop-shadow(0 0 60px rgba(var(--sF,76,29,149),.8))}
 @keyframes sCard{0%{opacity:0;transform:scale(.82) translateY(24px);filter:blur(16px) brightness(.15)}55%{opacity:1;filter:blur(3px) brightness(.7)}
-  100%{opacity:1;transform:none;filter:drop-shadow(0 0 26px rgba(139,92,246,.85)) drop-shadow(0 0 60px rgba(76,29,149,.8))}}
-.legend.special .lg-name{animation:lgIn .9s 3s both;color:#ede4ff;text-shadow:0 0 14px rgba(167,139,250,.9)}
-.legend.special .lg-share{background:#7c3aed;color:#fff;animation-delay:3.2s;box-shadow:0 4px 18px rgba(124,58,237,.5)}
-.legend.special .lg-sub{animation:lgIn .6s 3.6s both;color:#c9b8f0}
+  100%{opacity:1;transform:none;filter:drop-shadow(0 0 26px rgba(var(--sD,139,92,246),.85)) drop-shadow(0 0 60px rgba(var(--sF,76,29,149),.8))}}
+.legend.special .lg-name{animation:lgIn .9s 3s both;color:rgb(var(--sE,237,228,255));text-shadow:0 0 14px rgba(var(--sG,167,139,250),.9)}
+.legend.special .lg-share{background:rgb(var(--sA,124,58,237));color:#fff;animation-delay:3.2s;box-shadow:0 4px 18px rgba(var(--sA,124,58,237),.5)}
+.legend.special .lg-sub{animation:lgIn .6s 3.6s both;color:rgb(var(--sC,201,184,240))}
+/* 1.6.0 : couleurs de la scène selon la carte (champ fx des données secrètes) */
+.legend.special.fx-brasier{--sA:234,88,12;--sB:124,45,18;--sC:253,186,116;--sD:249,115,22;--sE:254,243,199;--sF:154,52,18;--sG:251,146,60;--sBg:#0b0402}
+.legend.special.fx-orchidee{--sA:190,24,93;--sB:80,10,50;--sC:244,114,182;--sD:219,39,119;--sE:217,249,157;--sF:101,163,13;--sG:163,230,53;--sBg:#08020a}
 .legend.mythic{background:#05040c;animation:none;overflow:hidden}
 .mythic .m-bg{position:absolute;inset:-20%;background:radial-gradient(circle at 50% 55%,rgba(255,79,216,.35),transparent 45%),radial-gradient(circle at 30% 40%,rgba(79,195,255,.25),transparent 40%),radial-gradient(circle at 70% 40%,rgba(255,207,63,.25),transparent 40%);opacity:0;animation:mbg 1s 1.2s ease-out forwards,hue 6s 1.2s linear infinite}
 @keyframes mbg{to{opacity:1}}
@@ -759,6 +762,17 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .card.skin-ancien .art{border:3px solid #c9a13b;box-shadow:inset 0 0 0 1px #6b4a12}.card.skin-ancien::after{opacity:.28}
 .card.skin-ancien .card-top,.card.skin-ancien .genus,.card.skin-ancien .card-foot,.card.skin-ancien .stats span,.card.skin-ancien .spec-lines{color:#e7c65a}
 .card.skin-ancien .card-name{color:#f6dc86;text-shadow:0 1px 0 #2a1238}
+/* 1.6.0 : apparences « brasier » (orange et or) et « orchidee » (magenta et vert), même principe que « ancien » */
+.card.skin-brasier{border-color:transparent;animation:none;color:#fcd34d;
+  background:radial-gradient(circle,rgba(253,211,77,.5) 0 .8px,transparent 1.3px) 0 0/6px 6px padding-box,linear-gradient(165deg,#5a1406,#a3320b 40%,#3d0d04) padding-box,linear-gradient(135deg,#fde68a,#f59e0b 35%,#fcd34d 60%,#b45309) border-box}
+.card.skin-brasier .art{border:3px solid #f59e0b;box-shadow:inset 0 0 0 1px #7c2d12}.card.skin-brasier::after{opacity:.28}
+.card.skin-brasier .card-top,.card.skin-brasier .genus,.card.skin-brasier .card-foot,.card.skin-brasier .stats span,.card.skin-brasier .spec-lines{color:#fcd34d}
+.card.skin-brasier .card-name{color:#fde68a;text-shadow:0 1px 0 #3d0d04}
+.card.skin-orchidee{border-color:transparent;animation:none;color:#f9a8d4;
+  background:radial-gradient(circle,rgba(244,114,182,.45) 0 .8px,transparent 1.3px) 0 0/6px 6px padding-box,linear-gradient(165deg,#3b0a2c,#6b0f4f 40%,#24061c) padding-box,linear-gradient(135deg,#d9f99d,#84cc16 35%,#f472b6 60%,#65a30d) border-box}
+.card.skin-orchidee .art{border:3px solid #a3e635;box-shadow:inset 0 0 0 1px #3b0a2c}.card.skin-orchidee::after{opacity:.28}
+.card.skin-orchidee .card-top,.card.skin-orchidee .genus,.card.skin-orchidee .card-foot,.card.skin-orchidee .stats span,.card.skin-orchidee .spec-lines{color:#f9a8d4}
+.card.skin-orchidee .card-name{color:#fbcfe8;text-shadow:0 1px 0 #24061c}
 .art-img~.art-initial{display:none}
 @media (max-width:1300px){.brand{font-size:1rem}nav.tabs button{font-size:.76rem;padding:4px 6px}.chip{font-size:.74rem;padding:3px 8px;gap:4px}.chip b{font-size:.9rem}.chips .ava,.chips .avf{--s:22px!important}}
 
@@ -1459,6 +1473,17 @@ nav.tabs .ti{display:none}
   box-shadow:inset 0 0 0 calc(var(--cs) * .08) rgba(255,255,255,.35),0 2px 6px rgba(0,0,0,.35)}
 .so-billet::after{content:"₽";position:absolute;inset:0;display:grid;place-items:center;font:800 calc(var(--cs) * 1.1)/1 var(--display);color:#135c2c;opacity:.85}
 .so-c.missed .so-it{opacity:.35;filter:grayscale(.6)}
+/* 1.6.0 : Plaque (couleur du type, anneau d’Arceus), Morceau d’Étoile (forme en croix), Clef de voûte (pierre taillée) */
+.so-plaque::before{content:"";position:absolute;inset:8% 4%;border-radius:9%;background:linear-gradient(135deg,color-mix(in srgb,var(--c1) 55%,#fff),var(--c1) 45%,color-mix(in srgb,var(--c1) 60%,#000));
+  box-shadow:inset 0 0 0 calc(var(--cs) * .1) rgba(255,255,255,.3),inset 0 0 0 calc(var(--cs) * .17) rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.4)}
+.so-plaque::after{content:"";position:absolute;left:50%;top:50%;width:calc(var(--cs) * 1.2);aspect-ratio:1;translate:-50% -50%;border-radius:50%;border:calc(var(--cs) * .1) solid rgba(255,255,255,.6);box-shadow:0 0 0 calc(var(--cs) * .06) rgba(0,0,0,.18)}
+.so-etoile::before{content:"";position:absolute;inset:2%;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);background:radial-gradient(circle at 45% 40%,#fff 0 8%,#ffd1e8 25%,#f472b6 60%,#be185d)}
+.so-clef::before{content:"";position:absolute;inset:6%;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%);background:linear-gradient(160deg,#cfc8dc,#8b819f 50%,#5b5270)}
+.so-clef::after{content:"◎";position:absolute;inset:0;display:grid;place-items:center;font:700 calc(var(--cs) * 1.3)/1 var(--display);color:rgba(52,36,82,.75)}
+.so-ico.wide{width:34px}
+.so-pls{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 10px}
+.so-pl{display:flex;align-items:center;gap:6px;font-size:.85rem}.so-pl b{margin-left:auto}.so-pl.none{opacity:.4}.so-pl .btn{padding:2px 8px;font-size:.75rem}
+.so-keyrow{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.88rem}
 .so-ico{position:relative;display:inline-block;width:26px;height:26px;vertical-align:middle;--cs:13px}
 .so-ico .so-it{width:100%;height:100%;left:0;top:0}
 /* outils : gros boutons pour le pouce */
@@ -1730,7 +1755,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.17";
+const APP_VERSION="1.6.0";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2684,12 +2709,22 @@ const TITLES=[
   ...[["arWins",25,"Gladiateur","A gagné 25 manches dans l’Arène"],["arWins",150,"Centurion","A gagné 150 manches dans l’Arène"],["arWins",500,"Imperator","A gagné 500 manches dans l’Arène"],
     ["arDone",1,"Vainqueur de l’Arène","A réussi une partie de l’Arène (dernière manche gagnée)"],["arDone",25,"Conquérant","A réussi 25 parties de l’Arène"]]
     .map(([stat,need,n,d])=>({k:stat+need,n,ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d,stat,need})),
+  // 1.6.0 (validés par Theo) : Légende et Dieu de l’Arène rétroactifs ; Constellation (Pokémon à deux étoiles en fin de partie),
+  // Remontada (une seule vie) et Puriste (6 Pokémon différents d’un même type) comptés à partir de la 1.6.0
+  ...[["arDone",100,"Légende de l’Arène","A réussi 100 parties de l’Arène"],["arStar2",100,"Constellation","A fini des parties de l’Arène avec 100 Pokémon à deux étoiles au total"],
+    ["arWins",2000,"Dieu de l’Arène","A gagné 2 000 manches dans l’Arène"]].map(([stat,need,n,d])=>({k:stat+need,n,ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d,stat,need})),
+  {k:"arClutch",n:"Remontada",ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d:"A réussi l’Arène avec une seule vie restante",test:p=>!!(p.stats&&p.stats.arClutch)},
+  {k:"arPure",n:"Puriste",ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d:"A réussi l’Arène avec 6 Pokémon différents d’un même type sur le terrain",test:p=>!!(p.stats&&p.stats.arPure)},
   {k:"arPerf",n:"Invaincu",ic:"⚔",g:"Arène",cls:"tc",c:"#b8323f",d:"A réussi une partie de l’Arène sans perdre une vie",test:p=>!!(p.stats&&p.stats.arPerf)},
   /* VoltoBataille (1.3.23, demande de Theo) : groupe à part, comme l'Arène ; clés vbWins50 et vbL8 inchangées (titres déjà choisis gardés).
      Manches gagnées et Démineur : compteurs tenus depuis la 0.3.0 ; Artificier (vbBooms) et Jackpot (vbMax) comptés depuis la 1.3.23. */
   ...[["vbWins",10,"Parieur","A gagné 10 manches de VoltoBataille"],["vbWins",50,"Joueur de casino","A gagné 50 manches de VoltoBataille"],
     ["vbWins",200,"Roi du casino","A gagné 200 manches de VoltoBataille"],["vbWins",500,"Légende de Doublonville","A gagné 500 manches de VoltoBataille"],
     ["vbMax",2500,"Jackpot","A remporté une manche de VoltoBataille à 2 500 points ou plus"],["vbBooms",100,"Artificier","A fait exploser 100 Voltorbe"]]
+    .map(([stat,need,n,d])=>({k:stat+need,n,ic:"⚡",g:"VoltoBataille",cls:"tc",c:"#c98f00",d,stat,need})),
+  // 1.6.0 (validés par Theo) : série sans exploser (vbStreak), jours au plafond (vbCapDays), comptés à partir de la 1.6.0
+  ...[["vbStreak",10,"Increvable","A gagné 10 manches de VoltoBataille d’affilée sans exploser"],["vbCapDays",30,"Rentier","A atteint la limite de gains de la VoltoBataille 30 jours différents"],
+    ["vbBooms",1000,"Kamikaze","A fait exploser 1 000 Voltorbe"],["vbWins",1000,"Maître du casino","A gagné 1 000 manches de VoltoBataille"]]
     .map(([stat,need,n,d])=>({k:stat+need,n,ic:"⚡",g:"VoltoBataille",cls:"tc",c:"#c98f00",d,stat,need})),
   {k:"vbL8",n:"Démineur",ic:"⚡",g:"VoltoBataille",cls:"tc",c:"#c98f00",d:"A gagné une manche de VoltoBataille au niveau 8",test:p=>!!(p.stats&&p.stats.vbL8)},
   /* Souterrain (1.5.9) : noms proposés, acceptés par Theo ; cachés tant que le jeu n'est pas ouvert (hidden : visibles une fois obtenus) */
@@ -2698,6 +2733,14 @@ const TITLES=[
     ["souOr",25,"Chercheur d’or","A déterré 25 Pièces d’or dans le Souterrain"],["souIron",100,"Cling !","A heurté 100 blocs de fer dans le Souterrain"]]
     .map(([stat,need,n,d])=>({k:stat+need,n,ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d,stat,need,get hidden(){return !soOn()}})),
   {k:"souFull",n:"Rien ne m’échappe",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A vidé entièrement un mur à 4 objets dans le Souterrain",test:p=>!!(p.stats&&p.stats.souFull),get hidden(){return !soOn()}},
+  // 1.6.0 (validés par Theo) : comptés à partir de la 1.6.0, sauf Fouilleur et Mineur de fond (murs fouillés depuis la 1.5.9)
+  ...[["souRuns",100,"Fouilleur","A fouillé 100 murs dans le Souterrain"],["souRuns",500,"Mineur de fond","A fouillé 500 murs dans le Souterrain"],
+    ["souGdN",10,"Chasseur de diamants","A déterré 10 Grandes Sphères diamant"],["souBillet",50,"Banquier","A déterré 50 Billets verts"]]
+    .map(([stat,need,n,d])=>({k:stat+need,n,ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d,stat,need,get hidden(){return !soOn()}})),
+  {k:"souClean",n:"Sans une égratignure",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A vidé un mur du Souterrain sans toucher un seul bloc de fer",test:p=>!!(p.stats&&p.stats.souClean),get hidden(){return !soOn()}},
+  {k:"souRainbow",n:"Arc-en-ciel",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A déterré au moins une fois chaque sorte de sphère",test:p=>!!(p.stats&&p.stats.souRainbow),get hidden(){return !soOn()}},
+  {k:"souArceus",n:"Élu d’Arceus",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A réuni les 17 plaques du Souterrain",test:p=>!!(p.stats&&p.stats.souArceus),get hidden(){return !soOn()}},
+  {k:"souKey",n:"Ruinemaniac",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A déterré une Clef de voûte",test:p=>!!(p.stats&&p.stats.souKey),get hidden(){return !soOn()}},
   {k:"souGd",n:"Diamantaire",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A déterré une Grande Sphère diamant dans le Souterrain",test:p=>!!(p.stats&&p.stats.souGd),get hidden(){return !soOn()}},
   /* Prestige (1.5.0) : un titre par niveau (stats.prestige, posé par dc_prestige) */
   ...PRES_TITLES.map((n,i)=>({k:"pres"+(i+1),n,ic:"✧",g:"Prestige",cls:"tc",c:"#a855f7",d:`A atteint le prestige ${i+1}`,stat:"prestige",need:i+1})),
@@ -3858,14 +3901,14 @@ function vbTile(i,closed){
     <span class="face front v${v===null?"":v}">${v===null?"":v?v:vbVolt()}</span></span></button>`;
 }
 function vVolto(){
-  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.6</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
+  if(!VB||!VB.srv){if(!VB||!VB.busy)vbLoad();return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.7</span></h1><p class="muted" style="margin-top:14px">Préparation du plateau…</p></div>`}
   const s=VB.srv,g=vbGained(S),left=Math.max(0,VB_CAP-g);vbMid=nextMidnight();
   VB.level=s.level;VB.score=s.state==="lost"?0:s.score;VB.state=s.state;
   let board="";
   for(let r=0;r<5;r++){for(let c=0;c<5;c++)board+=vbTile(r*5+c);board+=vbClue(s.rows[r],VB_COLORS[r])}
   for(let c=0;c<5;c++)board+=vbClue(s.cols[c],VB_COLORS[c]);
   board+=`<span></span>`;
-  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.6</span></h1>
+  return `<div class="vb"><h1>VoltoBataille <span class="ar-v">v1.7</span></h1>
     <p class="muted" style="margin:4px 0 0">Retournez les cartes, multipliez vos gains… et évitez les Voltorbe !</p>
     <div class="vb-day">
       <div class="vb-day-top"><span><b>${fmtN(g)} / ${fmtN(VB_CAP)}</b> crédits gagnés aujourd’hui</span><span class="muted">Remise à zéro dans <b data-countdown="${vbMid}">${fmtLeft(vbMid-Date.now())}</b></span></div>
@@ -5003,7 +5046,7 @@ function mythicFx(id){
 function specialFx(id){
   legendSoon=true;
   if(navigator.vibrate)try{vib([60,120,60,120,400])}catch(e){}
-  const ov=document.createElement("div");ov.className="legend special";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Carte spéciale obtenue");
+  const fx=((D(id)[8]||{}).fx)||"";const ov=document.createElement("div");ov.className="legend special"+(fx?" fx-"+fx:"");ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Carte spéciale obtenue");
   ov.innerHTML=`<div class="s-fog"></div><div class="s-ring"></div><div class="s-ring r2"></div><canvas class="fw"></canvas><div class="s-pulse"></div>
     <div class="lg-title">Spéciale</div><div class="lg-card">${cardHTML(id,true)}</div>
     <div class="lg-name">${esc(D(id)[0])}</div><button class="btn lg-share" data-act="share-card" data-id="${id}" data-fresh="1">📤 Partager</button><div class="lg-sub">Touchez pour continuer</div>`;
@@ -5019,7 +5062,7 @@ function specialFx(id){
   const cx=W/2,cy=H*.45,R=Math.max(W,H)*.6;
   // lueurs : elles convergent vers le centre, puis, après l'onde, remontent lentement comme des braises
   const motes=Array.from({length:110},()=>{const a=Math.random()*Math.PI*2,d=R*(.35+Math.random()*.65);
-    return {x:cx+Math.cos(a)*d,y:cy+Math.sin(a)*d,vx:0,vy:0,s:(.8+Math.random()*1.8)*dpr,h:258+Math.random()*30,l:.2+Math.random()*.5,ph:Math.random()*6}});
+    return {x:cx+Math.cos(a)*d,y:cy+Math.sin(a)*d,vx:0,vy:0,s:(.8+Math.random()*1.8)*dpr,h:fx==="brasier"?15+Math.random()*35:fx==="orchidee"?(Math.random()<.35?80+Math.random()*25:305+Math.random()*25):258+Math.random()*30,l:.2+Math.random()*.5,ph:Math.random()*6}});
   let last=performance.now();const t0=last;let burst=false;
   (function loop(t){if(!alive)return;
     const dt=Math.min(2.5,(t-last)/16.7),el=t-t0;last=t;
@@ -5145,6 +5188,9 @@ function legendFx(id,sh){ // sh : Légendaire tirée en shiny (1.1.0)
    terrain montre le combat (arFightView : équipes et manche du combat) jusqu'à la fin de l'animation ; mises à jour partielles
    (arRefresh, sans toucher au terrain animé). */
 let arFightView=null;
+// 1.6.0 (demande de Theo : le résultat se voyait dès le début du combat) : partie telle qu'avant le combat (manches, cagnotte,
+// vies) et terrain du combat, pour tout ce qui est affiché pendant l'animation
+const arShown=()=>{const r=arRun();return arFightView?Object.assign({},r,arFightView.pre,{board:arFightView.board,enemy:arFightView.enemy}):r};
 const arRefresh=()=>{if(!arFighting){renderView();return}const t=document.createElement("div");t.innerHTML=vArena();
   [".ar-dock",".ar-top"].forEach(c=>{const o=document.querySelector(".arena "+c),n=t.querySelector(c);if(o&&n)o.replaceWith(n)})};
 let AR_V=null,arSel=null,arHover=null,arFighting=false,arLoading=false,arLayoutT=0,arNoClick=false,arDrag=null;
@@ -5196,7 +5242,7 @@ function arSynCount(units,title){ // 1.3.19 : les deux camps (« Vous : » à ga
    Multiplicateur comme le serveur (dc__ar_mult) : meilleur type de l'attaquant, cumulé sur les types du défenseur. */
 const arMult=(a,dd)=>Math.max(...a.map(x=>dd.reduce((m,y)=>m*((AR_CHART[x]||{})[y]??1),1)));
 function arSideInfo(){
-  const r=arRun(),me=r.board.filter(Boolean),en=r.enemy.board.filter(Boolean),ty=u=>D(arD(u.i))[3];
+  const r=arShown(),me=r.board.filter(Boolean),en=r.enemy.board.filter(Boolean),ty=u=>D(arD(u.i))[3];
   const hit=en.filter(e=>me.some(m=>arMult(ty(m),ty(e))>=2)),fear=en.filter(e=>me.some(m=>arMult(ty(e),ty(m))>=2));
   const names=l=>[...new Set(l.map(u=>nm(arD(u.i))))].map(n=>`<span>${esc(n)}</span>`).join("");
   const types=me.length?`<div class="ar-edge"><b>💪 Vous frappez fort</b><div>${hit.length?names(hit):`<em>personne</em>`}</div>
@@ -5242,8 +5288,8 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.4</span></h1>
-    ${r&&!r.over?`<span class="ar-chip">Manche <b>${arFightView?arFightView.round:r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.5</span></h1>
+    ${r&&!r.over?`<span class="ar-chip">Manche <b>${arFightView?arFightView.round:r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(arShown().hp)}${"🖤".repeat(Math.max(0,AR.lives-arShown().hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène, cagnotte de la partie en cours comprise">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
     <button class="btn small" data-ar="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${r&&!r.over?`<button class="btn small" data-ar="new" title="Nouvelle partie">↻<span class="ar-wide"> Nouvelle partie</span></button>`:""}${musicSlider("arena","arvol","ar-music","")}${sfxSlider("arena","arsfx")}</div>`;
@@ -5268,7 +5314,7 @@ function vArena(){
     <div class="ar-log" id="ar-log">${sel?`${esc(nm(arD(sel.i)))} choisi : touchez une case, ou glissez-le.`:`Touchez ou glissez un Pokémon pour le placer<span class="ar-wide"> ; glissez-le sur la boutique pour le vendre</span>.`}</div>
     <div class="ar-dock">
       <div class="ar-benchw"><div class="ar-lbl">Banc</div><div class="ar-bench">${r.bench.map((u,i)=>`<div class="ar-slot${sel&&!u?" drop":""}" data-ar="slot" data-zone="bench" data-i="${i}" data-ar-drop="bench:${i}">${arUnitHTML(u)}</div>`).join("")}</div></div>
-      <div class="ar-shopw"><div class="ar-lbl ar-shoplbl">Boutique</div><div class="ar-purse"><span class="ar-chip" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip" title="${r.gold} or. ${arIntTip(r)}">🪙 <b>${r.gold}</b>${arInt(r)?` <i class="ar-int">+${arInt(r)}</i>`:""}</span></div>
+      <div class="ar-shopw"><div class="ar-lbl ar-shoplbl">Boutique</div><div class="ar-purse"><span class="ar-chip" title="Vies">${"❤️".repeat(arShown().hp)}${"🖤".repeat(Math.max(0,AR.lives-arShown().hp))}</span><span class="ar-chip" title="${r.gold} or. ${arIntTip(r)}">🪙 <b>${r.gold}</b>${arInt(r)?` <i class="ar-int">+${arInt(r)}</i>`:""}</span></div>
         <div class="ar-shop${r.locked?" locked":""}" data-ar-drop="shop">${r.shop.map((id,i)=>{if(!id)return `<button class="ar-offer empty" disabled></button>`;const [n,,,ty,,,,rr]=D(arD(id)),c1=TYPES[ty[0]][1],c2=ty[1]?TYPES[ty[1]][1]:c1,src=imgFor(arD(id));
           return `<button class="ar-offer${owned.has(id)?" own":""}" data-ar="buy" data-i="${i}" data-ar-drag="s:${i}" style="--c1:${c1};--c2:${c2};--rc:var(--r${rr})" ${r.gold<AR.cost[rr]?"disabled":""} title="${esc(n)} · ${AR_RARN[rr]}">
             <span class="ar-pic">${src?`<img src="${esc(src)}" alt="" draggable="false">`:""}${counts[id]?`<span class="ar-own">${counts[id]}/3</span>`:c1s[id]?`<span class="ar-own">★ ${c1s[id]}/3</span>`:""}</span><span class="ar-on">${esc(n)}</span><span class="ar-oc">🪙 ${AR.cost[rr]}</span></button>`}).join("")}</div></div>
@@ -5301,7 +5347,7 @@ async function arFight(){
   let res;
   try{res=await rpc("dc_ar_fight",arLayout(),{render:false})}catch(e){toast(e.message);return}
   arSel=null;arHover=null;
-  if(res.run&&!res.run.over){arSet(res);arFightView={board:res.before.board,enemy:res.before.enemy,round:res.round}} // 1.5.14 : la manche suivante est déjà là
+  if(res.run&&!res.run.over){const p=arRun(),pre={hist:p.hist,round:p.round,credits:p.credits,hp:p.hp};arSet(res);arFightView={board:res.before.board,enemy:res.before.enemy,round:res.round,pre}} // 1.5.14 : la manche suivante est déjà là
   else{const r=arRun();Object.assign(r,{board:res.before.board,bench:res.before.bench,enemy:res.before.enemy})}
   arFighting=false;renderView();arFighting=true;
   if(res.auto&&res.auto.length)$("#ar-log").textContent=`Placé${res.auto.length>1?"s":""} d’office : ${res.auto.map(nm).join(", ")}.`;
@@ -5427,18 +5473,27 @@ document.addEventListener("pointercancel",()=>{const g=arDrag;arDrag=null;if(g&&
 // trouvailles plus rares (Petites bleues 23 % au lieu de 30 %) et valeurs ×1,375 : environ 215 crédits rendus pour 100 misés en moyenne
 // 1.5.11 (demande de Theo) : ouvert à tous ; mise à 150 crédits (difficulté jugée parfaite, gains un peu trop hauts à 100) ;
 // 1.5.12 : retour à 100 crédits (demande de Theo)
-const SOUT={v:"v1.3",open:true,cost:100,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:8,irons:[0,2],n:[2,4],
+// 1.6.0 (demande de Theo) : mise à 150, fouille un peu plus dure (9 plaques, 0 à 3 blocs de fer), trouvailles plus rares un peu
+// plus fréquentes (poids 4 300 / 3 000 / 1 750 / 500 / 120) : simulation, 225 crédits rendus pour 150 misés, 54 % des murs remboursent la mise
+const SOUT={v:"v1.5",open:true,cost:150,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:9,irons:[0,3],n:[2,4],
   // s : taille (colonnes, lignes) ; w : poids du tirage (sur 100 × %) ; v : éclats ; cr : crédits ; c : couleurs
-  items:{pb:{n:"Petite Sphère bleue",s:[2,2],w:4800,v:25,c:["#a9d2ff","#1d5fd6"]},gb:{n:"Grande Sphère bleue",s:[3,3],w:3000,v:58,c:["#a9d2ff","#1d5fd6"]},
-    pr:{n:"Petite Sphère rouge",s:[2,2],w:3000,v:50,c:["#ffb3aa","#cf2419"]},gr:{n:"Grande Sphère rouge",s:[3,3],w:1500,v:140,c:["#ffb3aa","#cf2419"]},
-    pv:{n:"Petite Sphère verte",s:[2,2],w:1500,v:90,c:["#b7f5c6","#12914a"]},gv:{n:"Grande Sphère verte",s:[3,3],w:1500,v:140,c:["#b7f5c6","#12914a"]},
-    pj:{n:"Petite Sphère jaune",s:[2,2],w:1500,v:110,c:["#fff4a8","#d49c00"]},gj:{n:"Grande Sphère jaune",s:[3,3],w:400,v:580,c:["#fff4a8","#d49c00"]},
-    pd:{n:"Petite Sphère diamant",s:[2,2],w:400,v:345,c:["#ffffff","#7fcff5"]},gd:{n:"Grande Sphère diamant",s:[3,3],w:90,v:1800,c:["#ffffff","#7fcff5"]},
-    or:{n:"Pièce d’or",s:[2,2],w:3000,cr:40},billet:{n:"Billet vert",s:[3,2],w:400,cr:275}},
+  // 1.6.0 (demandes de Theo) : trouvailles rares un peu plus fréquentes (poids 3 700 / 3 000 / 2 050 / 650 / 170 / 20 selon la
+  // rareté 1 à 6), Plaques (pl : un des 17 types, rangées dans le sac), Morceau d’Étoile (m : masque des cases, en croix),
+  // Clef de voûte (rareté 6 ; key : éclats d’une Clef après la première) ; simulation : 224 crédits rendus pour 150 misés
+  items:{pb:{n:"Petite Sphère bleue",s:[2,2],w:3700,v:25,c:["#a9d2ff","#1d5fd6"]},gb:{n:"Grande Sphère bleue",s:[3,3],w:3000,v:58,c:["#a9d2ff","#1d5fd6"]},
+    pr:{n:"Petite Sphère rouge",s:[2,2],w:3000,v:50,c:["#ffb3aa","#cf2419"]},gr:{n:"Grande Sphère rouge",s:[3,3],w:2050,v:140,c:["#ffb3aa","#cf2419"]},
+    pv:{n:"Petite Sphère verte",s:[2,2],w:2050,v:90,c:["#b7f5c6","#12914a"]},gv:{n:"Grande Sphère verte",s:[3,3],w:2050,v:140,c:["#b7f5c6","#12914a"]},
+    pj:{n:"Petite Sphère jaune",s:[2,2],w:2050,v:110,c:["#fff4a8","#d49c00"]},gj:{n:"Grande Sphère jaune",s:[3,3],w:650,v:580,c:["#fff4a8","#d49c00"]},
+    pd:{n:"Petite Sphère diamant",s:[2,2],w:650,v:345,c:["#ffffff","#7fcff5"]},gd:{n:"Grande Sphère diamant",s:[3,3],w:170,v:1800,c:["#ffffff","#7fcff5"]},
+    or:{n:"Pièce d’or",s:[2,2],w:3000,cr:40},billet:{n:"Billet vert",s:[3,2],w:650,cr:275},
+    plaque:{n:"Plaque",s:[4,3],w:3000,pl:1},etoile:{n:"Morceau d’Étoile",s:[3,3],m:"010111010",w:2050,cr:100},clef:{n:"Clef de voûte",s:[3,3],w:20,key:2000}},
   // comptoir : éclats contre boosters (mêmes prix qu'en crédits : rien n'est plus rentable d'un côté que de l'autre)
   lots:[{k:"b1",n:"1 booster",p:200,packs:1},{k:"b3",n:"3 boosters",p:600,packs:3},{k:"b5",n:"5 boosters",p:1000,packs:5},
     {k:"gen",n:"Booster Génération",p:300,sp:"gen"},{k:"type",n:"Booster Type",p:300,sp:"type"},{k:"prem",n:"Booster Premium",p:750,sp:"prem"}]};
-const SO_ORDER=["pb","gb","pr","gr","pv","gv","pj","gj","pd","gd","or","billet"];
+const SO_ORDER=["pb","gb","pr","gr","pv","gv","pj","gj","pd","gd","or","billet","etoile","plaque","clef"];
+// Plaques d’Arceus (1.6.0) : une par type, Normal excepté (types 2 à 18)
+const SO_PLATE={2:"Poing",3:"Ciel",4:"Toxic",5:"Terre",6:"Roc",7:"Insecte",8:"Fantôme",9:"Fer",10:"Flamme",11:"Hydro",12:"Herbe",13:"Volt",14:"Esprit",15:"Glace",16:"Draco",17:"Ombre",18:"Pixie"};
+const soName=(k,t)=>k==="plaque"&&t?`Plaque ${SO_PLATE[t]}`:SOUT.items[k].n;
 const soOn=()=>SOUT.open||devOn();
 // 1.5.13 : bouton de fouille grisé s'il manque des crédits (un joueur cliquait en boucle, chaque refus du serveur comptait comme une erreur de la base)
 const soMiss=()=>devOn()?0:Math.max(0,SOUT.cost-((S&&S.credits)||0));
@@ -5447,12 +5502,13 @@ let SO=null,soLoading=false,soQ=[],soBusy=false,soEnding=false,soFx={},soGen=1,s
 let soTool=(()=>{try{return localStorage.getItem("dc-so-tool")==="p"?"p":"h"}catch(e){return "h"}})();
 const soEc=()=>+((S&&S.sout&&S.sout.ec)||0);
 const soGot=()=>(S&&S.sout&&S.sout.got)||{};
+const soRes=x=>{const [k,t]=String(x).split(":");return k==="key"?{k:"clef",n:"Clef de voûte",g:"dans votre sac"}:k==="key+"?{k:"clef",n:"Clef de voûte",g:`${fmtN(SOUT.items.clef.key)} éclats`}:{k,t:+t||0,n:soName(k,+t||0),g:soGain(k)}};
 const soChance=k=>{const t=SO_ORDER.reduce((a,x)=>a+SOUT.items[x].w,0);return SOUT.items[k].w/t*100};
-const soGain=k=>{const it=SOUT.items[k];return it.cr?`${fmtN(it.cr)} crédits`:`${fmtN(it.v)} éclats`};
+const soGain=k=>{const it=SOUT.items[k];return it.pl||it.key?"dans votre sac":it.cr?`${fmtN(it.cr)} crédits`:`${fmtN(it.v)} éclats`};
 function soLoad(){if(soLoading)return;soLoading=true;rpc("dc_sout_state",{},{render:false}).then(v=>{SO=v;renderView()}).catch(e=>toast(e.message)).finally(()=>{soLoading=false})}
 // dessin d'un objet (sphère, pièce, billet) : l'élément couvre tout l'objet, chaque case n'en montre que sa part
-const soItemEl=(k,ox,oy,extra="")=>{const it=SOUT.items[k];return `<i class="so-it so-${k}${it.c?" so-sph":""}${extra}" style="--w:${it.s[0]};--h:${it.s[1]};--x:${ox};--y:${oy}${it.c?`;--c1:${it.c[0]};--c2:${it.c[1]}`:""}"></i>`};
-const soIco=k=>`<span class="so-ico" title="${esc(SOUT.items[k].n)}">${soItemEl(k,0,0)}</span>`;
+const soItemEl=(k,ox,oy,extra="",t)=>{const it=SOUT.items[k];return `<i class="so-it so-${k}${it.c?" so-sph":""}${extra}" style="--w:${it.s[0]};--h:${it.s[1]};--x:${ox};--y:${oy}${it.c?`;--c1:${it.c[0]};--c2:${it.c[1]}`:""}${t?`;--c1:${TYPES[t][1]}`:""}"></i>`};
+const soIco=(k,t)=>`<span class="so-ico${k==="plaque"?" wide":""}" title="${esc(soName(k,t))}">${soItemEl(k,0,0,"",k==="plaque"?t||10:0)}</span>`;
 const soBg=i=>` style="--bx:${-(i*37%96)}px;--by:${-(i*53%96)}px"`; // texture décalée d’une case à l’autre
 function soCell(r,i){
   const d=r.d[i],c=r.r[i],fx=soFx[i]||"",aim=soAim>=0&&soAimSet().has(i)?" aim":"",bg=soBg(i);
@@ -5460,14 +5516,14 @@ function soCell(r,i){
   if(c==null)return `<button class="so-c open pend${fx}${aim}"${bg} data-so="hit" data-i="${i}" aria-label="Case dégagée"></button>`;
   if(c==="f")return `<button class="so-c open iron${fx}${aim}" data-so="hit" data-i="${i}" aria-label="Bloc de fer"></button>`;
   if(c===0)return `<button class="so-c open${fx}${aim}"${bg} data-so="hit" data-i="${i}" aria-label="Case vide"></button>`;
-  const [k,ox,oy,idx]=c,done=r.objs.some(o=>o.i===idx&&o.done);
-  return `<button class="so-c open obj${done?" done":""}${fx}${aim}"${bg} data-so="hit" data-i="${i}" aria-label="${esc(SOUT.items[k].n)}">${soItemEl(k,ox,oy)}</button>`;
+  const [k,ox,oy,idx,t]=c,done=r.objs.some(o=>o.i===idx&&o.done);
+  return `<button class="so-c open obj${done?" done":""}${fx}${aim}"${bg} data-so="hit" data-i="${i}" aria-label="${esc(soName(k,t))}">${soItemEl(k,ox,oy,"",t)}</button>`;
 }
 // mur de fin de partie : tous les objets, ceux manqués en fantôme
 function soFinalWall(r){
-  const own={};r.objs.forEach(o=>{for(let j=0;j<o.h;j++)for(let i=0;i<o.w;i++)own[(o.y+j)*r.w+o.x+i]=[o.k,i,j,o.done]});
+  const own={};r.objs.forEach(o=>{for(let j=0;j<o.h;j++)for(let i=0;i<o.w;i++)if(!o.m||o.m[j*o.w+i]==="1")own[(o.y+j)*r.w+o.x+i]=[o.k,i,j,o.done,o.t]});
   return `<div class="so-wall final" style="--cols:${r.w}">${r.d.map((d,i)=>{const o=own[i],c=r.r[i];
-    if(o)return `<span class="so-c open obj${o[3]?" done":" missed"}"${soBg(i)}>${soItemEl(o[0],o[1],o[2])}</span>`;
+    if(o)return `<span class="so-c open obj${o[3]?" done":" missed"}"${soBg(i)}>${soItemEl(o[0],o[1],o[2],"",o[4])}</span>`;
     return `<span class="so-c ${c==="f"?"open iron":d>0?"l"+Math.min(6,d):"open"}"${soBg(i)}></span>`}).join("")}</div>`;
 }
 function soAimSet(){const r=SO&&SO.run,s=new Set();if(!r||soAim<0)return s;s.add(soAim);if(soTool==="h"){const x=soAim%r.w,y=Math.floor(soAim/r.w);[[-1,0],[1,0],[0,-1],[0,1]].forEach(([a,b])=>{const X=x+a,Y=y+b;if(X>=0&&Y>=0&&X<r.w&&Y<r.h)s.add(Y*r.w+X)})}return s}
@@ -5488,7 +5544,17 @@ function soShopHTML(){
     return `<div class="so-lot"><b>${esc(l.n)}</b>${sel}<button class="btn small${can?" primary":""}" data-so="buy" data-k="${l.k}"${can?"":" disabled"}>💠 ${fmtN(l.p)}</button></div>`};
   return `<div class="so-side"><div class="so-box"><h3 class="so-h3">🏪 Comptoir<span class="so-ec" title="Vos éclats">💠 ${fmtN(ec)} éclats</span></h3><p class="muted ar-small">Vos sphères sont changées en éclats à la fin de chaque fouille.</p>
     <div class="so-lots">${SOUT.lots.map(lot).join("")}</div></div>
+    ${soBagHTML()}
     <div class="so-box"><h3>🎒 Vos trouvailles</h3><div class="so-got">${SO_ORDER.map(k=>`<div class="${got[k]?"":"none"}">${soIco(k)}<span>${esc(SOUT.items[k].n)}</span><b>${fmtN(got[k]||0)}</b></div>`).join("")}</div></div></div>`}
+/* sac du Souterrain (1.6.0) : les 17 plaques (titre « Élu d’Arceus » une fois toutes réunies) et la Clef de voûte ;
+   une fois débloqué par le serveur (stats.souPlateX), 2 plaques d’un même type s’échangent contre 1 Booster Type (dc_sout_plate) */
+function soBagHTML(){
+  const so=(S&&S.sout)||{},pl=so.pl||{},ts=Object.keys(SO_PLATE).map(Number),n=ts.filter(t=>(pl[t]||0)>0).length,open=!!(S&&S.stats&&S.stats.souPlateX);
+  return `<div class="so-box"><h3 class="so-h3">🛡️ Plaques<span class="so-ec">${n} / 17</span></h3>
+    <p class="muted ar-small">${open?"Échangez 2 plaques d’un même type contre 1 Booster Type de ce type.":"Réunissez les 17 plaques du Souterrain pour devenir l’Élu d’Arceus."}</p>
+    <div class="so-pls">${ts.map(t=>`<div class="so-pl${pl[t]?"":" none"}">${soIco("plaque",t)}<span>${SO_PLATE[t]}</span><b>×${pl[t]||0}</b>${open&&(pl[t]||0)>=2?`<button class="btn small" data-so="plate" data-t="${t}" title="2 Plaques ${SO_PLATE[t]} contre 1 Booster Type ${TYPES[t][0]}">→ Booster</button>`:""}</div>`).join("")}</div>
+    ${so.key?`<div class="so-keyrow">${soIco("clef")}<span><b>Clef de voûte</b> : elle semble ouvrir un passage, quelque part…</span></div>`:""}</div>`;
+}
 /* textures du Souterrain (1.5.10), dessinées une fois dans un canvas : grains et cailloux en surimpression sur la couleur de la
    couche, roche claire veinée, fer brossé ; posées en variables CSS (--so-soil, --so-rock, --so-stone, --so-metal) */
 function soTex(){
@@ -5515,7 +5581,7 @@ function vSout(){
   const r=SO.run;
   if(!r||r.over){
     const last=r&&r.over&&r.res?`<div class="so-last"><h3>${r.end==="all"?"Dernière fouille : tout déterré !":"Dernière fouille : le mur s’est effondré"}</h3>
-      ${soFinalWall(r)}<p>${r.res.items.length?r.res.items.map(k=>soIco(k)).join(""):"Aucun objet déterré en entier."}${r.res.ec?` <b>+${fmtN(r.res.ec)} éclats</b>`:""}${r.res.cr?` <b>+${fmtN(r.res.cr)} crédits</b>`:""}</p></div>`:"";
+      ${soFinalWall(r)}<p>${r.res.items.length?r.res.items.map(x=>{const o=soRes(x);return soIco(o.k,o.t)}).join(""):"Aucun objet déterré en entier."}${r.res.ec?` <b>+${fmtN(r.res.ec)} éclats</b>`:""}${r.res.cr?` <b>+${fmtN(r.res.cr)} crédits</b>`:""}</p></div>`:"";
     const free=devOn();
     return `<div class="souterrain">${soTopHTML()}<div class="so-intro"><div class="so-start">
       <p>Un mur cache <b>2 à 4 trésors</b>. Creusez au <b>marteau</b> ou à la <b>pioche</b> pour les dégager en entier avant que la fissure n’atteigne le bord : à ce moment-là, le mur s’effondre. Méfiez-vous des blocs de fer !</p>
@@ -5561,7 +5627,7 @@ function soApply(v,h){
   if(v.iron&&!(was&&was.r[i]==="f")){SFX.soCling(vol);vib([30,30,30]);soDust(i,10,"#fff3b0")} // fer découvert par ce coup : le « cling » arrive avec la réponse
   if(v.fresh&&v.fresh.length){SFX.soFound(vol);vib([20,40,60]);
     v.fresh.forEach(idx=>{const o=v.run.objs.find(x=>x.i===idx);if(!o)return;for(let j=0;j<o.h;j++)for(let k=0;k<o.w;k++)soMark((o.y+j)*v.run.w+o.x+k,"blink",1100);
-      toast(`${SOUT.items[o.k].n} ${o.k==="billet"?"déterré":"déterrée"} ! (${soGain(o.k)})`)})}
+      toast(`${soName(o.k,o.t)} ${o.k==="billet"?"déterré":"déterrée"} ! (${o.k==="clef"?"un trésor très rare":soGain(o.k)})`)})}
   soPatch();
   if(v.run.over){soQ=[];soEnd(v)}
 }
@@ -5574,14 +5640,14 @@ function soEnd(v){
     const res=r.res||{items:[],ec:0,cr:0},missed=r.objs.filter(o=>!o.done);
     openDlg(`<div class="side" style="align-items:center;text-align:center"><div style="font-size:3rem" aria-hidden="true">${r.end==="all"?"💎":"🪨"}</div>
       <h2>${r.end==="all"?"Tout est déterré !":"Le mur s’est effondré !"}</h2>
-      ${res.items.length?`<div class="so-res">${res.items.map(k=>`<div>${soIco(k)}<span>${esc(SOUT.items[k].n)}</span><b>${soGain(k)}</b></div>`).join("")}</div>`:`<p>Aucun objet n’a été dégagé en entier cette fois-ci.</p>`}
-      ${missed.length?`<p class="muted ar-small">Restés dans le mur : ${missed.map(o=>esc(SOUT.items[o.k].n)).join(", ")}.</p>`:""}
+      ${res.items.length?`<div class="so-res">${res.items.map(x=>{const o=soRes(x);return `<div>${soIco(o.k,o.t)}<span>${esc(o.n)}</span><b>${o.g}</b></div>`}).join("")}</div>`:`<p>Aucun objet n’a été dégagé en entier cette fois-ci.</p>`}
+      ${missed.length?`<p class="muted ar-small">Restés dans le mur : ${missed.map(o=>esc(soName(o.k,o.t))).join(", ")}.</p>`:""}
       <p style="font-size:1.2rem">${res.ec?`<b>+${fmtN(res.ec)} éclats</b>`:""}${res.ec&&res.cr?" · ":""}${res.cr?`<b>+${fmtN(res.cr)} crédits</b>`:""}</p>
       <div class="actions">${soStartBtn("btn primary","⛏ Fouiller un autre mur")}<button class="btn" data-act="close">Fermer</button></div></div>`,true);
   },r.end==="wall"&&!RM()?1500:700);
 }
 function soRules(){
-  const row=k=>{const it=SOUT.items[k];return `<tr><td>${soIco(k)} ${esc(it.n)}</td><td>${it.s[0]}×${it.s[1]}</td><td>${soChance(k).toLocaleString("fr-FR",{maximumFractionDigits:1})} %</td><td>${soGain(k)}</td></tr>`};
+  const row=k=>{const it=SOUT.items[k];return `<tr><td>${soIco(k)} ${esc(it.n)}</td><td>${it.s[0]}×${it.s[1]}${it.m?" (étoile)":""}</td><td>${soChance(k).toLocaleString("fr-FR",{maximumFractionDigits:2})} %</td><td>${k==="clef"?"???":k==="plaque"?"dans votre sac (17 à réunir)":soGain(k)}</td></tr>`};
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>Règles du Souterrain</h2><ul class="ar-rules">
     <li>Un mur coûte ${fmtN(SOUT.cost)} crédits. Il cache ${SOUT.n[0]} à ${SOUT.n[1]} objets sous 1 à 6 couches de terre : plus la case est sombre, plus elle est épaisse. Une fouille quittée en cours vous attend à votre retour.</li>
     <li>🔨 <b>Marteau</b> : retire 2 couches sur la case touchée et 1 sur les 4 cases autour (en croix). Fissure : ${SOUT.hammer} points par coup.</li>
@@ -5595,6 +5661,7 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("[data-so]");if(!b||!e.target.closest(".souterrain,#dlg"))return;
   const a=b.dataset.so;
   if(a==="rules"){soRules();return}
+  if(a==="plate"){const t=+b.dataset.t;actBtn=b;run(async()=>{await rpc("dc_sout_plate",{p_type:t},{render:false});toast(`Booster Type ${TYPES[t][0]} ajouté à vos boosters spéciaux !`);renderView()});return}
   if(a==="tool"){soTool=b.dataset.t;try{localStorage.setItem("dc-so-tool",soTool)}catch(x){}
     document.querySelectorAll('[data-so="tool"]').forEach(x=>x.setAttribute("aria-pressed",x.dataset.t===soTool));soPatch();return}
   if(a==="hit"){soHit(+b.dataset.i);return}
@@ -6395,7 +6462,8 @@ function titleDef(t){
   if(t.stat)return {c:"stat",s:t.stat,n:t.need};
   if(t.nt)return {c:"ntitles",n:t.nt};
   if(t.shids)return {c:"shids",ids:t.shids,n:t.shids.length}; // 1.5.14 : shiny débloqués de ces cartes // Titré (1.5.8) : compté par le serveur (dc__title_ok)
-  const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},arPerf:{c:"sflag",s:"arPerf"},souFull:{c:"sflag",s:"souFull"},souGd:{c:"sflag",s:"souGd"},lord:{c:"cos",i:"titre.lord"},fortune:{c:"cos",i:"titre.fortune"}};
+  const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},arPerf:{c:"sflag",s:"arPerf"},souFull:{c:"sflag",s:"souFull"},souGd:{c:"sflag",s:"souGd"},
+    arClutch:{c:"sflag",s:"arClutch"},arPure:{c:"sflag",s:"arPure"},souClean:{c:"sflag",s:"souClean"},souRainbow:{c:"sflag",s:"souRainbow"},souArceus:{c:"sflag",s:"souArceus"},souKey:{c:"sflag",s:"souKey"},lord:{c:"cos",i:"titre.lord"},fortune:{c:"cos",i:"titre.fortune"}};
   if(fixed[t.k])return fixed[t.k];
   if(t.k==="darwin")return {c:"evo",n:t.ids.length}; // cibles de cfg.evo, comptées par le serveur (1.1.3)
   if(t.ids&&same(t.ids,DEX_ORDER))return {c:"dex",n:t.need||DEX_ORDER.length};

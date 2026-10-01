@@ -486,6 +486,7 @@ begin
       -- titre Invaincu (1.3.6) : l'Arène réussie sans perdre une vie
       if (st ->> 'hp')::int >= (a ->> 'lives')::int then d := jsonb_set(d, '{stats,arPerf}', '1'); end if;
     end if;
+    d := public.dc__ar_titles(d, st, cfg, win);  -- 1.6.0 : Constellation, Remontada, Puriste (partie 6)
   else
     -- 1.4.2 (demande de Theo) : une manche perdue se rejoue (nouvel adversaire), avec lossGold en plus de l'or de la manche
     nr := case when win then rd + 1 else rd end;

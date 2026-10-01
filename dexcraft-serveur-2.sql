@@ -273,13 +273,13 @@ begin
   if kind = 'lost' then d := public.dc__bump(d, 'vbBooms');
   elsif v.score > coalesce((d -> 'stats' ->> 'vbMax')::bigint, 0) then
     d := jsonb_set(d, '{stats}', coalesce(d -> 'stats', '{}') || jsonb_build_object('vbMax', v.score)); end if;
+  d := public.dc__vb_titles(d, kind, gained < cap and gained + added >= cap);  -- 1.6.0 : série, jours au plafond (partie 6)
   update public.vb_rounds set state = kind, level = nl where uid = u;
   d := public.dc__save(u, d);
   return jsonb_build_object('profile', d, 'added', added, 'extra', extra, 'kind', kind, 'prevLevel', v.level, 'level', nl, 'score', v.score);
 end $$;
 
--- 1.4.0 (lenteurs signalées par Theo) : une carte ordinaire ne lit plus ni le profil ni la configuration (seulement le plateau
--- caché) ; le profil n'est verrouillé et chargé qu'en fin de manche, pour verser les crédits
+-- 1.4.0 : une carte ordinaire ne lit que le plateau caché ; le profil n'est verrouillé qu'en fin de manche
 create or replace function public.dc_vb_flip(p_i int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb; v public.vb_rounds; val int; res jsonb := '{}'; i int; all_ boolean := true;
 begin
