@@ -1730,7 +1730,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.5.16";
+const APP_VERSION="1.5.17";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3798,10 +3798,11 @@ const VB_AFTER=10; // 1.3.14 : plafond atteint, une manche gagnée rapporte enco
    (poids, pas forcément sur 100 ; par bandes de 2 manches avant) ; slot : chance qu'une case repropose un Pokémon de l'équipe
    (depuis la 1.4.9 : chaque Pokémon différent de l'équipe à 0 ou 1 étoile a la même chance, slot 0,3) ; typeW : poids des types joués, en part de la réserve ;
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
-const AR={rounds:10,lives:3,lossGold:3,bench:9,reroll:2,cap:3000,finish:400,afterCap:20,afterCapPerfect:50,afterRound:20, // 1.5.4 (demande de Theo) : après le plafond, 20 par manche gagnée du premier coup, 20 ou 50 l’Arène réussie (100 et 150 avant)
+const AR={rounds:12, // 12 manches depuis la 1.5.17 (demande de Theo ; 10 avant)
+  lives:3,lossGold:3,bench:9,reroll:2,cap:3000,finish:400,afterCap:20,afterCapPerfect:50,afterRound:20, // 1.5.4 (demande de Theo) : après le plafond, 20 par manche gagnée du premier coup, 20 ou 50 l’Arène réussie (100 et 150 avant)
   winBase:60,winStep:20,startGold:8,incBase:6,incStep:1, // 1.4.8 (demande de Theo, économie trop juste) : or de la manche = incBase + incStep × manche (6 + manche/2 avant, startGold 6, incLate 1)
   // 1.4.7 (Arène v3.3, table de Theo) : avant, par bandes de 2 manches [[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]]
-  odds:[[70,20,10,0,0],[60,30,15,5,0],[50,30,20,9,1],[50,30,20,9,1],[20,30,30,15,5],[20,30,30,15,5],[15,25,30,20,10],[15,25,30,20,10],[10,20,25,30,15],[0,10,20,40,30]],
+  odds:[[70,20,10,0,0],[60,30,15,5,0],[50,30,20,9,1],[50,30,20,9,1],[20,30,30,15,5],[20,30,30,15,5],[15,25,30,20,10],[15,25,30,20,10],[10,20,25,30,15],[0,10,20,40,30],[0,5,20,40,35],[0,5,15,40,40]], // manches 11 et 12 (1.5.17) : prolongement de la manche 10
   cost:{0:1,1:2,2:3,3:4,5:5},
   aiEvo:.07,aiPow0:.83,aiPowK:.042,slot:.3,typeW:1/75, // 1.4.13 : banc de 9 places (8 avant) et aiPow0 .82 → .83 en contrepartie (demande de Theo) ;1.4.2 : aiPow0 .83 → .82 (« très très légèrement » plus facile, demande de Theo)
   // 1.4.0 (Arène v3.0, demande de Theo) : ordinateur un peu plus faible en manches 1 et 2 (aiEarly), plus fort à partir de la 5e (aiLate par manche) et
@@ -5241,7 +5242,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.3</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.4</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${arFightView?arFightView.round:r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(r.hp)}${"🖤".repeat(Math.max(0,AR.lives-r.hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène, cagnotte de la partie en cours comprise">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>

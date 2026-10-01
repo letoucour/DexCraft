@@ -110,7 +110,7 @@ create or replace function public.dc__ar_shop(cfg jsonb, st jsonb, coll jsonb) r
 -- 1.3.1 : réserve lue une seule fois dans des tableaux (rareté et poids de chaque Pokémon possédé). Avant, la table des
 -- raretés de la configuration était recopiée à chaque Pokémon examiné : plusieurs secondes par boutique sur Supabase.
 declare a jsonb := cfg -> 'arena'; rarm jsonb := cfg -> 'rar'; pt text := cfg ->> 'ptype'; tc int[] := array_fill(0, array[18]);
-  ids int[]; rs int[]; ws numeric[]; mine int[]; cnt int[] := array[0, 0, 0, 0, 0, 0]; av boolean[]; shop jsonb := '[]';
+  ids int[]; rs int[]; ws numeric[]; mine int[]; maxd int[]; cnt int[] := array[0, 0, 0, 0, 0, 0]; av boolean[]; shop jsonb := '[]';
   k int; j int; r int; t int; u jsonb; wt numeric; tot numeric; x numeric; pick int; slot numeric := (a ->> 'slot')::numeric;
 begin
   for u in select * from public.dc__ar_units(st) loop
@@ -123,14 +123,14 @@ begin
     from (select key::int o, (rarm ->> key)::int rr, ascii(substr(pt, 2 * key::int - 1, 1)) - 96 t1,
                  case when substr(pt, 2 * key::int, 1) = '-' then null else ascii(substr(pt, 2 * key::int, 1)) - 96 end t2
           from jsonb_each(coll) where key ~ '^\d+$' and key::int between 1 and 1025 and value::text::int > 0) q;
-  for j in 1 .. coalesce(array_length(ids, 1), 0) loop cnt[rs[j] + 1] := cnt[rs[j] + 1] + 1; end loop;   -- nombre par rareté (0 à 5)
+  -- 1.5.17 (demande de Theo) : un Pokémon à deux étoiles (le maximum) n'est plus proposé (rareté -1 : jamais tiré)
+  select coalesce(array_agg(distinct (v ->> 'i')::int), '{}') into maxd from public.dc__ar_units(st) v where (v ->> 's')::int >= 2;
+  for j in 1 .. coalesce(array_length(ids, 1), 0) loop if ids[j] = any(maxd) then rs[j] := -1; end if; end loop;
+  for j in 1 .. coalesce(array_length(ids, 1), 0) loop if rs[j] >= 0 then cnt[rs[j] + 1] := cnt[rs[j] + 1] + 1; end if; end loop;   -- nombre par rareté (0 à 5)
   av := array[cnt[1] > 0, cnt[2] > 0, cnt[3] > 0, cnt[4] > 0, cnt[6] > 0];
-  -- 1.4.7 (demande de Theo) : les Pokémon à une étoile sont aussi reproposés (à demi-taux jusqu’à la 1.4.8), pour qu'on puisse
-  -- viser les deux étoiles ; avant, un Pokémon passé à une étoile ne revenait plus qu'au hasard de toute la réserve
-  -- 1.4.9 : un tirage par Pokémon différent (plus par exemplaire), une étoile au même taux : un Pokémon à une étoile, seule
-  -- unité parmi une dizaine et à demi-taux, ne revenait que dans 7 % des boutiques (mesuré, équipe de 10) ; slot 0,2 → 0,3
+  -- 1.4.7 / 1.4.9 : Pokémon de l'équipe à 0 ou 1 étoile reproposés, un tirage par Pokémon différent (historique : CLAUDE.md)
   select coalesce(array_agg(distinct (v ->> 'i')::int), '{}') into mine
-    from public.dc__ar_units(st) v where (v ->> 's')::int <= 1 and (v ->> 'i')::int = any(ids);
+    from public.dc__ar_units(st) v where (v ->> 's')::int <= 1 and (v ->> 'i')::int = any(ids) and not ((v ->> 'i')::int = any(maxd));
   for k in 1 .. 5 loop
     if coalesce(array_length(mine, 1), 0) > 0 and random() < slot then
       shop := shop || to_jsonb(mine[1 + floor(random() * array_length(mine, 1))::int]); continue;
@@ -490,8 +490,7 @@ begin
     -- 1.4.2 (demande de Theo) : une manche perdue se rejoue (nouvel adversaire), avec lossGold en plus de l'or de la manche
     nr := case when win then rd + 1 else rd end;
     st := st || jsonb_build_object('round', nr);
-    -- or de la manche : base + incStep × manche (1.4.8 : 1, la moitié avant), moins incLate à partir de la manche 5, plus les intérêts
-    -- (1.4.0 : 10 or gardés = +1, 20 = +3, 30 et plus = +5, table interest de la config)
+    -- or de la manche : base + incStep × manche, moins incLate dès la manche 5, plus les intérêts (table interest)
     st := jsonb_set(st, '{gold}', to_jsonb((st ->> 'gold')::int + (a ->> 'incBase')::int + floor(nr * coalesce((a ->> 'incStep')::numeric, .5))::int
       - case when nr >= 5 then coalesce((a ->> 'incLate')::int, 0) else 0 end
       + coalesce((a -> 'interest' ->> least(3, (st ->> 'gold')::int / 10))::int, least(3, (st ->> 'gold')::int / 10))));
