@@ -1755,7 +1755,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.6.1";
+const APP_VERSION="1.6.2";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -6021,7 +6021,7 @@ let SB=null,signup=false;
      seulement les annonces nouvelles ou modifiées ;
    - collections : seulement celles des auteurs d'annonces d'échange (« Il l'a déjà », « Manquante »),
      les nouveaux auteurs tout de suite, toutes relues au plus toutes les 5 minutes. */
-const PL_FIELDS=["pseudo","avatar","alpha","beta","shown","unique","total","credits","myth","trans","byr","byrV","masterTs","vis","shinyN","avaS"]; // vis : cosmétiques visibles (0.9.0) ; shinyN, avaS : shiny (1.1.0)
+const PL_FIELDS=["pseudo","avatar","alpha","beta","shown","unique","total","credits","myth","trans","byr","byrV","masterTs","vis","shinyN","avaS","prestige","packs"]; // vis : cosmétiques visibles (0.9.0) ; shinyN, avaS : shiny (1.1.0) ; prestige, packs : tri du classement (1.6.2 : oubliés en 1.5.0, le résumé du serveur les donnait mais la page les jetait)
 let OWNER_COLL={},OWNER_UPD={},ownerCollTs=0,marketT=0,rpcBusy=0,MARKET_TS={},playersTs=0,hiddenAt=0;
 /* lecture paginée : Supabase renvoie 1 000 lignes au plus par requête */
 async function selectAll(make){
