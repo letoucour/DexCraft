@@ -6186,11 +6186,11 @@ document.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;co
 
 /* ============================================================
    Pension (1.8.0, idée de Theo) : les œufs (trouvés à Lumi-Bois, et plus tard ailleurs) attendent dans la réserve ; jusqu’à
-   10 dans la couveuse, dont 3 couvent en même temps (30 min, 1 h, 3 h ; le temps passe aussi hors ligne). Contenu : dc__pn_draw (partie 7). Le Pokémon n’est
+   10 dans la couveuse, dont 3 couvent en même temps (15 min, 30 min, 1 h 30 depuis la 1.9.2, demande de Theo : 30 min, 1 h, 3 h avant ; le temps passe aussi hors ligne). Contenu : dc__pn_draw (partie 7). Le Pokémon n’est
    tiré qu’à l’éclosion (serveur, partie 7 : dc_pn_*). Un mini-jeu s’y ajoutera plus tard. Caché sauf en mode développeur
    tant que PENSION.open est faux ; ouverte à tous depuis la 1.9.0.
    ============================================================ */
-const PENSION={open:true,q:10,slots:3,shiny:512,dur:{oeuf:1800000,rare:3600000,dore:10800000},
+const PENSION={open:true,q:10,slots:3,shiny:512,dur:{oeuf:900000,rare:1800000,dore:5400000},
   rareW:[0,0,40,30,20,10]}; // Œuf rare (poids par rareté 0 à 5) : 1.8.3 (demande de Theo) Rare 40 %, Épique 30 %, Méga et Gigamax 20 %, Légendaire 10 % ; 1.8.2 : 50 / 35 / 0 / 15
 const PN_EGGS=[["oeuf","Œuf","un Pokémon commun ou peu commun, ou un premier stade d’évolution, jamais légendaire"],["rare","Œuf rare","un Pokémon rare (40 %), épique (30 %), Méga ou Gigamax (20 %) ou légendaire (10 %)"],["dore","Œuf doré","toujours un Pokémon légendaire"]];
 const PN_KEY={oeuf:"oeuf",rare:"oeufr",dore:"oeufd"}; // dessin de l’œuf : celui de Lumi-Bois
@@ -6224,7 +6224,7 @@ function vPension(){
       ${st!=="ready"&&devOn()?`<button class="btn small pn-dev" data-pn="hatch" data-i="${i}" data-force="1" title="Mode développeur">⚡ Éclore (dév.)</button>`:""}</div>`};
   return `<div class="pension"><div class="ar-top pn-top"><button class="btn small pn-back" data-view="booster">← Retour</button><h1>🥚 Pension</h1>
       <button class="btn small pn-lumi" data-view="lumi">🏮 Trouver des œufs dans le Lumi-Bois</button><span class="ar-chip so-stat" title="Œufs éclos">🐣 ${fmtN(+((S.stats&&S.stats.pnHatch)||0))} éclos</span></div>
-    <p class="pn-intro">Les œufs que vous trouvez attendent ici. Jusqu’à <b>${PENSION.q} œufs</b> dans la couveuse, dont <b>${PENSION.slots}</b> couvent en même temps : 30 minutes pour un Œuf, 1 heure pour un Œuf rare, 3 heures pour un Œuf doré. Le temps passe même quand vous n’êtes pas là.</p>
+    <p class="pn-intro">Les œufs que vous trouvez attendent ici. Jusqu’à <b>${PENSION.q} œufs</b> dans la couveuse, dont <b>${PENSION.slots}</b> couvent en même temps : 15 minutes pour un Œuf, 30 minutes pour un Œuf rare, 1 h 30 pour un Œuf doré. Le temps passe même quand vous n’êtes pas là.</p>
     <div class="pn-res">${PN_EGGS.map(([k,n,d])=>`<div class="pn-card${res[k]?"":" none"}">${pnEgg(k)}<div><b>${n}</b><small>${d}</small></div><span class="pn-n">×${fmtN(res[k]||0)}</span>
       <button class="btn small${res[k]&&!full?" primary":""}" data-pn="add" data-k="${k}" ${res[k]&&!full?"":"disabled"}>${full&&res[k]?"Couveuse pleine":"Mettre à couver"}</button></div>`).join("")}</div>
     <h3 class="pn-h">Couveuse <span>${q.length} / ${PENSION.q}</span></h3>
