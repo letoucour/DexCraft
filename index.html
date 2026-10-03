@@ -554,6 +554,7 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .legend.special .lg-sub{animation:lgIn .6s 3.6s both;color:rgb(var(--sC,201,184,240))}
 /* 1.6.0 : couleurs de la scène selon la carte (champ fx des données secrètes) */
 .legend.special.fx-brasier{--sA:234,88,12;--sB:124,45,18;--sC:253,186,116;--sD:249,115,22;--sE:254,243,199;--sF:154,52,18;--sG:251,146,60;--sBg:#0b0402}
+.legend.special.fx-sylve{--sA:16,185,129;--sB:6,60,40;--sC:110,231,183;--sD:5,150,105;--sE:196,181,253;--sF:76,29,149;--sG:167,139,250;--sBg:#020805}
 .legend.special.fx-orchidee{--sA:190,24,93;--sB:80,10,50;--sC:244,114,182;--sD:219,39,119;--sE:217,249,157;--sF:101,163,13;--sG:163,230,53;--sBg:#08020a}
 .legend.mythic{background:#05040c;animation:none;overflow:hidden}
 .mythic .m-bg{position:absolute;inset:-20%;background:radial-gradient(circle at 50% 55%,rgba(255,79,216,.35),transparent 45%),radial-gradient(circle at 30% 40%,rgba(79,195,255,.25),transparent 40%),radial-gradient(circle at 70% 40%,rgba(255,207,63,.25),transparent 40%);opacity:0;animation:mbg 1s 1.2s ease-out forwards,hue 6s 1.2s linear infinite}
@@ -789,6 +790,12 @@ img{-webkit-user-drag:none;user-drag:none} /* 1.6.3 : glisser une silhouette « 
 .card.skin-orchidee .art{border:3px solid #a3e635;box-shadow:inset 0 0 0 1px #3b0a2c}.card.skin-orchidee::after{opacity:.28}
 .card.skin-orchidee .card-top,.card.skin-orchidee .genus,.card.skin-orchidee .card-foot,.card.skin-orchidee .stats span,.card.skin-orchidee .spec-lines{color:#f9a8d4}
 .card.skin-orchidee .card-name{color:#fbcfe8;text-shadow:0 1px 0 #24061c}
+/* 1.8.0 : apparence « sylve » (vert jade et violet sombre) */
+.card.skin-sylve{border-color:transparent;animation:none;color:#a7f3d0;
+  background:radial-gradient(circle,rgba(167,243,208,.4) 0 .8px,transparent 1.3px) 0 0/6px 6px padding-box,linear-gradient(165deg,#0b2a1e,#14532d 40%,#1e0b33) padding-box,linear-gradient(135deg,#a7f3d0,#10b981 35%,#a78bfa 62%,#065f46) border-box}
+.card.skin-sylve .art{border:3px solid #34d399;box-shadow:inset 0 0 0 1px #1e0b33}.card.skin-sylve::after{opacity:.28}
+.card.skin-sylve .card-top,.card.skin-sylve .genus,.card.skin-sylve .card-foot,.card.skin-sylve .stats span,.card.skin-sylve .spec-lines{color:#a7f3d0}
+.card.skin-sylve .card-name{color:#d1fae5;text-shadow:0 1px 0 #052e1f}
 .art-img~.art-initial{display:none}
 @media (max-width:1300px){.brand{font-size:1rem}nav.tabs button{font-size:.76rem;padding:4px 6px}.chip{font-size:.74rem;padding:3px 8px;gap:4px}.chip b{font-size:.9rem}.chips .ava,.chips .avf{--s:22px!important}}
 
@@ -1513,6 +1520,176 @@ nav.tabs .ti{display:none}
   background:radial-gradient(circle at 34% 28%,#fff 0 7%,transparent 24%),linear-gradient(140deg,#9ff5d8,#26b9a0 38%,#4f7be6 72%,#3a2b9a)} /* Pierre évolutive (1.7.0) */
 .so-pierre::after{content:"";position:absolute;inset:6% 8%;clip-path:polygon(50% 0,76% 0,100% 42%,50% 42%);background:rgba(255,255,255,.25)}
 .so-stat{margin-left:auto;white-space:nowrap}
+/* ---------- Lumi-Bois (1.8.0) : une clairière de nuit, toujours sombre quel que soit le thème. Décor : lune voilée, trois
+   plans d’arbres (textures de lbTex), deux nappes de brume, lucioles (canvas), yeux d’un Hoothoot qui clignent ;
+   cases dans le noir couvertes de feuillage, cases éclairées sur un sol moussu. ---------- */
+.lumibois{position:relative;isolation:isolate;overflow:hidden;border-radius:22px;min-height:calc(100vh - 150px);color:#e3efe7;
+  background:radial-gradient(ellipse 55% 38% at 80% 2%,rgba(168,196,255,.16),transparent 72%),linear-gradient(180deg,#02070a 0%,#051410 34%,#0a1d15 70%,#040c09 100%);
+  box-shadow:inset 0 0 140px rgba(0,0,0,.85),0 14px 40px rgba(0,0,0,.35)}
+.lb-sky{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.lb-moon{position:absolute;right:33%;top:-22px;width:84px;height:84px;border-radius:50%;opacity:.7;
+  background:radial-gradient(circle at 38% 36%,#fbfcff,#d6def0 52%,#a5b4d8);box-shadow:0 0 60px 22px rgba(190,210,255,.16),0 0 160px 70px rgba(140,170,255,.07)}
+.lb-trees{position:absolute;left:-6%;right:-6%;bottom:0;background-repeat:repeat-x;background-position:0 100%;background-size:auto 100%}
+.lb-trees.far{height:62%;background-image:var(--lb-far);opacity:.75;animation:lbSway 70s ease-in-out infinite alternate}
+.lb-trees.mid{height:48%;background-image:var(--lb-mid);opacity:.95;animation:lbSway 52s ease-in-out infinite alternate-reverse}
+.lb-trees.near{height:30%;bottom:-3%;background-image:var(--lb-near);background-position:40% 100%;
+  -webkit-mask:linear-gradient(90deg,#000 0 16%,transparent 30% 70%,#000 84%);mask:linear-gradient(90deg,#000 0 16%,transparent 30% 70%,#000 84%)}
+.lb-fog{position:absolute;left:-30%;width:160%;height:36%;opacity:.9;
+  background:radial-gradient(ellipse 22% 48% at 18% 50%,rgba(200,236,222,.09),transparent 70%),radial-gradient(ellipse 26% 42% at 52% 60%,rgba(200,236,222,.07),transparent 70%),radial-gradient(ellipse 24% 46% at 84% 44%,rgba(200,236,222,.08),transparent 70%);
+  animation:lbFog 48s ease-in-out infinite alternate}
+.lb-fog.f1{bottom:4%}.lb-fog.f2{bottom:30%;animation-duration:72s;animation-direction:alternate-reverse;opacity:.7}
+@keyframes lbFog{from{transform:translateX(-7%)}to{transform:translateX(7%)}}
+@keyframes lbSway{from{transform:translateX(-1.2%)}to{transform:translateX(1.2%)}}
+.lb-flies{position:absolute;inset:0;width:100%;height:100%}
+.lb-eyes{position:absolute;width:24px;height:8px;opacity:0;filter:drop-shadow(0 0 5px #ffd21a);
+  background:radial-gradient(circle at 4px 4px,#ffe46b 0 2.4px,transparent 3.2px),radial-gradient(circle at 20px 4px,#ffe46b 0 2.4px,transparent 3.2px);animation:lbEyes 23s infinite}
+.lb-eyes.e1{left:6%;top:40%}.lb-eyes.e2{right:7%;top:56%;animation-delay:12s;animation-duration:31s}
+@keyframes lbEyes{0%,80%,100%{opacity:0}82%,88%,91%,96%{opacity:.9}89%,94%{opacity:.08}}
+.lb-wrap{position:relative;z-index:1;padding:14px 16px 22px}
+.lumibois .ar-top h1{color:#eef8f1;text-shadow:0 2px 10px rgba(0,0,0,.8)}
+.lumibois .ar-top label,.lumibois .ar-top .ar-chip{color:#d6e9dc;background:rgba(6,20,15,.6);border-color:rgba(150,200,170,.25)}
+.lumibois .ar-v{background:#d9b24a;color:#2a1d00}
+.lb-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:18px;align-items:start;margin-top:12px}
+@media (max-width:900px){.lb-intro{grid-template-columns:minmax(0,1fr)}}
+.lb-start{text-align:center;background:rgba(4,14,10,.55);border:1px solid rgba(150,210,170,.15);border-radius:18px;padding:16px;backdrop-filter:blur(2px)}
+.lb-start>p{max-width:560px;margin:0 auto 14px;line-height:1.5;color:#d8eadf}
+.lb-go{box-shadow:0 0 24px rgba(255,200,90,.45)}
+.lb-last{margin-top:16px}.lb-last h3{margin:0 0 10px;color:#f3e3b0}.lb-last p{margin:8px 0 0}
+.lb-note{margin:6px 0 0;color:#f6e7b8;font-size:.9rem}
+.lb-side{display:flex;flex-direction:column;gap:12px}
+.lb-box{background:rgba(4,14,10,.62);border:1px solid rgba(150,210,170,.18);border-radius:16px;padding:12px 14px}
+.lb-box h3{margin:0 0 8px;color:#eaf5ee}
+.lb-got{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 12px}
+.lb-got>div{display:flex;align-items:center;gap:8px;font-size:.86rem}.lb-got b{margin-left:auto}.lb-got .none{opacity:.38}
+.lb-keyrow{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.88rem;color:#f6e7b8}
+.lb-ico{position:relative;display:inline-block;vertical-align:middle;flex:0 0 auto}
+.lb-ico .lb-it{width:100%;height:100%;left:0;top:0}
+.lb-stage{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px}
+.lb-info{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 14px;font-size:.9rem;color:#d5e8db}.lb-found{display:flex;gap:4px}
+/* lanternes restantes : elles vacillent, et s’éteignent une à une */
+.lb-lamps{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin:4px 0 2px}
+.lb-lamp{position:relative;width:20px;height:28px;border-radius:7px 7px 9px 9px;
+  background:radial-gradient(circle at 50% 58%,#fff7cf 0 16%,#ffd060 38%,#e8891d 72%,#7a3b0a);box-shadow:0 0 14px 4px rgba(255,190,80,.55),0 0 34px 12px rgba(255,170,60,.16);animation:lbFlick 2.6s ease-in-out infinite}
+.lb-lamp::before{content:"";position:absolute;left:28%;right:28%;top:-7px;height:7px;border:2px solid #8a7752;border-bottom:0;border-radius:7px 7px 0 0}
+.lb-lamp::after{content:"";position:absolute;left:-2px;right:-2px;top:-1px;height:4px;border-radius:3px;background:#5d4d31}
+.lb-lamp:nth-child(2n){animation-delay:.7s}.lb-lamp:nth-child(3n){animation-delay:1.3s}
+.lb-lamp.off{background:linear-gradient(#2c322e,#141815);box-shadow:none;animation:none;opacity:.55}
+.lb-lamp.dying{animation:lbDie .6s ease-out forwards}
+@keyframes lbFlick{0%,100%{filter:brightness(1)}35%{filter:brightness(1.18)}52%{filter:brightness(.84)}70%{filter:brightness(1.07)}}
+@keyframes lbDie{0%{filter:brightness(1.6)}30%{filter:brightness(.5)}50%{filter:brightness(1.2)}100%{filter:brightness(.25);box-shadow:none}}
+/* la clairière : 12 colonnes, cases aussi grandes que possible (toute la largeur sur téléphone) */
+.lb-boardw{--c:min(46px,calc((100vw - 52px) / 12),calc((100vh - 300px) / 12));display:flex;justify-content:center;width:100%}
+.lb-board{display:grid;grid-template-columns:repeat(12,var(--c));grid-auto-rows:var(--c);position:relative;filter:drop-shadow(0 16px 26px rgba(0,0,0,.65))}
+.lb-last .lb-board{--c:min(30px,calc((100vw - 80px) / 12));justify-content:center}
+.lb-c{position:relative;width:var(--c);height:var(--c);padding:0;border:0;margin:0;overflow:hidden;background:none;font:inherit;cursor:pointer;--cs:var(--c);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+span.lb-c{cursor:default}
+.lb-c.out{visibility:hidden;pointer-events:none}
+.lb-c.dark{background:var(--lb-leaf) var(--bx) var(--by)/96px 96px,radial-gradient(circle at 35% 30%,#183d28,#0a1c12 75%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),inset 0 -6px 10px rgba(0,0,0,.45)}
+.lb-c.lit{background:radial-gradient(circle at 50% 42%,rgba(255,214,140,.2),transparent 78%),var(--lb-ground) var(--bx) var(--by)/96px 96px,#2c2517;box-shadow:inset 0 0 0 1px rgba(0,0,0,.28)}
+.lb-c.aim::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle,rgba(255,226,150,.42),rgba(255,200,100,.14) 62%,transparent 82%)}
+.lb-c.dark.aim{animation:lbRustle .45s ease-in-out}
+@keyframes lbRustle{30%{background-position:calc(var(--bx) + 2px) var(--by),0 0}60%{background-position:calc(var(--bx) - 2px) calc(var(--by) + 1px),0 0}}
+.lb-c.lighting{animation:lbLighting .55s ease-out forwards}
+@keyframes lbLighting{0%{filter:brightness(1)}45%{filter:brightness(2.4) saturate(.6)}100%{filter:brightness(1.5)}}
+/* objets : gris tant qu’ils ne sont pas entièrement éclairés, en couleur ensuite */
+.lb-it{position:absolute;display:block;width:calc(var(--w) * 100%);height:calc(var(--h) * 100%);left:calc(var(--x) * -100%);top:calc(var(--y) * -100%);pointer-events:none}
+.lb-c.obj:not(.done) .lb-it{filter:grayscale(1) brightness(.62) contrast(1.12)}
+.lb-c.obj.done{box-shadow:inset 0 0 calc(var(--c) * .4) rgba(255,222,140,.5),inset 0 0 0 1px rgba(255,230,160,.35)}
+.lb-c.missed .lb-it{filter:grayscale(1) brightness(.5);opacity:.42}
+.lb-c.fresh{animation:lbFresh 1.1s ease-out}
+@keyframes lbFresh{0%{filter:brightness(2.6)}100%{filter:brightness(1)}}
+.lb-burst{position:absolute;width:calc(var(--c) * 4.4);height:calc(var(--c) * 4.4);margin:calc(var(--c) * -2.2) 0 0 calc(var(--c) * -2.2);border-radius:50%;pointer-events:none;z-index:3;mix-blend-mode:screen;
+  background:radial-gradient(circle,rgba(255,246,206,.95),rgba(255,212,120,.5) 28%,rgba(255,180,80,.16) 54%,transparent 70%);animation:lbBurst .85s ease-out forwards}
+@keyframes lbBurst{0%{transform:scale(.18);opacity:1}55%{opacity:.85}100%{transform:scale(1.15);opacity:0}}
+.lb-leafp,.lb-spore{position:absolute;pointer-events:none;z-index:4;width:9px;height:5px;margin:-2px 0 0 -4px;border-radius:60% 0;background:linear-gradient(135deg,#5fae4e,#24592a);animation:lbLeaf 1s ease-out forwards}
+@keyframes lbLeaf{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}
+.lb-spore{width:7px;height:7px;border-radius:50%;background:radial-gradient(circle,#f2d9ff,#b07ad8 60%,transparent 70%);animation:lbLeaf 1.3s ease-out forwards}
+.lb-sporecloud{position:absolute;width:calc(var(--c) * 3.4);height:calc(var(--c) * 3.4);margin:calc(var(--c) * -1.7) 0 0 calc(var(--c) * -1.7);border-radius:50%;pointer-events:none;z-index:3;
+  background:radial-gradient(circle,rgba(214,170,255,.75),rgba(150,90,200,.35) 45%,transparent 70%);animation:lbBurst 1.2s ease-out forwards}
+/* dessins des objets */
+.lb-it::before,.lb-it::after{content:"";position:absolute}
+.lb-baie::before{inset:16%;border-radius:50%;background:radial-gradient(circle at 34% 30%,#eef7ff 0 8%,#86bdff 24%,#2b66d6 60%,#163983)}
+.lb-baie::after{left:46%;top:5%;width:32%;height:22%;border-radius:0 100% 0 100%;background:linear-gradient(135deg,#86d873,#2f7a2c);transform:rotate(-24deg)}
+.lb-noig::before{inset:14%;border-radius:50%;background:radial-gradient(circle at 34% 30%,#ffe2d4 0 8%,#f06240 30%,#a3231a 76%)}
+.lb-noig::after{left:47%;top:4%;width:7%;height:18%;border-radius:2px;background:#5a3a1c;box-shadow:3px 1px 0 1px #3f8a35}
+.lb-pchamp::before{left:9%;right:9%;top:10%;height:44%;border-radius:50% 50% 16% 16%/70% 70% 30% 30%;
+  background:radial-gradient(circle at 30% 42%,#fff 0 8%,transparent 9%),radial-gradient(circle at 66% 34%,#fff 0 7%,transparent 8%),radial-gradient(circle at 52% 72%,#fff 0 6%,transparent 7%),linear-gradient(#ea5243,#9f2219)}
+.lb-pchamp::after{left:35%;right:35%;top:50%;bottom:8%;border-radius:30% 30% 42% 42%;background:linear-gradient(90deg,#e8dcbf,#fffaf0 50%,#d2c19d)}
+.lb-gchamp::before{left:5%;right:5%;top:6%;height:54%;border-radius:50% 50% 14% 14%/72% 72% 28% 28%;
+  background:radial-gradient(circle at 26% 46%,#fff4dc 0 6%,transparent 7%),radial-gradient(circle at 56% 30%,#fff4dc 0 7%,transparent 8%),radial-gradient(circle at 76% 58%,#fff4dc 0 5%,transparent 6%),radial-gradient(circle at 42% 70%,#fff4dc 0 4%,transparent 5%),linear-gradient(#c8682e,#7a3410)}
+.lb-gchamp::after{left:32%;right:32%;top:54%;bottom:6%;border-radius:30% 30% 44% 44%;background:linear-gradient(90deg,#ddcfb0,#fff8e8 50%,#c9b48c)}
+.lb-amonita::before{left:5%;right:5%;top:6%;height:54%;border-radius:50% 50% 14% 14%/72% 72% 28% 28%;
+  background:linear-gradient(transparent 52%,#2b2b2b 52% 60%,#f3f3f3 60%),radial-gradient(circle at 50% 30%,#ff6b5c,#c8261a 70%)}
+.lb-amonita::after{left:28%;right:28%;top:54%;bottom:6%;border-radius:30% 30% 44% 44%;
+  background:radial-gradient(circle at 34% 40%,#1c1c1c 0 8%,transparent 9%),radial-gradient(circle at 66% 40%,#1c1c1c 0 8%,transparent 9%),linear-gradient(90deg,#d9cfe8,#f4efff 50%,#bfb3d6)}
+.lb-miel::before{left:16%;right:16%;top:24%;bottom:7%;border-radius:20% 20% 28% 28%;
+  background:radial-gradient(ellipse 30% 22% at 50% 55%,#fff4c8 0 40%,transparent 42%),linear-gradient(90deg,#c9750b,#ffc23a 45%,#d98a10)}
+.lb-miel::after{left:22%;right:22%;top:10%;height:17%;border-radius:4px;background:linear-gradient(#8a5a2a,#5a3816)}
+.lb-bocal::before{left:12%;right:12%;top:18%;bottom:6%;border-radius:22% 22% 28% 28%;border:2px solid rgba(220,240,255,.65);
+  background:radial-gradient(circle at 34% 34%,#fbff9a 0 7%,transparent 10%),radial-gradient(circle at 66% 58%,#e6ff7a 0 6%,transparent 9%),radial-gradient(circle at 42% 80%,#fff6a0 0 6%,transparent 9%),linear-gradient(90deg,rgba(160,215,255,.32),rgba(230,250,255,.12),rgba(160,215,255,.32))}
+.lb-bocal::after{left:18%;right:18%;top:8%;height:12%;border-radius:3px;background:#8a6a3a}
+.lb-c.done .lb-bocal::before{animation:lbJar 1.5s ease-in-out infinite alternate}
+@keyframes lbJar{from{filter:brightness(1)}to{filter:brightness(1.6) drop-shadow(0 0 6px #f4ff8a)}}
+.lb-oeuf::before,.lb-oeufr::before,.lb-oeufd::before{left:12%;right:12%;top:8%;bottom:6%;border-radius:50% 50% 46% 46%/60% 60% 40% 40%;box-shadow:inset -6px -8px 14px rgba(0,0,0,.18)}
+.lb-oeuf::before{background:radial-gradient(circle at 34% 38%,#7cc35a 0 9%,transparent 10%),radial-gradient(circle at 64% 56%,#7cc35a 0 8%,transparent 9%),radial-gradient(circle at 40% 74%,#7cc35a 0 7%,transparent 8%),radial-gradient(circle at 70% 26%,#7cc35a 0 5%,transparent 6%),radial-gradient(circle at 30% 24%,#fffef6,#f2e8cf 50%,#d6c69f)}
+.lb-oeufr::before{background:radial-gradient(circle at 36% 40%,#fff 0 4%,transparent 5%),radial-gradient(circle at 62% 30%,#fff 0 3%,transparent 4%),radial-gradient(circle at 56% 66%,#fff 0 4%,transparent 5%),radial-gradient(circle at 32% 70%,#fff 0 3%,transparent 4%),radial-gradient(circle at 30% 24%,#d6f6ff,#62c3e6 45%,#2a6fb0)}
+.lb-oeufd::before{background:radial-gradient(circle at 30% 22%,#fffdf0 0 10%,#ffe27a 30%,#e6a51c 66%,#9a6a00)}
+.lb-oeufd::after{left:28%;top:16%;width:16%;height:26%;border-radius:50%;background:rgba(255,255,255,.75);filter:blur(1px)}
+.lb-c.done .lb-oeufd::before{animation:lbGold 2s ease-in-out infinite alternate}
+@keyframes lbGold{to{filter:brightness(1.25) drop-shadow(0 0 8px #ffd34d)}}
+.lb-ambre::before{inset:10%;border-radius:42% 56% 46% 52%/50% 44% 56% 50%;background:radial-gradient(circle at 34% 28%,#fff4c6 0 7%,#ffb340 30%,#d9700a 66%,#8a3a00)}
+.lb-ambre::after{left:42%;top:42%;width:18%;height:12%;border-radius:50%;background:rgba(60,25,0,.7);box-shadow:-5px -3px 0 -1px rgba(60,25,0,.4),5px -3px 0 -1px rgba(60,25,0,.4)}
+.lb-pierre::before{inset:8%;clip-path:polygon(50% 0,80% 18%,96% 52%,72% 88%,50% 100%,28% 88%,4% 52%,20% 18%);background:linear-gradient(160deg,#b9f5ad,#3fae4a 46%,#1b622a)}
+.lb-pierre::after{left:48.5%;width:3%;top:14%;bottom:12%;background:rgba(235,255,230,.6);box-shadow:-7px 6px 0 -0.5px rgba(235,255,230,.35),7px 12px 0 -0.5px rgba(235,255,230,.35)}
+.lb-suave::before{left:3%;right:3%;top:4%;height:62%;border-radius:50% 50% 18% 18%/74% 74% 26% 26%;
+  background:radial-gradient(circle at 30% 40%,#fffbe8 0 5%,transparent 6%),radial-gradient(circle at 60% 26%,#fffbe8 0 6%,transparent 7%),radial-gradient(circle at 76% 54%,#fffbe8 0 4%,transparent 5%),linear-gradient(#ffe7a0,#e9b030 60%,#b47a10)}
+.lb-suave::after{left:36%;right:36%;top:60%;bottom:4%;border-radius:30% 30% 44% 44%;background:linear-gradient(90deg,#e5d6b2,#fffaf0 50%,#cdb98f)}
+.lb-c.done .lb-suave::before{animation:lbGold 2.2s ease-in-out infinite alternate}
+.lb-gs::before{inset:8%;border-radius:50%;background:linear-gradient(180deg,#ffd75a,#e0a91c 46%,#2b2b2b 46% 54%,#eef1f6 54%,#b9c0cc);box-shadow:inset -5px -6px 10px rgba(0,0,0,.25)}
+.lb-gs::after{content:"GS";inset:auto 0 56% 0;text-align:center;font:800 calc(var(--cs) * .5)/1 var(--display);color:#7a5600;letter-spacing:1px}
+.lb-c.done .lb-gs::before{animation:lbGold 1.6s ease-in-out infinite alternate}
+@media (prefers-reduced-motion:reduce){html:not(.anim-on) .lumibois *{animation:none!important}}
+@media (max-width:600px){.lb-wrap{padding:10px 6px 16px}.lb-boardw{--c:min(46px,calc((100vw - 40px) / 12))}.lumibois{border-radius:16px}.lb-moon{width:50px;height:50px;left:auto;right:6%;top:58px;opacity:.45}}
+
+/* ---------- Pension (1.8.0) : au chaud, dans la paille ---------- */
+.pension{position:relative;border-radius:22px;padding:16px;color:#f6ead6;
+  background:radial-gradient(ellipse 70% 45% at 50% 0,rgba(255,196,110,.2),transparent 70%),repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 2px,transparent 2px 46px),linear-gradient(180deg,#2c1d10,#1d140b);box-shadow:inset 0 0 90px rgba(0,0,0,.55)}
+.pension .ar-top h1{color:#fff2dc}
+.pn-intro{max-width:760px;line-height:1.5;color:#ead9bd}
+.pn-res{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:12px 0 18px}
+.pn-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,220,160,.22);border-radius:14px;padding:10px 12px}
+.pn-card .btn{grid-column:1/-1}.pn-card small{display:block;color:#d9c7a8;font-size:.78rem}.pn-card.none{opacity:.55}.pn-n{font-family:var(--display);font-size:1.2rem}
+.pn-egg{position:relative;display:inline-block;width:40px;height:56px;flex:0 0 auto}
+.pn-egg .lb-it{width:100%;height:100%;left:0;top:0}
+.pn-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 10px;color:#fff2dc}.pn-h span{font-size:.9rem;color:#d9c7a8}
+.pn-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.pn-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pn-slot{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;min-height:156px;padding:12px 6px 10px;border-radius:16px;text-align:center;
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(255,220,160,.15)}
+.pn-slot small{font-size:.76rem;color:#e6d3b2}
+.pn-slot .pn-egg{width:50px;height:70px;z-index:1}
+.pn-nest{width:78px;height:20px;margin-top:-15px;border-radius:50%;background:repeating-linear-gradient(24deg,#8a5a2a 0 3px,#b8823e 3px 6px,#6b4420 6px 8px);box-shadow:0 5px 9px rgba(0,0,0,.45)}
+.pn-slot.empty{opacity:.55}
+.pn-slot.wait .pn-egg{filter:grayscale(.35) brightness(.78)}
+.pn-slot.warm{border-color:rgba(255,190,90,.45);box-shadow:inset 0 0 22px rgba(255,170,60,.16)}
+.pn-slot.warm .pn-egg{animation:pnBreath 3s ease-in-out infinite}
+.pn-slot.ready{border-color:#ffd36b;box-shadow:0 0 22px rgba(255,210,100,.45)}
+.pn-egg.wobble{animation:pnWobble 1.5s ease-in-out infinite;transform-origin:50% 92%}
+@keyframes pnWobble{0%,58%,100%{transform:rotate(0)}10%{transform:rotate(-9deg)}20%{transform:rotate(8deg)}30%{transform:rotate(-6deg)}40%{transform:rotate(4deg)}}
+@keyframes pnBreath{50%{transform:scale(1.045)}}
+.pn-bar{width:82%;height:6px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden}.pn-bar i{display:block;height:100%;background:linear-gradient(90deg,#ffb84d,#ffe08a)}
+.pn-foot{margin:14px 0 0;font-size:.85rem;color:#d9c7a8}
+.pn-hatch{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#fff;
+  background:radial-gradient(circle at 50% 44%,rgba(255,222,150,.28),rgba(12,7,3,.94) 62%)}
+.ph-egg{position:relative;width:140px;height:196px;animation:pnWobble 1.2s ease-in-out 2;transform-origin:50% 92%}
+.ph-egg .pn-egg{width:100%;height:100%}
+.ph-crack{position:absolute;inset:0;width:100%;height:100%;opacity:0;stroke:#3a2a10;stroke-width:3;fill:none;stroke-linejoin:round}
+.pn-hatch.crack .ph-crack{opacity:1;transition:opacity .15s}.pn-hatch.crack .ph-egg{animation:pnWobble .5s ease-in-out infinite}
+.pn-hatch.flash::after{content:"";position:fixed;inset:0;background:#fffbe8;animation:phFlash .5s ease-out forwards;pointer-events:none}
+@keyframes phFlash{from{opacity:1}to{opacity:0}}
+.ph-txt{font-family:var(--display);font-size:1.5rem;text-align:center;text-shadow:0 2px 10px rgba(0,0,0,.7);padding:0 16px}
+.ph-card{position:relative;width:min(300px,78vw);animation:lgIn .5s both}
+
 .so-clef::after{content:"◎";position:absolute;inset:0;display:grid;place-items:center;font:700 calc(var(--cs) * 1.3)/1 var(--display);color:rgba(52,36,82,.75)}
 .so-ico.wide{width:34px}
 .so-pls{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 10px}
@@ -1734,7 +1911,9 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
     <div class="tab-games"><button type="button" id="tab-games" aria-haspopup="true" aria-expanded="false"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 7h9A4.5 4.5 0 0 1 21 11.5v2.3a2.7 2.7 0 0 1-4.8 1.7L14.6 13.6H9.4l-1.6 1.9A2.7 2.7 0 0 1 3 13.8v-2.3A4.5 4.5 0 0 1 7.5 7z"/><path d="M8 9.3v3.4M6.3 11h3.4"/><path d="M15.5 10h.01M17.5 12h.01"/></svg></span><span class="tl">Jeux<span class="tg-arrow" aria-hidden="true"> ▾</span></span></button>
       <div class="games-pop" id="games-pop" hidden><button data-view="volto"><span class="gp-ic" aria-hidden="true">⚡</span><span class="gp-t"><b>VoltoBataille</b><small id="gp-volto">Retournez les cartes sans réveiller de Voltorbe</small></span></button>
         <button data-view="arena"><span class="gp-ic" aria-hidden="true">⚔️</span><span class="gp-t"><b>Arène</b><small id="gp-arena">Combat automatique avec vos Pokémon</small></span></button>
-        <button data-view="sout" id="gp-sout-b" hidden><span class="gp-ic" aria-hidden="true">💎</span><span class="gp-t"><b>Souterrain</b><small id="gp-sout">Déterrez les trésors cachés dans le mur</small></span></button></div></div>
+        <button data-view="sout" id="gp-sout-b" hidden><span class="gp-ic" aria-hidden="true">💎</span><span class="gp-t"><b>Souterrain</b><small id="gp-sout">Déterrez les trésors cachés dans le mur</small></span></button>
+        <button data-view="lumi" id="gp-lumi-b" hidden><span class="gp-ic" aria-hidden="true">🏮</span><span class="gp-t"><b>Lumi-Bois</b><small>Éclairez la clairière à la lanterne</small></span></button>
+        <button data-view="pension" id="gp-pn-b" hidden><span class="gp-ic" aria-hidden="true">🥚</span><span class="gp-t"><b>Pension</b><small>Faites couver et éclore vos œufs</small></span></button></div></div>
     <button data-view="ranking"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4h8v5.5a4 4 0 0 1-8 0z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 4.4M16 6h2.5a2.5 2.5 0 0 1-2.6 4.4"/><path d="M12 13.5V17M8.5 20.5h7M9.5 17h5v3.5h-5z"/></svg></span><span class="tl">Classement</span></button>
     <button data-view="shop"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8.5h14l-1.1 11a1.5 1.5 0 0 1-1.5 1.4H7.6a1.5 1.5 0 0 1-1.5-1.4z"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/></svg></span><span class="tl">Boutique</span></button>
   </nav>
@@ -1790,7 +1969,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.7.3";
+const APP_VERSION="1.8.0";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2778,6 +2957,17 @@ const TITLES=[
   {k:"souArceus",n:"Élu d’Arceus",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A réuni les 18 plaques du Souterrain",test:p=>!!(p.stats&&p.stats.souArceus),get hidden(){return !soOn()}},
   {k:"souKey",n:"Ruinemaniac",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A déterré une Clef de voûte",test:p=>!!(p.stats&&p.stats.souKey),get hidden(){return !soOn()}},
   {k:"souGd",n:"Diamantaire",ic:"💎",g:"Souterrain",cls:"tc",c:"#8a5a2b",d:"A déterré une Grande Sphère diamant dans le Souterrain",test:p=>!!(p.stats&&p.stats.souGd),get hidden(){return !soOn()}},
+  /* Lumi-Bois (1.8.0, titres validés par Theo) : cachés sans le mode développeur tant que le jeu n’est pas ouvert */
+  ...[["lbRuns",10,"Promeneur","A exploré 10 clairières de Lumi-Bois"],["lbRuns",100,"Garde forestier","A exploré 100 clairières de Lumi-Bois"],["lbRuns",500,"Rôdeur nocturne","A exploré 500 clairières de Lumi-Bois"],
+    ["lbItems",100,"Cueilleur","A trouvé 100 objets à Lumi-Bois"],["lbMush",25,"Mycologue","A trouvé 25 champignons à Lumi-Bois"],["lbBocal",20,"Porte-lumière","A trouvé 20 Bocaux de lucioles"],["lbTrap",10,"Gare aux spores","A réveillé 10 Amonita"]]
+    .map(([stat,need,n,d])=>({k:stat+need,n,ic:"🏮",g:"Lumi-Bois",cls:"tc",c:"#2f6b45",d,stat,need,get hidden(){return !lbOn()}})),
+  {k:"lbClear",n:"Œil de Noarfang",ic:"🏮",g:"Lumi-Bois",cls:"tc",c:"#2f6b45",d:"A trouvé tous les objets d’une clairière",test:p=>!!(p.stats&&p.stats.lbClear),get hidden(){return !lbOn()}},
+  {k:"lbGold",n:"Nid doré",ic:"🏮",g:"Lumi-Bois",cls:"tc",c:"#2f6b45",d:"A trouvé un Œuf doré à Lumi-Bois",test:p=>!!(p.stats&&p.stats.lbGold),get hidden(){return !lbOn()}},
+  {k:"lbGs",n:"Hors du Temps",ic:"🏮",g:"Lumi-Bois",cls:"tc",c:"#2f6b45",d:"A trouvé une GS Ball à Lumi-Bois",test:p=>!!(p.stats&&p.stats.lbGs),get hidden(){return !lbOn()}},
+  /* Pension (1.8.0) : d’autres titres viendront avec son mini-jeu */
+  ...[["pnHatch",10,"Couveur","A fait éclore 10 œufs"],["pnHatch",100,"Maître de la Pension","A fait éclore 100 œufs"],["pnGold",5,"Couvée légendaire","A fait éclore 5 Œufs dorés"]]
+    .map(([stat,need,n,d])=>({k:stat+need,n,ic:"🥚",g:"Pension",cls:"tc",c:"#a0682a",d,stat,need,get hidden(){return !pnOn()}})),
+  {k:"pnShiny",n:"Né sous une bonne étoile",ic:"🥚",g:"Pension",cls:"tc",c:"#a0682a",d:"A fait éclore un Pokémon shiny",test:p=>!!(p.stats&&p.stats.pnShiny),get hidden(){return !pnOn()}},
   /* Prestige (1.5.0) : un titre par niveau (stats.prestige, posé par dc_prestige) */
   ...PRES_TITLES.map((n,i)=>({k:"pres"+(i+1),n,ic:"✧",g:"Prestige",cls:"tc",c:"#a855f7",d:`A atteint le prestige ${i+1}`,stat:"prestige",need:i+1})),
 ];
@@ -2789,8 +2979,10 @@ for(const [g,k,n,ic,c] of [["Activité","allAct","Âme de DexCraft","✺","#b886
   ["VoltoBataille","allVb","Voltorbe d’or","⚡","#c98f00"],["Souterrain","allSou","Roi des Profondeurs","💎","#8a5a2b"],
   ["Collections","allColl","Conservateur","🏛","#2f6f8f"],["Régions","allReg","Citoyen du monde","🗺","#2e7d4f"],
   ["Types","allType","Maître des éléments","🌈","#6d3fc0"],["Shiny","allShiny","Prisme","💠","#c9a227"],["Échanges","allTrade","Roi du troc","⚜","#7a4a1e"],
-  ["Prestige","allPres","Éternel","✧","#a855f7"]])
-  TITLES.push({k,n,ic,g,cls:"tsp",c,d:`A obtenu tous les titres de la catégorie ${g}`,all:TITLES.filter(t=>t.g===g).map(t=>t.k)});
+  ["Prestige","allPres","Éternel","✧","#a855f7"],["Lumi-Bois","allLumi","Voix de la Forêt","🏮","#c9a227"],["Pension","allPen","Ange gardien","🥚","#c9a227"]]){
+  const t={k,n,ic,g,cls:"tsp",c,d:`A obtenu tous les titres de la catégorie ${g}`,all:TITLES.filter(t=>t.g===g).map(t=>t.k)};
+  if(g==="Lumi-Bois")Object.defineProperty(t,"hidden",{get:()=>!lbOn()});if(g==="Pension")Object.defineProperty(t,"hidden",{get:()=>!pnOn()}); // 1.8.0 : jeux encore cachés
+  TITLES.push(t)}
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
 const TITLE_MAX=3,TITLE_DEFAULT=["maitre"]; // Alpha et Bêta testeur : badges à côté du pseudo depuis la 1.0.1, plus des titres
 const profOf=id=>id===ME?S:PLAYERS[id];
@@ -2866,12 +3058,13 @@ function renderHeader(){
   {const bb=$("#boost-badge"),w=[hasGift()?"un cadeau":"",dailyState().done?"":"la récompense du jour"].filter(Boolean);if(bb){bb.hidden=!w.length;bb.title=w.length?`À récupérer : ${w.join(" et ")}`:""}}
   {const tb=$("#trade-badge"),n=pendingOffers(),w=wishUnseen(),t=n+w;if(tb){tb.hidden=!t;tb.textContent=t?(t>99?"99+":t):"";tb.title=[n?`${n} proposition${n>1?"s":""} à traiter`:"",w?`${w} carte${w>1?"s":""} recherchée${w>1?"s":""} à l’échange`:""].filter(Boolean).join(", ")}}
   document.querySelectorAll("#tabs button,#h-me").forEach(b=>b.setAttribute("aria-current",b.dataset.view===view?"page":"false"));
-  {const g=$("#tab-games");if(g)g.setAttribute("aria-current",view==="volto"||view==="arena"||view==="sout"?"page":"false")} // 1.4.13 : onglet Jeux allumé dans les deux jeux
+  {const g=$("#tab-games");if(g)g.setAttribute("aria-current",["volto","arena","sout","lumi","pension"].includes(view)?"page":"false")} // 1.4.13 : onglet Jeux allumé dans les deux jeux
   { // menu « Jeux » (1.3.3) : allumé sur la VoltoBataille et l'Arène, avec les crédits gagnés aujourd'hui dans chaque jeu
-    const g=$("#tab-games");if(g)g.setAttribute("aria-current",view==="volto"||view==="arena"||view==="sout"?"page":"false");
+    const g=$("#tab-games");if(g)g.setAttribute("aria-current",["volto","arena","sout","lumi","pension"].includes(view)?"page":"false");
     const gv=$("#gp-volto"),ga=$("#gp-arena"),arG=S&&S.arena&&S.arena.day===dayKey()?S.arena.gained||0:0;
     if(gv)gv.textContent=`${fmtN(vbGained(S))} / ${fmtN(VB_CAP)} crédits aujourd’hui`;if(ga)ga.textContent=`${fmtN(arG)} / ${fmtN(AR.cap)} crédits aujourd’hui`;
-    const gs=$("#gp-sout-b");if(gs)gs.hidden=!soOn()} // Souterrain (1.5.9) : seulement en mode développeur tant qu’il n’est pas ouvert
+    const gs=$("#gp-sout-b");if(gs)gs.hidden=!soOn();
+    const gl=$("#gp-lumi-b");if(gl)gl.hidden=!lbOn();const gp=$("#gp-pn-b");if(gp)gp.hidden=!pnOn()} // Lumi-Bois et Pension (1.8.0) : mode développeur tant qu’ils ne sont pas ouverts // Souterrain (1.5.9) : seulement en mode développeur tant qu’il n’est pas ouvert
   const nmTxt=S.pseudo||"Profil";
   {const v=visOf(ME);$("#h-me").innerHTML=playerAva(ME,28)+`<span class="me-nm${v.p?` ps-${cosCls(v.p)}`:""}">${esc(nmTxt.length>14?nmTxt.slice(0,13)+"…":nmTxt)}</span>`}
   checkUnlock(); // pack reçu (paiement, cadeau) : fenêtre « débloqué »
@@ -2941,7 +3134,7 @@ function renderView(){
   if(!S)return;const app=$("#app");
   if(view==="arena"&&arFighting)return; // combat de l'Arène en cours d'animation : on ne redessine pas
   const anc=view==="collection"&&$("#coll-grid")?collAnchor():null;
-  keepInputs(()=>{fillApp(app,({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto,arena:vArena,sout:vSout})[view]())});
+  keepInputs(()=>{fillApp(app,({booster:vBooster,collection:vCollection,trades:vTrades,ranking:vRanking,profile:vProfile,shop:vShop,evolution:vEvolution,volto:vVolto,arena:vArena,sout:vSout,lumi:vLumi,pension:vPension})[view]())});
   musicSync(); // musique des jeux (VoltoBataille 1.3.18, Arène 1.3.21) : seulement sur leur page
   document.documentElement.classList.toggle("arena-view",view==="arena");if(view==="arena")arFit();else document.documentElement.classList.remove("arena-scroll"); // Arène : la page ne défile pas
   if(anc){ // après le calcul des vignettes hors de l'écran (image suivante), puis une seconde fois par sécurité
@@ -4886,6 +5079,27 @@ const SFX=(()=>{
     soCollapse(v=1){if(muted()||!get()||!v)return;const t=ctx.currentTime+.01,d=out(.4);d.gain.value=v; // effondrement : grondement et éboulis
       tone(d,t,1.6,{f0:70,f1:32,vol:.8,attack:.05});noise(d,t,1.8,{type:"lowpass",f0:700,f1:70,vol:.75,attack:.08});
       for(let k=0;k<16;k++)noise(d,t+.1+Math.random()*1.3,.12,{type:"bandpass",f0:500+Math.random()*1800,q:2,vol:.12+Math.random()*.1})},
+    // Lumi-Bois (1.8.0) : v = volume des bruitages du jeu (curseur 🔊)
+    lbLight(v=1){if(muted()||!get()||!v)return;const t=ctx.currentTime+.01,d=out(.5);d.gain.value=v; // lanterne : souffle chaud, carillon doux, feuilles
+      noise(d,t,.45,{type:"bandpass",f0:600,f1:2600,q:.8,vol:.16,attack:.12});
+      [659.3,987.8,1318.5].forEach((f,i)=>tone(d,t+.06+i*.07,1.1,{type:"sine",f0:f,vol:.09-i*.02,attack:.02}));
+      for(let k=0;k<6;k++)noise(d,t+.08+k*.05+Math.random()*.04,.09,{type:"bandpass",f0:3000+Math.random()*2500,q:3,vol:.05})},
+    lbRustle(v=1){if(muted()||!get()||!v)return;const t=ctx.currentTime+.01,d=out(.2);d.gain.value=v; // feuillage
+      for(let k=0;k<10;k++)noise(d,t+k*.04+Math.random()*.05,.12,{type:"bandpass",f0:2500+Math.random()*3500,q:2.5,vol:.05+Math.random()*.04})},
+    lbOwl(v=1){if(muted()||!get()||!v)return;const t=ctx.currentTime+.05,d=out(.8);d.gain.value=v; // hululement lointain : « hou… hou-hou »
+      [[0,.42],[.62,.22],[.88,.5]].forEach(([dt,dur])=>{tone(d,t+dt,dur,{type:"sine",f0:392,f1:370,vol:.12,attack:.06,lp:900});tone(d,t+dt,dur,{type:"sine",f0:784,f1:740,vol:.02,attack:.06})})},
+    lbSpore(v=1){if(muted()||!get()||!v)return;const t=ctx.currentTime+.01,d=out(.35);d.gain.value=v; // spores d’Amonita : souffle et « pouf »
+      noise(d,t,.9,{type:"highpass",f0:2500,f1:6000,vol:.16,attack:.05});tone(d,t,.35,{f0:180,f1:70,vol:.35});
+      [523.3,415.3,349.2].forEach((f,i)=>tone(d,t+.15+i*.12,.5,{type:"triangle",f0:f,vol:.07}))},
+    lbLamp(v=1){if(muted()||!get()||!v)return;const t=ctx.currentTime+.01,d=out(.5);d.gain.value=v; // lanterne rallumée : scintillement
+      [1318.5,1568,2093,2637].forEach((f,i)=>tone(d,t+i*.06,.6,{type:"triangle",f0:f,vol:.08}))},
+    // Pension (1.8.0) : l’œuf tremble, se fend, éclot
+    pnWobble(v=1){if(muted()||!get()||!v)return;const t=ctx.currentTime+.01,d=out(.15);d.gain.value=v;
+      for(let k=0;k<3;k++)tone(d,t+k*.14,.12,{type:"triangle",f0:260-k*20,f1:200,vol:.18})},
+    pnCrack(v=1){if(muted()||!get()||!v)return;const t=ctx.currentTime+.01,d=out(.2);d.gain.value=v;
+      for(let k=0;k<4;k++)noise(d,t+k*.06,.05,{type:"bandpass",f0:3200+Math.random()*1500,q:5,vol:.18})},
+    pnHatch(v=1){if(muted()||!get()||!v)return;const t=ctx.currentTime+.01,d=out(.5);d.gain.value=v;
+      noise(d,t,.25,{type:"highpass",f0:3000,vol:.2});[523.3,659.3,784,1046.5].forEach((f,i)=>tone(d,t+.05+i*.07,.8,{type:"triangle",f0:f,vol:.12}))},
     open(multi){if(muted()||!get())return;const t=ctx.currentTime+.01;
       if(!multi){rip(out(0),t);return}
       const d=out(.85);rip(d,t);rip(d,t+.07);},
@@ -5131,7 +5345,7 @@ function specialFx(id){
   const cx=W/2,cy=H*.45,R=Math.max(W,H)*.6;
   // lueurs : elles convergent vers le centre, puis, après l'onde, remontent lentement comme des braises
   const motes=Array.from({length:110},()=>{const a=Math.random()*Math.PI*2,d=R*(.35+Math.random()*.65);
-    return {x:cx+Math.cos(a)*d,y:cy+Math.sin(a)*d,vx:0,vy:0,s:(.8+Math.random()*1.8)*dpr,h:fx==="brasier"?15+Math.random()*35:fx==="orchidee"?(Math.random()<.35?80+Math.random()*25:305+Math.random()*25):258+Math.random()*30,l:.2+Math.random()*.5,ph:Math.random()*6}});
+    return {x:cx+Math.cos(a)*d,y:cy+Math.sin(a)*d,vx:0,vy:0,s:(.8+Math.random()*1.8)*dpr,h:fx==="brasier"?15+Math.random()*35:fx==="orchidee"?(Math.random()<.35?80+Math.random()*25:305+Math.random()*25):fx==="sylve"?(Math.random()<.55?150+Math.random()*25:262+Math.random()*22):258+Math.random()*30,l:.2+Math.random()*.5,ph:Math.random()*6}});
   let last=performance.now();const t0=last;let burst=false;
   (function loop(t){if(!alive)return;
     const dt=Math.min(2.5,(t-last)/16.7),el=t-t0;last=t;
@@ -5765,6 +5979,248 @@ document.addEventListener("change",e=>{const s=e.target.closest("[data-so-sel]")
 // visée : au survol (souris), la croix du marteau ou la case de la pioche
 document.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const c=e.target.closest("#so-wall .so-c");const i=c?+c.dataset.i:-1;if(i===soAim)return;
   const old=soAimSet();soAim=i;const now=soAimSet();document.querySelectorAll("#so-wall .so-c").forEach(el=>{const k=+el.dataset.i;if(old.has(k)!==now.has(k))el.classList.toggle("aim",now.has(k))})});
+/* ============================================================
+   Lumi-Bois (1.8.0, idée de Theo, inspiré du Crystal Sphere de Slay the Spire 2) : une clairière de 12 × 12 aux coins en
+   escalier, plongée dans la nuit. 6 lanternes : chacune éclaire le carré de 3 × 3 autour de la case touchée. Seuls les objets
+   entièrement éclairés sont gagnés (gris tant qu’ils ne le sont pas). Serveur : partie 7 (dc_lb_*), la page ne voit que les
+   cases éclairées. Caché sauf en mode développeur tant que LUMI.open est faux (comme le Souterrain à ses débuts).
+   ============================================================ */
+const LUMI={v:"v1.0",open:false,cost:100,lamps:6,w:12,h:12,rows:[6,8,10,12,12,12,12,12,12,10,8,6],n:[6,9],
+  // s : taille (colonnes, lignes) ; m : masque des cases ; w : poids du tirage ; r : rareté affichée (1 commune … 5 ???) ; cr : crédits ;
+  // lamp : +1 lanterne ; trap : piège (−1 lanterne), look : objet qu’il imite tant qu’il n’est pas entièrement éclairé ; stone : +1 Pierre
+  // évolutive ; egg : œuf pour la Pension ; gs : GS Ball (crédits une fois la carte obtenue) ; mush : champignon (titre Mycologue).
+  // Réglage par simulation (1.8.0) : 106 crédits rendus en moyenne pour 100 misés, 36 % des clairières remboursent en crédits seuls,
+  // plus un Œuf toutes les 3 clairières, un Œuf rare toutes les 6, un Œuf doré toutes les 50, une Pierre Plante toutes les 7, la GS Ball
+  // environ 1 sur 200 (comme la Clef de voûte du Souterrain)
+  items:{baie:{n:"Baie Oran",s:[1,1],w:3000,r:1,cr:5},pchamp:{n:"Petit Champignon",s:[1,2],w:3000,r:1,cr:12,mush:1},miel:{n:"Miel",s:[2,2],w:3000,r:1,cr:20},
+    noig:{n:"Noigrume",s:[1,1],w:2000,r:2,cr:30},gchamp:{n:"Gros Champignon",s:[2,2],w:2000,r:2,cr:45,mush:1},bocal:{n:"Bocal de lucioles",s:[1,2],w:2000,r:2,lamp:1},
+    oeuf:{n:"Œuf",s:[2,3],w:1500,r:2,egg:"oeuf"},amonita:{n:"Amonita",s:[2,2],w:2000,r:2,trap:1,look:"gchamp"},
+    ambre:{n:"Vieil Ambre",s:[2,2],w:700,r:3,cr:120},pierre:{n:"Pierre Plante",s:[2,2],w:700,r:3,stone:1},suave:{n:"Champi Suave",s:[3,3],m:"111111010",w:700,r:3,cr:220,mush:1},
+    oeufr:{n:"Œuf rare",s:[2,3],w:700,r:3,egg:"rare"},oeufd:{n:"Œuf doré",s:[2,3],w:80,r:4,egg:"dore"},gs:{n:"GS Ball",s:[2,2],w:24,r:5,gs:2000}}};
+const LB_ORDER=["baie","pchamp","miel","noig","gchamp","bocal","oeuf","ambre","pierre","suave","oeufr","oeufd","amonita","gs"];
+const LB_RAR=["","Commune","Peu commune","Rare","Très rare","???"];
+const lbOn=()=>LUMI.open||devOn();
+const lbMiss=()=>devOn()?0:Math.max(0,LUMI.cost-((S&&S.credits)||0));
+const lbPlay=(x,y)=>{if(y<0||y>=LUMI.h||x<0||x>=LUMI.w)return false;const w=LUMI.rows[y],a=(LUMI.w-w)/2;return x>=a&&x<a+w};
+let LB=null,lbLoading=false,lbBusy=false,lbAim=-1,lbFresh=new Set(),lbAnim=0,lbFlies=null,lbOwlAt=0;
+const lbGot=()=>(S&&S.lumi&&S.lumi.got)||{};
+function lbLoad(){if(lbLoading)return;lbLoading=true;rpc("dc_lb_state",{},{render:false}).then(v=>{LB=v;renderView()}).catch(e=>toast(e.message)).finally(()=>{lbLoading=false})}
+// dessin d’un objet : l’élément couvre tout l’objet, chaque case n’en montre que sa part (comme au Souterrain)
+const lbItemEl=(k,ox,oy)=>{const it=LUMI.items[k];return `<i class="lb-it lb-${k}" style="--w:${it.s[0]};--h:${it.s[1]};--x:${ox};--y:${oy}"></i>`};
+const lbIco=k=>{const [w,h]=LUMI.items[k].s,u=Math.min(28/w,28/h);return `<span class="lb-ico" style="width:${Math.round(w*u)}px;height:${Math.round(h*u)}px;--cs:${u.toFixed(1)}px" title="${esc(LUMI.items[k].n)}">${lbItemEl(k,0,0)}</span>`};
+const lbGain=k=>{const it=LUMI.items[k];return it.cr?`${fmtN(it.cr)} crédits`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"+1 Pierre évolutive":it.egg?"un œuf pour la Pension":"???"};
+const lbChance=k=>{const t=LB_ORDER.reduce((a,x)=>a+LUMI.items[x].w,0);return LUMI.items[k].w/t*100};
+const lbStartBtn=()=>{const m=lbMiss(),free=devOn();return m?`<button class="btn primary ar-fight" disabled>Il vous manque ${fmtN(m)} crédits</button>`
+  :`<button class="btn primary ar-fight lb-go" data-lb="start">🏮 Explorer une clairière · ${free?"gratuit (mode développeur)":fmtN(LUMI.cost)+" crédits"}</button>`};
+const lbBg=i=>` style="--bx:${-(i*37%96)}px;--by:${-(i*53%96)}px"`; // texture décalée d’une case à l’autre
+function lbAimSet(){const s=new Set();if(lbAim<0)return s;const x=lbAim%LUMI.w,y=Math.floor(lbAim/LUMI.w);
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(lbPlay(x+dx,y+dy))s.add((y+dy)*LUMI.w+x+dx);return s}
+function lbCell(r,i){
+  const c=r.r[i];if(c==="x")return `<span class="lb-c out"></span>`;
+  const aim=lbAimSet().has(i)?" aim":"",bg=lbBg(i);
+  if(c==null)return `<button class="lb-c dark${aim}"${bg} data-lb="light" data-i="${i}" aria-label="Case dans le noir"></button>`;
+  if(c===0)return `<button class="lb-c lit${aim}"${bg} data-lb="light" data-i="${i}" aria-label="Case éclairée, vide"></button>`;
+  const [k,ox,oy,idx]=c,done=r.objs.some(o=>o.i===idx&&o.done);
+  return `<button class="lb-c lit obj${done?" done":""}${lbFresh.has(idx)?" fresh":""}${aim}"${bg} data-lb="light" data-i="${i}" aria-label="${done?esc(LUMI.items[k].n):"Un objet, encore en partie dans le noir"}">${lbItemEl(k,ox,oy)}</button>`;
+}
+const lbBoardHTML=r=>`<div class="lb-board" id="lb-board">${r.r.map((_,i)=>lbCell(r,i)).join("")}</div>`;
+// clairière de fin de partie : tous les objets, ceux manqués en fantôme
+function lbFinal(r){
+  const own={};r.objs.forEach(o=>{for(let j=0;j<o.h;j++)for(let i=0;i<o.w;i++)if(!o.m||o.m[j*o.w+i]==="1")own[(o.y+j)*r.w+o.x+i]=[o.k,i,j,o.done]});
+  return `<div class="lb-board final">${r.r.map((c,i)=>{if(c==="x")return `<span class="lb-c out"></span>`;const o=own[i],bg=lbBg(i);
+    if(o)return `<span class="lb-c lit obj${o[3]?" done":" missed"}"${bg}>${lbItemEl(o[0],o[1],o[2])}</span>`;
+    return `<span class="lb-c ${c==null?"dark":"lit"}"${bg}></span>`}).join("")}</div>`;
+}
+function lbLampsHTML(r){const tot=(r.used||0)+r.lamps;
+  return `<div class="lb-lamps" aria-label="${r.lamps} lanterne${r.lamps>1?"s":""} restante${r.lamps>1?"s":""}">${Array.from({length:tot},(_,i)=>`<i class="lb-lamp${i<r.lamps?"":" off"}"></i>`).join("")}</div>`}
+function lbInfoHTML(r){const f=r.objs.filter(o=>o.done&&!LUMI.items[o.k].trap);
+  return `<div class="lb-info"><span><b>${r.n}</b> objets cachés · trouvés : <b>${f.length}</b></span><span class="lb-found">${f.map(o=>lbIco(o.k)).join("")}</span></div>`}
+function lbResNotes(r){
+  const it=r.res.items,eggs=it.filter(x=>LUMI.items[x]&&LUMI.items[x].egg).length,st=it.filter(x=>x==="pierre").length;
+  return [eggs?`🥚 ${eggs} œuf${eggs>1?"s":""} ${eggs>1?"partent":"part"} à la Pension.`:"",st?`🌿 +${st} Pierre${st>1?"s":""} évolutive${st>1?"s":""}.`:"",
+    it.includes("gs")?"La GS Ball vibre doucement entre vos mains… Elle semble attendre quelque chose.":"",it.includes("gs+")?`GS Ball : +${fmtN(LUMI.items.gs.gs)} crédits.`:""]
+    .filter(Boolean).map(t=>`<p class="lb-note">${t}</p>`).join("");
+}
+function lbTopHTML(){const n=+((S&&S.stats&&S.stats.lbRuns)||0);
+  return `<div class="ar-top lb-top"><h1>🏮 Lumi-Bois <span class="ar-v">${LUMI.v}</span></h1>
+    <button class="btn small" data-lb="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${MUSIC.lumi?musicSlider("lumi","lbmus","ar-music",""):""}${sfxSlider("lumi","lbsfx")}
+    <span class="ar-chip so-stat" title="Clairières explorées">🏮 ${fmtN(n)} clairière${n>1?"s":""}</span></div>`}
+function lbBagHTML(){
+  const got=lbGot(),lu=(S&&S.lumi)||{},res=(S&&S.pension&&S.pension.res)||{},ne=(res.oeuf||0)+(res.rare||0)+(res.dore||0);
+  return `<div class="lb-side"><div class="lb-box"><h3>🎒 Sac à dos</h3><div class="lb-got">${LB_ORDER.filter(k=>k!=="gs"||got.gs).map(k=>`<div class="${got[k]?"":"none"}">${lbIco(k)}<span>${esc(LUMI.items[k].n)}</span><b>${fmtN(got[k]||0)}</b></div>`).join("")}</div>
+    ${lu.gs?`<div class="lb-keyrow">${lbIco("gs")}<span><b>GS Ball</b> : elle vibre doucement, comme si elle attendait quelque chose…</span></div>`:""}
+    ${ne?`<p class="lb-note">🥚 ${ne} œuf${ne>1?"s":""} en réserve${pnOn()?` à la <button class="linkish" data-view="pension">Pension</button>`:""}.</p>`:""}</div></div>`;
+}
+const LB_SKY=`<div class="lb-sky" aria-hidden="true"><i class="lb-moon"></i><i class="lb-trees far"></i><i class="lb-fog f2"></i><i class="lb-trees mid"></i><i class="lb-eyes e1"></i><i class="lb-eyes e2"></i><i class="lb-fog f1"></i><canvas class="lb-flies" id="lb-flies"></canvas><i class="lb-trees near"></i></div>`;
+function vLumi(){
+  lbTex();setTimeout(lbScene);
+  if(!lbOn())return `<div class="empty">Ce jeu n’est pas encore ouvert.</div>`;
+  if(!LB){lbLoad();return `<div class="lumibois">${LB_SKY}<div class="lb-wrap">${lbTopHTML()}<div class="empty lb-empty">La lanterne s’allume…</div></div></div>`}
+  const r=LB.run;
+  if(!r||r.over){
+    const last=r&&r.over&&r.res?`<div class="lb-last"><h3>${r.lamps>0?"Clairière explorée : tout est trouvé !":"Dernière clairière : les lanternes se sont éteintes"}</h3>${lbFinal(r)}
+      <p>${r.res.items.length?r.res.items.map(x=>lbIco(x==="gs+"?"gs":x)).join(""):"Aucun objet trouvé en entier."}${r.res.cr?` <b>+${fmtN(r.res.cr)} crédits</b>`:""}</p>${lbResNotes(r)}</div>`:"";
+    return `<div class="lumibois">${LB_SKY}<div class="lb-wrap">${lbTopHTML()}<div class="lb-intro"><div class="lb-start">
+      <p>La nuit est tombée sur la clairière. Quelque part dans l’ombre, des trésors attendent. Vous avez <b>${LUMI.lamps} lanternes</b> : chacune éclaire un carré de 3 × 3 cases. Seuls les objets <b>entièrement éclairés</b> sont à vous… et méfiez-vous de ce qui dort sous les champignons.</p>
+      ${lbStartBtn()}${last}</div>${lbBagHTML()}</div></div></div>`;
+  }
+  return `<div class="lumibois playing">${LB_SKY}<div class="lb-wrap">${lbTopHTML()}<div class="lb-stage">${lbLampsHTML(r)}${lbInfoHTML(r)}<div class="lb-boardw">${lbBoardHTML(r)}</div></div></div></div>`;
+}
+// mise à jour de la clairière sans redessiner le décor (les lucioles continuent de voler)
+function lbPatch(){const r=LB&&LB.run,b=$("#lb-board");if(!r||!b||view!=="lumi"){if(view==="lumi")renderView();return}
+  b.outerHTML=lbBoardHTML(r);const l=document.querySelector(".lb-lamps");if(l)l.outerHTML=lbLampsHTML(r);const f=document.querySelector(".lb-info");if(f)f.outerHTML=lbInfoHTML(r)}
+// éclat de lumière et feuilles qui s’envolent, au centre de la case touchée
+function lbBurst(i,cls="lb-burst",n=9){
+  const b=$("#lb-board"),c=b&&b.querySelector(`.lb-c[data-i="${i}"]`);if(!b||!c||RM())return;
+  const x=c.offsetLeft+c.offsetWidth/2,y=c.offsetTop+c.offsetHeight/2,fx=document.createElement("span");fx.className=cls;fx.style.left=x+"px";fx.style.top=y+"px";b.append(fx);setTimeout(()=>fx.remove(),1300);
+  for(let k=0;k<n;k++){const p=document.createElement("span"),a=Math.random()*Math.PI*2,d=30+Math.random()*60;p.className=cls==="lb-burst"?"lb-leafp":"lb-spore";
+    p.style.cssText=`left:${x}px;top:${y}px;--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d-(cls==="lb-burst"?20:0)}px;--rot:${Math.round(Math.random()*540-270)}deg;animation-delay:${Math.random()*.15}s`;b.append(p);setTimeout(()=>p.remove(),1500)}
+}
+function lbLight(i){
+  const r=LB&&LB.run;if(!r||r.over||lbBusy||r.lamps<1)return;const x=i%LUMI.w,y=Math.floor(i/LUMI.w);if(!lbPlay(x,y))return;
+  lbBusy=true;const v=sfxVol("lumi");SFX.lbLight(v);vib(15);lbBurst(i);
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!lbPlay(x+dx,y+dy))continue;const el=document.querySelector(`#lb-board .lb-c[data-i="${(y+dy)*LUMI.w+x+dx}"]`);if(el)el.classList.add("lighting")}
+  {const l=document.querySelector(".lb-lamps .lb-lamp:not(.off)");if(l)l.classList.add("dying")}
+  rpc("dc_lb_light",{p_x:x,p_y:y},{render:false}).then(res=>{
+    LB={run:res.run,lumi:res.lumi||(LB&&LB.lumi)};lbFresh=new Set(res.fresh||[]);setTimeout(()=>{lbFresh.clear()},1300);
+    const ev=(res.run&&res.run.ev)||[],fresh=(res.fresh||[]).map(k=>res.run.objs.find(o=>o.i===k)).filter(Boolean);
+    lbPatch();
+    if(fresh.some(o=>!LUMI.items[o.k].trap)){SFX.soFound(v);vib([20,40,60])}
+    if(ev.includes("lamp")){setTimeout(()=>SFX.lbLamp(v),250);toast("✨ Un Bocal de lucioles : une lanterne de plus !")}
+    if(ev.includes("trap")){const o=fresh.find(o=>LUMI.items[o.k].trap);if(o)lbBurst((o.y+1)*LUMI.w+o.x+1,"lb-sporecloud",22);SFX.lbSpore(v);vib([60,40,60]);toast("🍄 Un Amonita ! Ses spores éteignent une lanterne.")}
+    if(res.run.over)setTimeout(()=>{renderView();if(res.run.res&&res.run.res.items.length)SFX.soWin(v);window.scrollTo({top:0,behavior:"smooth"})},900);
+  }).catch(e=>{toast(e.message);LB=null;lbLoad()}).finally(()=>{lbBusy=false});
+}
+function lbRules(){
+  const row=k=>{const it=LUMI.items[k];return `<tr><td>${lbIco(k)} ${esc(it.n)}</td><td>${it.s[0]}×${it.s[1]}</td><td>${LB_RAR[it.r]}</td><td>${lbChance(k).toLocaleString("fr-FR",{maximumFractionDigits:1})} %</td><td>${k==="gs"?"???":it.trap?"−1 lanterne : il se fait passer pour un Gros Champignon":lbGain(k)}</td></tr>`};
+  openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button><h2>🏮 Lumi-Bois</h2>
+    <ul class="so-rules"><li>Une clairière coûte <b>${fmtN(LUMI.cost)} crédits</b> et cache ${LUMI.n[0]} à ${LUMI.n[1]} objets.</li>
+    <li>Vous avez <b>${LUMI.lamps} lanternes</b>. Touchez une case : la lanterne éclaire le carré de 3 × 3 cases autour d’elle.</li>
+    <li>Un objet en partie éclairé reste gris. <b>Entièrement éclairé</b>, il passe en couleur et il est à vous.</li>
+    <li>Un Bocal de lucioles rallume une lanterne. Mais un Amonita se cache parfois parmi les Gros Champignons : entièrement éclairé, il libère ses spores et éteint une lanterne (un seul par clairière au plus).</li>
+    <li>La partie s’arrête quand les lanternes sont éteintes ou que tout est trouvé. Les œufs partent à la Pension, la Pierre Plante rejoint vos Pierres évolutives. Une partie quittée reprend telle quelle.</li></ul>
+    <table class="so-tab"><thead><tr><th>Objet</th><th>Taille</th><th>Rareté</th><th>Chance</th><th>Gain</th></tr></thead><tbody>${LB_ORDER.map(row).join("")}</tbody></table></div>`,true);
+}
+/* textures de Lumi-Bois, dessinées une fois dans des canvas : silhouettes d’arbres sur trois plans, feuillage des cases dans le
+   noir, sol moussu des cases éclairées ; posées en variables CSS (--lb-far, --lb-mid, --lb-near, --lb-leaf, --lb-ground) */
+function lbTex(){
+  if(lbTex.done)return;lbTex.done=true;
+  const mk=(w,h,fn)=>{try{const c=document.createElement("canvas");c.width=w;c.height=h;fn(c.getContext("2d"),w,h);return `url(${c.toDataURL()})`}catch(e){return "none"}};
+  const R=(a,b)=>a+Math.random()*(b-a);
+  const forest=(x,w,h,n,col,hmin,hmax)=>{x.fillStyle=col;
+    for(let k=0;k<n;k++){const cx=R(0,w),th=R(hmin,hmax)*h,tw=th*R(.28,.42),base=h;
+      if(Math.random()<.7){ // sapin : étages de branches
+        const lv=4+Math.floor(R(0,4));for(let j=0;j<lv;j++){const y0=base-th+j*th/(lv+.6),ww=tw*(.35+j/lv*.75);x.beginPath();x.moveTo(cx,y0);x.lineTo(cx-ww/2,y0+th/(lv-.6));x.lineTo(cx+ww/2,y0+th/(lv-.6));x.closePath();x.fill()}
+        x.fillRect(cx-tw*.05,base-th*.15,tw*.1,th*.15)}
+      else{ // feuillu : tronc tordu et houppier en boules
+        x.fillRect(cx-tw*.06,base-th*.55,tw*.12,th*.55);for(let j=0;j<7;j++){x.beginPath();x.arc(cx+R(-.4,.4)*tw,base-th*R(.55,.95),tw*R(.22,.38),0,Math.PI*2);x.fill()}}}
+    x.fillRect(0,h-6,w,6)};
+  const set=(k,v)=>document.documentElement.style.setProperty(k,v);
+  set("--lb-far",mk(1400,360,(x,w,h)=>forest(x,w,h,46,"rgba(20,52,44,.85)",.45,.95)));
+  set("--lb-mid",mk(1400,320,(x,w,h)=>forest(x,w,h,28,"rgba(9,30,24,.95)",.55,1)));
+  set("--lb-near",mk(1400,300,(x,w,h)=>{forest(x,w,h,10,"#020a07",.7,1);x.fillStyle="#020a07";for(let k=0;k<26;k++){x.beginPath();x.ellipse(R(0,w),h-R(0,18),R(30,70),R(10,24),0,0,Math.PI*2);x.fill()}}));
+  set("--lb-leaf",mk(96,96,(x,w,h)=>{for(let k=0;k<70;k++){const g=Math.floor(R(30,70)),l=Math.floor(R(8,20));x.fillStyle=`hsla(${R(110,150)},${g}%,${l}%,${R(.55,.95)})`;x.save();x.translate(R(0,w),R(0,h));x.rotate(R(0,Math.PI*2));
+      x.beginPath();x.ellipse(0,0,R(4,9),R(2,4),0,0,Math.PI*2);x.fill();x.strokeStyle="rgba(0,0,0,.25)";x.lineWidth=.6;x.beginPath();x.moveTo(-6,0);x.lineTo(6,0);x.stroke();x.restore()}
+    for(let k=0;k<14;k++){x.fillStyle=`rgba(190,255,200,${R(.04,.12)})`;x.beginPath();x.arc(R(0,w),R(0,h),R(.6,1.4),0,Math.PI*2);x.fill()}}));
+  set("--lb-ground",mk(96,96,(x,w,h)=>{const im=x.createImageData(w,h);for(let i=0;i<w*h;i++){const r=Math.random(),v=r<.5?0:255;im.data.set([v,v*.9,v*.7,Math.random()*(r<.1||r>.93?60:16)],i*4)}x.putImageData(im,0,0);
+    for(let k=0;k<9;k++){x.fillStyle=`hsla(${R(85,120)},45%,${R(22,34)}%,${R(.25,.5)})`;x.beginPath();x.ellipse(R(0,w),R(0,h),R(5,14),R(3,8),R(0,3),0,Math.PI*2);x.fill()}
+    for(let k=0;k<7;k++){x.fillStyle=`rgba(${R(120,170)},${R(100,140)},${R(70,100)},.55)`;x.beginPath();x.ellipse(R(0,w),R(0,h),R(1.5,3.5),R(1,2.5),R(0,3),0,Math.PI*2);x.fill()}}));
+}
+/* lucioles (canvas) et hululement d’un Hoothoot de temps en temps : seulement sur la page, onglet visible */
+function lbScene(){
+  const cv=$("#lb-flies");if(!cv)return;
+  if(lbAnim){if(lbScene.cv===cv)return;cancelAnimationFrame(lbAnim);lbAnim=0}lbScene.cv=cv; // décor redessiné : on repart sur le nouveau canvas
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  if(!lbFlies)lbFlies=Array.from({length:30},()=>({x:Math.random(),y:.25+Math.random()*.75,a:Math.random()*6,s:.6+Math.random()*1.2,v:.00025+Math.random()*.0005,ph:Math.random()*6,hue:55+Math.random()*30}));
+  const draw=t=>{
+    if(view!=="lumi"||document.hidden||!cv.isConnected){lbAnim=0;return}
+    const W=cv.clientWidth*dpr,H=cv.clientHeight*dpr;if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
+    const x=cv.getContext("2d");x.clearRect(0,0,W,H);x.globalCompositeOperation="lighter";
+    for(const f of lbFlies){
+      if(!RM()){f.a+=(Math.random()-.5)*.25;f.x+=Math.cos(f.a)*f.v;f.y+=Math.sin(f.a)*f.v*.7;if(f.x<-.02)f.x=1.02;if(f.x>1.02)f.x=-.02;if(f.y<.15)f.a=Math.PI/2;if(f.y>1)f.a=-Math.PI/2}
+      const glow=Math.max(0,Math.sin(t/900*f.s+f.ph)),px=f.x*W,py=f.y*H,r=(2+glow*7)*dpr;
+      const g=x.createRadialGradient(px,py,0,px,py,r*2.4);g.addColorStop(0,`hsla(${f.hue},100%,80%,${.35+glow*.6})`);g.addColorStop(.35,`hsla(${f.hue},100%,60%,${.12+glow*.25})`);g.addColorStop(1,"hsla(60,100%,50%,0)");
+      x.fillStyle=g;x.beginPath();x.arc(px,py,r*2.4,0,Math.PI*2);x.fill()}
+    x.globalCompositeOperation="source-over";
+    lbAnim=RM()?0:requestAnimationFrame(draw)};
+  lbAnim=requestAnimationFrame(draw);
+}
+function lbAmbient(){ // appelé chaque seconde (tick) : un hululement lointain toutes les 25 à 50 secondes
+  if(view!=="lumi"||document.hidden)return;const now=Date.now();if(!lbOwlAt){lbOwlAt=now+8000+Math.random()*10000;return}
+  if(now>=lbOwlAt){lbOwlAt=now+25000+Math.random()*25000;SFX.lbOwl(sfxVol("lumi")*.55)}
+  if(!lbAnim&&$("#lb-flies"))lbScene();
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-lb]");if(!b||!e.target.closest(".lumibois,#dlg"))return;
+  const a=b.dataset.lb;
+  if(a==="rules"){lbRules();return}
+  if(a==="light"){lbLight(+b.dataset.i);return}
+  if(a==="start"){closeDlg();actBtn=b.tagName==="BUTTON"?b:null;
+    run(async()=>{const v=await rpc("dc_lb_start",{},{render:false});LB={run:v.run,lumi:v.lumi};lbFresh=new Set();renderView();SFX.lbRustle(sfxVol("lumi"))});return}
+});
+// visée à la souris : le carré de 3 × 3 que la lanterne éclairerait (au doigt, un toucher éclaire tout de suite)
+document.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;const c=e.target.closest("#lb-board .lb-c[data-i]");const i=c?+c.dataset.i:-1;if(i===lbAim)return;
+  const old=lbAimSet();lbAim=i;const now=lbAimSet();document.querySelectorAll("#lb-board .lb-c[data-i]").forEach(el=>{const k=+el.dataset.i;if(old.has(k)!==now.has(k))el.classList.toggle("aim",now.has(k))})});
+
+/* ============================================================
+   Pension (1.8.0, idée de Theo) : les œufs (trouvés à Lumi-Bois, et plus tard ailleurs) attendent dans la réserve ; jusqu’à
+   10 dans la couveuse, dont 3 couvent en même temps (30 min, 1 h, 3 h ; le temps passe aussi hors ligne). Le Pokémon n’est
+   tiré qu’à l’éclosion (serveur, partie 7 : dc_pn_*). Un mini-jeu s’y ajoutera plus tard. Caché sauf en mode développeur
+   tant que PENSION.open est faux.
+   ============================================================ */
+const PENSION={open:false,q:10,slots:3,shiny:512,dur:{oeuf:1800000,rare:3600000,dore:10800000}};
+const PN_EGGS=[["oeuf","Œuf","un Pokémon de premier stade, jamais légendaire"],["rare","Œuf rare","n’importe quel Pokémon, aux chances d’un booster"],["dore","Œuf doré","toujours un Pokémon légendaire"]];
+const PN_KEY={oeuf:"oeuf",rare:"oeufr",dore:"oeufd"}; // dessin de l’œuf : celui de Lumi-Bois
+const pnOn=()=>PENSION.open||devOn();
+let pnOff=0,pnBusy=false,pnNext=0,pnSynced=false; // pnOff : écart entre l’heure du serveur et celle de l’appareil ; pnNext : prochain changement d’état
+const pnNow=()=>Date.now()+pnOff;
+const pnEgg=(k,cls="")=>`<span class="pn-egg${cls?" "+cls:""}">${lbItemEl(PN_KEY[k],0,0)}</span>`;
+function vPension(){
+  if(!pnOn())return `<div class="empty">Ce jeu n’est pas encore ouvert.</div>`;
+  if(!pnSynced){pnSynced=true;rpc("dc_pn_state",{},{render:false}).then(r=>{if(r.now){pnOff=r.now-Date.now();if(view==="pension")renderView()}}).catch(()=>{pnSynced=false})} // heure du serveur
+  const p=(S&&S.pension)||{},res=p.res||{},q=Array.isArray(p.q)?p.q:[],now=pnNow(),full=q.length>=PENSION.q;
+  pnNext=Math.min(Infinity,...q.map(e=>e.s>now?e.s:e.e>now?e.e:Infinity));
+  const slot=(e,i)=>{
+    if(!e)return `<div class="pn-slot empty"><span class="pn-nest"></span><small>Place libre</small></div>`;
+    const st=e.e<=now?"ready":e.s<=now?"warm":"wait",pc=st==="warm"?Math.min(100,Math.round((now-e.s)*100/(e.e-e.s))):0;
+    return `<div class="pn-slot ${st}">${pnEgg(e.k,st==="ready"?"wobble":"")}<span class="pn-nest"></span>
+      ${st==="ready"?`<button class="btn small primary" data-pn="hatch" data-i="${i}">Faire éclore</button>`
+        :st==="warm"?`<div class="pn-bar"><i style="width:${pc}%"></i></div><small>Éclot dans <b data-countdown="${e.e-pnOff}">${fmtLeft(e.e-now)}</b></small>`
+        :`<small>En attente : couve dans <b data-countdown="${e.s-pnOff}">${fmtLeft(e.s-now)}</b></small>`}</div>`};
+  return `<div class="pension"><div class="ar-top pn-top"><h1>🥚 Pension</h1><span class="ar-chip so-stat" title="Œufs éclos">🐣 ${fmtN(+((S.stats&&S.stats.pnHatch)||0))} éclos</span></div>
+    <p class="pn-intro">Les œufs que vous trouvez attendent ici. Jusqu’à <b>${PENSION.q} œufs</b> dans la couveuse, dont <b>${PENSION.slots}</b> couvent en même temps : 30 minutes pour un Œuf, 1 heure pour un Œuf rare, 3 heures pour un Œuf doré. Le temps passe même quand vous n’êtes pas là.</p>
+    <div class="pn-res">${PN_EGGS.map(([k,n,d])=>`<div class="pn-card${res[k]?"":" none"}">${pnEgg(k)}<div><b>${n}</b><small>${d}</small></div><span class="pn-n">×${fmtN(res[k]||0)}</span>
+      <button class="btn small${res[k]&&!full?" primary":""}" data-pn="add" data-k="${k}" ${res[k]&&!full?"":"disabled"}>${full&&res[k]?"Couveuse pleine":"Mettre à couver"}</button></div>`).join("")}</div>
+    <h3 class="pn-h">Couveuse <span>${q.length} / ${PENSION.q}</span></h3>
+    <div class="pn-grid">${Array.from({length:PENSION.q},(_,i)=>slot(q[i],i)).join("")}</div>
+    <p class="pn-foot">Chaque œuf a 1 chance sur ${PENSION.shiny} de faire éclore un Pokémon shiny : toujours un shiny que vous n’avez pas encore.</p></div>`;
+}
+// éclosion : l’œuf tremble, se fend, un éclair de lumière, puis la carte (scène Légendaire ou shiny si c’en est une)
+function pnHatchFx(c){return new Promise(done=>{
+  const ov=document.createElement("div");ov.className="pn-hatch";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Éclosion");
+  ov.innerHTML=`<div class="ph-egg">${pnEgg(c.k)}<svg class="ph-crack" viewBox="0 0 100 140" aria-hidden="true"><path d="M14 66 L28 58 L36 72 L50 54 L60 70 L72 56 L86 66"/><path d="M50 54 L47 40 L54 30"/></svg></div><div class="ph-txt">Oh ? L’œuf bouge !</div>`;
+  document.body.append(ov);const v=sfxVol("pension")||.5,quick=RM();
+  const show=()=>{
+    const r=fxRar(c.id);
+    if(r===5){ov.remove();legendFx(c.id,!!c.shiny);done();return}
+    if(c.shiny){ov.remove();shinyScene(c.id);done();return}
+    ov.className="pn-hatch shown";SFX.flip(Math.min(r,3));
+    ov.innerHTML=`<div class="ph-card card-holder">${c.isNew?`<span class="new-tag">Nouvelle</span>`:""}${cardHTML(c.id,true,false)}</div><div class="ph-txt">${esc(nm(c.id))} est sorti de l’œuf !</div><div class="lg-sub">Touchez pour continuer</div>`;
+    const h=ov.querySelector(".ph-card");if(r>=3)setTimeout(()=>epicFx(h,r===4),300);else if(r>=1)setTimeout(()=>smallFx(h,r),300);
+    setTimeout(()=>ov.addEventListener("click",()=>{ov.remove();done()},{once:true}),500)};
+  if(quick){show();return}
+  SFX.pnWobble(v);setTimeout(()=>SFX.pnWobble(v),700);
+  setTimeout(()=>{ov.classList.add("crack");SFX.pnCrack(v)},1500);
+  setTimeout(()=>{ov.classList.add("flash");SFX.pnHatch(v)},2300);
+  setTimeout(show,2700);
+})}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-pn]");if(!b||!e.target.closest(".pension"))return;
+  const a=b.dataset.pn;
+  if(a==="add"){actBtn=b;run(async()=>{const r=await rpc("dc_pn_add",{p_k:b.dataset.k},{render:false});if(r.now)pnOff=r.now-Date.now();SFX.flip(1);renderView()});return}
+  if(a==="hatch"){if(pnBusy)return;pnBusy=true;actBtn=b;
+    run(async()=>{const r=await rpc("dc_pn_hatch",{p_i:+b.dataset.i},{render:false});if(r.now)pnOff=r.now-Date.now();renderView();await pnHatchFx(r.drawn);renderView()}).finally(()=>{pnBusy=false});return}
+});
 /* menu « Jeux » de l'en-tête (1.3.3) : s'ouvre au toucher, se ferme en choisissant un jeu, en touchant ailleurs ou avec Échap */
 function gamesMenu(open){const p=$("#games-pop"),t=$("#tab-games");if(!p)return;p.hidden=!open;t.setAttribute("aria-expanded",open)}
 document.addEventListener("click",e=>{
@@ -6066,6 +6522,8 @@ function tick(){
   const now=Date.now();
   document.querySelectorAll("[data-countdown]").forEach(el=>el.textContent=fmtLeft(+el.dataset.countdown-now));
   if(view==="volto"&&vbMid&&now>=vbMid)renderView(); // minuit : le compteur du jour repart de zéro
+  if(view==="lumi")lbAmbient();
+  if(view==="pension"&&pnNext&&pnNow()>=pnNext){pnNext=0;renderView()} // un œuf commence à couver ou est prêt à éclore
   if(S){const n=packInfo(S).n;$("#h-packs").textContent=n;$("#h-bonus").textContent=S.bonus?` +${S.bonus}`:"";const prev=lastPackN;lastPackN=n;if(prev!==-1&&n!==prev&&view==="booster"&&!reveal)renderView()}
 }
 setInterval(tick,1000);
@@ -6546,7 +7004,8 @@ function gameConfig(){
     arena:AR,arStat:POKE_IDS.map(id=>DEX[id-1][6].map(v=>Math.min(1295,v).toString(36).padStart(2,"0")).join("")).join(""),
     arChart:Array.from({length:324},(_,k)=>{const m=((AR_CHART[Math.floor(k/18)+1]||{})[k%18+1]);return m===2?"2":m===.5?"h":m===0?"0":"1"}).join(""),
     arBase:(()=>{const ev=new Set(Object.values(EVO).flat()),b={};POKE_IDS.filter(id=>!ev.has(id)).forEach(id=>(b[DEX[id-1][7]]=b[DEX[id-1][7]]||[]).push(id));return b})(),
-    sout:SOUT}; // Souterrain (1.5.9) : règles, objets, comptoir (lus par la partie 6 du serveur)
+    sout:SOUT, // Souterrain (1.5.9) : règles, objets, comptoir (lus par la partie 6 du serveur)
+    lumi:LUMI,pension:PENSION}; // Lumi-Bois et Pension (1.8.0, partie 7 du serveur)
 }
 /* Condition d'un titre, pour que le serveur calcule lui-même les titres affichés (champ shown du profil).
    Un nouveau titre d'un genre inconnu arrête l'export : il faut alors l'ajouter ici et dans dc__stamp. */
@@ -6557,7 +7016,7 @@ function titleDef(t){
   if(t.all)return {c:"all",keys:t.all}; // 1.7.0 : tous ces titres
   if(t.shids)return {c:"shids",ids:t.shids,n:t.shids.length}; // 1.5.14 : shiny débloqués de ces cartes // Titré (1.5.8) : compté par le serveur (dc__title_ok)
   const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},arPerf:{c:"sflag",s:"arPerf"},souFull:{c:"sflag",s:"souFull"},souGd:{c:"sflag",s:"souGd"},
-    arClutch:{c:"sflag",s:"arClutch"},arPure:{c:"sflag",s:"arPure"},souClean:{c:"sflag",s:"souClean"},souRainbow:{c:"sflag",s:"souRainbow"},souArceus:{c:"sflag",s:"souArceus"},souKey:{c:"sflag",s:"souKey"},lord:{c:"cos",i:"titre.lord"},fortune:{c:"cos",i:"titre.fortune"}};
+    arClutch:{c:"sflag",s:"arClutch"},arPure:{c:"sflag",s:"arPure"},souClean:{c:"sflag",s:"souClean"},souRainbow:{c:"sflag",s:"souRainbow"},souArceus:{c:"sflag",s:"souArceus"},souKey:{c:"sflag",s:"souKey"},lbClear:{c:"sflag",s:"lbClear"},lbGold:{c:"sflag",s:"lbGold"},lbGs:{c:"sflag",s:"lbGs"},pnShiny:{c:"sflag",s:"pnShiny"},lord:{c:"cos",i:"titre.lord"},fortune:{c:"cos",i:"titre.fortune"}};
   if(fixed[t.k])return fixed[t.k];
   if(t.k==="darwin")return {c:"evo",n:t.ids.length}; // cibles de cfg.evo, comptées par le serveur (1.1.3)
   if(t.ids&&same(t.ids,DEX_ORDER))return {c:"dex",n:t.need||DEX_ORDER.length};
@@ -6597,7 +7056,7 @@ function titleDef(t){
     if(!sec){document.body.innerHTML=`<pre id="export-error">Cartes secrètes absentes : lancer outils/generer-config.ps1 (fichier secret/cartes-secretes.json).</pre>`;return}
     const ids={6:[],7:[],8:[]};for(const [id,d] of Object.entries(sec))ids[d[7]].push(+id);applySecrets({ids,cards:sec});
     // en deux parties (1.1.8) : l'éditeur SQL de Supabase tronque au-delà d'environ 40 000 caractères ; la 2e partie est ajoutée à la 1re
-    const cfg=gameConfig(),P2=["evo","pool","titleKeys","titleDefault","titleDefs","pgen","ptype","spCard"],P3=["arena","arStat","arChart","arBase","sout"],a={},b={},c={};
+    const cfg=gameConfig(),P2=["evo","pool","titleKeys","titleDefault","titleDefs","pgen","ptype","spCard"],P3=["arena","arStat","arChart","arBase","sout","lumi","pension"],a={},b={},c={};
     for(const [k,v] of Object.entries(cfg))(P3.includes(k)?c:P2.includes(k)?b:a)[k]=v; // partie 3 (1.3.0) : données de l'Arène
     document.body.innerHTML=`<pre id="export-config">${esc(JSON.stringify(a))}</pre><pre id="export-config-2">${esc(JSON.stringify(b))}</pre><pre id="export-config-3">${esc(JSON.stringify(c))}</pre>`;return}
   renderHeader();

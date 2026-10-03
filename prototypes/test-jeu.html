@@ -35,6 +35,35 @@ function setup(scene){
         const r=A.round;A.wins++;A.credits+=80;W.__arG=(W.__arG||0)+80;A.round++;A.gold+=7;A.enemy={board:[U(21),U(23),U(27),null,null,null],power:.7};A.pshop=true;A.gold-=7;A.pgold=7; // 1.5.15 : boutique changée à la fin (dc_ar_next)
         return {data:Object.assign(view().data,{before,log,win:true,added:80,bonus:0,auto:[],round:r,profile:stamp(d)}),error:null}}
     }
+    // Lumi-Bois et Pension : faux serveur (même logique que dexcraft-serveur-7.sql) ; ?scene=lumi ou ?scene=pension
+    if(/^dc_lb_/.test(n)){const W=window,A=LUMI,R=k=>Math.floor(Math.random()*k);
+      const vw=(st,p)=>{if(!st)return {run:null,lumi:(p||S).lumi||{}};const r=st.o.map((o,i)=>o===-2?"x":!st.l[i]?null:o===-1?0:(b=>[!b.done&&A.items[b.k].look?A.items[b.k].look:b.k,i%12-b.x,Math.floor(i/12)-b.y,o])(st.objs[o]));
+        return {run:{w:12,h:12,lamps:st.lamps,used:st.used,n:st.objs.length,r,over:st.over,res:st.res,ev:st.ev,objs:st.objs.map((o,i)=>Object.assign({},o,{i})).filter(o=>st.over||o.done)},lumi:(p||S).lumi||{}}};
+      if(n==="dc_lb_state")return {data:vw(W.__lb),error:null};
+      if(n==="dc_lb_start"){if(W.__lb&&!W.__lb.over)return {data:Object.assign(vw(W.__lb),{profile:stamp(d)}),error:null};
+        const o=Array.from({length:144},(_,i)=>lbPlay(i%12,Math.floor(i/12))?-1:-2),objs=[],ks=Object.keys(A.items),tot=ks.reduce((s,k)=>s+A.items[k].w,0);let trap=false;
+        const pick=()=>{let r=Math.random()*tot;for(const k of ks){r-=A.items[k].w;if(r<0)return k}return ks[0]};
+        for(let i=0;i<6+R(4);i++){let k=pick();while(A.items[k].trap&&trap)k=pick();const it=A.items[k],[w,h]=it.s,m=it.m;
+          for(let t=0;t<200;t++){const x=R(13-w),y=R(13-h);let ok=true;for(let j=0;j<w*h&&ok;j++){if(m&&m[j]!=="1")continue;if(o[(y+(j/w|0))*12+x+j%w]!==-1)ok=false}
+            if(ok){for(let j=0;j<w*h;j++)if(!m||m[j]==="1")o[(y+(j/w|0))*12+x+j%w]=objs.length;objs.push({k,x,y,w,h,done:false,...(m?{m}:{})});if(it.trap)trap=true;break}}}
+        W.__lb={o,l:Array(144).fill(false),objs,lamps:A.lamps,used:0,over:false};d.stats.lbRuns=(d.stats.lbRuns||0)+1;return {data:Object.assign(vw(W.__lb,d),{profile:stamp(d)}),error:null}}
+      if(n==="dc_lb_light"){const st=W.__lb;await new Promise(r=>setTimeout(r,120));for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(lbPlay(a.p_x+dx,a.p_y+dy))st.l[(a.p_y+dy)*12+a.p_x+dx]=true;
+        st.lamps--;st.used++;st.ev=[];const fresh=[];st.objs.forEach((b,i)=>{if(b.done)return;if(st.o.every((x,k)=>x!==i||st.l[k])){b.done=true;fresh.push(i);const it=A.items[b.k];if(it.lamp){st.lamps++;st.ev.push("lamp")}if(it.trap){st.lamps=Math.max(0,st.lamps-1);st.ev.push("trap")}}});
+        if(st.lamps<=0||st.objs.every(b=>b.done||A.items[b.k].trap)){st.over=true;const res={cr:0,items:[]};d.lumi=d.lumi||{};d.lumi.got=d.lumi.got||{};d.pension=d.pension||{};d.pension.res=d.pension.res||{};
+          st.objs.filter(b=>b.done).forEach(b=>{const it=A.items[b.k];d.lumi.got[b.k]=(d.lumi.got[b.k]||0)+1;if(it.trap)return;if(it.egg)d.pension.res[it.egg]=(d.pension.res[it.egg]||0)+1;if(it.stone){d.sout=d.sout||{};d.sout.ps=(d.sout.ps||0)+1}
+            if(it.gs){if(!d.lumi.gs){d.lumi.gs=1;res.items.push("gs")}else{res.cr+=it.gs;res.items.push("gs+")}return}res.cr+=it.cr||0;res.items.push(b.k)});
+          d.credits+=res.cr;st.res=res;return {data:Object.assign(vw(st,d),{profile:stamp(d),fresh}),error:null}}
+        const v=vw(st);delete v.lumi;return {data:Object.assign(v,{fresh}),error:null}}
+    }
+    if(/^dc_pn_/.test(n)){const now=Date.now(),P=PENSION;d.pension=d.pension||{};d.pension.res=d.pension.res||{};d.pension.q=d.pension.q||[];
+      if(n==="dc_pn_state")return {data:{pension:d.pension,now},error:null};
+      if(n==="dc_pn_add"){const q=d.pension.q,ends=q.map(e=>e.e).sort((x,y)=>y-x).slice(0,P.slots);while(ends.length<P.slots)ends.push(now);const s=Math.max(now,Math.min(...ends));
+        q.push({k:a.p_k,s,e:s+(window.__pnFast?8000:P.dur[a.p_k])});d.pension.res[a.p_k]--;return {data:{profile:stamp(d),now},error:null}}
+      if(n==="dc_pn_hatch"){const eg=d.pension.q[a.p_i];if(!eg||eg.e>now)return {data:null,error:{message:"Cet œuf n’est pas encore prêt à éclore."}};
+        const pool=eg.k==="dore"?BYR[5]:eg.k==="rare"?DEX_ORDER:DEX_ORDER.filter(x=>rar(x)<5&&!evoPreOf(x).length),id=pool[Math.floor(Math.random()*pool.length)];
+        d.pension.q.splice(a.p_i,1);d.coll[id]=(d.coll[id]||0)+1;d.stats.pnHatch=(d.stats.pnHatch||0)+1;const sh=!!window.__pnShiny;if(sh){d.shiny=d.shiny||{};d.shiny[id]=now}
+        return {data:{profile:stamp(d),drawn:{id,isNew:true,shiny:sh,k:eg.k},now},error:null}}
+    }
     // Souterrain : faux serveur (même logique que dexcraft-serveur-6.sql) ; ?scene=sout
     if(/^dc_sout_/.test(n)){const W=window,A=SOUT,R=k=>Math.floor(Math.random()*k);
       const vw=(st,p)=>{if(!st)return {run:null,sout:(p||S).sout||{}};const r=st.d.map((dd,i)=>dd>0?null:st.o[i]===-1?0:st.o[i]===-2?"f":(o=>[o.k,i%st.w-o.x,Math.floor(i/st.w)-o.y,st.o[i],o.t])(st.objs[st.o[i]]));
@@ -94,6 +123,8 @@ function setup(scene){
   if(scene==="hand"){view="booster";reveal=[1,4,7,25,6].map(id=>({id,isNew:false,shown:false}));renderAll()}
   if(scene==="ranking"){view="ranking";renderAll()}
   if(scene==="volto"){view="volto";renderAll()}
+  if(scene==="lumi"){localStorage.setItem("dc-mute","1");S.dev=true;view="lumi";renderAll()} // Lumi-Bois (1.8.0), mode développeur
+  if(scene==="pension"){localStorage.setItem("dc-mute","1");S.dev=true;S.pension={res:{oeuf:4,rare:2,dore:1},q:[]};view="pension";renderAll()}
   if(scene==="sout"){localStorage.setItem("dc-mute","1");S.dev=true;S.sout={ec:640,got:{pb:5,gb:2,pr:3,or:4,pv:1,plaque:9},pl:{10:3,11:1,12:2,13:1,8:1,16:1},key:1};view="sout";renderAll()} // Souterrain (1.5.9), mode développeur
   if(scene==="coll"){view="collection";renderAll()}
   if(scene==="shiny"){S.shiny={25:Date.now()-864e5,6:Date.now(),4007:Date.now()};S.got={25:14,6:3,1:40,4:2,7:1,129:1,150:1,4007:1};S.shinyN=3;S.stats.shinyN=3;S.avaS=true;PLAYERS.me.shinyN=3;PLAYERS.me.avaS=true;PLAYERS.a.shinyN=420;PLAYERS.b.shinyN=60;Object.values(PLAYERS).forEach(p=>p.byrV=BYR_V);view=new URLSearchParams(parent.location.search).get("v")||"collection";renderAll()}

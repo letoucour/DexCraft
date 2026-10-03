@@ -6,7 +6,7 @@
 #
 #  - Seuls les fichiers modifiés depuis le dernier passage sont lancés, dans l'ordre de CLAUDE.md :
 #    configuration (les trois parties ensemble dès que l'une change, voir l'incident de la 1.3.7), serveur
-#    parties 1 à 6, cartes secrètes, puis les nouvelles migrations (migrations\migration-*.sql jamais passées).
+#    parties 1, 2, 3… (toutes celles qui existent), cartes secrètes, puis les nouvelles migrations (migrations\migration-*.sql jamais passées).
 #  - Chaque fichier est passé d'un bloc (une transaction) : en cas d'erreur, rien de ce fichier n'est appliqué,
 #    et le script s'arrête là ; relancer ensuite reprend au fichier en erreur.
 #  - Le mot de passe est demandé une fois, jamais enregistré. L'adresse de connexion est celle de
@@ -28,7 +28,7 @@ if (-not $psql) { throw "psql introuvable : PostgreSQL doit être installé dans
 
 # fichiers dans l'ordre de passage
 $config = @("dexcraft-config.sql", "dexcraft-config-2.sql", "dexcraft-config-3.sql")
-$serveur = @("dexcraft-serveur.sql", "dexcraft-serveur-2.sql", "dexcraft-serveur-3.sql", "dexcraft-serveur-4.sql", "dexcraft-serveur-5.sql", "dexcraft-serveur-6.sql")
+$serveur = @("dexcraft-serveur.sql") + (2..20 | ForEach-Object { "dexcraft-serveur-$_.sql" } | Where-Object { Test-Path (Join-Path $racine $_) })   # parties 1, 2, 3… dans l'ordre
 $secret = @("secret\cartes-secretes.sql")
 $migrations = Get-ChildItem (Join-Path $racine "migrations") -Filter "migration-*.sql" | ForEach-Object { "migrations\" + $_.Name } |
   Sort-Object { [version](($_ -replace '^migrations\\migration-', '' -replace '\.sql$', '') -replace '[^0-9.]', '') }
