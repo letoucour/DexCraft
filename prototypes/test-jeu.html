@@ -52,7 +52,7 @@ function setup(scene){
         st.lamps--;st.used++;st.ev=[];const fresh=[];st.objs.forEach((b,i)=>{if(b.done)return;if(st.o.every((x,k)=>x!==i||st.l[k])){b.done=true;fresh.push(i);const it=A.items[b.k];if(it.lamp){st.lamps++;st.ev.push("lamp")}if(it.trap){st.lamps=Math.max(0,st.lamps-1);st.ev.push("trap")}}});
         if(st.lamps<=0||st.objs.every(b=>b.done||A.items[b.k].trap)){st.over=true;const res={ec:0,items:[]};d.pension=pnStore(d.pension,Date.now());d.lumi=d.lumi||{};d.lumi.got=d.lumi.got||{};d.pension=d.pension||{};d.pension.res=d.pension.res||{};
           st.objs.filter(b=>b.done).forEach(b=>{const it=A.items[b.k];d.lumi.got[b.k]=(d.lumi.got[b.k]||0)+1;if(it.trap)return;if(it.egg)d.pension.res[it.egg]=(d.pension.res[it.egg]||0)+1;if(it.stone){d.sout=d.sout||{};d.sout.ps=(d.sout.ps||0)+1}
-            if(it.gs){if(!d.lumi.gs){d.lumi.gs=1;res.items.push("gs")}else{res.ec+=it.gs;res.items.push("gs+")}return}res.ec+=it.ec||0;res.items.push(b.k)});
+            if(it.gs){if(!d.lumi.gs){d.lumi.gs=1;res.items.push("gs")}else{res.ec+=it.gs;res.items.push("gs+")}return}res.ec+=it.ec||0;res.cr=(res.cr||0)+(it.cr||0);res.items.push(b.k)});d.credits+=res.cr||0;
           d.sout=d.sout||{};d.sout.ec=(d.sout.ec||0)+res.ec;d.pension=pnStore(d.pension,Date.now());st.res=res;return {data:Object.assign(vw(st,d),{profile:stamp(d),fresh}),error:null}}
         const v=vw(st);delete v.lumi;return {data:Object.assign(v,{fresh}),error:null}}
     }

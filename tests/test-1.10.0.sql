@@ -126,7 +126,7 @@ select pg_temp.setp(:A, '{"stats": {"lbGs": "1", "lbGsX": "1"}}');
 select pg_temp.t(:A, 'lanterne 1 (le Miel en entier)', $$select public.dc_lb_light(5, 6)$$);
 create temp table lb1 as select pg_temp.j(:A, $$select public.dc_lb_light(2, 6)$$) r;
 select pg_temp.chk('fin de clairière : gains en éclats (Miel ' || (public.dc__cfg() -> 'lumi' -> 'items' -> 'miel' ->> 'ec') || '), pas de crédits',
-  (r -> 'run' -> 'res' ->> 'ec')::int = (public.dc__cfg() -> 'lumi' -> 'items' -> 'miel' ->> 'ec')::int and not (r -> 'run' -> 'res' ? 'cr')
+  (r -> 'run' -> 'res' ->> 'ec')::int = (public.dc__cfg() -> 'lumi' -> 'items' -> 'miel' ->> 'ec')::int and coalesce((r -> 'run' -> 'res' ->> 'cr')::int, 0) = 0
   and (pg_temp.p(:A) ->> 'credits')::int = 500 and (pg_temp.p(:A) -> 'sout' ->> 'ec')::int = 10 + (r -> 'run' -> 'res' ->> 'ec')::int, r -> 'run' ->> 'res') from lb1;
 select pg_temp.chk('l''Œuf trouvé entre aussitôt dans la couveuse', jsonb_array_length(pg_temp.p(:A) -> 'pension' -> 'q') = 1 and pg_temp.p(:A) -> 'pension' -> 'q' -> 0 ->> 'k' = 'oeuf');
 

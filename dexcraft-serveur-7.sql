@@ -115,7 +115,7 @@ end $$;
 -- fin de partie : éclats (1.10.0, demande de Theo : avant, des crédits ; même solde que le Souterrain, sout.ec), Pierres évolutives (stock du Souterrain, sout.ps), œufs (réserve de la Pension), GS Ball,
 -- trouvailles (lumi.got) et statistiques des titres
 create or replace function public.dc__lb_end(u uuid, st jsonb, a jsonb) returns jsonb language plpgsql volatile as $$
-declare d jsonb := public.dc__lock(u, true); ob jsonb; it jsonb; k text; ec bigint := 0; nd int := 0; nm int := 0; nb int := 0; lu jsonb; got jsonb;
+declare d jsonb := public.dc__lock(u, true); ob jsonb; it jsonb; k text; ec bigint := 0; cr bigint := 0; nd int := 0; nm int := 0; nb int := 0; lu jsonb; got jsonb;
   so jsonb; pn jsonb; res jsonb; items jsonb := '[]'; clear boolean := true; ne jsonb := '{}'; cfg jsonb := public.dc__cfg(); now_ bigint := public.dc__now();
 begin
   lu := case when jsonb_typeof(d -> 'lumi') = 'object' then d -> 'lumi' else '{}' end;
@@ -142,7 +142,7 @@ begin
       else items := items || '"gs"'; end if;
       continue;
     end if;
-    ec := ec + coalesce((it ->> 'ec')::int, 0); items := items || to_jsonb(k);
+    ec := ec + coalesce((it ->> 'ec')::int, 0); cr := cr + coalesce((it ->> 'cr')::int, 0); items := items || to_jsonb(k);   -- cr : Perle et Pépite (1.10.1)
   end loop;
   if nd > 0 then d := public.dc__bump(d, 'lbItems', nd); end if;
   if nm > 0 then d := public.dc__bump(d, 'lbMush', nm); end if;
@@ -155,8 +155,8 @@ begin
   pn := public.dc__pn_sync(pn, cfg, now_); res := pn -> 'res';
   for k in select key from jsonb_each(ne) loop res := res || jsonb_build_object(k, coalesce((res ->> k)::int, 0) + (ne ->> k)::int); end loop;
   pn := public.dc__pn_sync(pn || jsonb_build_object('res', res), cfg, now_);
-  d := d || jsonb_build_object('lumi', lu || jsonb_build_object('got', got), 'sout', so, 'pension', pn);
-  st := st || jsonb_build_object('over', true, 'res', jsonb_build_object('ec', ec, 'items', items));
+  d := d || jsonb_build_object('lumi', lu || jsonb_build_object('got', got), 'sout', so, 'pension', pn, 'credits', public.dc__int(d, 'credits') + cr);
+  st := st || jsonb_build_object('over', true, 'res', jsonb_build_object('ec', ec, 'cr', cr, 'items', items));
   update public.lumi_runs set data = st, updated_at = now() where uid = u;
   return jsonb_build_object('st', st, 'd', public.dc__save(u, d));
 end $$;

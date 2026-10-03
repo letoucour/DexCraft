@@ -1629,6 +1629,10 @@ span.lb-c{cursor:default}
 .lb-it::before,.lb-it::after{content:"";position:absolute}
 .lb-baie::before{inset:16%;border-radius:50%;background:radial-gradient(circle at 34% 30%,#eef7ff 0 8%,#86bdff 24%,#2b66d6 60%,#163983)}
 .lb-baie::after{left:46%;top:5%;width:32%;height:22%;border-radius:0 100% 0 100%;background:linear-gradient(135deg,#86d873,#2f7a2c);transform:rotate(-24deg)}
+.lb-perle::before{inset:24%;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 10%,#f3eef8 26%,#cfc4dc 62%,#9a8fb0)} /* 1.10.1 : Perle et Pépite (crédits) */
+.lb-perle::after{left:30%;top:30%;width:14%;height:14%;border-radius:50%;background:rgba(255,255,255,.9)}
+.lb-pepite::before{left:14%;top:24%;width:72%;height:54%;border-radius:42% 58% 46% 54%/55% 45% 58% 42%;background:radial-gradient(circle at 32% 30%,#fff6c8 0 10%,#ffd23d 32%,#d79a12 70%,#8a5a06);box-shadow:0 2px 3px rgba(0,0,0,.4)}
+.lb-pepite::after{left:30%;top:34%;width:16%;height:10%;border-radius:50%;background:rgba(255,255,240,.85);transform:rotate(-20deg)}
 .lb-noig::before{inset:14%;border-radius:50%;background:radial-gradient(circle at 34% 30%,#ffe2d4 0 8%,#f06240 30%,#a3231a 76%)}
 .lb-noig::after{left:47%;top:4%;width:7%;height:18%;border-radius:2px;background:#5a3a1c;box-shadow:3px 1px 0 1px #3f8a35}
 .lb-pchamp::before{left:9%;right:9%;top:10%;height:44%;border-radius:50% 50% 16% 16%/70% 70% 30% 30%;
@@ -2010,7 +2014,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.10.0";
+const APP_VERSION="1.10.1";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -4329,10 +4333,11 @@ function launchNewsHTML(){
    boosters, effets appliqués par le serveur (dc__evfx, partie 4) : shiny (chances de shiny ×N, boosters et œufs), hatch (éclosions
    N fois plus rapides), eggs (œufs N fois plus fréquents à Lumi-Bois), ec (éclats ×N au Souterrain et à Lumi-Bois) ; pack : cadeau à
    récupérer une fois pendant l’événement ({credits, packs, prem}, dc_event_claim, partie 8) ; once : offre unique de cfg.once (le pack
-   de bienvenue, LAUNCH) ; big : gros événement (bandeau plus grand, couleurs c1 et c2). Exemple :
+   de bienvenue, LAUNCH) ; big : gros événement (bandeau plus grand, couleurs c1 et c2) ; done : ce qui termine l’événement pour un
+   joueur, dont le bandeau disparaît alors (1.10.1, demande de Theo ; « pack » : cadeau récupéré). Exemple :
    {k:"shiny-w1",n:"Week-end shiny",ic:"✨",from:"2026-10-24",to:"2026-10-25",fx:{shiny:2},d:"Deux fois plus de shiny tout le week-end !"}
    Exporté dans la configuration (cfg.events) : la régénérer et la passer après chaque changement. */
-const EVENTS=[{k:"bienvenue",n:"Bienvenue dans DexCraft",ic:"🎉",from:"2026-09-26",to:"2026-10-14",once:"lancement",
+const EVENTS=[{k:"bienvenue",n:"Bienvenue dans DexCraft",ic:"🎉",from:"2026-09-26",to:"2026-10-14",once:"lancement",done:"pack",
   d:"Pour fêter l’ouverture du jeu, un pack de bienvenue vous attend : 1 000 crédits et 10 boosters, à récupérer une fois."}];
 const evOn=(e,day=parisDay())=>day>=e.from&&day<=e.to;
 const evFx=(k,day=parisDay())=>EVENTS.reduce((m,e)=>evOn(e,day)&&e.fx&&e.fx[k]?m*e.fx[k]:m,1);
@@ -4340,8 +4345,10 @@ const EV_FX={shiny:["✨","Shiny",m=>`${fmtNum(m)} fois plus de chances`],hatch:
   eggs:["🏮","Œufs à Lumi-Bois",m=>`${fmtNum(m)} fois plus fréquents`],ec:["💠","Éclats",m=>`×${fmtNum(m)} au Souterrain et à Lumi-Bois`]};
 const fmtNum=m=>(+m).toLocaleString("fr-FR",{maximumFractionDigits:2});
 const evDay=d=>new Date(d+"T12:00:00Z").toLocaleDateString("fr-FR",{day:"numeric",month:"long",timeZone:"UTC"});
+// événement terminé par le joueur (done) : son bandeau n’apparaît plus
+const evDone=e=>e.done==="pack"&&(e.once?!!(S.bought&&S.bought[e.once]):!!(S.evGot&&S.evGot[e.k]));
 function eventsHTML(){
-  return EVENTS.filter(e=>evOn(e)).map(e=>{
+  return EVENTS.filter(e=>evOn(e)&&!evDone(e)).map(e=>{
     const once=e.once&&LAUNCH&&e.once===LAUNCH.k&&launchOn()&&!(S.bought&&S.bought[LAUNCH.k]),pack=e.pack&&!(S.evGot&&S.evGot[e.k]);
     const fx=Object.entries(e.fx||{}).filter(([k])=>EV_FX[k]).map(([k,m])=>`<span class="ev-fx"><b>${EV_FX[k][0]} ${EV_FX[k][1]}</b> ${EV_FX[k][2](m)}</span>`).join("");
     return `<div class="ev-banner${e.big?" big":""}"${e.c1?` style="--ev1:${e.c1};--ev2:${e.c2||e.c1}"`:""}><span class="ev-ic" aria-hidden="true">${e.ic||"🎉"}</span>
@@ -6107,12 +6114,14 @@ const LUMI={v:"v1.1",open:true,cost:100,lamps:6,w:12,h:12,rows:[6,8,10,12,12,12,
   // 1.10.0 (demandes de Theo) : gains en éclats (même solde et même comptoir que le Souterrain) ; Œuf et Œuf rare deux fois moins fréquents
   // (poids 600 et 315 ; Œuf doré inchangé) ; valeurs réajustées, mesurées sur 3 × 30 000 parties : 140 éclats pour 100 crédits, médiane 94,
   // 48 % des clairières remboursent (comme les murs du Souterrain) ; pour 100 clairières, environ 16 Œufs, 9 Œufs rares et 2 Œufs dorés
-  items:{baie:{n:"Baie Oran",s:[1,1],w:3000,r:1,ec:7},pchamp:{n:"Petit Champignon",s:[1,2],w:3000,r:1,ec:14,mush:1},miel:{n:"Miel",s:[2,2],w:3000,r:1,ec:23},
-    noig:{n:"Noigrume",s:[1,1],w:2000,r:2,ec:35},gchamp:{n:"Gros Champignon",s:[2,2],w:2000,r:2,ec:52,mush:1},bocal:{n:"Bocal de lucioles",s:[1,2],w:2000,r:2,lamp:1},
+  // 1.10.1 (demande de Theo) : Perle et Pépite, versées en crédits comme les pièces du Souterrain, mais peu (environ 6 crédits par
+  // clairière en moyenne) ; éclats réajustés pour garder 1,40 fois la mise en tout (3 × 30 000 parties : 141 pour 100, médiane 93, 48 %)
+  items:{baie:{n:"Baie Oran",s:[1,1],w:3000,r:1,ec:7},pchamp:{n:"Petit Champignon",s:[1,2],w:3000,r:1,ec:15,mush:1},miel:{n:"Miel",s:[2,2],w:3000,r:1,ec:24},
+    noig:{n:"Noigrume",s:[1,1],w:2000,r:2,ec:37},gchamp:{n:"Gros Champignon",s:[2,2],w:2000,r:2,ec:54,mush:1},perle:{n:"Perle",s:[1,1],w:1500,r:2,cr:15},pepite:{n:"Pépite",s:[1,1],w:400,r:3,cr:40},bocal:{n:"Bocal de lucioles",s:[1,2],w:2000,r:2,lamp:1},
     oeuf:{n:"Œuf",s:[2,3],w:600,r:2,egg:"oeuf"},amonita:{n:"Amonita",s:[2,2],w:1000,r:2,trap:1,look:"gchamp"},
-    ambre:{n:"Vieil Ambre",s:[2,2],w:700,r:3,ec:138},pierre:{n:"Pierre Plante",s:[2,2],w:700,r:3,stone:1},suave:{n:"Champi Suave",s:[3,3],m:"111111010",w:700,r:3,ec:250,mush:1},
+    ambre:{n:"Vieil Ambre",s:[2,2],w:700,r:3,ec:144},pierre:{n:"Pierre Plante",s:[2,2],w:700,r:3,stone:1},suave:{n:"Champi Suave",s:[3,3],m:"111111010",w:700,r:3,ec:262,mush:1},
     oeufr:{n:"Œuf rare",s:[2,3],w:315,r:3,egg:"rare"},oeufd:{n:"Œuf doré",s:[2,3],w:80,r:4,egg:"dore"},gs:{n:"GS Ball",s:[2,2],w:24,r:5,gs:2000}}};
-const LB_ORDER=["baie","pchamp","miel","noig","gchamp","bocal","oeuf","ambre","pierre","suave","oeufr","oeufd","amonita","gs"];
+const LB_ORDER=["baie","pchamp","miel","noig","perle","gchamp","bocal","oeuf","ambre","pepite","pierre","suave","oeufr","oeufd","amonita","gs"];
 const LB_RAR=["","Commune","Peu commune","Rare","Très rare","???"];
 const lbOn=()=>LUMI.open||devOn();
 const lbMiss=()=>devOn()?0:Math.max(0,LUMI.cost-((S&&S.credits)||0));
@@ -6123,8 +6132,8 @@ function lbLoad(){if(lbLoading)return;lbLoading=true;rpc("dc_lb_state",{},{rende
 // dessin d’un objet : l’élément couvre tout l’objet, chaque case n’en montre que sa part (comme au Souterrain)
 const lbItemEl=(k,ox,oy)=>{const it=LUMI.items[k];return `<i class="lb-it lb-${k}" style="--w:${it.s[0]};--h:${it.s[1]};--x:${ox};--y:${oy}"></i>`};
 const lbIco=k=>{const [w,h]=LUMI.items[k].s,u=Math.min(28/w,28/h);return `<span class="lb-ico" style="width:${Math.round(w*u)}px;height:${Math.round(h*u)}px;--cs:${u.toFixed(1)}px" title="${esc(LUMI.items[k].n)}">${lbItemEl(k,0,0)}</span>`};
-const lbGain=k=>{const it=LUMI.items[k];return it.ec?`${fmtN(it.ec)} éclats`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"+1 Pierre évolutive":it.egg?"un œuf pour la Pension":"???"};
-const lbVal=k=>{const it=LUMI.items[k];return it.ec?`${fmtN(it.ec)} éclats`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"Pierre évolutive":it.egg?"Pension":S&&S.stats&&S.stats.lbGsX?`${fmtN(it.gs)} éclats`:"???"}; // 1.8.1 : affichée dans le Sac à dos
+const lbGain=k=>{const it=LUMI.items[k];return it.ec?`${fmtN(it.ec)} éclats`:it.cr?`${fmtN(it.cr)} crédits`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"+1 Pierre évolutive":it.egg?"un œuf pour la Pension":"???"};
+const lbVal=k=>{const it=LUMI.items[k];return it.ec?`${fmtN(it.ec)} éclats`:it.cr?`${fmtN(it.cr)} crédits`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"Pierre évolutive":it.egg?"Pension":S&&S.stats&&S.stats.lbGsX?`${fmtN(it.gs)} éclats`:"???"}; // 1.8.1 : affichée dans le Sac à dos
 const lbChance=k=>{const t=LB_ORDER.reduce((a,x)=>a+LUMI.items[x].w,0);return LUMI.items[k].w/t*100};
 const lbStartBtn=()=>{const m=lbMiss(),free=devOn();return m?`<button class="btn primary ar-fight" disabled>Il vous manque ${fmtN(m)} crédits</button>`
   :`<button class="btn primary ar-fight lb-go" data-lb="start">🏮 Explorer une clairière · ${free?"gratuit (mode développeur)":fmtN(LUMI.cost)+" crédits"}</button>`};
@@ -6214,7 +6223,7 @@ function lbRules(){
     <li>Vous avez <b>${LUMI.lamps} lanternes</b>. Touchez une case : la lanterne éclaire le carré de 3 × 3 cases autour d’elle.</li>
     <li>Un objet en partie éclairé reste gris. <b>Entièrement éclairé</b>, il passe en couleur et il est à vous.</li>
     <li>Un Bocal de lucioles rallume une lanterne. Mais un Amonita se cache parfois parmi les Gros Champignons : entièrement éclairé, il libère ses spores et éteint une lanterne (un seul par clairière au plus).</li>
-    <li>La partie s’arrête quand les lanternes sont éteintes ou que tout est trouvé. Les objets sont changés en <b>éclats</b>, à échanger au comptoir contre des boosters (le même qu’au Souterrain). Les œufs partent à la Pension, la Pierre Plante rejoint vos Pierres évolutives. Une partie quittée reprend telle quelle.</li></ul>
+    <li>La partie s’arrête quand les lanternes sont éteintes ou que tout est trouvé. Les objets sont changés en <b>éclats</b>, à échanger au comptoir contre des boosters (le même qu’au Souterrain) ; Perles et Pépites sont versées en crédits. Les œufs partent à la Pension, la Pierre Plante rejoint vos Pierres évolutives. Une partie quittée reprend telle quelle.</li></ul>
     <table class="so-tab"><thead><tr><th>Objet</th><th>Taille</th><th>Rareté</th><th>Chance</th><th>Gain</th></tr></thead><tbody>${LB_ORDER.map(row).join("")}</tbody></table></div>`,true);
 }
 /* textures de Lumi-Bois, dessinées une fois dans des canvas : silhouettes d’arbres sur trois plans, feuillage des cases dans le
