@@ -123,8 +123,8 @@ begin
     from (select key::int o, (rarm ->> key)::int rr, ascii(substr(pt, 2 * key::int - 1, 1)) - 96 t1,
                  case when substr(pt, 2 * key::int, 1) = '-' then null else ascii(substr(pt, 2 * key::int, 1)) - 96 end t2
           from jsonb_each(coll) where key ~ '^\d+$' and key::int between 1 and 1025 and value::text::int > 0) q;
-  -- 1.5.17 (demande de Theo) : un Pokémon à deux étoiles (le maximum) n'est plus proposé (rareté -1 : jamais tiré)
-  select coalesce(array_agg(distinct (v ->> 'i')::int), '{}') into maxd from public.dc__ar_units(st) v where (v ->> 's')::int >= 2;
+  -- 1.5.17 (demande de Theo) : un Pokémon à deux étoiles (le maximum) n'est plus proposé (rareté -1 : jamais tiré) ; 1.7.0 : ni ses formes d'avant
+  maxd := public.dc__ar_maxd(cfg, st);   -- partie 6
   for j in 1 .. coalesce(array_length(ids, 1), 0) loop if ids[j] = any(maxd) then rs[j] := -1; end if; end loop;
   for j in 1 .. coalesce(array_length(ids, 1), 0) loop if rs[j] >= 0 then cnt[rs[j] + 1] := cnt[rs[j] + 1] + 1; end if; end loop;   -- nombre par rareté (0 à 5)
   av := array[cnt[1] > 0, cnt[2] > 0, cnt[3] > 0, cnt[4] > 0, cnt[6] > 0];

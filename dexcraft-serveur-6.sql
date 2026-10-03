@@ -129,6 +129,8 @@ begin
     got := got || jsonb_build_object(k, coalesce((got ->> k)::int, 0) + 1);
     if it ? 'pl' then   -- plaque : rangée dans le sac, par type
       pl := pl || jsonb_build_object(ob ->> 't', coalesce((pl ->> (ob ->> 't'))::int, 0) + 1); items := items || to_jsonb('plaque:' || (ob ->> 't'));
+    elsif it ? 'stone' then   -- Pierre évolutive (1.7.0) : dans le sac (sout.ps), remplace un exemplaire pour une évolution (dc_evolve_stone)
+      so := so || jsonb_build_object('ps', coalesce((so ->> 'ps')::int, 0) + 1); items := items || to_jsonb(k);
     elsif it ? 'key' then   -- Clef de voûte : la première reste dans le sac (titre Ruinemaniac), les suivantes valent des éclats
       if coalesce(d -> 'stats' ->> 'souKey', '') = '' then d := jsonb_set(d, '{stats,souKey}', '1'); so := so || '{"key": 1}'; items := items || '"key"';
       else ec := ec + (it ->> 'key')::int; items := items || '"key+"'; end if;
@@ -214,7 +216,7 @@ begin
   else
     k := public.dc__sp_key(cfg, lot ->> 'sp', p_val);
     inv := case when jsonb_typeof(d -> 'spInv') = 'object' then d -> 'spInv' else '{}' end;
-    d := d || jsonb_build_object('spInv', inv || jsonb_build_object(k, coalesce((inv ->> k)::int, 0) + 1));
+    d := d || jsonb_build_object('spInv', inv || jsonb_build_object(k, coalesce((inv ->> k)::int, 0) + coalesce((lot ->> 'q')::int, 1)));   -- q : 5 Premium (1.7.0)
   end if;
   return jsonb_build_object('profile', public.dc__save(u, d));
 end $$;
@@ -278,16 +280,69 @@ begin
   return null;
 end $$;
 
+-- Arène (1.7.0, demande de Theo) : Pokémon à deux étoiles ET toutes leurs formes d'avant, jamais proposés par la boutique
+create or replace function public.dc__ar_maxd(cfg jsonb, st jsonb) returns int[] language sql stable as $$
+  with recursive m(i) as (
+    select (v ->> 'i')::int from public.dc__ar_units(st) v where (v ->> 's')::int >= 2
+    union
+    select q.p from m, lateral (select e.key::int p from jsonb_each(cfg -> 'evo') e where e.value @> to_jsonb(m.i) and e.key::int <= 1025
+                                union all select 550 where m.i = 902) q)
+  select coalesce(array_agg(i), '{}') from m $$;
+
+-- Pierres évolutives (1.7.0, demande de Theo) : chacune remplace un exemplaire pour une évolution ; il faut au moins 1 exemplaire
+-- du Pokémon (p_stones de 1 à evoCost − 1). Même effet que dc_evolve (partie 1), avec moins d'exemplaires consommés.
+create or replace function public.dc_evolve_stone(p_from int, p_to int, p_stones int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); cost int := (cfg ->> 'evoCost')::int;
+  so jsonb; ps int; was_new boolean;
+begin
+  if not coalesce(cfg -> 'evo' -> p_from::text @> to_jsonb(p_to), false) then raise exception 'Évolution impossible.'; end if;
+  if p_stones is null or p_stones < 1 or p_stones >= cost then raise exception 'Nombre de pierres invalide.'; end if;
+  so := case when jsonb_typeof(d -> 'sout') = 'object' then d -> 'sout' else '{}' end;
+  ps := coalesce((so ->> 'ps')::int, 0);
+  if ps < p_stones then raise exception 'Il vous manque % Pierre(s) évolutive(s).', p_stones - ps; end if;
+  if public.dc__count(d, p_from) < cost - p_stones then raise exception 'Il vous faut % exemplaire(s) de ce Pokémon avec % pierre(s).', cost - p_stones, p_stones; end if;
+  was_new := public.dc__count(d, p_to) = 0;
+  d := d || jsonb_build_object('sout', so || jsonb_build_object('ps', ps - p_stones));
+  d := public.dc__gain(public.dc__add(d, p_from, -(cost - p_stones)), p_to, 1);
+  d := public.dc__bump(public.dc__bump(d, 'evos'), 'souStones', p_stones);
+  return jsonb_build_object('profile', public.dc__save(u, d), 'wasNew', was_new);
+end $$;
+
+-- Échanges (1.7.0, demande de Theo) : une proposition sans réponse expire au bout de 12 heures, la carte revient à son auteur
+-- (comme dc_trade_withdraw). Lancé toutes les 10 minutes par pg_cron (tâche dc-offres-12h, plus bas). Propositions sans date
+-- (très anciennes) : expirées aussi.
+create or replace function public.dc__expire_offers() returns int language plpgsql volatile security definer set search_path = public, extensions as $$
+declare r record; m jsonb; o jsonb; d jsonb; n int := 0; lim bigint := public.dc__now() - 12 * 3600000;
+begin
+  for r in select x.path, o.key oid from public.docs x, jsonb_each(coalesce(x.data -> 'offers', '{}')) o
+      where x.coll = 'market' and x.data ->> 'status' = 'open' and o.value ->> 'status' = 'pending' and coalesce((o.value ->> 'at')::bigint, 0) < lim loop
+    select data into m from public.docs where path = r.path for update;
+    o := m -> 'offers' -> r.oid;
+    continue when o is null or o ->> 'status' <> 'pending';
+    d := public.dc__lock((o ->> 'by')::uuid);
+    update public.docs set data = jsonb_set(m, '{offers}', (m -> 'offers') - r.oid), updated_at = now() where path = r.path;
+    perform public.dc__save((o ->> 'by')::uuid, public.dc__ot_give(d, (o ->> 'by')::uuid, public.dc__int(o, 'card')::int, o ->> 'ot', false), false);
+    n := n + 1;
+  end loop;
+  return n;
+end $$;
+do $$ begin
+  create extension if not exists pg_cron;
+  perform cron.schedule('dc-offres-12h', '*/10 * * * *', 'select public.dc__expire_offers()');
+exception when others then raise warning 'Tâche des propositions de 12 h non programmée (pg_cron indisponible) : %', sqlerrm;
+end $$;
+
 -- ============================================================
 --  Droits d'exécution des fonctions de cette partie
 -- ============================================================
 do $$ declare f record; begin
   for f in select p.oid::regprocedure as sig, p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-           where n.nspname = 'public' and (p.proname like 'dc\_\_sout\_%' or p.proname like 'dc\_sout\_%' or p.proname in ('dc__vb_titles', 'dc__ar_titles', 'dc__ar_base')) loop
+           where n.nspname = 'public' and (p.proname like 'dc\_\_sout\_%' or p.proname like 'dc\_sout\_%' or p.proname in ('dc__vb_titles', 'dc__ar_titles', 'dc__ar_base', 'dc__ar_maxd', 'dc_evolve_stone', 'dc__expire_offers')) loop
     execute format('revoke all on function %s from public, anon%s', f.sig, case when f.proname like 'dc\_\_%' then ', authenticated' else '' end);
     if f.proname not like 'dc\_\_%' then execute format('grant execute on function %s to authenticated', f.sig); end if;
     execute format('alter function %s set search_path = public, extensions', f.sig);
   end loop;
 end $$;
 
-select 'serveur DexCraft partie 6 OK' as verif, (select count(*) from pg_proc where proname like 'dc_sout_%') as fonctions_souterrain;
+select 'serveur DexCraft partie 6 OK' as verif, (select count(*) from pg_proc where proname like 'dc_sout_%') as fonctions_souterrain,
+  to_regclass('cron.job') is not null as pg_cron_actif;

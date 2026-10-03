@@ -386,9 +386,21 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .sh-sum{color:var(--gold);font-weight:700}
 .sh-star{position:fixed;z-index:400;pointer-events:none;font-size:20px;color:#ffe27a;text-shadow:0 0 8px #fff,0 0 14px #ffcf3f;transform:translate(-50%,-50%) scale(.3);opacity:0;animation:shStar 1.3s ease-out forwards}
 @keyframes shStar{0%{opacity:1;transform:translate(-50%,-50%) scale(.3)}70%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.1) rotate(90deg)}}
-.card.shiny{box-shadow:0 0 0 2px rgba(255,236,170,.9),0 0 18px rgba(255,210,110,.55)}
+/* shiny (1.7.0, demande de Theo : plus éthérés, bien distincts du doré des Légendaires) : liseré blanc nacré, aura irisée rose, bleue et
+   verte, voile irisé qui passe lentement sur toute la carte */
+.card.shiny{border-color:#fbf8ff;box-shadow:0 0 0 2px rgba(214,196,255,.95),0 0 0 5px rgba(222,206,255,.9),0 0 24px 6px rgba(196,172,255,.65),0 0 52px 14px rgba(150,215,255,.35)}
+.card.shiny::before{content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;z-index:3;mix-blend-mode:screen;
+  background:linear-gradient(120deg,transparent 18%,rgba(255,190,235,.30) 32%,rgba(190,225,255,.36) 46%,rgba(200,255,225,.30) 60%,rgba(255,240,190,.24) 72%,transparent 86%);
+  background-size:300% 300%;animation:shAura 7s ease-in-out infinite alternate}
+@keyframes shAura{from{background-position:0% 30%}to{background-position:100% 70%}}
+/* Légendaire shiny : fond nacré irisé au lieu du fond doré */
+.card.r5.shiny,.card.r4.legsp.shiny{background:repeating-linear-gradient(115deg,transparent 0 16px,color-mix(in srgb,var(--c1) 34%,transparent) 16px 19px,transparent 19px 34px,color-mix(in srgb,var(--c2) 34%,transparent) 34px 37px),
+  linear-gradient(160deg,#ffffff,#f1e6ff 26%,#dcf2ff 50%,#e2ffef 70%,#fff0fa 88%,#ffffff)}
+.card.r5.shiny .card-top,.card.r5.shiny .genus,.card.r5.shiny .card-foot,.card.r5.shiny .stats span,.card.r4.legsp.shiny .card-top,.card.r4.legsp.shiny .genus,.card.r4.legsp.shiny .card-foot,.card.r4.legsp.shiny .stats span{color:#4a3a78}
+.card.r5.shiny::after,.card.r4.legsp.shiny::after{background:linear-gradient(115deg,transparent 28%,rgba(255,200,240,.7) 44%,rgba(255,255,255,.95) 50%,rgba(190,225,255,.7) 56%,transparent 72%);background-size:250% 100%}
+@media (prefers-reduced-motion:reduce){html:not(.anim-on) .card.shiny::before{animation:none}}
 .card .sh-mark{color:#e0a800}
-.mini.shiny{border-color:#e3bd45;box-shadow:0 0 0 1px rgba(227,189,69,.45)}
+.mini.shiny{border-color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.95),0 0 9px 2px rgba(205,182,255,.85),0 0 18px 4px rgba(150,215,255,.45)} /* 1.7.0 : blanc nacré et aura, plus de bordure dorée */
 /* shiny dans la collection (1.5.0, demande de Theo) : reflet doux qui passe, et quelques étoiles qui scintillent */
 .mini.shiny .strip::after{content:"";position:absolute;top:0;bottom:0;left:0;width:55%;pointer-events:none;z-index:2;
   background:linear-gradient(105deg,transparent,rgba(255,236,170,.35) 35%,rgba(255,255,255,.6) 50%,rgba(190,220,255,.35) 65%,transparent);
@@ -705,6 +717,9 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .trade-tile .tt-auto{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:#1d2350;color:#ffcf3f;font-size:.8rem;line-height:22px;text-align:center;box-shadow:0 0 0 2px rgba(255,207,63,.6)}
 .trade-bar .tb-auto{font-size:.82rem;white-space:nowrap}
 .trd-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.oi-exp{display:block;font-size:.78rem}
+.reveal-hint{flex-basis:100%;text-align:center;font-size:.85rem;color:var(--ink-soft)}
+.evo-stones{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;padding:4px 10px;border-radius:999px;background:var(--surface-2)}
 .trd-filters select{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:6px 10px;font-weight:700}
 .mt-bar-acts{flex-wrap:wrap;gap:6px;justify-content:flex-end}
 .spin{width:44px;height:44px;border-radius:50%;border:4px solid var(--surface-2);border-top-color:var(--gold);animation:spin .8s linear infinite}
@@ -844,6 +859,11 @@ img{-webkit-user-drag:none;user-drag:none} /* 1.6.3 : glisser une silhouette « 
 .badge-alpha.master{color:#ffcf3f;background:linear-gradient(100deg,#2a1d52,#4b2d86 50%,#2a1d52);box-shadow:0 0 0 1px #ffcf3f,0 1px 6px rgba(120,80,220,.45)}
 .titles{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .badge-alpha.tc{color:#fff;background:var(--tc);text-shadow:0 1px 1px rgba(0,0,0,.35)}
+/* titre « catégorie complète » (1.7.0) : reflet qui passe en boucle */
+.badge-alpha.tsp{color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.4);background:linear-gradient(100deg,var(--tc) 0 32%,color-mix(in srgb,var(--tc) 35%,#fff) 50%,var(--tc) 68% 100%);
+  background-size:260% 100%;animation:tspShine 2.8s linear infinite;box-shadow:0 0 0 1px color-mix(in srgb,var(--tc) 45%,#fff),0 0 10px color-mix(in srgb,var(--tc) 70%,transparent)}
+@keyframes tspShine{from{background-position:110% 0}to{background-position:-110% 0}}
+@media (prefers-reduced-motion:reduce){html:not(.anim-on) .badge-alpha.tsp{animation:none}}
 .badge-alpha.tier{color:#2a3050;background:linear-gradient(100deg,#eef1f8,#b9c2d2 50%,#eef1f8)}
 .badge-alpha.myth{color:#fff;background:linear-gradient(90deg,#ff4f4f,#ffcf3f,#5fd68f,#4fc3ff,#b46cff,#ff4fd8);text-shadow:0 1px 2px rgba(0,0,0,.5)}
 .badge-alpha.trans{color:#23283d;background:linear-gradient(100deg,#fff,#9aa3b5 30%,#f2f4f8 55%,#7d8496 80%,#e8ecf5)}
@@ -1134,6 +1154,7 @@ html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12
 @media (min-width:900px){.lb-page .lb{max-width:none}.lb-page .lb-row .nm{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.7}}
 .lb-row .sc{font-family:var(--display);font-weight:700;display:grid;grid-template-columns:52px 38px 38px 38px;gap:5px;justify-items:end;align-items:center;white-space:nowrap} /* 1.4.16 : ✨ ✦ ❖ sur une ligne, chacun dans sa colonne, alignés d’une rangée à l’autre (demande de Theo) */
 @media (max-width:640px){.lb-row .sc{grid-template-columns:auto auto auto auto;gap:4px;font-size:.85rem}}
+@media (max-width:700px){.lb-row{grid-template-columns:32px auto minmax(0,1fr)!important}.lb-row .sc{display:none}} /* 1.7.0 (demande de Theo) : sur téléphone seulement, ✨ ✦ ❖ ✵ dans la fiche du joueur ; ordinateur inchangé */
 .lb-bar{display:flex;height:9px;border-radius:999px;overflow:hidden;background:var(--surface-2)}
 .lb-bar .seg{display:block;height:100%}
 .seg.neutral{background:var(--ink-soft);opacity:.5}
@@ -1392,6 +1413,8 @@ nav.tabs .ti{display:none}
 .pl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
 .pl-stats div{background:var(--surface-2);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column}
 .pl-stats b{font-family:var(--display);font-size:1.15rem}
+.pl-troph{margin-left:auto;align-self:flex-start;display:flex;flex-direction:column;align-items:flex-end;background:var(--surface-2);border-radius:12px;padding:8px 12px} /* 1.7.0 : trophées en haut à droite */
+.pl-troph b{font-family:var(--display);font-size:1.15rem;white-space:nowrap}
 .pl-stats b.pres-tag{align-self:flex-start;white-space:nowrap;font-size:.95rem;line-height:1.3;padding:2px 10px;margin-bottom:2px} /* 1.6.3 */
 .pl-rar{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;font-size:.85rem}
 .pl-rar .bar{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
@@ -1486,6 +1509,10 @@ nav.tabs .ti{display:none}
 .so-plaque::after{content:"";position:absolute;left:50%;top:50%;width:calc(var(--cs) * 1.2);aspect-ratio:1;translate:-50% -50%;border-radius:50%;border:calc(var(--cs) * .1) solid rgba(255,255,255,.6);box-shadow:0 0 0 calc(var(--cs) * .06) rgba(0,0,0,.18)}
 .so-etoile::before{content:"";position:absolute;inset:2%;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);background:radial-gradient(circle at 45% 40%,#fff 0 8%,#ffd1e8 25%,#f472b6 60%,#be185d)}
 .so-clef::before{content:"";position:absolute;inset:6%;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%);background:linear-gradient(160deg,#cfc8dc,#8b819f 50%,#5b5270)}
+.so-pierre::before{content:"";position:absolute;inset:6% 8%;clip-path:polygon(24% 0,76% 0,100% 42%,80% 100%,20% 100%,0 42%);
+  background:radial-gradient(circle at 34% 28%,#fff 0 7%,transparent 24%),linear-gradient(140deg,#9ff5d8,#26b9a0 38%,#4f7be6 72%,#3a2b9a)} /* Pierre évolutive (1.7.0) */
+.so-pierre::after{content:"";position:absolute;inset:6% 8%;clip-path:polygon(50% 0,76% 0,100% 42%,50% 42%);background:rgba(255,255,255,.25)}
+.so-stat{margin-left:auto;white-space:nowrap}
 .so-clef::after{content:"◎";position:absolute;inset:0;display:grid;place-items:center;font:700 calc(var(--cs) * 1.3)/1 var(--display);color:rgba(52,36,82,.75)}
 .so-ico.wide{width:34px}
 .so-pls{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 10px}
@@ -1763,7 +1790,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.6.3";
+const APP_VERSION="1.7.0";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -1777,7 +1804,8 @@ const DEX=[["Bulbizarre","Pokémon Graine",1,[12,4],7,69,[45,49,49,65,65,45],1],
 /* Rééquilibrage des raretés (1.2.0, liste validée par Theo) : 30 Peu communes passent Communes (Pokémon de base, jamais
    issus d'une évolution) et 30 Rares passent Épiques (Pokémon en fin d’évolution). Leurs formes suivent (rareté du
    Pokémon d’origine). La rareté reste strictement croissante le long des évolutions (une méga-évolution reste au-dessus). */
-const RAR_FIX={0:[114,193,198,203,206,207,234,311,312,313,314,320,335,336,352,417,441,531,556,587,594,676,702,771,775,777,779,845,871,877],
+// 1.7.0 (demande de Theo) : Caninos (et Caninos de Hisui), Métamorph, Évoli, Griknot et Riolu passent Peu communes ; Mimiqui et Carmache passent Rares
+const RAR_FIX={1:[58,132,133,443,447],2:[778,444],0:[114,193,198,203,206,207,234,311,312,313,314,320,335,336,352,417,441,531,556,587,594,676,702,771,775,777,779,845,871,877],
   3:[65,94,115,127,134,135,136,181,196,197,208,282,306,330,405,407,448,461,470,471,472,473,475,477,553,571,609,681,700,768]};
 for(const r in RAR_FIX)RAR_FIX[r].forEach(id=>DEX[id-1][7]=+r);
 const EVO={"1":[2],"2":[3],"4":[5],"5":[6],"7":[8],"8":[9],"10":[11],"11":[12],"13":[14],"14":[15],"16":[17],"17":[18],"19":[20],"21":[22],"23":[24],"25":[26],"27":[28],"29":[30],"30":[31],"32":[33],"33":[34],"35":[36],"37":[38],"39":[40],"41":[42],"42":[169],"43":[44],"44":[45,182],"46":[47],"48":[49],"50":[51],"52":[53,863],"54":[55],"56":[57],"57":[979],"58":[59],"60":[61],"61":[62,186],"63":[64],"64":[65],"66":[67],"67":[68],"69":[70],"70":[71],"72":[73],"74":[75],"75":[76],"77":[78],"79":[80,199],"81":[82],"82":[462],"83":[865],"84":[85],"86":[87],"88":[89],"90":[91],"92":[93],"93":[94],"95":[208],"96":[97],"98":[99],"100":[101],"102":[103],"104":[105],"108":[463],"109":[110],"111":[112],"112":[464],"113":[242],"114":[465],"116":[117],"117":[230],"118":[119],"120":[121],"122":[866],"123":[212,900],"125":[466],"126":[467],"129":[130],"133":[134,135,136,196,197,470,471,700],"137":[233],"138":[139],"140":[141],"147":[148],"148":[149],"152":[153],"153":[154],"155":[156],"156":[157],"158":[159],"159":[160],"161":[162],"163":[164],"165":[166],"167":[168],"170":[171],"172":[25],"173":[35],"174":[39],"175":[176],"176":[468],"177":[178],"179":[180],"180":[181],"183":[184],"187":[188],"188":[189],"190":[424],"191":[192],"193":[469],"194":[195,980],"198":[430],"200":[429],"203":[981],"204":[205],"206":[982],"207":[472],"209":[210],"211":[904],"215":[461,903],"216":[217],"217":[901],"218":[219],"220":[221],"221":[473],"222":[864],"223":[224],"228":[229],"231":[232],"233":[474],"234":[899],"236":[106,107,237],"238":[124],"239":[125],"240":[126],"246":[247],"247":[248],"252":[253],"253":[254],"255":[256],"256":[257],"258":[259],"259":[260],"261":[262],"263":[264],"264":[862],"265":[266,268],"266":[267],"268":[269],"270":[271],"271":[272],"273":[274],"274":[275],"276":[277],"278":[279],"280":[281],"281":[282,475],"283":[284],"285":[286],"287":[288],"288":[289],"290":[291,292],"293":[294],"294":[295],"296":[297],"298":[183],"299":[476],"300":[301],"304":[305],"305":[306],"307":[308],"309":[310],"315":[407],"316":[317],"318":[319],"320":[321],"322":[323],"325":[326],"328":[329],"329":[330],"331":[332],"333":[334],"339":[340],"341":[342],"343":[344],"345":[346],"347":[348],"349":[350],"353":[354],"355":[356],"356":[477],"360":[202],"361":[362,478],"363":[364],"364":[365],"366":[367,368],"371":[372],"372":[373],"374":[375],"375":[376],"387":[388],"388":[389],"390":[391],"391":[392],"393":[394],"394":[395],"396":[397],"397":[398],"399":[400],"401":[402],"403":[404],"404":[405],"406":[315],"408":[409],"410":[411],"412":[413,414],"415":[416],"418":[419],"420":[421],"422":[423],"425":[426],"427":[428],"431":[432],"433":[358],"434":[435],"436":[437],"438":[185],"439":[122],"440":[113],"443":[444],"444":[445],"446":[143],"447":[448],"449":[450],"451":[452],"453":[454],"456":[457],"458":[226],"459":[460],"495":[496],"496":[497],"498":[499],"499":[500],"501":[502],"502":[503],"504":[505],"506":[507],"507":[508],"509":[510],"511":[512],"513":[514],"515":[516],"517":[518],"519":[520],"520":[521],"522":[523],"524":[525],"525":[526],"527":[528],"529":[530],"532":[533],"533":[534],"535":[536],"536":[537],"540":[541],"541":[542],"543":[544],"544":[545],"546":[547],"548":[549],"550":[902],"551":[552],"552":[553],"554":[555],"557":[558],"559":[560],"562":[563,867],"564":[565],"566":[567],"568":[569],"570":[571],"572":[573],"574":[575],"575":[576],"577":[578],"578":[579],"580":[581],"582":[583],"583":[584],"585":[586],"588":[589],"590":[591],"592":[593],"595":[596],"597":[598],"599":[600],"600":[601],"602":[603],"603":[604],"605":[606],"607":[608],"608":[609],"610":[611],"611":[612],"613":[614],"616":[617],"619":[620],"622":[623],"624":[625],"625":[983],"627":[628],"629":[630],"633":[634],"634":[635],"636":[637],"650":[651],"651":[652],"653":[654],"654":[655],"656":[657],"657":[658],"659":[660],"661":[662],"662":[663],"664":[665],"665":[666],"667":[668],"669":[670],"670":[671],"672":[673],"674":[675],"677":[678],"679":[680],"680":[681],"682":[683],"684":[685],"686":[687],"688":[689],"690":[691],"692":[693],"694":[695],"696":[697],"698":[699],"704":[705],"705":[706],"708":[709],"710":[711],"712":[713],"714":[715],"722":[723],"723":[724],"725":[726],"726":[727],"728":[729],"729":[730],"731":[732],"732":[733],"734":[735],"736":[737],"737":[738],"739":[740],"742":[743],"744":[745],"747":[748],"749":[750],"751":[752],"753":[754],"755":[756],"757":[758],"759":[760],"761":[762],"762":[763],"767":[768],"769":[770],"772":[773],"782":[783],"783":[784],"789":[790],"790":[791,792],"803":[804],"808":[809],"810":[811],"811":[812],"813":[814],"814":[815],"816":[817],"817":[818],"819":[820],"821":[822],"822":[823],"824":[825],"825":[826],"827":[828],"829":[830],"831":[832],"833":[834],"835":[836],"837":[838],"838":[839],"840":[841,842,1011],"843":[844],"846":[847],"848":[849],"850":[851],"852":[853],"854":[855],"856":[857],"857":[858],"859":[860],"860":[861],"868":[869],"872":[873],"878":[879],"884":[1018],"885":[886],"886":[887],"891":[892],"906":[907],"907":[908],"909":[910],"910":[911],"912":[913],"913":[914],"915":[916],"917":[918],"919":[920],"921":[922],"922":[923],"924":[925],"926":[927],"928":[929],"929":[930],"932":[933],"933":[934],"935":[936,937],"938":[939],"940":[941],"942":[943],"944":[945],"946":[947],"948":[949],"951":[952],"953":[954],"955":[956],"957":[958],"958":[959],"960":[961],"963":[964],"965":[966],"969":[970],"971":[972],"974":[975],"996":[997],"997":[998],"999":[1000],"1011":[1019],"1012":[1013]}; // numéro -> évolutions possibles
@@ -2154,7 +2182,7 @@ const BADGES={alpha:{ic:"✦",t:"Alpha testeur : a aidé au développement en Al
    +PRES_CHARM rencontres sur tous les Pokémon pour la chance de shiny, cumulable. Fond de classement selon le niveau (pres1 à pres5). PRES_CHARM : au-dessus de BADGES. */
 const PRES_TITLES=["Renaissance","Ascension","Élite","Éminence","Suprématie","Apogée","Immortel"]; // titres des 7 premiers prestiges (noms choisis par Theo)
 const presOf=(p=S)=>+((p&&p.prestige)||0);
-const chromaBadge=p=>{const n=presOf(p);return n?`<span class="bdg bdg-chroma" title="Charme Chroma${n>1?" ×"+n:""}" data-act="badge-info" data-k="chroma" role="button" tabindex="0">✧${n>1?`<sub>${n}</sub>`:""}</span>`:""};
+const chromaBadge=p=>{const n=presOf(p);return n?`<span class="bdg bdg-chroma" title="Charme Chroma${n>1?" ×"+n:""}" data-act="badge-info" data-k="chroma" role="button" tabindex="0">✧<sub>${n}</sub></span>`:""}; // 1.7.0 : niveau affiché dès le prestige 1
 const COS_PACK={}; // article -> pack (rempli ci-dessous)
 const OFFERS=[
   {k:"soutien",n:"Badge Soutien",eur:300,ribbon:"Merci ♥",d:"Un cœur à côté de votre pseudo, visible par tous. Merci pour votre soutien ♥",items:["badge.soutien"]},
@@ -2753,11 +2781,17 @@ const TITLES=[
   /* Prestige (1.5.0) : un titre par niveau (stats.prestige, posé par dc_prestige) */
   ...PRES_TITLES.map((n,i)=>({k:"pres"+(i+1),n,ic:"✧",g:"Prestige",cls:"tc",c:"#a855f7",d:`A atteint le prestige ${i+1}`,stat:"prestige",need:i+1})),
 ];
+/* Titres « catégorie complète » (1.7.0, demande de Theo, noms validés) : tous les titres de la catégorie, en scintillant (cls tsp).
+   Seulement là où c'est un exploit à part : Pokédex, Collections, Régions et Types tomberaient tous avec Maître, Échanges avec
+   Empereur, Shiny avec « Dormir n’est pas une option », Prestige avec Immortel. Serveur : condition « all » de dc__title_ok. */
+for(const [g,k,n,ic,c] of [["Activité","allAct","Âme de DexCraft","✺","#b8860b"],["Arène","allAr","Panthéon","⚔","#b3261e"],
+  ["VoltoBataille","allVb","Voltorbe d’or","⚡","#c98f00"],["Souterrain","allSou","Roi des Profondeurs","💎","#8a5a2b"]])
+  TITLES.push({k,n,ic,g,cls:"tsp",c,d:`A obtenu tous les titres de la catégorie ${g}`,all:TITLES.filter(t=>t.g===g).map(t=>t.k)});
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
 const TITLE_MAX=3,TITLE_DEFAULT=["maitre"]; // Alpha et Bêta testeur : badges à côté du pseudo depuis la 1.0.1, plus des titres
 const profOf=id=>id===ME?S:PLAYERS[id];
 const ownCount=(ids,coll)=>ids.reduce((n,x)=>n+((coll[x]||0)>0?1:0),0);
-function titleProgress(t,p){if(t.shids)return [t.shids.filter(i=>p.shiny&&p.shiny[i]).length,t.shids.length];if(t.nt)return [Math.min(TITLES.filter(x=>x!==t&&titleEarned(x,p)).length,t.nt),t.nt];if(t.stat)return [Math.min(((p.stats||{})[t.stat])||0,t.need),t.need];const need=t.need||(t.ids?t.ids.length:1);return [t.ids?ownCount(t.ids,p.coll||{}):titleEarned(t,p)?1:0,need]}
+function titleProgress(t,p){if(t.all)return [t.all.filter(k=>TITLE_BY[k]&&titleEarned(TITLE_BY[k],p)).length,t.all.length];if(t.shids)return [t.shids.filter(i=>p.shiny&&p.shiny[i]).length,t.shids.length];if(t.nt)return [Math.min(TITLES.filter(x=>x!==t&&titleEarned(x,p)).length,t.nt),t.nt];if(t.stat)return [Math.min(((p.stats||{})[t.stat])||0,t.need),t.need];const need=t.need||(t.ids?t.ids.length:1);return [t.ids?ownCount(t.ids,p.coll||{}):titleEarned(t,p)?1:0,need]}
 function titleEarned(t,p){if(!p)return false;if(Array.isArray(p.titlesKept)&&p.titlesKept.includes(t.k))return true; // acquis au prestige (1.5.0)
 if(t.test)return t.test(p);const [n,need]=titleProgress(t,p);return need>0&&n>=need} // need 0 : liste vide (cartes secrètes pas encore reçues du serveur), jamais obtenu
 /* Titres choisis par le joueur (3 au plus), sinon ceux par défaut, dans l'ordre de sélection. */
@@ -2952,9 +2986,9 @@ function revealHeadHTML(){
 function revealActionsHTML(){
   if(reveal.every(c=>c.shown)){ // fin de l’ouverture (1.1.15) : retour à l’écran des boosters, ou booster suivant s’il en reste
     if(lastSpecial&&!revealGift){const L=lastSpecial,left=spInvN(spKey(L.kind,L.v)),n=Math.min(L.k,left); // booster spécial : le suivant de l’inventaire (1.2.5)
-      return `<button class="btn" data-act="done-reveal">Retour</button>${n?`<button class="btn primary" data-act="sp-again">${n>1?`${n} boosters suivants`:"Booster suivant"} (${left} en stock)</button>`:""}`}
+      return `<button class="btn" data-act="done-reveal">Retour</button>${n?`<button class="btn primary" data-act="sp-again">${n>1?`${n} boosters suivants`:"Booster suivant"} (${left} en stock)</button>`:""}<span class="reveal-hint">📤 Touchez une carte pour la partager</span>`}
     const k=revealGift?0:nextOpenK();
-    return `<button class="btn" data-act="done-reveal">Retour</button>${k?`<button class="btn primary" data-act="next-pack" data-n="${k}">${k>1?`${k} boosters suivants`:"Booster suivant"}</button>`:""}`;
+    return `<button class="btn" data-act="done-reveal">Retour</button>${k?`<button class="btn primary" data-act="next-pack" data-n="${k}">${k>1?`${k} boosters suivants`:"Booster suivant"}</button>`:""}<span class="reveal-hint">📤 Touchez une carte pour la partager</span>`;
   }
   return `${flippingAll?`<button class="btn primary" data-act="flip-fast">Plus vite !</button>`:`<button class="btn" data-act="flip-all">Tout retourner</button>`}${canHits()?`<button class="btn" data-act="hits-only">Aller aux Hits</button>`:""}`;
 }
@@ -3278,6 +3312,10 @@ function cardMatches(id,q){
   const ex=d[8];if(ex&&ex.base&&(String(ex.base)===q||pad(ex.base)===q))return true;
   return norm2(RAR[d[7]]).includes(q);
 }
+const ownerMatches=(uid,q)=>{q=norm2(q).trim();return !!q&&norm2(nameOf(uid)).includes(q)};
+// propositions d’échange : 12 h sans réponse, elles expirent et la carte revient à son auteur (1.7.0, tâche du serveur dc__expire_offers)
+const OFFER_TTL=12*3600000;
+const offerLeft=o=>{const ms=(+o.at||0)+OFFER_TTL-Date.now();return ms<=60000?"expire dans un instant":ms<3600000?`expire dans ${Math.ceil(ms/60000)} min`:`expire dans ${Math.floor(ms/3600000)} h`};
 function searchBar(act,val,ph){
   return `<div class="toolbar"><input type="search" data-keep="${act}" data-search="${act}" placeholder="${ph}" value="${esc(val)}" aria-label="Rechercher"></div>`;
 }
@@ -3300,7 +3338,7 @@ function trdWatch(){
 function vTrades(){
   const open=Object.entries(MARKET).filter(([,m])=>m.kind==="t"&&m.status==="open").sort((a,b)=>b[1].created-a[1].created);
   const mine=open.filter(([,m])=>m.owner===ME).filter(([,m])=>cardMatches(m.card,trdQ)).sort((a,b)=>offersOf(b[1]).length-offersOf(a[1]).length), // annonces avec des propositions à traiter en premier
-        all=open.filter(([,m])=>m.owner!==ME).filter(([,m])=>cardMatches(m.card,trdQ));
+        all=open.filter(([,m])=>m.owner!==ME).filter(([,m])=>cardMatches(m.card,trdQ)||ownerMatches(m.owner,trdQ)); // 1.7.0 : aussi le pseudo du joueur
   const byR=list=>trdR==="all"?list:list.filter(([,m])=>rar(m.card)===+trdR);
   const missing=all.filter(([,m])=>!has(S,m.card)||wished(m.card)); // 1.4.0 : « Manquantes / recherchées » (cloche 🔔 aussi sur une carte possédée)
   // annonces pour lesquelles on a un double à proposer (1.2.0) : une carte en 2 exemplaires ou plus que l'annonce accepte
@@ -3327,7 +3365,7 @@ function vTrades(){
   const rars=[...new Set(all.map(([,m])=>rar(m.card)))].sort((a,b)=>a-b);
   wishSeenAll(); // cartes recherchées disponibles : vues, la bulle s’éteint (encadré « Cartes que vous recherchez » retiré en 1.4.1 : filtre « Manquantes / recherchées »)
   return `<h1>Échanges</h1><p class="muted">Un échange se fait toujours entre deux cartes de même rareté. Touchez une annonce pour voir la demande et proposer une carte : c’est le propriétaire qui accepte ou refuse.</p>
-  ${searchBar("trd",trdQ,"Rechercher un Pokémon, un numéro ou une rareté")}
+  ${searchBar("trd",trdQ,"Rechercher un Pokémon, un numéro, une rareté ou un joueur")}
   <button class="my-trades${pendMine?" alert":""}" data-act="my-trades" aria-expanded="${showMyTrades}">
     <span>${showMyTrades?"Masquer":"Voir"} mes annonces <b>(${mine.length})</b></span>
     ${pendMine?`<span class="mt-pend">${pendMine} proposition${pendMine>1?"s":""} à traiter</span>`:""}<span class="mt-arrow" aria-hidden="true">${showMyTrades?"▲":"▼"}</span></button>
@@ -3432,11 +3470,11 @@ ${m.ot&&m.ot!==m.owner?`<div class="by"><abbr title="Dresseur d’origine">DO</a
         return `<div class="offer-in"><div class="mini-wrap">${miniHTML(o.card,{count:have,act:"none"})}</div>
           <div class="oi-txt"><b>${esc(nm(o.card))}</b>
             <span class="evo-have ${have?"ok":"missing"}">${have?`Vous l’avez déjà ×${have}`:"Vous ne l’avez pas"}</span>
-            <span class="by">de ${o.by===ME?"vous":playerName(o.by)}${badgeTag(o.by,true)}</span></div>
+            <span class="by">de ${o.by===ME?"vous":playerName(o.by)}${badgeTag(o.by,true)}</span><span class="muted oi-exp">${offerLeft(o)}</span></div>
           <div class="oi-act"><button class="btn small primary" data-act="offer-yes" data-mid="${id}" data-oid="${oid}">Accepter</button>
             <button class="btn small" data-act="offer-no" data-mid="${id}" data-oid="${oid}">Refuser</button></div></div>`}).join("")}</div>`
         :`<div class="by">Aucune proposition reçue pour l’instant.</div>`)
-      :mo?`<div class="by">Votre proposition : <b>${esc(nm(mo[1].card))}</b>, en attente de la réponse de ${esc(who(m.owner))}.</div>`
+      :mo?`<div class="by">Votre proposition : <b>${esc(nm(mo[1].card))}</b>, en attente de la réponse de ${esc(who(m.owner))} (${offerLeft(mo[1])}).</div>`
         :`<div class="by">${pend.length} proposition${pend.length>1?"s":""} en attente</div>`}
       <div class="row">${isMine?`<button class="btn small danger" data-act="cancel" data-mid="${id}">Retirer l’annonce</button>`
         :mo?`<button class="btn small danger" data-act="offer-cancel" data-mid="${id}" data-oid="${mo[0]}">Retirer ma proposition</button>`
@@ -3485,13 +3523,14 @@ function playerDlg(uid){
         <div>${badgeTag(uid,true)}</div>${since?`<p class="muted" style="margin:4px 0 0;font-size:.85rem">Joue depuis le ${since}</p>`:""}
         ${(()=>{const v=visOf(uid),it=[v.f,v.p].filter(i=>i&&COS_PACK[i]); // cadre et pseudo : de quel pack ils viennent (1.3.14)
           const by={};it.forEach(i=>(by[COS_PACK[i]]=by[COS_PACK[i]]||[]).push(i));
-          return it.length?`<p class="pl-look">${Object.entries(by).map(([k,l])=>`<button class="linkish" data-act="goto-packs">${l.map((i,n)=>`${n?slotShort(i).toLowerCase():slotShort(i)} ${esc(cosName(i))}`).join(" et ")} · ${esc(OFFER_BY[k].n)}</button>`).join(" — ")}</p>`:""})()}</div></div>
+          return it.length?`<p class="pl-look">${Object.entries(by).map(([k,l])=>`<button class="linkish" data-act="goto-packs">${l.map((i,n)=>`${n?slotShort(i).toLowerCase():slotShort(i)} ${esc(cosName(i))}`).join(" et ")} · ${esc(OFFER_BY[k].n)}</button>`).join(" — ")}</p>`:""})()}</div>
+        ${per[6]||per[7]||per[8]?`<div class="pl-troph"><b>${per[6]?`<span class="myth-txt">✦${per[6]}</span> `:""}${per[7]?`<span class="trans-txt">❖${per[7]}</span> `:""}${per[8]?`<span class="spec-txt">✵${per[8]}</span>`:""}</b><span class="muted">trophées</span></div>`:""}</div>
       <div class="pl-stats">${presOf(p)?`<div><b class="pres-tag">✧ Prestige ${presOf(p)}</b><span class="muted">${esc(PRES_TITLES[presOf(p)-1]||"")}</span></div>`:""}<div><b>${masterCount(c)} / ${fmtN(LB_TOTAL)}</b><span class="muted">cartes différentes</span></div>
         <div><b>${fmtN(p.total||Object.values(c).reduce((a,b)=>a+b,0))}</b><span class="muted">cartes au total</span></div>
         <div><b>${fmtN((p.stats&&p.stats.packs)||0)}</b><span class="muted">boosters ouverts</span></div>
         <div><b>${earned.length}</b><span class="muted">titres obtenus</span></div>
         <div><b>✨ ${fmtN(p.shinyN||0)}</b><span class="muted">shiny</span></div>
-        ${per[6]||per[7]||per[8]?`<div><b>${per[6]?`<span class="myth-txt">✦${per[6]}</span> `:""}${per[7]?`<span class="trans-txt">❖${per[7]}</span> `:""}${per[8]?`<span class="spec-txt">✵${per[8]}</span>`:""}</b><span class="muted">trophées</span></div>`:""}</div>
+</div>
       <div class="pl-rar">${[0,1,2,3,4,5].map(i=>`<span style="color:var(--r${i})">${gems(i)} ${RAR[i]}</span><span class="bar"><i style="width:${per[i]*100/BYR[i].length}%;background:var(--r${i})"></i></span><span>${per[i]} / ${BYR[i].length}</span>`).join("")}</div>
       ${vit.length?`<div><h3 style="margin:0 0 8px">🏆 Vitrine</h3><div class="vit-cards">${vit.map(v=>{const id=+v.i;return isSecretId(id)&&!has(S,id)&&uid!==ME?`<div class="vit-ghost" aria-label="Carte inconnue"><span>???</span></div>`:`<div class="vit-card">${cardHTML(id,false,!!v.s&&hasShiny(id,p))}</div>`}).join("")}</div></div>`:""}
     </div>`,true);
@@ -3743,7 +3782,7 @@ function vEvolution(){
   const q=norm2(evoQ.trim()),fam=q?evoFamily(q):null;
   const list=fam?owned.filter(id=>fam.has(id)):evoFilter==="ready"?ready:evoFilter==="missing"?todo:owned;
   const row=id=>{
-    const c=S.coll[id],ok=c>=EVO_COST,last=c===EVO_COST;
+    const c=S.coll[id],ok=c>=EVO_COST,last=c===EVO_COST,st=!ok&&evoCanStone(c)?evoStonesFor(c):0; // st : pierres évolutives (1.7.0)
     return `<div class="evo-row${ok?" ready":""}${last?" last":""}">
       <div class="evo-from"><div class="thumb">${evoTile(id)}</div><div style="min-width:0">
         <h3>${esc(nm(id))}</h3><div class="muted" style="font-size:.9rem">${c} exemplaire${c>1?"s":""}${ok?`, il en restera ${c-EVO_COST}`:""}</div>
@@ -3752,15 +3791,16 @@ function vEvolution(){
         ${last?`<div class="evo-warn"><span aria-hidden="true">!</span> Après l’évolution, vous n’aurez plus aucun ${esc(nm(id))} : il redeviendra « ??? » dans votre collection.</div>`:""}</div></div>
       <span class="evo-arrow" aria-hidden="true">→</span>
       <div class="evo-targets">${evoTargets(id).sort((x,y)=>(has(S,x)?1:0)-(has(S,y)?1:0)||x-y).map(to=>{const have=S.coll[to]||0;
-        return `<button class="evo-pick${have?"":" new"}" data-act="evolve" data-from="${id}" data-to="${to}" ${ok?"":"disabled"} aria-label="${ok?"Faire évoluer en "+esc(nameOrHidden(to)):"Il faut "+EVO_COST+" exemplaires"}">
+        return `<button class="evo-pick${have?"":" new"}" data-act="evolve" data-from="${id}" data-to="${to}" data-stones="${st}" ${ok||st?"":"disabled"} aria-label="${ok||st?"Faire évoluer en "+esc(nameOrHidden(to)):"Il faut "+EVO_COST+" exemplaires"}">
         <span class="evo-have ${have?"ok":"missing"}">${have?`Déjà ×${have}`:"Pas encore"}</span>
-        ${evoTile(to)}<span class="lbl">${ok?(evoTargets(id).length>1?"Choisir":"Faire évoluer"):`${Math.min(c,EVO_COST)}/${EVO_COST}`}</span></button>`}).join("")}</div>
+        ${evoTile(to)}<span class="lbl">${ok?(evoTargets(id).length>1?"Choisir":"Faire évoluer"):st?`Avec ${st} pierre${st>1?"s":""}`:`${Math.min(c,EVO_COST)}/${EVO_COST}`}</span></button>`}).join("")}</div>
     </div>`};
   return `<h1>Évolutions</h1>
   <p class="muted">Réunissez ${EVO_COST} exemplaires d’un même Pokémon pour les échanger contre 1 carte de son évolution, ou contre une de ses méga-évolutions ou sa forme Gigamax. Les ${EVO_COST} cartes sont consommées. Quand un Pokémon a plusieurs évolutions possibles, vous choisissez laquelle.</p>
   ${(()=>{const plan=quickEvoPlan(),all=quickEvoPlan(true);return `<div class="actions" style="margin-top:12px">
     <button class="btn${plan.length?" primary":""}" data-act="quick-evo" ${plan.length?"":"disabled"}>${plan.length?`Évolution rapide (${plan.length})`:"Évolution rapide : rien à faire"}</button>
-    <button class="btn" data-act="quick-evo" data-all="1" ${all.length?"":"disabled"}>${all.length?`Tout faire évoluer (${all.length})`:"Tout faire évoluer : rien à faire"}</button></div>
+    <button class="btn" data-act="quick-evo" data-all="1" ${all.length?"":"disabled"}>${all.length?`Tout faire évoluer (${all.length})`:"Tout faire évoluer : rien à faire"}</button>
+    <span class="evo-stones" title="Pierres évolutives déterrées dans le Souterrain : chacune remplace un exemplaire manquant pour une évolution">${soIco("pierre")} <b>${soStones()}</b> Pierre${soStones()>1?"s":""} évolutive${soStones()>1?"s":""}</span></div>
     <p class="muted" style="font-size:.85rem;margin:6px 0 0">Les Pokémon que vous avez en 4 exemplaires ou plus évoluent d’un coup, en gardant toujours un exemplaire. « Évolution rapide » : seulement vers les évolutions qui vous manquent. « Tout faire évoluer » : aussi vers celles que vous avez déjà (chaque carte obtenue augmente votre chance de la trouver en shiny).</p>`})()}
   <div class="toolbar evo-search"><input type="search" data-keep="evoq" data-evoq placeholder="Rechercher un Pokémon et ses évolutions" value="${esc(evoQ)}" aria-label="Rechercher un Pokémon et ses évolutions"></div>
   <div class="evo-q qty" role="group" aria-label="Filtre">
@@ -3813,21 +3853,21 @@ function quickEvo(all){
   });
 }
 
-function evolveDlg(from,to){
-  const c=S.coll[from]||0;if(c<EVO_COST||!evoTargets(from).includes(to))return;
-  const left=c-EVO_COST,have=S.coll[to]||0;
+function evolveDlg(from,to,st=0){ // st : Pierres évolutives (1.7.0), chacune remplace un exemplaire
+  const c=S.coll[from]||0;if(st?st!==evoStonesFor(c)||soStones()<st:c<EVO_COST)return;if(!evoTargets(from).includes(to))return;
+  const left=c-(EVO_COST-st),have=S.coll[to]||0;
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <h2>Faire évoluer ${esc(nm(from))} ?</h2>
-    <p>Vous donnez <b>${EVO_COST} ${esc(nm(from))}</b> et recevez <b>1 ${esc(nameOrHidden(to))}</b>, carte ${RAR[rar(to)].toLowerCase()}${have?` (vous en avez déjà ${have})`:" que vous n’avez pas encore"}.</p>
+    <p>Vous donnez <b>${EVO_COST-st} ${esc(nm(from))}</b>${st?` et <b>${st} Pierre${st>1?"s":""} évolutive${st>1?"s":""}</b>`:""} et recevez <b>1 ${esc(nameOrHidden(to))}</b>, carte ${RAR[rar(to)].toLowerCase()}${have?` (vous en avez déjà ${have})`:" que vous n’avez pas encore"}.</p>
     ${left<1?`<div class="evo-warn big"><span aria-hidden="true">!</span> Il ne vous restera plus aucun ${esc(nm(from))}. Il disparaîtra de votre collection et redeviendra « ??? » jusqu’à ce que vous en retrouviez un.</div>`
       :`<p class="muted">Il vous restera ${left} ${esc(nm(from))}.</p>`}
     ${S.avatar===from&&left<1?`<p class="muted">${esc(nm(from))} est votre image de profil : elle sera retirée.</p>`:""}
-    <div class="actions"><button class="btn primary" data-act="evolve-go" data-from="${from}" data-to="${to}">Faire évoluer</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
+    <div class="actions"><button class="btn primary" data-act="evolve-go" data-from="${from}" data-to="${to}" data-stones="${st}">Faire évoluer</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
 }
-function evolve(from,to){
+function evolve(from,to,st=0){
   run(async()=>{
     let wasNew=false;
-    try{wasNew=!!(await rpc("dc_evolve",{p_from:from,p_to:to})).wasNew}catch(e){closeDlg();throw e}
+    try{wasNew=!!(await rpc(st?"dc_evolve_stone":"dc_evolve",st?{p_from:from,p_to:to,p_stones:st}:{p_from:from,p_to:to})).wasNew}catch(e){closeDlg();throw e}
     const r=fxRar(to);SFX.flip(r);
     openDlg(`<div class="evo-result"><p class="muted" style="margin:0">${esc(nm(from))} évolue en…</p>
       <div class="card-holder evo-anim">${wasNew?`<span class="new-tag">Nouvelle</span>`:""}${cardHTML(to,true)}</div>
@@ -3852,7 +3892,7 @@ const VB_AFTER=10; // 1.3.14 : plafond atteint, une manche gagnée rapporte enco
    (depuis la 1.4.9 : chaque Pokémon différent de l'équipe à 0 ou 1 étoile a la même chance, slot 0,3) ; typeW : poids des types joués, en part de la réserve ;
    ai* : difficulté de l'ordinateur (chance d'évolution par manche, puissance de départ, gain par manche). */
 const AR={rounds:12, // 12 manches depuis la 1.5.17 (demande de Theo ; 10 avant)
-  lives:3,lossGold:3,bench:9,reroll:2,cap:3000,finish:400,afterCap:20,afterCapPerfect:50,afterRound:20, // 1.5.4 (demande de Theo) : après le plafond, 20 par manche gagnée du premier coup, 20 ou 50 l’Arène réussie (100 et 150 avant)
+  lives:3,lossGold:3,bench:9,reroll:2,cap:3000,finish:400,afterCap:120,afterCapPerfect:220,afterRound:40, // 1.7.0 (demande de Theo) : après le plafond, 40 par manche gagnée du premier coup, 120 l’Arène réussie, 100 de plus sans perdre de vie (1.5.4 : 20, 20 et 50 ; avant : 100 et 150)
   winBase:60,winStep:20,startGold:8,incBase:6,incStep:1, // 1.4.8 (demande de Theo, économie trop juste) : or de la manche = incBase + incStep × manche (6 + manche/2 avant, startGold 6, incLate 1)
   // 1.4.7 (Arène v3.3, table de Theo) : avant, par bandes de 2 manches [[75,25,0,0,0],[50,35,15,0,0],[30,35,25,10,0],[20,30,30,17,3],[15,25,30,22,8]]
   odds:[[70,20,10,0,0],[60,30,15,5,0],[50,30,20,9,1],[50,30,20,9,1],[20,30,30,15,5],[20,30,30,15,5],[15,25,30,20,10],[15,25,30,20,10],[10,20,25,30,15],[0,10,20,40,30],[0,5,20,40,35],[0,5,15,40,40]], // manches 11 et 12 (1.5.17) : prolongement de la manche 10
@@ -4439,8 +4479,8 @@ function detail(id){
       <label class="field" style="flex:1;min-width:min(220px,100%)">Carte souhaitée<select id="t-want"><option value="missing" selected>N’importe quelle carte ${RAR[r].toLowerCase()} manquante (que je n’ai pas)</option><option value="">N’importe quelle carte ${RAR[r].toLowerCase()}</option><option value="list">Plusieurs cartes précises…</option>${same.map(x=>`<option value="${x}">${esc(nm(x))}${S.coll[x]?"":" (manquante)"}</option>`).join("")}</select></label>
       <button class="btn primary" data-act="do-trade" data-id="${id}">Proposer</button></div></div>`
     :`<div class="notice">Échanges disponibles dans la version publiée.</div>`}
-    ${evoTargets(id).length?`<div class="panel"><h3>Évolution</h3><p class="muted" style="margin:4px 0 10px">${c>=EVO_COST?`Vous pouvez échanger ${EVO_COST} exemplaires contre ${evoTargets(id).length>1?"une de ses "+evoTargets(id).length+" évolutions":"son évolution"}.`:`Il vous faut ${EVO_COST} exemplaires pour le faire évoluer (${c}/${EVO_COST}).`}</p>
-      <div class="actions">${evoTargets(id).map(to=>`<button class="btn${c>=EVO_COST?" primary":""}" data-act="evolve" data-from="${id}" data-to="${to}" ${c>=EVO_COST?"":"disabled"}>Évoluer en ${esc(nameOrHidden(to))}${nameOrHidden(to)==="???"?" (№ "+to+")":""}</button>`).join("")}</div></div>`:""}
+    ${evoTargets(id).length?`<div class="panel"><h3>Évolution</h3><p class="muted" style="margin:4px 0 10px">${c>=EVO_COST?`Vous pouvez échanger ${EVO_COST} exemplaires contre ${evoTargets(id).length>1?"une de ses "+evoTargets(id).length+" évolutions":"son évolution"}.`:`Il vous faut ${EVO_COST} exemplaires pour le faire évoluer (${c}/${EVO_COST}).${evoCanStone(c)?` Avec ${evoStonesFor(c)} Pierre${evoStonesFor(c)>1?"s":""} évolutive${evoStonesFor(c)>1?"s":""} du Souterrain, vous pouvez le faire dès maintenant.`:""}`}</p>
+      <div class="actions">${evoTargets(id).map(to=>{const st=c<EVO_COST&&evoCanStone(c)?evoStonesFor(c):0;return `<button class="btn${c>=EVO_COST||st?" primary":""}" data-act="evolve" data-from="${id}" data-to="${to}" data-stones="${st}" ${c>=EVO_COST||st?"":"disabled"}>Évoluer en ${esc(nameOrHidden(to))}${nameOrHidden(to)==="???"?" (№ "+to+")":""}${st?` (avec ${st} pierre${st>1?"s":""})`:""}</button>`}).join("")}</div></div>`:""}
     <div class="actions">${r>=6?"":S.fav&&S.fav[id] // 1.6.3 : rien pour les raretés 6 à 8, jamais défaussées (1.5.14)
       ?`<button class="btn" disabled title="Retirez-le des favoris d’abord">★ Favori protégé de la défausse</button>`
       :`<button class="btn danger" data-act="do-discard" data-id="${id}">Défausser 1 exemplaire (+${cr(dVal(id))})</button>`}</div>
@@ -4476,24 +4516,27 @@ async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
   const rr=(X,Y,W,H,R)=>{x.beginPath();x.roundRect(X,Y,W,H,R)};
   // fond
   const bg=x.createLinearGradient(0,0,0,CH);bg.addColorStop(0,"#161b3d");bg.addColorStop(1,"#0c0f24");x.fillStyle=bg;x.fillRect(0,0,CW,CH);
-  const glow=x.createRadialGradient(CW/2,230,20,CW/2,230,260);glow.addColorStop(0,SHARE_RC[r]+"55");glow.addColorStop(1,"transparent");x.fillStyle=glow;x.fillRect(0,0,CW,CH);
+  const glow=x.createRadialGradient(CW/2,230,20,CW/2,230,260);glow.addColorStop(0,sh?"#c9b2ff88":SHARE_RC[r]+"55");glow.addColorStop(1,"transparent");x.fillStyle=glow;x.fillRect(0,0,CW,CH);
+  if(sh){const g2=x.createRadialGradient(CW/2,230,60,CW/2,230,300);g2.addColorStop(0,"rgba(150,215,255,.25)");g2.addColorStop(1,"transparent");x.fillStyle=g2;x.fillRect(0,0,CW,CH)} // aura shiny (1.7.0)
   x.save();x.translate(30,22);
   // cadre de rareté
   let rc=SHARE_RC[r];
   if(r===6&&x.createConicGradient){rc=x.createConicGradient(0,150,210);["#ff4f4f","#ffcf3f","#5fd68f","#4fc3ff","#b46cff","#ff4fd8","#ff4f4f"].forEach((c,i)=>rc.addColorStop(i/6,c))}
   if(r===8){rc=x.createLinearGradient(0,0,300,420);["#2a0f45","#7c3aed","#c4a3ff","#4c1d95","#2a0f45"].forEach((c,i)=>rc.addColorStop(i/4,c))}
   if(r===7){rc=x.createLinearGradient(0,0,300,420);["#eef1f6","#9aa3b5","#ffffff","#8d96a8","#e3e7ee"].forEach((c,i)=>rc.addColorStop(i/4,c))}
+  if(sh){rc=x.createLinearGradient(0,0,300,420);["#ffffff","#f3c6ec","#ffffff","#bfe3ff","#ffffff","#c8f5dc","#ffffff"].forEach((c,i)=>rc.addColorStop(i/6,c))} // shiny : cadre nacré irisé (1.7.0)
+  if(sh){x.shadowColor="rgba(200,180,255,.9)";x.shadowBlur=34;rr(0,0,300,420,14);x.fillStyle="#fff";x.fill();x.shadowColor="transparent";x.shadowBlur=0}
   x.shadowColor="rgba(0,0,0,.45)";x.shadowBlur=24;x.shadowOffsetY=8;rr(0,0,300,420,14);x.fillStyle=rc;x.fill();x.shadowColor="transparent";
   // fond de la carte
   rr(6,6,288,408,9);x.save();x.clip();
   const lsp=LEG_SPECIAL.has(+id); // 1.5.6 : Méga et Gigamax des légendaires, fond des Légendaires en turquoise
-  if(r===5||lsp){const gd=x.createLinearGradient(6,6,160,414);(lsp?[["#d8fffb",0],["#86efe6",.35],["#3fcfc3",.62],["#c9fbf6",1]]:[["#fff6cf",0],["#ffe27a",.35],["#f3c440",.62],["#fff0b3",1]]).forEach(([c,o])=>gd.addColorStop(o,c));x.fillStyle=gd;x.fillRect(0,0,300,420);
+  if(r===5||lsp){const gd=x.createLinearGradient(6,6,160,414);(sh?[["#ffffff",0],["#f1e6ff",.26],["#dcf2ff",.5],["#e2ffef",.72],["#fff0fa",1]]:lsp?[["#d8fffb",0],["#86efe6",.35],["#3fcfc3",.62],["#c9fbf6",1]]:[["#fff6cf",0],["#ffe27a",.35],["#f3c440",.62],["#fff0b3",1]]).forEach(([c,o])=>gd.addColorStop(o,c));x.fillStyle=gd;x.fillRect(0,0,300,420);
     x.globalAlpha=.42;x.lineWidth=3;for(let i=-420,k=0;i<460;i+=18,k++){x.strokeStyle=k%2?c2:c1;x.beginPath();x.moveTo(i,420);x.lineTo(i+196,0);x.stroke()}x.globalAlpha=1}
   else if(r===7){const gd=x.createLinearGradient(0,6,0,414);gd.addColorStop(0,"#f7f8fb");gd.addColorStop(1,"#e8ebf2");x.fillStyle=gd;x.fillRect(0,0,300,420)}
   else{x.fillStyle="#fbfaf6";x.fillRect(0,0,300,420);
     if(r===3){const gd=x.createRadialGradient(150,190,10,150,190,220);gd.addColorStop(0,"rgba(168,110,240,.38)");gd.addColorStop(.55,"rgba(168,110,240,.12)");gd.addColorStop(1,"rgba(168,110,240,0)");x.fillStyle=gd;x.fillRect(0,0,300,420)}}
   x.restore();
-  const ink="#1c2042",soft=r===5?"#5a4410":lsp?"#0d4d49":"#5b6088";
+  const ink="#1c2042",soft=sh&&(r===5||lsp)?"#4a3a78":r===5?"#5a4410":lsp?"#0d4d49":"#5b6088";
   // haut : numéro et gemmes
   x.textBaseline="middle";x.font=body(700,12);x.fillStyle=soft;x.textAlign="left";x.fillText((sh?"✨ Shiny · ":"")+label,16,21);
   x.textAlign="right";x.font=body(700,r>=6?17:13);x.fillStyle=SHARE_GEM[r];x.fillText(gems(r),284,21);
@@ -4519,6 +4562,13 @@ async function drawShareCard(id,sh){ // sh : version shiny (1.1.0)
     const bw=Math.max(3,186*Math.min(100,v/1.8)/100),sg=x.createLinearGradient(62,0,62+bw,0);sg.addColorStop(0,c1);sg.addColorStop(1,c2);rr(62,y-3,bw,6,3);x.fillStyle=sg;x.fill();
     x.fillStyle=ink;x.textAlign="right";x.fillText(String(v),284,y)});
   x.font=body(700,11);x.fillStyle=soft;x.textAlign="left";x.fillText(foot,16,400);x.textAlign="right";x.fillText(rarName(id),284,400);
+  if(sh){ // voile irisé et étoiles (1.7.0)
+    rr(6,6,288,408,9);x.save();x.clip();x.globalCompositeOperation="screen";const vl=x.createLinearGradient(0,0,300,420);
+    [["rgba(255,190,235,0)",0],["rgba(255,190,235,.22)",.3],["rgba(190,225,255,.26)",.5],["rgba(200,255,225,.22)",.7],["rgba(255,255,255,0)",1]].forEach(([c,o])=>vl.addColorStop(o,c));
+    x.fillStyle=vl;x.fillRect(0,0,300,420);x.restore();
+    const star=(X,Y,R,c)=>{x.save();x.translate(X,Y);x.fillStyle=c;x.shadowColor="#fff";x.shadowBlur=R*2.2;x.beginPath();
+      for(let i=0;i<8;i++){const a=i*Math.PI/4,d=i%2?R*.32:R;x.lineTo(Math.cos(a)*d,Math.sin(a)*d)}x.closePath();x.fill();x.restore()};
+    [[30,48,7,"#fff"],[262,58,9,"#fff6d6"],[248,150,6,"#e9f4ff"],[42,140,5,"#ffe9fb"],[150,40,5,"#fff"],[276,250,6,"#fff"],[20,300,7,"#e9f4ff"],[284,380,8,"#fff6d6"],[14,404,6,"#fff"],[150,412,5,"#ffe9fb"]].forEach(a=>star(...a))}
   x.restore();
   // signature
   x.textAlign="center";x.textBaseline="alphabetic";x.font=disp(700,22);x.fillStyle="#ffcf3f";x.fillText("◆ DexCraft",CW/2,472);
@@ -5128,7 +5178,7 @@ function prestigeFx(n){
   const ov=document.createElement("div");ov.className="legend prestige";ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Prestige "+n);
   const t=PRES_TITLES[n-1];
   ov.innerHTML=`<div class="rays"></div><canvas></canvas><div class="pr-halo"></div>
-    <div class="lg-title">Prestige ${n}</div><div class="pr-charm"><span>✧</span>${n>1?`<sub>${n}</sub>`:""}</div>
+    <div class="lg-title">Prestige ${n}</div><div class="pr-charm"><span>✧</span><sub>${n}</sub></div>
     ${t?`<div class="lg-name">Titre « ${esc(t)} » obtenu</div>`:""}<div class="pr-sub">+${PRES_CHARM*n} rencontres sur tous les Pokémon pour la chance de shiny</div><div class="lg-sub">Touchez pour continuer</div>`;
   document.body.append(ov);
   const snd=prestigeSound();
@@ -5303,7 +5353,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.6</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.7</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${arFightView?arFightView.round:r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(arShown().hp)}${"🖤".repeat(Math.max(0,AR.lives-arShown().hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène, cagnotte de la partie en cours comprise">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -5491,22 +5541,25 @@ document.addEventListener("pointercancel",()=>{const g=arDrag;arDrag=null;if(g&&
 // 1.5.12 : retour à 100 crédits (demande de Theo)
 // 1.6.0 (demande de Theo) : mise à 150, fouille un peu plus dure (9 plaques, 0 à 3 blocs de fer), trouvailles plus rares un peu
 // plus fréquentes (poids 4 300 / 3 000 / 1 750 / 500 / 120) : simulation, 225 crédits rendus pour 150 misés, 54 % des murs remboursent la mise
-const SOUT={v:"v1.6",open:true,cost:150,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:9,irons:[0,3],n:[2,4],
+const SOUT={v:"v1.7",open:true,cost:150,hp:100,pick:2,hammer:4,w:13,h:10,base:1,plaq:9,irons:[0,3],n:[2,4],
   // s : taille (colonnes, lignes) ; w : poids du tirage (sur 100 × %) ; v : éclats ; cr : crédits ; c : couleurs
   // 1.6.0 (demandes de Theo) : trouvailles rares un peu plus fréquentes (poids 3 700 / 3 000 / 2 050 / 650 / 170 / 20 selon la
   // rareté 1 à 6), Plaques (pl : un des 17 types, rangées dans le sac), Morceau d’Étoile (m : masque des cases, en croix),
   // Clef de voûte (rareté 6 ; key : éclats d’une Clef après la première) ; simulation : 224 crédits rendus pour 150 misés
-  items:{pb:{n:"Petite Sphère bleue",s:[2,2],w:3700,v:25,c:["#a9d2ff","#1d5fd6"]},gb:{n:"Grande Sphère bleue",s:[3,3],w:3000,v:58,c:["#a9d2ff","#1d5fd6"]},
+  // 1.7.0 (v1.7, demandes de Theo) : Pierre évolutive (3×2, rareté à elle : environ 1 tous les 8 murs, simulation ; remplace un exemplaire
+  // manquant pour une évolution, rangée dans le sac : stone), Clef de voûte 20 → 60 (environ 1 mur sur 200 au lieu de 600), pris sur la Petite Sphère bleue
+  items:{pb:{n:"Petite Sphère bleue",s:[2,2],w:3660,v:25,c:["#a9d2ff","#1d5fd6"]},gb:{n:"Grande Sphère bleue",s:[3,3],w:3000,v:58,c:["#a9d2ff","#1d5fd6"]},
     pr:{n:"Petite Sphère rouge",s:[2,2],w:3000,v:50,c:["#ffb3aa","#cf2419"]},gr:{n:"Grande Sphère rouge",s:[3,3],w:2050,v:140,c:["#ffb3aa","#cf2419"]},
     pv:{n:"Petite Sphère verte",s:[2,2],w:2050,v:90,c:["#b7f5c6","#12914a"]},gv:{n:"Grande Sphère verte",s:[3,3],w:2050,v:140,c:["#b7f5c6","#12914a"]},
     pj:{n:"Petite Sphère jaune",s:[2,2],w:2050,v:110,c:["#fff4a8","#d49c00"]},gj:{n:"Grande Sphère jaune",s:[3,3],w:650,v:580,c:["#fff4a8","#d49c00"]},
     pd:{n:"Petite Sphère diamant",s:[2,2],w:650,v:345,c:["#ffffff","#7fcff5"]},gd:{n:"Grande Sphère diamant",s:[3,3],w:170,v:1800,c:["#ffffff","#7fcff5"]},
     or:{n:"Pièce d’or",s:[2,2],w:3000,cr:40},billet:{n:"Billet vert",s:[3,2],w:650,cr:275},
-    plaque:{n:"Plaque",s:[4,3],w:3000,pl:1},etoile:{n:"Morceau d’Étoile",s:[3,3],m:"010111010",w:2050,cr:100},clef:{n:"Clef de voûte",s:[3,3],w:20,key:2000}},
+    plaque:{n:"Plaque",s:[4,3],w:3000,pl:1},etoile:{n:"Morceau d’Étoile",s:[3,3],m:"010111010",w:2050,cr:100},clef:{n:"Clef de voûte",s:[3,3],w:60,key:2000},
+    pierre:{n:"Pierre évolutive",s:[3,2],w:1650,stone:1}},
   // comptoir : éclats contre boosters (mêmes prix qu'en crédits : rien n'est plus rentable d'un côté que de l'autre)
-  lots:[{k:"b1",n:"1 booster",p:200,packs:1},{k:"b3",n:"3 boosters",p:600,packs:3},{k:"b5",n:"5 boosters",p:1000,packs:5},
-    {k:"gen",n:"Booster Génération",p:300,sp:"gen"},{k:"type",n:"Booster Type",p:300,sp:"type"},{k:"prem",n:"Booster Premium",p:750,sp:"prem"}]};
-const SO_ORDER=["pb","gb","pr","gr","pv","gv","pj","gj","pd","gd","or","billet","etoile","plaque","clef"];
+  lots:[{k:"b1",n:"1 booster",p:200,packs:1},{k:"b3",n:"3 boosters",p:600,packs:3},{k:"b5",n:"5 boosters",p:1000,packs:5},{k:"b10",n:"10 boosters",p:2000,packs:10},
+    {k:"gen",n:"Booster Génération",p:300,sp:"gen"},{k:"type",n:"Booster Type",p:300,sp:"type"},{k:"prem",n:"Booster Premium",p:750,sp:"prem"},{k:"prem5",n:"5 Boosters Premium",p:3750,sp:"prem",q:5}]}; // 1.7.0 : 10 boosters et 5 Premium (q : quantité)
+const SO_ORDER=["pb","gb","pr","gr","pv","gv","pj","gj","pd","gd","or","billet","etoile","plaque","pierre","clef"];
 // Plaques d’Arceus : 18 depuis la 1.6.1 (type 1 = Plaque Légende, échangée contre un Booster Type Normal ; 17 en 1.6.0), texte au survol dans le sac
 const SO_PLATE={1:"Légende",2:"Poing",3:"Ciel",4:"Toxik",5:"Terre",6:"Roc",7:"Insecte",8:"Fantôme",9:"Fer",10:"Flamme",11:"Hydro",12:"Herbe",13:"Volt",14:"Esprit",15:"Glace",16:"Draco",17:"Ombre",18:"Pixie"};
 const SO_PLATE_D={10:"Cette Plaque renferme le pouvoir des géants vaincus.",11:"Le détenteur légitime des plaques peut maîtriser leur pouvoir et adopter de nombreuses formes.",
@@ -5528,10 +5581,13 @@ const soStartBtn=(cls,label)=>{const m=soMiss();return m?`<button class="${cls}"
 let SO=null,soLoading=false,soQ=[],soBusy=false,soEnding=false,soFx={},soGen=1,soType=1,soAim=-1;
 let soTool=(()=>{try{return localStorage.getItem("dc-so-tool")==="p"?"p":"h"}catch(e){return "h"}})();
 const soEc=()=>+((S&&S.sout&&S.sout.ec)||0);
+const soStones=()=>+((S&&S.sout&&S.sout.ps)||0); // Pierres évolutives (1.7.0) : dans le sac (sout.ps)
+const evoStonesFor=c=>c>=EVO_COST||c<1?0:EVO_COST-c; // pierres qu’il faut pour faire évoluer avec c exemplaires (au moins 1 exemplaire)
+const evoCanStone=c=>{const k=evoStonesFor(c);return k>0&&soStones()>=k};
 const soGot=()=>(S&&S.sout&&S.sout.got)||{};
 const soRes=x=>{const [k,t]=String(x).split(":");return k==="key"?{k:"clef",n:"Clef de voûte",g:"dans votre sac"}:k==="key+"?{k:"clef",n:"Clef de voûte",g:`${fmtN(SOUT.items.clef.key)} éclats`}:{k,t:+t||0,n:soName(k,+t||0),g:soGain(k)}};
 const soChance=k=>{const t=SO_ORDER.reduce((a,x)=>a+SOUT.items[x].w,0);return SOUT.items[k].w/t*100};
-const soGain=k=>{const it=SOUT.items[k];return it.pl||it.key?"dans votre sac":it.cr?`${fmtN(it.cr)} crédits`:`${fmtN(it.v)} éclats`};
+const soGain=k=>{const it=SOUT.items[k];return it.pl||it.key||it.stone?"dans votre sac":it.cr?`${fmtN(it.cr)} crédits`:`${fmtN(it.v)} éclats`};
 function soLoad(){if(soLoading)return;soLoading=true;rpc("dc_sout_state",{},{render:false}).then(v=>{SO=v;renderView()}).catch(e=>toast(e.message)).finally(()=>{soLoading=false})}
 // dessin d'un objet (sphère, pièce, billet) : l'élément couvre tout l'objet, chaque case n'en montre que sa part
 const soItemEl=(k,ox,oy,extra="",t)=>{const it=SOUT.items[k];return `<i class="so-it so-${k}${it.c?" so-sph":""}${extra}" style="--w:${it.s[0]};--h:${it.s[1]};--x:${ox};--y:${oy}${it.c?`;--c1:${it.c[0]};--c2:${it.c[1]}`:""}${t?`;--c1:${soPlateCol(t)}`:""}"></i>`};
@@ -5563,7 +5619,9 @@ function soInfoHTML(r){const done=r.objs.filter(o=>o.done);
 function soWallHTML(r){return `<div class="so-wall tool-${soTool}" id="so-wall" style="--cols:${r.w}">${r.d.map((_,i)=>soCell(r,i)).join("")}</div>`}
 function soTopHTML(){
   return `<div class="ar-top so-top"><h1>💎 Souterrain <span class="ar-v">${SOUT.v}</span></h1>
-    <button class="btn small" data-so="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${musicSlider("sout","somus","ar-music","")}${sfxSlider("sout","sosfx")}</div>`}
+    <button class="btn small" data-so="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${musicSlider("sout","somus","ar-music","")}${sfxSlider("sout","sosfx")}
+    ${(()=>{const n=+((S&&S.stats&&S.stats.souRuns)||0);return SO&&SO.run&&!SO.run.over?`<span class="ar-chip so-stat" title="Vos éclats avant cette fouille">💠 ${fmtN(soEc())} éclats</span>`
+      :`<span class="ar-chip so-stat" title="Murs fouillés depuis le début">⛏ ${fmtN(n)} fouille${n>1?"s":""}</span>`})()}</div>`} // 1.7.0 (demande de Theo)
 function soShopHTML(){
   const ec=soEc(),got=soGot();
   const lot=l=>{const can=ec>=l.p,sel=l.sp==="gen"?`<select data-so-sel="gen" aria-label="Génération">${REGIONS.slice(1).map((reg,i)=>`<option value="${i+1}"${soGen===i+1?" selected":""}>${ROMAN[i+1]} · ${reg}</option>`).join("")}</select>`
@@ -5580,7 +5638,8 @@ function soBagHTML(){
   return `<div class="so-box"><h3 class="so-h3">🛡️ Plaques<span class="so-ec">${n} / 18</span></h3>
     <p class="muted ar-small">${open?"Échangez 2 plaques d’un même type contre 1 Booster Type de ce type.":"Réunissez les 18 plaques du Souterrain pour devenir l’Élu d’Arceus."}</p>
     <div class="so-pls">${ts.map(t=>`<div class="so-pl${pl[t]?"":" none"}" title="Plaque ${SO_PLATE[t]} : « ${SO_PLATE_D[t]} »">${soIco("plaque",t)}<span>${SO_PLATE[t]}</span><b>×${pl[t]||0}</b>${open&&(pl[t]||0)>=2?`<button class="btn small" data-so="plate" data-t="${t}" title="2 Plaques ${SO_PLATE[t]} contre 1 Booster Type ${TYPES[t][0]}">→ Booster</button>`:""}</div>`).join("")}</div>
-    ${so.key?`<div class="so-keyrow">${soIco("clef")}<span><b>Clef de voûte</b> : elle semble ouvrir un passage, quelque part…</span></div>`:""}</div>`;
+    ${so.key?`<div class="so-keyrow">${soIco("clef")}<span><b>Clef de voûte</b> : elle semble ouvrir un passage, quelque part…</span></div>`:""}
+    ${soStones()?`<div class="so-keyrow">${soIco("pierre")}<span><b>${soStones()} Pierre${soStones()>1?"s":""} évolutive${soStones()>1?"s":""}</b> : chacune remplace un exemplaire manquant pour faire évoluer un Pokémon (onglet Évolutions).</span></div>`:""}</div>`;
 }
 /* textures du Souterrain (1.5.10), dessinées une fois dans un canvas : grains et cailloux en surimpression sur la couleur de la
    couche, roche claire veinée, fer brossé ; posées en variables CSS (--so-soil, --so-rock, --so-stone, --so-metal) */
@@ -5749,7 +5808,9 @@ document.addEventListener("click",e=>{
     case"toggle-sound":{const on=SFX.toggle();musicSync();b.textContent=on?"🔊":"🔇";b.setAttribute("aria-label",on?"Couper le son":"Activer le son");b.title=on?"Couper le son":"Activer le son";if(on){SFX.flip(1)}break}
     case"flip":{if(dragMoved){dragMoved=false;break}
       if(flipLock)break;flipLock=true;setTimeout(()=>{flipLock=false},320);
-      const c=reveal[+b.dataset.i];if(!b.classList.contains("current"))centerCard(b);if(c.shown)break;flipOne(b,c);updateReveal();break}
+      const c=reveal[+b.dataset.i];if(!b.classList.contains("current"))centerCard(b);
+      if(c.shown){if(reveal.every(x=>x.shown))shareCard(c.id,true,!!c.shiny);break} // 1.7.0 : tirage fini, toucher une carte la partage
+      flipOne(b,c);updateReveal();break}
     case"hand-prev":handStep(-1);break;
     case"hand-next":handStep(1);break;
     case"flip-all":flipAll();break;
@@ -5760,10 +5821,10 @@ document.addEventListener("click",e=>{
     case"detail":detail(id);break;
     case"recent":recentDlg();break;
     case"close":closeDlg();break;
-    case"evolve":evolveDlg(+b.dataset.from,+b.dataset.to);break;
+    case"evolve":evolveDlg(+b.dataset.from,+b.dataset.to,+b.dataset.stones||0);break;
     case"quick-evo":quickEvoDlg(b.dataset.all==="1");break;
     case"quick-evo-go":{const all=b.dataset.all==="1";closeDlg();quickEvo(all);break}
-    case"evolve-go":closeDlg();evolve(+b.dataset.from,+b.dataset.to);break;
+    case"evolve-go":closeDlg();evolve(+b.dataset.from,+b.dataset.to,+b.dataset.stones||0);break;
     case"evo-filter":evoFilter=b.dataset.f;evoQ="";renderView();break;
     case"test-mythic":if(devOn())mythicFx(MYTH_IDS[0]);break;
     case"test-trans":if(devOn())transFx(TRANS_IDS[0]);break;
@@ -6125,7 +6186,7 @@ function offerSnapshot(){
   const mine={},inc={},own={};
   for(const [mid,m] of Object.entries(MARKET)){
     if(m.kind!=="t")continue;
-    const mo=myOffer(mid,m);if(mo)mine[mid]={oid:mo[0],card:mo[1].card,target:m.card,owner:m.owner};
+    const mo=myOffer(mid,m);if(mo)mine[mid]={oid:mo[0],card:mo[1].card,target:m.card,owner:m.owner,at:+mo[1].at||0};
     if(m.owner===ME){own[mid]={card:m.card,auto:!!m.auto};for(const [oid,o] of offersOf(m))inc[oid]={mid,card:o.card,by:o.by,target:m.card}}
   }
   return {mine,inc,own};
@@ -6141,7 +6202,8 @@ async function tradeOutcomes(){
     if(now.mine[mid])continue;                                  // toujours en attente
     if(selfWithdraw.has(p.oid)){selfWithdraw.delete(p.oid);continue} // c'est moi qui l'ai retirée
     quiet([p.card,p.target]);
-    if(MARKET[mid]){toast(`${who(p.owner)} a refusé votre proposition : ${nm(p.card)} revient dans votre collection.`);continue}
+    if(MARKET[mid]){toast(Date.now()-p.at>OFFER_TTL-900000?`Votre proposition sur ${nm(p.target)} de ${who(p.owner)} a expiré (12 h sans réponse) : ${nm(p.card)} revient dans votre collection.`
+      :`${who(p.owner)} a refusé votre proposition : ${nm(p.card)} revient dans votre collection.`);continue}
     // annonce disparue : échange conclu avec moi, ou annonce retirée / conclue avec un autre joueur
     let won=false;
     try{const {data}=await SB.from("trade_log").select("id").eq("taker",ME).eq("owner_card",p.target).eq("taker_card",p.card)
@@ -6488,6 +6550,7 @@ function titleDef(t){
   const same=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
   if(t.stat)return {c:"stat",s:t.stat,n:t.need};
   if(t.nt)return {c:"ntitles",n:t.nt};
+  if(t.all)return {c:"all",keys:t.all}; // 1.7.0 : tous ces titres
   if(t.shids)return {c:"shids",ids:t.shids,n:t.shids.length}; // 1.5.14 : shiny débloqués de ces cartes // Titré (1.5.8) : compté par le serveur (dc__title_ok)
   const fixed={luck:{c:"sflag",s:"luck"},vbL8:{c:"sflag",s:"vbL8"},arPerf:{c:"sflag",s:"arPerf"},souFull:{c:"sflag",s:"souFull"},souGd:{c:"sflag",s:"souGd"},
     arClutch:{c:"sflag",s:"arClutch"},arPure:{c:"sflag",s:"arPure"},souClean:{c:"sflag",s:"souClean"},souRainbow:{c:"sflag",s:"souRainbow"},souArceus:{c:"sflag",s:"souArceus"},souKey:{c:"sflag",s:"souKey"},lord:{c:"cos",i:"titre.lord"},fortune:{c:"cos",i:"titre.fortune"}};

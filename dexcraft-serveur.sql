@@ -128,6 +128,8 @@ create or replace function public.dc__title_ok(cfg jsonb, def jsonb, d jsonb, ne
     -- Titré (1.5.8) : n titres différents obtenus (acquis au prestige compris), lui-même exclu
     when 'ntitles' then (select count(*) from jsonb_array_elements_text(cfg -> 'titleKeys') k where cfg -> 'titleDefs' -> k ->> 'c' <> 'ntitles'
       and (coalesce(d -> 'titlesKept' ? k, false) or public.dc__title_ok(cfg, cfg -> 'titleDefs' -> k, d, newcoll, nmaster, byr, gencnt, typecnt, nsec))) >= (def ->> 'n')::int
+    when 'all' then not exists (select 1 from jsonb_array_elements_text(def -> 'keys') k where not (coalesce(d -> 'titlesKept' ? k, false)   -- 1.7.0 : catégorie complète
+      or public.dc__title_ok(cfg, cfg -> 'titleDefs' -> k, d, newcoll, nmaster, byr, gencnt, typecnt, nsec)))
     else false end $$;
 
 -- champs calculés (classement, titres…) : jamais fournis par le joueur
@@ -142,7 +144,7 @@ declare
   vis jsonb; ot jsonb; o2 jsonb; q record; rarm jsonb;
 begin
   d := public.dc__norm(d) - 'listings' - 'escrow';
-  -- 1.4.3 : collection reconstruite en une requête, raretés lues une fois (avant : 250 ms par profil, voir CLAUDE.md)
+  -- 1.4.3 : collection en une requête, raretés lues une fois (CLAUDE.md)
   rarm := cfg -> 'rar';
   select coalesce(jsonb_object_agg(key, cnt), '{}') into newcoll from (
     select key, floor((value #>> '{}')::numeric)::int cnt from jsonb_each(d -> 'coll') where jsonb_typeof(value) = 'number') s
@@ -257,7 +259,7 @@ begin
   select data into d from public.docs where path = 'players/' || u for update;
   if found then return public.dc__norm(d); end if;
   if not create_it then raise exception 'Joueur introuvable.'; end if;
-  -- pseudo provisoire neutre (jamais tiré de l'adresse e-mail) : le joueur choisit le sien à la première connexion
+  -- pseudo provisoire neutre (jamais tiré de l'e-mail), choisi à la première connexion
   d := public.dc__norm(jsonb_build_object('pseudo', 'Dresseur ' || lpad(public.dc__rnd(10000)::text, 4, '0'), 'pseudoSet', false));
   insert into public.docs (path, coll, data) values ('players/' || u, 'players', public.dc__stamp(d, false))
     on conflict (path) do nothing;
@@ -335,7 +337,7 @@ begin
   return v;
 end $$;
 
--- pseudo choisi par le joueur : obligatoire à la première connexion (pseudoSet), puis un changement tous les 7 jours
+-- pseudo : obligatoire à la première connexion (pseudoSet), puis un changement tous les 7 jours
 create or replace function public.dc_set_pseudo(p_v text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); v text;
   nx bigint := public.dc__int(d, 'pseudoTs') + (public.dc__cfg() ->> 'pseudoWait')::bigint; is_first boolean;

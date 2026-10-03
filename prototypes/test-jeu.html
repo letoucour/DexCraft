@@ -57,16 +57,18 @@ function setup(scene){
         if(st.hp<=0||all){st.over=true;st.end=all?"all":"wall";const res={ec:0,cr:0,items:[]};d.sout=d.sout||{ec:0,got:{}};d.sout.got=d.sout.got||{};
           d.sout.pl=d.sout.pl||{};st.objs.filter(o=>o.done).forEach(o=>{const it=A.items[o.k];d.sout.got[o.k]=(d.sout.got[o.k]||0)+1;
             if(it.pl){d.sout.pl[o.t]=(d.sout.pl[o.t]||0)+1;res.items.push("plaque:"+o.t)}else if(it.key){if(!d.sout.key){d.sout.key=1;res.items.push("key")}else{res.ec+=it.key;res.items.push("key+")}}
+            else if(it.stone){d.sout.ps=(d.sout.ps||0)+1;res.items.push(o.k)}
             else{res.items.push(o.k);res.ec+=it.v||0;res.cr+=it.cr||0}});
           d.sout.ec=(d.sout.ec||0)+res.ec;d.credits+=res.cr;st.res=res;return {data:Object.assign(vw(st,d),{profile:stamp(d),iron,fresh,dmg}),error:null}}
         const v=vw(st);delete v.sout;return {data:Object.assign(v,{iron,fresh,dmg}),error:null}}
       if(n==="dc_sout_buy"){const l=A.lots.find(x=>x.k===a.p_lot);d.sout=d.sout||{};if((d.sout.ec||0)<l.p)return {data:null,error:{message:`Il vous manque ${l.p-(d.sout.ec||0)} éclats.`}};
-        d.sout.ec-=l.p;if(l.packs)d.bonus=(d.bonus||0)+l.packs;else{const k=spKey(l.sp,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)+1}return {data:{profile:stamp(d)},error:null}}
+        d.sout.ec-=l.p;if(l.packs)d.bonus=(d.bonus||0)+l.packs;else{const k=spKey(l.sp,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)+(l.q||1)}return {data:{profile:stamp(d)},error:null}}
     }
     if(n==="dc_buy_special"){const k=spKey(a.p_kind,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)+a.p_q;return {data:{profile:stamp(d)},error:null}}
     if(n==="dc_open_special"){const k=spKey(a.p_kind,a.p_val);d.spInv=d.spInv||{};d.spInv[k]=(d.spInv[k]||0)-a.p_k;if(d.spInv[k]<=0)delete d.spInv[k];
       const sh=a.p_kind==="shiny",l=a.p_kind==="prem"?DEX_ORDER.filter(id=>rar(id)>=2):sh?DEX_ORDER.filter(id=>rar(id)<6):spList(a.p_kind,a.p_val),drawn=Array.from({length:5*a.p_k},()=>({id:l[Math.floor(Math.random()*l.length)],isNew:true,shiny:sh}));if(sh){d.shiny=d.shiny||{};drawn.forEach(c=>d.shiny[c.id]=Date.now())}
       drawn.forEach(c=>d.coll[c.id]=(d.coll[c.id]||0)+1);d.lastOpen={t:Date.now(),drawn};return {data:{profile:stamp(d),drawn},error:null}}
+    if(n==="dc_evolve"||n==="dc_evolve_stone"){const st=a.p_stones||0;d.coll[a.p_from]-=EVO_COST-st;if(d.coll[a.p_from]<=0)delete d.coll[a.p_from];d.coll[a.p_to]=(d.coll[a.p_to]||0)+1;if(st)d.sout.ps-=st;return {data:{profile:stamp(d),wasNew:true},error:null}}
     if(/^dc_trade_(create|create_many|bulk)$/.test(n)){window.__last={n,a};return {data:{profile:stamp(d),mid:"m1",n:2,nolist:[4]},error:null}}
     if(n==="dc_vb_state")return {data:{profile:stamp(d),vb:{level:3,score:0,state:"play",rows:[[5,1],[6,0],[4,2],[7,1],[5,1]],cols:[[5,1],[6,1],[5,1],[6,1],[5,1]],vals:Array(25).fill(null),opened:Array(25).fill(false)}},error:null};
     return {data:null,error:{message:"?"}}};
