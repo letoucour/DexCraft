@@ -1671,7 +1671,12 @@ span.lb-c{cursor:default}
 .pn-nest{width:78px;height:20px;margin-top:-15px;border-radius:50%;background:repeating-linear-gradient(24deg,#8a5a2a 0 3px,#b8823e 3px 6px,#6b4420 6px 8px);box-shadow:0 5px 9px rgba(0,0,0,.45)}
 .pn-slot.empty{opacity:.55}
 .pn-slot.wait .pn-egg{filter:grayscale(.35) brightness(.78)}
-.pn-slot.warm{border-color:rgba(255,190,90,.45);box-shadow:inset 0 0 22px rgba(255,170,60,.16)}
+.pn-slot{position:relative;overflow:hidden}
+.pn-slot.warm{border-color:rgba(255,190,90,.6);box-shadow:inset 0 0 26px rgba(255,170,60,.22);background:radial-gradient(ellipse 80% 60% at 50% 0,rgba(255,170,70,.28),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02))}
+.pn-heat{position:absolute;top:8px;left:50%;width:44px;height:10px;margin-left:-22px;border-radius:0 0 22px 22px;background:linear-gradient(#5d4d31,#3a2f1e);box-shadow:0 6px 18px 4px rgba(255,170,60,.55)} /* 1.9.2 : lampe chauffante des 3 places actives */
+.pn-heat::after{content:"";position:absolute;left:8px;right:8px;bottom:-3px;height:4px;border-radius:4px;background:#ffcf6b;box-shadow:0 0 10px 2px #ffb23d;animation:lbFlick 2.6s ease-in-out infinite}
+.pn-x{position:absolute;top:4px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,220,160,.35);background:rgba(0,0,0,.35);color:#f6ead6;font-size:16px;line-height:1;cursor:pointer;padding:0}
+.pn-x:hover{background:#7a2a1a;border-color:#ff9a7a}
 .pn-slot.warm .pn-egg{animation:pnBreath 3s ease-in-out infinite}
 .pn-slot.ready{border-color:#ffd36b;box-shadow:0 0 22px rgba(255,210,100,.45)}
 .pn-egg.wobble{animation:pnWobble 1.5s ease-in-out infinite;transform-origin:50% 92%}
@@ -1980,7 +1985,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.9.1";
+const APP_VERSION="1.9.2";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -6007,11 +6012,12 @@ const LUMI={v:"v1.0",open:true,cost:100,lamps:6,w:12,h:12,rows:[6,8,10,12,12,12,
   // les 50, une Pierre Plante toutes les 7, la GS Ball environ 1 sur 200 (comme la Clef de voûte). 1.8.0 : 106 crédits pour 100.
   // 1.8.3 (demande de Theo) : gains en crédits ×1,3 et Amonita deux fois moins fréquent (poids 2 000 → 1 000) ; mesure dans CLAUDE.md
   // 1.9.1 (demande de Theo, un peu trop rentable) : entre-deux, 1,65 fois la mise rendue en moyenne (1,40 en 1.8.2, 1,91 en 1.8.3)
+  // 1.9.2 (demande de Theo) : Œuf 20 % plus rare (poids 1 500 → 1 200), Œuf rare 10 % plus rare (700 → 630), Œuf doré inchangé
   items:{baie:{n:"Baie Oran",s:[1,1],w:3000,r:1,cr:8},pchamp:{n:"Petit Champignon",s:[1,2],w:3000,r:1,cr:18,mush:1},miel:{n:"Miel",s:[2,2],w:3000,r:1,cr:29},
     noig:{n:"Noigrume",s:[1,1],w:2000,r:2,cr:45},gchamp:{n:"Gros Champignon",s:[2,2],w:2000,r:2,cr:67,mush:1},bocal:{n:"Bocal de lucioles",s:[1,2],w:2000,r:2,lamp:1},
-    oeuf:{n:"Œuf",s:[2,3],w:1500,r:2,egg:"oeuf"},amonita:{n:"Amonita",s:[2,2],w:1000,r:2,trap:1,look:"gchamp"},
+    oeuf:{n:"Œuf",s:[2,3],w:1200,r:2,egg:"oeuf"},amonita:{n:"Amonita",s:[2,2],w:1000,r:2,trap:1,look:"gchamp"},
     ambre:{n:"Vieil Ambre",s:[2,2],w:700,r:3,cr:180},pierre:{n:"Pierre Plante",s:[2,2],w:700,r:3,stone:1},suave:{n:"Champi Suave",s:[3,3],m:"111111010",w:700,r:3,cr:326,mush:1},
-    oeufr:{n:"Œuf rare",s:[2,3],w:700,r:3,egg:"rare"},oeufd:{n:"Œuf doré",s:[2,3],w:80,r:4,egg:"dore"},gs:{n:"GS Ball",s:[2,2],w:24,r:5,gs:2000}}};
+    oeufr:{n:"Œuf rare",s:[2,3],w:630,r:3,egg:"rare"},oeufd:{n:"Œuf doré",s:[2,3],w:80,r:4,egg:"dore"},gs:{n:"GS Ball",s:[2,2],w:24,r:5,gs:2000}}};
 const LB_ORDER=["baie","pchamp","miel","noig","gchamp","bocal","oeuf","ambre","pierre","suave","oeufr","oeufd","amonita","gs"];
 const LB_RAR=["","Commune","Peu commune","Rare","Très rare","???"];
 const lbOn=()=>LUMI.open||devOn();
@@ -6205,16 +6211,16 @@ function pnHomeHTML(m){ // m : version de la colonne du booster (téléphone : j
 const pnEgg=(k,cls="")=>`<span class="pn-egg${cls?" "+cls:""}">${lbItemEl(PN_KEY[k],0,0)}</span>`;
 function vPension(){
   if(!pnOn())return `<div class="empty">Ce jeu n’est pas encore ouvert.</div>`;
-  if(!pnSynced){pnSynced=true;rpc("dc_pn_state",{},{render:false}).then(r=>{if(r.now){pnOff=r.now-Date.now();if(view==="pension")renderView()}}).catch(()=>{pnSynced=false})} // heure du serveur
+  if(!pnSynced){pnSynced=true;rpc("dc_pn_state",{},{render:false}).then(r=>{if(r.now){pnOff=r.now-Date.now();if(view==="pension")renderView()}}).catch(()=>{pnSynced=false})} // heure du serveur (et couveuse remise en ordre, 1.9.2)
   const p=(S&&S.pension)||{},res=p.res||{},q=Array.isArray(p.q)?p.q:[],now=pnNow(),full=q.length>=PENSION.q;
   pnNext=Math.min(Infinity,...q.map(e=>e.s>now?e.s:e.e>now?e.e:Infinity));
   const slot=(e,i)=>{
     if(!e)return `<div class="pn-slot empty"><span class="pn-nest"></span><small>Place libre</small></div>`;
     const st=e.e<=now?"ready":e.s<=now?"warm":"wait",pc=st==="warm"?Math.min(100,Math.round((now-e.s)*100/(e.e-e.s))):0;
-    return `<div class="pn-slot ${st}">${pnEgg(e.k,st==="ready"?"wobble":"")}<span class="pn-nest"></span>
+    return `<div class="pn-slot ${st}"><button class="pn-x" data-pn="remove" data-i="${i}" title="Retirer cet œuf de la couveuse" aria-label="Retirer cet œuf">×</button>${st==="warm"?`<span class="pn-heat" aria-hidden="true"></span>`:""}${pnEgg(e.k,st==="ready"?"wobble":"")}<span class="pn-nest"></span>
       ${st==="ready"?`<button class="btn small primary" data-pn="hatch" data-i="${i}">Faire éclore</button>`
         :st==="warm"?`<div class="pn-bar"><i style="width:${pc}%"></i></div><small>Éclot dans <b data-countdown="${e.e-pnOff}">${fmtLeft(e.e-now)}</b></small>`
-        :`<small>En attente : couve dans <b data-countdown="${e.s-pnOff}">${fmtLeft(e.s-now)}</b></small>`}
+        :`<small>En attente : éclot dans <b data-countdown="${e.e-pnOff}">${fmtLeft(e.e-now)}</b></small>`}
       ${st!=="ready"&&devOn()?`<button class="btn small pn-dev" data-pn="hatch" data-i="${i}" data-force="1" title="Mode développeur">⚡ Éclore (dév.)</button>`:""}</div>`};
   return `<div class="pension"><div class="ar-top pn-top"><button class="btn small pn-back" data-view="booster">← Retour</button><h1>🥚 Pension</h1>
       <button class="btn small pn-lumi" data-view="lumi">🏮 Trouver des œufs dans le Lumi-Bois</button><span class="ar-chip so-stat" title="Œufs éclos">🐣 ${fmtN(+((S.stats&&S.stats.pnHatch)||0))} éclos</span></div>
@@ -6247,6 +6253,12 @@ function pnHatchFx(c){return new Promise(done=>{
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-pn]");if(!b||!e.target.closest(".pension"))return;
   const a=b.dataset.pn;
+  if(a==="remove"){const i=+b.dataset.i,eg=((S.pension&&S.pension.q)||[])[i];if(!eg)return;
+    const go=()=>{run(async()=>{const r=await rpc("dc_pn_remove",{p_i:i},{render:false});if(r.now)pnOff=r.now-Date.now();toast("L’œuf retourne dans la réserve.");renderView()})};
+    if(eg.s<=pnNow()){openDlg(`<div class="side"><h2>Retirer cet œuf ?</h2><p>${eg.e<=pnNow()?"Il est prêt à éclore : s’il retourne dans la réserve, il faudra le faire couver de nouveau.":"Sa couvaison est en cours : elle sera perdue et repartira de zéro."}</p>
+      <div class="actions"><button class="btn danger" data-pn-ok>Retirer</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
+      const ok=document.querySelector("#dlg [data-pn-ok]");if(ok)ok.onclick=()=>{closeDlg();go()}}
+    else go();return}
   if(a==="add"){actBtn=b;run(async()=>{const r=await rpc("dc_pn_add",{p_k:b.dataset.k},{render:false});if(r.now)pnOff=r.now-Date.now();SFX.flip(1);renderView()});return}
   if(a==="hatch"){if(pnBusy)return;pnBusy=true;actBtn=b;
     run(async()=>{const r=await rpc("dc_pn_hatch",{p_i:+b.dataset.i,p_force:!!b.dataset.force},{render:false});if(r.now)pnOff=r.now-Date.now();renderView();await pnHatchFx(r.drawn);renderView()}).finally(()=>{pnBusy=false});return}

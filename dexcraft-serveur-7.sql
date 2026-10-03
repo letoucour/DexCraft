@@ -198,10 +198,50 @@ end $$;
 --  cfg.pension.slots œufs (3) couvent en même temps. L'heure de début et de fin de chaque œuf est fixée dès son entrée
 --  dans la file (le temps passe aussi hors ligne) ; un œuf prêt attend que le joueur le fasse éclore et garde sa place.
 -- ============================================================
-create or replace function public.dc_pn_state() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, false);
+-- horaires de la couveuse (1.9.2) : les œufs déjà en couvaison (ou prêts) gardent les leurs ; ceux qui attendent, dans l'ordre, prennent
+-- la première des places qui se libère. Recalculé à chaque entrée ou sortie d'un œuf : avant, un œuf sorti avant l'heure (éclosion
+-- immédiate du mode développeur) gardait sa place réservée jusqu'à sa fin prévue, et les suivants attendaient pour rien.
+create or replace function public.dc__pn_sched(q jsonb, a jsonb, now_ bigint) returns jsonb language plpgsql immutable as $$
+declare fr bigint[] := '{}'; r jsonb := '[]'; x jsonb; s bigint; m int;
 begin
-  return jsonb_build_object('pension', coalesce(d -> 'pension', '{}'), 'now', public.dc__now());
+  for x in select v from jsonb_array_elements(q) with ordinality t(v, n) order by n loop
+    if (x ->> 's')::bigint <= now_ and (x ->> 'e')::bigint > now_ then fr := fr || (x ->> 'e')::bigint; end if;
+  end loop;
+  while coalesce(array_length(fr, 1), 0) < (a ->> 'slots')::int loop fr := fr || now_; end loop;
+  for x in select v from jsonb_array_elements(q) with ordinality t(v, n) order by n loop
+    if (x ->> 's')::bigint <= now_ then r := r || jsonb_build_array(x); continue; end if;
+    select min(f) into s from unnest(fr) f; m := array_position(fr, s); s := greatest(now_, s);
+    fr[m] := s + (a -> 'dur' ->> (x ->> 'k'))::bigint;
+    r := r || jsonb_build_array(x || jsonb_build_object('s', s, 'e', fr[m]));
+  end loop;
+  return r;
+end $$;
+
+-- état de la Pension (et heure du serveur) ; une couveuse décalée (avant la 1.9.2) est remise en ordre au passage
+create or replace function public.dc_pn_state() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); a jsonb := public.dc__cfg() -> 'pension'; q jsonb; q2 jsonb; now_ bigint := public.dc__now();
+begin
+  q := case when jsonb_typeof(d -> 'pension' -> 'q') = 'array' then d -> 'pension' -> 'q' else '[]' end;
+  q2 := public.dc__pn_sched(q, a, now_);
+  if q2 is distinct from q then
+    d := public.dc__save(u, jsonb_set(d, '{pension,q}', q2));
+    return jsonb_build_object('pension', d -> 'pension', 'now', now_, 'profile', d);
+  end if;
+  return jsonb_build_object('pension', coalesce(d -> 'pension', '{}'), 'now', now_);
+end $$;
+
+-- retirer l'œuf n° p_i de la couveuse (1.9.2, demande de Theo) : il retourne dans la réserve, sa couvaison est perdue
+create or replace function public.dc_pn_remove(p_i int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); a jsonb := public.dc__cfg() -> 'pension'; pn jsonb; q jsonb; res jsonb; eg jsonb; now_ bigint := public.dc__now();
+begin
+  pn := case when jsonb_typeof(d -> 'pension') = 'object' then d -> 'pension' else '{}' end;
+  q := case when jsonb_typeof(pn -> 'q') = 'array' then pn -> 'q' else '[]' end;
+  res := case when jsonb_typeof(pn -> 'res') = 'object' then pn -> 'res' else '{}' end;
+  eg := q -> p_i;
+  if eg is null then raise exception 'Cet œuf n’est plus là.'; end if;
+  res := res || jsonb_build_object(eg ->> 'k', coalesce((res ->> (eg ->> 'k'))::int, 0) + 1);
+  d := d || jsonb_build_object('pension', pn || jsonb_build_object('q', public.dc__pn_sched(q - p_i, a, now_), 'res', res));
+  return jsonb_build_object('profile', public.dc__save(u, d), 'now', now_);
 end $$;
 
 create or replace function public.dc_pn_add(p_k text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
@@ -215,11 +255,8 @@ begin
   res := case when jsonb_typeof(pn -> 'res') = 'object' then pn -> 'res' else '{}' end;
   if coalesce((res ->> p_k)::int, 0) < 1 then raise exception 'Vous n’avez pas cet œuf.'; end if;
   if jsonb_array_length(q) >= (a ->> 'q')::int then raise exception 'La couveuse est pleine (% œufs).', a ->> 'q'; end if;
-  -- début : dès qu'une des places se libère (la plus tôt des fins des derniers œufs, maintenant si une place est libre)
-  select greatest(now_, coalesce(min(e), now_)) into s from (
-    select e from (select (x ->> 'e')::bigint e from jsonb_array_elements(q) x order by (x ->> 'e')::bigint desc limit (a ->> 'slots')::int) z
-    union all select now_ from generate_series(1, greatest(0, (a ->> 'slots')::int - jsonb_array_length(q)))) f;
-  q := q || jsonb_build_array(jsonb_build_object('k', p_k, 's', s, 'e', s + (a -> 'dur' ->> p_k)::bigint));
+  -- début : dès qu'une des places se libère (dc__pn_sched, 1.9.2)
+  q := public.dc__pn_sched(q || jsonb_build_array(jsonb_build_object('k', p_k, 's', 9000000000000000, 'e', 9000000000000000)), a, now_);
   d := d || jsonb_build_object('pension', pn || jsonb_build_object('q', q, 'res', res || jsonb_build_object(p_k, (res ->> p_k)::int - 1)));
   return jsonb_build_object('profile', public.dc__save(u, d), 'now', now_);
 end $$;
@@ -274,7 +311,7 @@ begin
     raise exception 'Cet œuf n’est pas encore prêt à éclore.'; end if;
   o := public.dc__pn_draw(d, cfg, eg ->> 'k'); id := (o ->> 'id')::int;
   was_new := public.dc__count(d, id) = 0;
-  d := d || jsonb_build_object('pension', pn || jsonb_build_object('q', q - p_i));
+  d := d || jsonb_build_object('pension', pn || jsonb_build_object('q', public.dc__pn_sched(q - p_i, cfg -> 'pension', now_)));
   if (o ->> 'sh')::boolean then
     d := jsonb_set(d, '{shiny}', coalesce(d -> 'shiny', '{}') || jsonb_build_object(id::text, now_));
     d := jsonb_set(d, '{stats,pnShiny}', '1');
