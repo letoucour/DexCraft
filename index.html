@@ -1678,6 +1678,15 @@ span.lb-c{cursor:default}
 @keyframes pnWobble{0%,58%,100%{transform:rotate(0)}10%{transform:rotate(-9deg)}20%{transform:rotate(8deg)}30%{transform:rotate(-6deg)}40%{transform:rotate(4deg)}}
 @keyframes pnBreath{50%{transform:scale(1.045)}}
 .pn-bar{width:82%;height:6px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden}.pn-bar i{display:block;height:100%;background:linear-gradient(90deg,#ffb84d,#ffe08a)}
+.pn-home{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:10px 14px;border-radius:16px;border:2px solid #d9a441;cursor:pointer;text-align:left;font:inherit;color:#fff3dc;
+  background:radial-gradient(ellipse at 18% 0,rgba(255,200,110,.28),transparent 62%),repeating-linear-gradient(24deg,rgba(0,0,0,.08) 0 3px,transparent 3px 7px),linear-gradient(135deg,#5a3a1a,#2c1d10);box-shadow:0 0 18px rgba(217,164,65,.28)}
+.pn-home:hover{filter:brightness(1.08)}
+.pn-home.m{display:none}@media (max-width:999px){.pn-home.m{display:flex}.booster.home .bh-right>.pn-home{display:none}}
+.pn-home.ready{border-color:#ffd36b;animation:pnGlow 1.8s ease-in-out infinite alternate}
+@keyframes pnGlow{from{box-shadow:0 0 14px rgba(255,211,107,.35)}to{box-shadow:0 0 32px rgba(255,211,107,.85)}}
+.pn-home-egg .pn-egg{width:34px;height:48px}
+.pn-home-t{display:flex;flex-direction:column;flex:1;min-width:0}.pn-home-t b{font-family:var(--display);font-size:1.08rem}.pn-home-t small{color:#ead9bd;font-size:.82rem}
+.pn-home-go{font-size:1.7rem;line-height:1;color:#ffd36b}
 .pn-dev{font-size:.72rem;padding:2px 8px;background:#5a2a6a;color:#fff;border-color:#8a4aa0}
 .pn-foot{margin:14px 0 0;font-size:.85rem;color:#d9c7a8}
 .pn-hatch{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#fff;
@@ -1913,8 +1922,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
       <div class="games-pop" id="games-pop" hidden><button data-view="volto"><span class="gp-ic" aria-hidden="true">⚡</span><span class="gp-t"><b>VoltoBataille</b><small id="gp-volto">Retournez les cartes sans réveiller de Voltorbe</small></span></button>
         <button data-view="arena"><span class="gp-ic" aria-hidden="true">⚔️</span><span class="gp-t"><b>Arène</b><small id="gp-arena">Combat automatique avec vos Pokémon</small></span></button>
         <button data-view="sout" id="gp-sout-b" hidden><span class="gp-ic" aria-hidden="true">💎</span><span class="gp-t"><b>Souterrain</b><small id="gp-sout">Déterrez les trésors cachés dans le mur</small></span></button>
-        <button data-view="lumi" id="gp-lumi-b" hidden><span class="gp-ic" aria-hidden="true">🏮</span><span class="gp-t"><b>Lumi-Bois</b><small>Éclairez la clairière à la lanterne</small></span></button>
-        <button data-view="pension" id="gp-pn-b" hidden><span class="gp-ic" aria-hidden="true">🥚</span><span class="gp-t"><b>Pension</b><small>Faites couver et éclore vos œufs</small></span></button></div></div>
+        <button data-view="lumi" id="gp-lumi-b" hidden><span class="gp-ic" aria-hidden="true">🏮</span><span class="gp-t"><b>Lumi-Bois</b><small>Éclairez la clairière à la lanterne</small></span></button></div></div>
     <button data-view="ranking"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4h8v5.5a4 4 0 0 1-8 0z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 4.4M16 6h2.5a2.5 2.5 0 0 1-2.6 4.4"/><path d="M12 13.5V17M8.5 20.5h7M9.5 17h5v3.5h-5z"/></svg></span><span class="tl">Classement</span></button>
     <button data-view="shop"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8.5h14l-1.1 11a1.5 1.5 0 0 1-1.5 1.4H7.6a1.5 1.5 0 0 1-1.5-1.4z"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/></svg></span><span class="tl">Boutique</span></button>
   </nav>
@@ -1970,7 +1978,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.8.2";
+const APP_VERSION="1.8.3";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3056,7 +3064,7 @@ function renderHeader(){
   {const sb=$("#h-snd");if(sb){const on=!SFX.muted();sb.textContent=on?"🔊":"🔇";sb.title=sb.ariaLabel=on?"Couper le son":"Activer le son"}}
   if(!S)return;$("#h-credits").textContent=fmtN(S.credits);$("#h-packs").textContent=packInfo(S).n;
   $("#h-bonus").textContent=S.bonus?` +${S.bonus}`:"";$("#h-dev").hidden=!devOn();
-  {const bb=$("#boost-badge"),w=[hasGift()?"un cadeau":"",dailyState().done?"":"la récompense du jour"].filter(Boolean);if(bb){bb.hidden=!w.length;bb.title=w.length?`À récupérer : ${w.join(" et ")}`:""}}
+  {const bb=$("#boost-badge"),w=[hasGift()?"un cadeau":"",dailyState().done?"":"la récompense du jour",pnReady()?"un œuf prêt à éclore":""].filter(Boolean);if(bb){bb.hidden=!w.length;bb.title=w.length?`À récupérer : ${w.join(" et ")}`:""}}
   {const tb=$("#trade-badge"),n=pendingOffers(),w=wishUnseen(),t=n+w;if(tb){tb.hidden=!t;tb.textContent=t?(t>99?"99+":t):"";tb.title=[n?`${n} proposition${n>1?"s":""} à traiter`:"",w?`${w} carte${w>1?"s":""} recherchée${w>1?"s":""} à l’échange`:""].filter(Boolean).join(", ")}}
   document.querySelectorAll("#tabs button,#h-me").forEach(b=>b.setAttribute("aria-current",b.dataset.view===view?"page":"false"));
   {const g=$("#tab-games");if(g)g.setAttribute("aria-current",["volto","arena","sout","lumi","pension"].includes(view)?"page":"false")} // 1.4.13 : onglet Jeux allumé dans les deux jeux
@@ -3065,7 +3073,7 @@ function renderHeader(){
     const gv=$("#gp-volto"),ga=$("#gp-arena"),arG=S&&S.arena&&S.arena.day===dayKey()?S.arena.gained||0:0;
     if(gv)gv.textContent=`${fmtN(vbGained(S))} / ${fmtN(VB_CAP)} crédits aujourd’hui`;if(ga)ga.textContent=`${fmtN(arG)} / ${fmtN(AR.cap)} crédits aujourd’hui`;
     const gs=$("#gp-sout-b");if(gs)gs.hidden=!soOn();
-    const gl=$("#gp-lumi-b");if(gl)gl.hidden=!lbOn();const gp=$("#gp-pn-b");if(gp)gp.hidden=!pnOn()} // Lumi-Bois et Pension (1.8.0) : mode développeur tant qu’ils ne sont pas ouverts // Souterrain (1.5.9) : seulement en mode développeur tant qu’il n’est pas ouvert
+    const gl=$("#gp-lumi-b");if(gl)gl.hidden=!lbOn()} // Lumi-Bois (1.8.0) : mode développeur tant qu’il n’est pas ouvert ; la Pension est sur l’écran des boosters (1.8.3) // Souterrain (1.5.9) : seulement en mode développeur tant qu’il n’est pas ouvert
   const nmTxt=S.pseudo||"Profil";
   {const v=visOf(ME);$("#h-me").innerHTML=playerAva(ME,28)+`<span class="me-nm${v.p?` ps-${cosCls(v.p)}`:""}">${esc(nmTxt.length>14?nmTxt.slice(0,13)+"…":nmTxt)}</span>`}
   checkUnlock(); // pack reçu (paiement, cadeau) : fenêtre « débloqué »
@@ -3291,7 +3299,7 @@ function vBooster(){
       <p>Dans votre collection, vous pouvez défausser vos doubles contre des crédits selon leur rareté, ou les proposer à l’échange contre une carte de même rareté.</p>
       <p>✨ <b>Shiny :</b> chaque carte tirée a 1 chance sur ${fmtN(SHINY_BASE)} de sortir en version shiny, plus 1 chance par exemplaire de ce Pokémon déjà obtenu (booster, évolution, échange ou cadeau), sans limite. <b>Inutile de garder vos cartes pour augmenter vos chances :</b> chaque exemplaire obtenu compte pour toujours, même si vous l’échangez, le défaussez ou le faites évoluer ensuite. Un shiny se trouve une seule fois par Pokémon et reste à vous pour toujours : il ne s’échange pas et ne se défausse pas.</p>
     </div></details>${recentHTML()}</div>
-    <div class="bh-right">
+    <div class="bh-right">${pnHomeHTML()}
     <button class="btn volto-cta" data-games-cta><span class="vb-volt" aria-hidden="true"></span>En attendant vos boosters, un petit jeu ?</button>
     <button class="btn shop-cta" data-view="shop">Acheter des boosters, ${PACK_PRICE} crédits l’unité</button>
     <button class="btn shop-cta sp-cta" data-act="goto-special">✨ Boosters spéciaux : génération, type ou Premium</button>
@@ -3304,7 +3312,7 @@ function vBooster(){
     <div class="open-row">${OPEN_OPTS.map(k=>`<button class="btn${available(S)>=k?" primary":""}" data-act="open-n" data-n="${k}" ${available(S)<k?"disabled":""} title="${available(S)<k?`Il faut ${k} booster${k>1?"s":""} disponible${k>1?"s":""}`:`Ouvrir ${k} booster${k>1?"s":""} d’un coup`}">Ouvrir${k>1?" "+k:""}</button>`).join("")}</div>`})()}    <div class="stock"><div class="big">${p.n}<span class="of"> / ${MAXP}</span></div><div class="muted">boosters disponibles</div>
       <div class="stock-bar">${Array.from({length:MAXP},(_,i)=>`<i class="${i<p.n?"on":""}"></i>`).join("")}</div>
       <div class="muted">${p.next?`Prochain dans <b data-countdown="${p.next}">${fmtLeft(p.next-Date.now())}</b>`:"Réserve pleine"}</div>
-      ${S.bonus?`<div class="bonus-line"><b>+ ${S.bonus}</b> booster${S.bonus>1?"s":""} acheté${S.bonus>1?"s":""}, ouvert${S.bonus>1?"s":""} une fois la réserve gratuite vide</div>`:""}</div>${spInvHTML()}</div>
+      ${S.bonus?`<div class="bonus-line"><b>+ ${S.bonus}</b> booster${S.bonus>1?"s":""} acheté${S.bonus>1?"s":""}, ouvert${S.bonus>1?"s":""} une fois la réserve gratuite vide</div>`:""}</div>${spInvHTML()}${pnHomeHTML(true)}</div>
   </div>`;
 }
 /* 50 dernières cartes tirées (1.2.0), les plus récentes d'abord : gardées par le serveur (recent, dc_open), pour revoir
@@ -5995,10 +6003,11 @@ const LUMI={v:"v1.0",open:false,cost:100,lamps:6,w:12,h:12,rows:[6,8,10,12,12,12
   // mise rendue en moyenne en crédits et éclats, plaques, pierres et clefs non comptées) : 140 crédits rendus pour 100 misés, 46 % des
   // clairières remboursent (48 % au Souterrain) ; en plus, un Œuf toutes les 3 clairières, un Œuf rare toutes les 6, un Œuf doré toutes
   // les 50, une Pierre Plante toutes les 7, la GS Ball environ 1 sur 200 (comme la Clef de voûte). 1.8.0 : 106 crédits pour 100.
-  items:{baie:{n:"Baie Oran",s:[1,1],w:3000,r:1,cr:7},pchamp:{n:"Petit Champignon",s:[1,2],w:3000,r:1,cr:16,mush:1},miel:{n:"Miel",s:[2,2],w:3000,r:1,cr:26},
-    noig:{n:"Noigrume",s:[1,1],w:2000,r:2,cr:40},gchamp:{n:"Gros Champignon",s:[2,2],w:2000,r:2,cr:60,mush:1},bocal:{n:"Bocal de lucioles",s:[1,2],w:2000,r:2,lamp:1},
-    oeuf:{n:"Œuf",s:[2,3],w:1500,r:2,egg:"oeuf"},amonita:{n:"Amonita",s:[2,2],w:2000,r:2,trap:1,look:"gchamp"},
-    ambre:{n:"Vieil Ambre",s:[2,2],w:700,r:3,cr:160},pierre:{n:"Pierre Plante",s:[2,2],w:700,r:3,stone:1},suave:{n:"Champi Suave",s:[3,3],m:"111111010",w:700,r:3,cr:290,mush:1},
+  // 1.8.3 (demande de Theo) : gains en crédits ×1,3 et Amonita deux fois moins fréquent (poids 2 000 → 1 000) ; mesure dans CLAUDE.md
+  items:{baie:{n:"Baie Oran",s:[1,1],w:3000,r:1,cr:9},pchamp:{n:"Petit Champignon",s:[1,2],w:3000,r:1,cr:21,mush:1},miel:{n:"Miel",s:[2,2],w:3000,r:1,cr:34},
+    noig:{n:"Noigrume",s:[1,1],w:2000,r:2,cr:52},gchamp:{n:"Gros Champignon",s:[2,2],w:2000,r:2,cr:78,mush:1},bocal:{n:"Bocal de lucioles",s:[1,2],w:2000,r:2,lamp:1},
+    oeuf:{n:"Œuf",s:[2,3],w:1500,r:2,egg:"oeuf"},amonita:{n:"Amonita",s:[2,2],w:1000,r:2,trap:1,look:"gchamp"},
+    ambre:{n:"Vieil Ambre",s:[2,2],w:700,r:3,cr:208},pierre:{n:"Pierre Plante",s:[2,2],w:700,r:3,stone:1},suave:{n:"Champi Suave",s:[3,3],m:"111111010",w:700,r:3,cr:377,mush:1},
     oeufr:{n:"Œuf rare",s:[2,3],w:700,r:3,egg:"rare"},oeufd:{n:"Œuf doré",s:[2,3],w:80,r:4,egg:"dore"},gs:{n:"GS Ball",s:[2,2],w:24,r:5,gs:2000}}};
 const LB_ORDER=["baie","pchamp","miel","noig","gchamp","bocal","oeuf","ambre","pierre","suave","oeufr","oeufd","amonita","gs"];
 const LB_RAR=["","Commune","Peu commune","Rare","Très rare","???"];
@@ -6173,12 +6182,23 @@ document.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;co
    tant que PENSION.open est faux.
    ============================================================ */
 const PENSION={open:false,q:10,slots:3,shiny:512,dur:{oeuf:1800000,rare:3600000,dore:10800000},
-  rareW:[0,0,50,35,0,15]}; // Œuf rare (1.8.2, demande de Theo) : Rare 50 %, Épique 35 %, Légendaire 15 % (poids par rareté 0 à 5)
-const PN_EGGS=[["oeuf","Œuf","un Pokémon commun ou peu commun, ou un premier stade d’évolution, jamais légendaire"],["rare","Œuf rare","un Pokémon rare (50 %), épique (35 %) ou légendaire (15 %)"],["dore","Œuf doré","toujours un Pokémon légendaire"]];
+  rareW:[0,0,40,30,20,10]}; // Œuf rare (poids par rareté 0 à 5) : 1.8.3 (demande de Theo) Rare 40 %, Épique 30 %, Méga et Gigamax 20 %, Légendaire 10 % ; 1.8.2 : 50 / 35 / 0 / 15
+const PN_EGGS=[["oeuf","Œuf","un Pokémon commun ou peu commun, ou un premier stade d’évolution, jamais légendaire"],["rare","Œuf rare","un Pokémon rare (40 %), épique (30 %), Méga ou Gigamax (20 %) ou légendaire (10 %)"],["dore","Œuf doré","toujours un Pokémon légendaire"]];
 const PN_KEY={oeuf:"oeuf",rare:"oeufr",dore:"oeufd"}; // dessin de l’œuf : celui de Lumi-Bois
 const pnOn=()=>PENSION.open||devOn();
 let pnOff=0,pnBusy=false,pnNext=0,pnSynced=false; // pnOff : écart entre l’heure du serveur et celle de l’appareil ; pnNext : prochain changement d’état
 const pnNow=()=>Date.now()+pnOff;
+/* encart de l’écran des boosters (1.8.3, demande de Theo : bien visible) : état de la couveuse, ouvre la Pension */
+let pnHomeNext=0;
+const pnReady=()=>pnOn()&&((S&&S.pension&&S.pension.q)||[]).some(e=>e.e<=pnNow());
+function pnHomeHTML(m){ // m : version de la colonne du booster (téléphone : juste sous la réserve)
+  if(!pnOn())return "";
+  const p=(S&&S.pension)||{},res=p.res||{},q=Array.isArray(p.q)?p.q:[],now=pnNow(),ready=q.filter(e=>e.e<=now).length,warm=q.filter(e=>e.s<=now&&e.e>now).length;
+  const nr=(res.oeuf||0)+(res.rare||0)+(res.dore||0),k=(q.find(e=>e.e<=now)||q[0]||{}).k||(res.dore?"dore":res.rare?"rare":"oeuf");
+  pnHomeNext=Math.min(Infinity,...q.map(e=>e.e>now?e.e:Infinity));if(pnHomeNext===Infinity)pnHomeNext=0;
+  const t=ready?`${ready} œuf${ready>1?"s":""} prêt${ready>1?"s":""} à éclore !`:warm?`${warm} œuf${warm>1?"s":""} en couvaison`:nr?`${nr} œuf${nr>1?"s":""} en réserve : mettez-les à couver`:"Faites couver et éclore vos œufs";
+  return `<button class="pn-home${m?" m":""}${ready?" ready":""}" data-view="pension"><span class="pn-home-egg">${pnEgg(k,ready?"wobble":"")}</span><span class="pn-home-t"><b>🥚 Pension</b><small>${t}</small></span><span class="pn-home-go" aria-hidden="true">›</span></button>`;
+}
 const pnEgg=(k,cls="")=>`<span class="pn-egg${cls?" "+cls:""}">${lbItemEl(PN_KEY[k],0,0)}</span>`;
 function vPension(){
   if(!pnOn())return `<div class="empty">Ce jeu n’est pas encore ouvert.</div>`;
@@ -6530,6 +6550,7 @@ function tick(){
   if(view==="volto"&&vbMid&&now>=vbMid)renderView(); // minuit : le compteur du jour repart de zéro
   if(view==="lumi")lbAmbient();
   if(view==="pension"&&pnNext&&pnNow()>=pnNext){pnNext=0;renderView()} // un œuf commence à couver ou est prêt à éclore
+  if(pnHomeNext&&pnNow()>=pnHomeNext){pnHomeNext=0;if(view==="booster"&&!reveal)renderView();else renderHeader()} // encart Pension de l’écran des boosters, bulle « ! »
   if(S){const n=packInfo(S).n;$("#h-packs").textContent=n;$("#h-bonus").textContent=S.bonus?` +${S.bonus}`:"";const prev=lastPackN;lastPackN=n;if(prev!==-1&&n!==prev&&view==="booster"&&!reveal)renderView()}
 }
 setInterval(tick,1000);
