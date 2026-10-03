@@ -1687,6 +1687,8 @@ span.lb-c{cursor:default}
 .pn-home-egg .pn-egg{width:34px;height:48px}
 .pn-home-t{display:flex;flex-direction:column;flex:1;min-width:0}.pn-home-t b{font-family:var(--display);font-size:1.08rem}.pn-home-t small{color:#ead9bd;font-size:.82rem}
 .pn-home-go{font-size:1.7rem;line-height:1;color:#ffd36b}
+.pn-top{gap:8px 10px}.pn-back{background:rgba(255,255,255,.08);color:#fff2dc;border-color:rgba(255,220,160,.35)}
+.pn-lumi{background:linear-gradient(135deg,#1d4a33,#0b2219);color:#e3f6ea;border-color:#d9b24a;box-shadow:0 0 12px rgba(217,178,74,.3)}
 .pn-dev{font-size:.72rem;padding:2px 8px;background:#5a2a6a;color:#fff;border-color:#8a4aa0}
 .pn-foot{margin:14px 0 0;font-size:.85rem;color:#d9c7a8}
 .pn-hatch{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#fff;
@@ -1978,7 +1980,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.8.3";
+const APP_VERSION="1.9.0";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3066,10 +3068,10 @@ function renderHeader(){
   $("#h-bonus").textContent=S.bonus?` +${S.bonus}`:"";$("#h-dev").hidden=!devOn();
   {const bb=$("#boost-badge"),w=[hasGift()?"un cadeau":"",dailyState().done?"":"la récompense du jour",pnReady()?"un œuf prêt à éclore":""].filter(Boolean);if(bb){bb.hidden=!w.length;bb.title=w.length?`À récupérer : ${w.join(" et ")}`:""}}
   {const tb=$("#trade-badge"),n=pendingOffers(),w=wishUnseen(),t=n+w;if(tb){tb.hidden=!t;tb.textContent=t?(t>99?"99+":t):"";tb.title=[n?`${n} proposition${n>1?"s":""} à traiter`:"",w?`${w} carte${w>1?"s":""} recherchée${w>1?"s":""} à l’échange`:""].filter(Boolean).join(", ")}}
-  document.querySelectorAll("#tabs button,#h-me").forEach(b=>b.setAttribute("aria-current",b.dataset.view===view?"page":"false"));
-  {const g=$("#tab-games");if(g)g.setAttribute("aria-current",["volto","arena","sout","lumi","pension"].includes(view)?"page":"false")} // 1.4.13 : onglet Jeux allumé dans les deux jeux
+  document.querySelectorAll("#tabs button,#h-me").forEach(b=>b.setAttribute("aria-current",b.dataset.view===(view==="pension"?"booster":view)?"page":"false")); // la Pension fait partie de l’écran des boosters (1.9.0)
+  {const g=$("#tab-games");if(g)g.setAttribute("aria-current",["volto","arena","sout","lumi"].includes(view)?"page":"false")} // 1.4.13 : onglet Jeux allumé dans les deux jeux
   { // menu « Jeux » (1.3.3) : allumé sur la VoltoBataille et l'Arène, avec les crédits gagnés aujourd'hui dans chaque jeu
-    const g=$("#tab-games");if(g)g.setAttribute("aria-current",["volto","arena","sout","lumi","pension"].includes(view)?"page":"false");
+    const g=$("#tab-games");if(g)g.setAttribute("aria-current",["volto","arena","sout","lumi"].includes(view)?"page":"false");
     const gv=$("#gp-volto"),ga=$("#gp-arena"),arG=S&&S.arena&&S.arena.day===dayKey()?S.arena.gained||0:0;
     if(gv)gv.textContent=`${fmtN(vbGained(S))} / ${fmtN(VB_CAP)} crédits aujourd’hui`;if(ga)ga.textContent=`${fmtN(arG)} / ${fmtN(AR.cap)} crédits aujourd’hui`;
     const gs=$("#gp-sout-b");if(gs)gs.hidden=!soOn();
@@ -3160,12 +3162,12 @@ function renderView(){
   { // barre de sélection (échange, défausse) fixée en bas : place réservée sous la liste, les dernières cartes restent touchables (1.1.11)
     const bar=document.querySelector(".discard-bar");app.style.paddingBottom=bar?Math.ceil(innerHeight-bar.getBoundingClientRect().top+24)+"px":""}
 }
-/* « Aller aux Hits » (1.1.4, remis à la demande de Theo ; retiré en 1.0.6) : seulement à l'ouverture de 10 boosters
-   d'un coup. Les cartes Épique et au-dessus, et les shiny (même une Commune), restent à retourner dans la main ;
+/* « Aller aux Hits » (1.1.4, remis à la demande de Theo ; retiré en 1.0.6) : à l'ouverture de 10 boosters d'un coup,
+   et de 5 depuis la 1.9.0 (demande de Theo). Les cartes Épique et au-dessus, et les shiny (même une Commune), restent à retourner dans la main ;
    les autres passent dans un récapitulatif sous la main. Rien ne distingue une carte avant son retournement. */
 const HIT_MIN=3;let hitsMode=false;
 const isHit=c=>rar(c.id)>=HIT_MIN||!!c.shiny;
-const canHits=()=>!!reveal&&!revealGift&&!hitsMode&&reveal.length===10*CARDS&&reveal.some(c=>!c.shown&&!isHit(c));
+const canHits=()=>!!reveal&&!revealGift&&!hitsMode&&reveal.length>=5*CARDS&&reveal.some(c=>!c.shown&&!isHit(c));
 function goHits(){
   if(!canHits())return;flipAbort=true;flippingAll=false;flipGen++;hitsMode=true;
   reveal.forEach(c=>{if(!isHit(c)){c.shown=true;c.fx=true}});handScroll=0;renderView();
@@ -5993,9 +5995,9 @@ document.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;co
    Lumi-Bois (1.8.0, idée de Theo, inspiré du Crystal Sphere de Slay the Spire 2) : une clairière de 12 × 12 aux coins en
    escalier, plongée dans la nuit. 6 lanternes : chacune éclaire le carré de 3 × 3 autour de la case touchée. Seuls les objets
    entièrement éclairés sont gagnés (gris tant qu’ils ne le sont pas). Serveur : partie 7 (dc_lb_*), la page ne voit que les
-   cases éclairées. Caché sauf en mode développeur tant que LUMI.open est faux (comme le Souterrain à ses débuts).
+   cases éclairées. Caché sauf en mode développeur tant que LUMI.open est faux (comme le Souterrain à ses débuts) ; ouvert à tous depuis la 1.9.0.
    ============================================================ */
-const LUMI={v:"v1.0",open:false,cost:100,lamps:6,w:12,h:12,rows:[6,8,10,12,12,12,12,12,12,10,8,6],n:[6,9],
+const LUMI={v:"v1.0",open:true,cost:100,lamps:6,w:12,h:12,rows:[6,8,10,12,12,12,12,12,12,10,8,6],n:[6,9],
   // s : taille (colonnes, lignes) ; m : masque des cases ; w : poids du tirage ; r : rareté affichée (1 commune … 5 ???) ; cr : crédits ;
   // lamp : +1 lanterne ; trap : piège (−1 lanterne), look : objet qu’il imite tant qu’il n’est pas entièrement éclairé ; stone : +1 Pierre
   // évolutive ; egg : œuf pour la Pension ; gs : GS Ball (crédits une fois la carte obtenue) ; mush : champignon (titre Mycologue).
@@ -6179,9 +6181,9 @@ document.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;co
    Pension (1.8.0, idée de Theo) : les œufs (trouvés à Lumi-Bois, et plus tard ailleurs) attendent dans la réserve ; jusqu’à
    10 dans la couveuse, dont 3 couvent en même temps (30 min, 1 h, 3 h ; le temps passe aussi hors ligne). Contenu : dc__pn_draw (partie 7). Le Pokémon n’est
    tiré qu’à l’éclosion (serveur, partie 7 : dc_pn_*). Un mini-jeu s’y ajoutera plus tard. Caché sauf en mode développeur
-   tant que PENSION.open est faux.
+   tant que PENSION.open est faux ; ouverte à tous depuis la 1.9.0.
    ============================================================ */
-const PENSION={open:false,q:10,slots:3,shiny:512,dur:{oeuf:1800000,rare:3600000,dore:10800000},
+const PENSION={open:true,q:10,slots:3,shiny:512,dur:{oeuf:1800000,rare:3600000,dore:10800000},
   rareW:[0,0,40,30,20,10]}; // Œuf rare (poids par rareté 0 à 5) : 1.8.3 (demande de Theo) Rare 40 %, Épique 30 %, Méga et Gigamax 20 %, Légendaire 10 % ; 1.8.2 : 50 / 35 / 0 / 15
 const PN_EGGS=[["oeuf","Œuf","un Pokémon commun ou peu commun, ou un premier stade d’évolution, jamais légendaire"],["rare","Œuf rare","un Pokémon rare (40 %), épique (30 %), Méga ou Gigamax (20 %) ou légendaire (10 %)"],["dore","Œuf doré","toujours un Pokémon légendaire"]];
 const PN_KEY={oeuf:"oeuf",rare:"oeufr",dore:"oeufd"}; // dessin de l’œuf : celui de Lumi-Bois
@@ -6213,7 +6215,8 @@ function vPension(){
         :st==="warm"?`<div class="pn-bar"><i style="width:${pc}%"></i></div><small>Éclot dans <b data-countdown="${e.e-pnOff}">${fmtLeft(e.e-now)}</b></small>`
         :`<small>En attente : couve dans <b data-countdown="${e.s-pnOff}">${fmtLeft(e.s-now)}</b></small>`}
       ${st!=="ready"&&devOn()?`<button class="btn small pn-dev" data-pn="hatch" data-i="${i}" data-force="1" title="Mode développeur">⚡ Éclore (dév.)</button>`:""}</div>`};
-  return `<div class="pension"><div class="ar-top pn-top"><h1>🥚 Pension</h1><span class="ar-chip so-stat" title="Œufs éclos">🐣 ${fmtN(+((S.stats&&S.stats.pnHatch)||0))} éclos</span></div>
+  return `<div class="pension"><div class="ar-top pn-top"><button class="btn small pn-back" data-view="booster">← Retour</button><h1>🥚 Pension</h1>
+      <button class="btn small pn-lumi" data-view="lumi">🏮 Trouver des œufs dans le Lumi-Bois</button><span class="ar-chip so-stat" title="Œufs éclos">🐣 ${fmtN(+((S.stats&&S.stats.pnHatch)||0))} éclos</span></div>
     <p class="pn-intro">Les œufs que vous trouvez attendent ici. Jusqu’à <b>${PENSION.q} œufs</b> dans la couveuse, dont <b>${PENSION.slots}</b> couvent en même temps : 30 minutes pour un Œuf, 1 heure pour un Œuf rare, 3 heures pour un Œuf doré. Le temps passe même quand vous n’êtes pas là.</p>
     <div class="pn-res">${PN_EGGS.map(([k,n,d])=>`<div class="pn-card${res[k]?"":" none"}">${pnEgg(k)}<div><b>${n}</b><small>${d}</small></div><span class="pn-n">×${fmtN(res[k]||0)}</span>
       <button class="btn small${res[k]&&!full?" primary":""}" data-pn="add" data-k="${k}" ${res[k]&&!full?"":"disabled"}>${full&&res[k]?"Couveuse pleine":"Mettre à couver"}</button></div>`).join("")}</div>
