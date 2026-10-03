@@ -1970,7 +1970,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.8.1";
+const APP_VERSION="1.8.2";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -4867,7 +4867,8 @@ const SHINY_SND="images/sons/shiny.mp3";
    propre à chaque jeu (curseur, gardé sur l'appareil, 40 % par défaut), multiplié par le volume général, coupé avec le son du jeu.
    Chargées seulement à la première visite (preload none). ?v= : à changer quand un fichier change (cache). */
 const MUSIC={volto:{src:"images/sons/voltobataille.mp3?v=2",key:"dc-vb-music"},arena:{src:"images/sons/arena.mp3?v=1",key:"dc-ar-music"},
-  sout:{src:"images/sons/souterrain.mp3?v=1",key:"dc-so-music"}}; // Souterrain (1.5.9) : 3 boucles de 72 s de l’original de 30 min
+  sout:{src:"images/sons/souterrain.mp3?v=1",key:"dc-so-music"}, // Souterrain (1.5.9) : 3 boucles de 72 s de l’original de 30 min
+  lumi:{src:"images/sons/lumibois.mp3?v=1",key:"dc-lb-music"}}; // Lumi-Bois (1.8.2) : 3 boucles exactes de 100,08 s (4 413 524 échantillons) de l’original d’1 h, coupées au passage le plus calme, −4,1 dB
 function musicVol(g){try{const v=parseFloat(localStorage.getItem(MUSIC[g].key));return isNaN(v)?.4:Math.min(1,Math.max(0,v))}catch(e){return .4}}
 const musicSlider=(g,keep,cls,label)=>`<label class="${cls}" title="Volume de la musique">🎵${label?" "+label:""} <input type="range" min="0" max="100" step="5" value="${Math.round(musicVol(g)*100)}" data-keep="${keep}" data-music="${g}" aria-label="Volume de la musique"><span id="mus-n-${g}">${Math.round(musicVol(g)*100)} %</span></label>`;
 /* bruitages d'un jeu, activés ou non (1.4.0 : bouton à côté du volume de la musique, dans l'Arène et la VoltoBataille) */
@@ -6167,12 +6168,13 @@ document.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;co
 
 /* ============================================================
    Pension (1.8.0, idée de Theo) : les œufs (trouvés à Lumi-Bois, et plus tard ailleurs) attendent dans la réserve ; jusqu’à
-   10 dans la couveuse, dont 3 couvent en même temps (30 min, 1 h, 3 h ; le temps passe aussi hors ligne). Le Pokémon n’est
+   10 dans la couveuse, dont 3 couvent en même temps (30 min, 1 h, 3 h ; le temps passe aussi hors ligne). Contenu : dc__pn_draw (partie 7). Le Pokémon n’est
    tiré qu’à l’éclosion (serveur, partie 7 : dc_pn_*). Un mini-jeu s’y ajoutera plus tard. Caché sauf en mode développeur
    tant que PENSION.open est faux.
    ============================================================ */
-const PENSION={open:false,q:10,slots:3,shiny:512,dur:{oeuf:1800000,rare:3600000,dore:10800000}};
-const PN_EGGS=[["oeuf","Œuf","un Pokémon de premier stade, jamais légendaire"],["rare","Œuf rare","n’importe quel Pokémon, aux chances d’un booster"],["dore","Œuf doré","toujours un Pokémon légendaire"]];
+const PENSION={open:false,q:10,slots:3,shiny:512,dur:{oeuf:1800000,rare:3600000,dore:10800000},
+  rareW:[0,0,50,35,0,15]}; // Œuf rare (1.8.2, demande de Theo) : Rare 50 %, Épique 35 %, Légendaire 15 % (poids par rareté 0 à 5)
+const PN_EGGS=[["oeuf","Œuf","un Pokémon commun ou peu commun, ou un premier stade d’évolution, jamais légendaire"],["rare","Œuf rare","un Pokémon rare (50 %), épique (35 %) ou légendaire (15 %)"],["dore","Œuf doré","toujours un Pokémon légendaire"]];
 const PN_KEY={oeuf:"oeuf",rare:"oeufr",dore:"oeufd"}; // dessin de l’œuf : celui de Lumi-Bois
 const pnOn=()=>PENSION.open||devOn();
 let pnOff=0,pnBusy=false,pnNext=0,pnSynced=false; // pnOff : écart entre l’heure du serveur et celle de l’appareil ; pnNext : prochain changement d’état

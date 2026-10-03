@@ -224,8 +224,9 @@ begin
   return jsonb_build_object('profile', public.dc__save(u, d), 'now', now_);
 end $$;
 
--- Pokémon d'un œuf : 'oeuf' = premier stade d'évolution (aucune évolution n'y mène), Commune à Épique, jamais légendaire ;
--- 'rare' = n'importe quel Pokémon aux chances d'un booster ; 'dore' = un Légendaire (réserve des Légendaires des boosters).
+-- Pokémon d'un œuf (1.8.2, demande de Theo) : 'oeuf' = n'importe quel Pokémon Commun ou Peu commun, ou un premier stade d'évolution
+-- (aucune évolution n'y mène) Rare ou Épique, jamais légendaire, raretés aux chances d'un booster ; 'rare' = Rare, Épique ou Légendaire
+-- aux chances cfg.pension.rareW (50 / 35 / 15 %), jamais de Méga ni Gigamax ; 'dore' = un Légendaire (réserve des Légendaires des boosters).
 -- Jamais de mythique, transcendante ni spéciale. Shiny : 1 sur cfg.pension.shiny, sans rencontres ni Charme Chroma, et
 -- toujours un shiny que le joueur n'a pas encore (sinon pas de shiny).
 create or replace function public.dc__pn_draw(d jsonb, cfg jsonb, p_k text) returns jsonb language plpgsql volatile as $$
@@ -235,10 +236,11 @@ begin
   for r in 0 .. 5 loop
     pool := coalesce(cfg -> 'pool' -> (r::text), cfg -> 'byr' -> r);
     if p_k = 'dore' and r <> 5 or p_k = 'oeuf' and r >= 5 then pool := '[]';
-    elsif p_k = 'oeuf' then pool := (select coalesce(jsonb_agg(v), '[]') from jsonb_array_elements(pool) v where not tg @> jsonb_build_array(v));
+    elsif p_k = 'oeuf' and r >= 2 then pool := (select coalesce(jsonb_agg(v), '[]') from jsonb_array_elements(pool) v where not tg @> jsonb_build_array(v));
     end if;
     pools := pools || jsonb_build_array(pool);
-    odds := odds || case when jsonb_array_length(pool) = 0 then 0::bigint else (cfg -> 'oddsK' ->> r)::bigint end;
+    odds := odds || case when jsonb_array_length(pool) = 0 then 0::bigint
+      when p_k = 'rare' then coalesce((cfg -> 'pension' -> 'rareW' ->> r)::bigint, 0) else (cfg -> 'oddsK' ->> r)::bigint end;
     tot := tot + odds[r + 1];
   end loop;
   x := public.dc__rnd(tot::int); r := 0;
