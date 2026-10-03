@@ -59,7 +59,7 @@ function setup(scene){
       if(n==="dc_pn_state")return {data:{pension:d.pension,now},error:null};
       if(n==="dc_pn_add"){const q=d.pension.q,ends=q.map(e=>e.e).sort((x,y)=>y-x).slice(0,P.slots);while(ends.length<P.slots)ends.push(now);const s=Math.max(now,Math.min(...ends));
         q.push({k:a.p_k,s,e:s+(window.__pnFast?8000:P.dur[a.p_k])});d.pension.res[a.p_k]--;return {data:{profile:stamp(d),now},error:null}}
-      if(n==="dc_pn_hatch"){const eg=d.pension.q[a.p_i];if(!eg||eg.e>now)return {data:null,error:{message:"Cet œuf n’est pas encore prêt à éclore."}};
+      if(n==="dc_pn_hatch"){const eg=d.pension.q[a.p_i];if(!eg||eg.e>now&&!a.p_force)return {data:null,error:{message:"Cet œuf n’est pas encore prêt à éclore."}};
         const pool=eg.k==="dore"?BYR[5]:eg.k==="rare"?DEX_ORDER:DEX_ORDER.filter(x=>rar(x)<5&&!evoPreOf(x).length),id=pool[Math.floor(Math.random()*pool.length)];
         d.pension.q.splice(a.p_i,1);d.coll[id]=(d.coll[id]||0)+1;d.stats.pnHatch=(d.stats.pnHatch||0)+1;const sh=!!window.__pnShiny;if(sh){d.shiny=d.shiny||{};d.shiny[id]=now}
         return {data:{profile:stamp(d),drawn:{id,isNew:true,shiny:sh,k:eg.k},now},error:null}}

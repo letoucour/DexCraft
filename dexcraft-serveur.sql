@@ -167,7 +167,7 @@ begin
   d := d || jsonb_build_object('coll', newcoll, 'unique', uniq, 'myth', myth, 'trans', trans,
          'byr', to_jsonb(byr), 'byrV', cfg -> 'byrV', 'total', tot);
   if d ->> 'avatar' is not null and not (newcoll ? (d ->> 'avatar')) then d := jsonb_set(d, '{avatar}', 'null'); end if;
-  d := jsonb_set(d, '{fav}', coalesce((select jsonb_object_agg(key, value) from jsonb_each(d -> 'fav') where newcoll ? key), '{}'));
+  d := jsonb_set(d, '{fav}', coalesce((select jsonb_object_agg(key, case when newcoll ? key then '1' else value end) from jsonb_each(d -> 'fav') where newcoll ? key or value = '"p"'), '{}'));   -- "p" : gardé au prestige (1.8.1)
   -- cartes recherchées (cloche) : retirées dès qu'elles entrent dans la collection, sauf celles posées
   -- sur une carte déjà possédée (1.0.9 : valeur {"t": date, "k": 1}), que le joueur retire lui-même
   if jsonb_typeof(d -> 'wish') = 'object' then
@@ -184,8 +184,7 @@ begin
   if d ->> 'avatar' is not null and d -> 'shiny' ? (d ->> 'avatar') and (d ->> 'avaSh' = 'true' or not d ? 'avaSh'
      and not coalesce(d -> 'shinyOff', '{}') ? (d ->> 'avatar') and coalesce(d ->> 'shinyNorm', '') <> 'true') then d := jsonb_set(d, '{avaS}', 'true');
   else d := d - 'avaS'; end if;
-  -- vitrine (1.1.6) : 6 cartes au plus, [{i: n°, s: 1 si montrée en shiny}] ; une carte montrée normale sort de la
-  -- vitrine quand elle quitte la collection, une carte montrée en shiny reste (le shiny est acquis pour toujours)
+  -- vitrine (1.1.6) : une carte montrée normale sort quand elle quitte la collection, une shiny reste
   if jsonb_typeof(d -> 'vitrine') = 'array' then
     d := jsonb_set(d, '{vitrine}', coalesce((select jsonb_agg(v order by o) from jsonb_array_elements(d -> 'vitrine') with ordinality x(v, o)
       where jsonb_typeof(v) = 'object' and case when v ->> 's' = '1' then d -> 'shiny' ? (v ->> 'i') else newcoll ? (v ->> 'i') end), '[]'));
@@ -337,7 +336,7 @@ begin
   return v;
 end $$;
 
--- pseudo : obligatoire à la première connexion (pseudoSet), puis un changement tous les 7 jours
+-- pseudo : choisi à la 1re connexion (pseudoSet), puis tous les 7 jours
 create or replace function public.dc_set_pseudo(p_v text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); v text;
   nx bigint := public.dc__int(d, 'pseudoTs') + (public.dc__cfg() ->> 'pseudoWait')::bigint; is_first boolean;

@@ -1559,8 +1559,8 @@ nav.tabs .ti{display:none}
 .lb-side{display:flex;flex-direction:column;gap:12px}
 .lb-box{background:rgba(4,14,10,.62);border:1px solid rgba(150,210,170,.18);border-radius:16px;padding:12px 14px}
 .lb-box h3{margin:0 0 8px;color:#eaf5ee}
-.lb-got{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 12px}
-.lb-got>div{display:flex;align-items:center;gap:8px;font-size:.86rem}.lb-got b{margin-left:auto}.lb-got .none{opacity:.38}
+.lb-got{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 12px}
+.lb-got>div{display:flex;align-items:center;gap:8px;font-size:.86rem}.lb-val{color:#b9d6c3;font-size:.78rem;white-space:nowrap}.lb-got b{margin-left:auto}.lb-got .none{opacity:.38}
 .lb-keyrow{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.88rem;color:#f6e7b8}
 .lb-ico{position:relative;display:inline-block;vertical-align:middle;flex:0 0 auto}
 .lb-ico .lb-it{width:100%;height:100%;left:0;top:0}
@@ -1678,6 +1678,7 @@ span.lb-c{cursor:default}
 @keyframes pnWobble{0%,58%,100%{transform:rotate(0)}10%{transform:rotate(-9deg)}20%{transform:rotate(8deg)}30%{transform:rotate(-6deg)}40%{transform:rotate(4deg)}}
 @keyframes pnBreath{50%{transform:scale(1.045)}}
 .pn-bar{width:82%;height:6px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden}.pn-bar i{display:block;height:100%;background:linear-gradient(90deg,#ffb84d,#ffe08a)}
+.pn-dev{font-size:.72rem;padding:2px 8px;background:#5a2a6a;color:#fff;border-color:#8a4aa0}
 .pn-foot{margin:14px 0 0;font-size:.85rem;color:#d9c7a8}
 .pn-hatch{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#fff;
   background:radial-gradient(circle at 50% 44%,rgba(255,222,150,.28),rgba(12,7,3,.94) 62%)}
@@ -1969,7 +1970,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.8.0";
+const APP_VERSION="1.8.1";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -5989,13 +5990,14 @@ const LUMI={v:"v1.0",open:false,cost:100,lamps:6,w:12,h:12,rows:[6,8,10,12,12,12
   // s : taille (colonnes, lignes) ; m : masque des cases ; w : poids du tirage ; r : rareté affichée (1 commune … 5 ???) ; cr : crédits ;
   // lamp : +1 lanterne ; trap : piège (−1 lanterne), look : objet qu’il imite tant qu’il n’est pas entièrement éclairé ; stone : +1 Pierre
   // évolutive ; egg : œuf pour la Pension ; gs : GS Ball (crédits une fois la carte obtenue) ; mush : champignon (titre Mycologue).
-  // Réglage par simulation (1.8.0) : 106 crédits rendus en moyenne pour 100 misés, 36 % des clairières remboursent en crédits seuls,
-  // plus un Œuf toutes les 3 clairières, un Œuf rare toutes les 6, un Œuf doré toutes les 50, une Pierre Plante toutes les 7, la GS Ball
-  // environ 1 sur 200 (comme la Clef de voûte du Souterrain)
-  items:{baie:{n:"Baie Oran",s:[1,1],w:3000,r:1,cr:5},pchamp:{n:"Petit Champignon",s:[1,2],w:3000,r:1,cr:12,mush:1},miel:{n:"Miel",s:[2,2],w:3000,r:1,cr:20},
-    noig:{n:"Noigrume",s:[1,1],w:2000,r:2,cr:30},gchamp:{n:"Gros Champignon",s:[2,2],w:2000,r:2,cr:45,mush:1},bocal:{n:"Bocal de lucioles",s:[1,2],w:2000,r:2,lamp:1},
+  // Réglage par simulation : 1.8.1 (demande de Theo), même rentabilité que le Souterrain mesurée sur 2 000 et 20 000 parties (1,40 fois la
+  // mise rendue en moyenne en crédits et éclats, plaques, pierres et clefs non comptées) : 140 crédits rendus pour 100 misés, 46 % des
+  // clairières remboursent (48 % au Souterrain) ; en plus, un Œuf toutes les 3 clairières, un Œuf rare toutes les 6, un Œuf doré toutes
+  // les 50, une Pierre Plante toutes les 7, la GS Ball environ 1 sur 200 (comme la Clef de voûte). 1.8.0 : 106 crédits pour 100.
+  items:{baie:{n:"Baie Oran",s:[1,1],w:3000,r:1,cr:7},pchamp:{n:"Petit Champignon",s:[1,2],w:3000,r:1,cr:16,mush:1},miel:{n:"Miel",s:[2,2],w:3000,r:1,cr:26},
+    noig:{n:"Noigrume",s:[1,1],w:2000,r:2,cr:40},gchamp:{n:"Gros Champignon",s:[2,2],w:2000,r:2,cr:60,mush:1},bocal:{n:"Bocal de lucioles",s:[1,2],w:2000,r:2,lamp:1},
     oeuf:{n:"Œuf",s:[2,3],w:1500,r:2,egg:"oeuf"},amonita:{n:"Amonita",s:[2,2],w:2000,r:2,trap:1,look:"gchamp"},
-    ambre:{n:"Vieil Ambre",s:[2,2],w:700,r:3,cr:120},pierre:{n:"Pierre Plante",s:[2,2],w:700,r:3,stone:1},suave:{n:"Champi Suave",s:[3,3],m:"111111010",w:700,r:3,cr:220,mush:1},
+    ambre:{n:"Vieil Ambre",s:[2,2],w:700,r:3,cr:160},pierre:{n:"Pierre Plante",s:[2,2],w:700,r:3,stone:1},suave:{n:"Champi Suave",s:[3,3],m:"111111010",w:700,r:3,cr:290,mush:1},
     oeufr:{n:"Œuf rare",s:[2,3],w:700,r:3,egg:"rare"},oeufd:{n:"Œuf doré",s:[2,3],w:80,r:4,egg:"dore"},gs:{n:"GS Ball",s:[2,2],w:24,r:5,gs:2000}}};
 const LB_ORDER=["baie","pchamp","miel","noig","gchamp","bocal","oeuf","ambre","pierre","suave","oeufr","oeufd","amonita","gs"];
 const LB_RAR=["","Commune","Peu commune","Rare","Très rare","???"];
@@ -6009,6 +6011,7 @@ function lbLoad(){if(lbLoading)return;lbLoading=true;rpc("dc_lb_state",{},{rende
 const lbItemEl=(k,ox,oy)=>{const it=LUMI.items[k];return `<i class="lb-it lb-${k}" style="--w:${it.s[0]};--h:${it.s[1]};--x:${ox};--y:${oy}"></i>`};
 const lbIco=k=>{const [w,h]=LUMI.items[k].s,u=Math.min(28/w,28/h);return `<span class="lb-ico" style="width:${Math.round(w*u)}px;height:${Math.round(h*u)}px;--cs:${u.toFixed(1)}px" title="${esc(LUMI.items[k].n)}">${lbItemEl(k,0,0)}</span>`};
 const lbGain=k=>{const it=LUMI.items[k];return it.cr?`${fmtN(it.cr)} crédits`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"+1 Pierre évolutive":it.egg?"un œuf pour la Pension":"???"};
+const lbVal=k=>{const it=LUMI.items[k];return it.cr?`${fmtN(it.cr)} crédits`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"Pierre évolutive":it.egg?"Pension":S&&S.stats&&S.stats.lbGsX?`${fmtN(it.gs)} crédits`:"???"}; // 1.8.1 : affichée dans le Sac à dos
 const lbChance=k=>{const t=LB_ORDER.reduce((a,x)=>a+LUMI.items[x].w,0);return LUMI.items[k].w/t*100};
 const lbStartBtn=()=>{const m=lbMiss(),free=devOn();return m?`<button class="btn primary ar-fight" disabled>Il vous manque ${fmtN(m)} crédits</button>`
   :`<button class="btn primary ar-fight lb-go" data-lb="start">🏮 Explorer une clairière · ${free?"gratuit (mode développeur)":fmtN(LUMI.cost)+" crédits"}</button>`};
@@ -6047,7 +6050,7 @@ function lbTopHTML(){const n=+((S&&S.stats&&S.stats.lbRuns)||0);
     <span class="ar-chip so-stat" title="Clairières explorées">🏮 ${fmtN(n)} clairière${n>1?"s":""}</span></div>`}
 function lbBagHTML(){
   const got=lbGot(),lu=(S&&S.lumi)||{},res=(S&&S.pension&&S.pension.res)||{},ne=(res.oeuf||0)+(res.rare||0)+(res.dore||0);
-  return `<div class="lb-side"><div class="lb-box"><h3>🎒 Sac à dos</h3><div class="lb-got">${LB_ORDER.filter(k=>k!=="gs"||got.gs).map(k=>`<div class="${got[k]?"":"none"}">${lbIco(k)}<span>${esc(LUMI.items[k].n)}</span><b>${fmtN(got[k]||0)}</b></div>`).join("")}</div>
+  return `<div class="lb-side"><div class="lb-box"><h3>🎒 Sac à dos</h3><div class="lb-got">${LB_ORDER.filter(k=>k!=="gs"||got.gs).map(k=>`<div class="${got[k]?"":"none"}">${lbIco(k)}<span>${esc(LUMI.items[k].n)} <small class="lb-val">(${lbVal(k)})</small></span><b>${fmtN(got[k]||0)}</b></div>`).join("")}</div>
     ${lu.gs?`<div class="lb-keyrow">${lbIco("gs")}<span><b>GS Ball</b> : elle vibre doucement, comme si elle attendait quelque chose…</span></div>`:""}
     ${ne?`<p class="lb-note">🥚 ${ne} œuf${ne>1?"s":""} en réserve${pnOn()?` à la <button class="linkish" data-view="pension">Pension</button>`:""}.</p>`:""}</div></div>`;
 }
@@ -6186,7 +6189,8 @@ function vPension(){
     return `<div class="pn-slot ${st}">${pnEgg(e.k,st==="ready"?"wobble":"")}<span class="pn-nest"></span>
       ${st==="ready"?`<button class="btn small primary" data-pn="hatch" data-i="${i}">Faire éclore</button>`
         :st==="warm"?`<div class="pn-bar"><i style="width:${pc}%"></i></div><small>Éclot dans <b data-countdown="${e.e-pnOff}">${fmtLeft(e.e-now)}</b></small>`
-        :`<small>En attente : couve dans <b data-countdown="${e.s-pnOff}">${fmtLeft(e.s-now)}</b></small>`}</div>`};
+        :`<small>En attente : couve dans <b data-countdown="${e.s-pnOff}">${fmtLeft(e.s-now)}</b></small>`}
+      ${st!=="ready"&&devOn()?`<button class="btn small pn-dev" data-pn="hatch" data-i="${i}" data-force="1" title="Mode développeur">⚡ Éclore (dév.)</button>`:""}</div>`};
   return `<div class="pension"><div class="ar-top pn-top"><h1>🥚 Pension</h1><span class="ar-chip so-stat" title="Œufs éclos">🐣 ${fmtN(+((S.stats&&S.stats.pnHatch)||0))} éclos</span></div>
     <p class="pn-intro">Les œufs que vous trouvez attendent ici. Jusqu’à <b>${PENSION.q} œufs</b> dans la couveuse, dont <b>${PENSION.slots}</b> couvent en même temps : 30 minutes pour un Œuf, 1 heure pour un Œuf rare, 3 heures pour un Œuf doré. Le temps passe même quand vous n’êtes pas là.</p>
     <div class="pn-res">${PN_EGGS.map(([k,n,d])=>`<div class="pn-card${res[k]?"":" none"}">${pnEgg(k)}<div><b>${n}</b><small>${d}</small></div><span class="pn-n">×${fmtN(res[k]||0)}</span>
@@ -6219,7 +6223,7 @@ document.addEventListener("click",e=>{
   const a=b.dataset.pn;
   if(a==="add"){actBtn=b;run(async()=>{const r=await rpc("dc_pn_add",{p_k:b.dataset.k},{render:false});if(r.now)pnOff=r.now-Date.now();SFX.flip(1);renderView()});return}
   if(a==="hatch"){if(pnBusy)return;pnBusy=true;actBtn=b;
-    run(async()=>{const r=await rpc("dc_pn_hatch",{p_i:+b.dataset.i},{render:false});if(r.now)pnOff=r.now-Date.now();renderView();await pnHatchFx(r.drawn);renderView()}).finally(()=>{pnBusy=false});return}
+    run(async()=>{const r=await rpc("dc_pn_hatch",{p_i:+b.dataset.i,p_force:!!b.dataset.force},{render:false});if(r.now)pnOff=r.now-Date.now();renderView();await pnHatchFx(r.drawn);renderView()}).finally(()=>{pnBusy=false});return}
 });
 /* menu « Jeux » de l'en-tête (1.3.3) : s'ouvre au toucher, se ferme en choisissant un jeu, en touchant ailleurs ou avec Échap */
 function gamesMenu(open){const p=$("#games-pop"),t=$("#tab-games");if(!p)return;p.hidden=!open;t.setAttribute("aria-expanded",open)}
@@ -6402,7 +6406,7 @@ document.addEventListener("click",e=>{
     case"my-bulk":myBulk(b.dataset.a);break;
     case"my-bulk-go":if(myBulk.go){const g=myBulk.go;myBulk.go=null;g()}break;
     case"discard-mode":discardSel={};tradeSel=null;filt.own="own";renderView();break;
-    case"trade-mode":tradeSel=new Map();discardSel=null;filt.own="own";renderView();break;
+    case"trade-mode":tradeSel=new Map();discardSel=null;filt.own="dup";renderView();break; // 1.8.1 : les doubles d’abord (demande de Theo)
     case"trade-cancel":tradeSel=null;renderView();break;
     case"tsel-clear":tradeSel=new Map();renderView();break;
     case"tsel-dups":{const ids=Object.keys(S.coll).filter(k=>S.coll[k]>1&&rar(+k)!==8).map(Number),ok=ids.filter(x=>!keepCard(x));tradeSel=new Map(ok.map(x=>[x,1]));

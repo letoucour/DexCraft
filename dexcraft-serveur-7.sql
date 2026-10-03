@@ -257,8 +257,10 @@ begin
   return jsonb_build_object('id', id, 'sh', sh, 'r', r);
 end $$;
 
--- éclosion de l'œuf n° p_i de la file (0 = le premier), s'il est prêt
-create or replace function public.dc_pn_hatch(p_i int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+-- éclosion de l'œuf n° p_i de la file (0 = le premier), s'il est prêt ; p_force (1.8.1) : tout de suite, pour l'administrateur
+-- en mode développeur (essais)
+drop function if exists public.dc_pn_hatch(int);
+create or replace function public.dc_pn_hatch(p_i int, p_force boolean default false) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); pn jsonb; q jsonb; eg jsonb; o jsonb; id int; was_new boolean;
   now_ bigint := public.dc__now();
 begin
@@ -266,7 +268,8 @@ begin
   q := case when jsonb_typeof(pn -> 'q') = 'array' then pn -> 'q' else '[]' end;
   eg := q -> p_i;
   if eg is null then raise exception 'Cet œuf n’est plus là.'; end if;
-  if (eg ->> 'e')::bigint > now_ then raise exception 'Cet œuf n’est pas encore prêt à éclore.'; end if;
+  if (eg ->> 'e')::bigint > now_ and not (coalesce(p_force, false) and public.dc__is_admin(u) and coalesce((d ->> 'dev')::boolean, false)) then
+    raise exception 'Cet œuf n’est pas encore prêt à éclore.'; end if;
   o := public.dc__pn_draw(d, cfg, eg ->> 'k'); id := (o ->> 'id')::int;
   was_new := public.dc__count(d, id) = 0;
   d := d || jsonb_build_object('pension', pn || jsonb_build_object('q', q - p_i));

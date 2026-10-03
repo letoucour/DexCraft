@@ -206,7 +206,7 @@ create or replace function public.dc_market_since(p_since timestamptz) returns j
 --  reste (titres acquis pour toujours, shiny, cartes secrètes, crédits, boosters, rencontres got, cosmétiques, statistiques)
 --  et gagne un Charme Chroma (+presCharm rencontres sur tous les Pokémon pour la chance de shiny, cumulable).
 --  Ses annonces de cartes du Pokédex sont retirées et ses propositions chez les autres annulées (cartes rendues puis
---  effacées avec le reste) ; cartes recherchées (cloches) retirées ; favoris et vitrine nettoyés par dc__stamp.
+--  effacées avec le reste) ; cartes recherchées (cloches) retirées ; favoris gardés (1.8.1) ; vitrine nettoyée par dc__stamp.
 -- ============================================================
 create or replace function public.dc_prestige() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); cfg jsonb := public.dc__cfg(); d jsonb := public.dc__lock(u, true); m record; n int;
@@ -225,7 +225,8 @@ begin
   n := coalesce((d ->> 'prestige')::int, 0) + 1;
   -- d'abord le prestige posé sur la collection complète : dc__stamp y range tous les titres obtenus (titlesKept)
   d := public.dc__stamp(jsonb_set(d || jsonb_build_object('prestige', n), '{stats,prestige}', to_jsonb(n)), false);
-  d := d || jsonb_build_object('wish', '{}'::jsonb, 'presTs', public.dc__now(),
+  -- 1.8.1 (demande de Theo) : les favoris restent cochés, même pour les cartes qui quittent la collection (valeur "p", gardée par dc__stamp)
+  d := d || jsonb_build_object('wish', '{}'::jsonb, 'presTs', public.dc__now(), 'fav', coalesce((select jsonb_object_agg(key, '"p"'::jsonb) from jsonb_each(d -> 'fav')), '{}'),
     'coll', (select coalesce(jsonb_object_agg(key, value), '{}') from jsonb_each(d -> 'coll') where not cfg -> 'dexOrder' @> to_jsonb(key::int)));
   return jsonb_build_object('profile', public.dc__save(u, d), 'prestige', n);
 end $$;

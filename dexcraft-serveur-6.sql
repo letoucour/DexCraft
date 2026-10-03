@@ -131,9 +131,11 @@ begin
       pl := pl || jsonb_build_object(ob ->> 't', coalesce((pl ->> (ob ->> 't'))::int, 0) + 1); items := items || to_jsonb('plaque:' || (ob ->> 't'));
     elsif it ? 'stone' then   -- Pierre évolutive (1.7.0) : dans le sac (sout.ps), remplace un exemplaire pour une évolution (dc_evolve_stone)
       so := so || jsonb_build_object('ps', coalesce((so ->> 'ps')::int, 0) + 1); items := items || to_jsonb(k);
-    elsif it ? 'key' then   -- Clef de voûte : la première reste dans le sac (titre Ruinemaniac), les suivantes valent des éclats
+    elsif it ? 'key' then   -- Clef de voûte : la première reste dans le sac (titre Ruinemaniac) ; 1.8.1 : les suivantes valent des éclats
+      -- seulement une fois la carte spéciale obtenue (souKeyX), comme la GS Ball de Lumi-Bois (demande de Theo)
       if coalesce(d -> 'stats' ->> 'souKey', '') = '' then d := jsonb_set(d, '{stats,souKey}', '1'); so := so || '{"key": 1}'; items := items || '"key"';
-      else ec := ec + (it ->> 'key')::int; items := items || '"key+"'; end if;
+      elsif coalesce(d -> 'stats' ->> 'souKeyX', '') <> '' then ec := ec + (it ->> 'key')::int; items := items || '"key+"';
+      else items := items || '"key"'; end if;
     else
       ec := ec + coalesce((it ->> 'v')::int, 0); cr := cr + coalesce((it ->> 'cr')::int, 0); items := items || to_jsonb(k);
     end if;
