@@ -289,18 +289,18 @@ create or replace function public.dc__ar_maxd(cfg jsonb, st jsonb) returns int[]
                                 union all select 550 where m.i = 902) q)
   select coalesce(array_agg(i), '{}') from m $$;
 
--- Pierres évolutives (1.7.0, demande de Theo) : chacune remplace un exemplaire pour une évolution ; il faut au moins 1 exemplaire
--- du Pokémon (p_stones de 1 à evoCost − 1). Même effet que dc_evolve (partie 1), avec moins d'exemplaires consommés.
+-- Pierres évolutives (1.7.0, demande de Theo) : chacune remplace un exemplaire pour une évolution. Depuis la 1.7.1, on garde toujours
+-- au moins un exemplaire (seuls les doubles sont consommés, comme dc_evolve) : p_stones de 1 à evoCost.
 create or replace function public.dc_evolve_stone(p_from int, p_to int, p_stones int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); cost int := (cfg ->> 'evoCost')::int;
   so jsonb; ps int; was_new boolean;
 begin
   if not coalesce(cfg -> 'evo' -> p_from::text @> to_jsonb(p_to), false) then raise exception 'Évolution impossible.'; end if;
-  if p_stones is null or p_stones < 1 or p_stones >= cost then raise exception 'Nombre de pierres invalide.'; end if;
+  if p_stones is null or p_stones < 1 or p_stones > cost then raise exception 'Nombre de pierres invalide.'; end if;
   so := case when jsonb_typeof(d -> 'sout') = 'object' then d -> 'sout' else '{}' end;
   ps := coalesce((so ->> 'ps')::int, 0);
   if ps < p_stones then raise exception 'Il vous manque % Pierre(s) évolutive(s).', p_stones - ps; end if;
-  if public.dc__count(d, p_from) < cost - p_stones then raise exception 'Il vous faut % exemplaire(s) de ce Pokémon avec % pierre(s).', cost - p_stones, p_stones; end if;
+  if public.dc__count(d, p_from) < cost - p_stones + 1 then raise exception 'Il vous faut % exemplaire(s) de ce Pokémon avec % pierre(s) : vous en gardez toujours un.', cost - p_stones + 1, p_stones; end if;
   was_new := public.dc__count(d, p_to) = 0;
   d := d || jsonb_build_object('sout', so || jsonb_build_object('ps', ps - p_stones));
   d := public.dc__gain(public.dc__add(d, p_from, -(cost - p_stones)), p_to, 1);

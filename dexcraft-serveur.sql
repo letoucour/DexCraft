@@ -462,7 +462,8 @@ create or replace function public.dc_evolve(p_from int, p_to int) returns jsonb 
 declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); was_new boolean;
 begin
   if not coalesce(cfg -> 'evo' -> p_from::text @> to_jsonb(p_to), false) then raise exception 'Évolution impossible.'; end if;
-  if public.dc__count(d, p_from) < (cfg ->> 'evoCost')::int then raise exception 'Il vous faut % exemplaires pour faire évoluer ce Pokémon.', cfg ->> 'evoCost'; end if;
+  -- 1.7.1 : on garde toujours un exemplaire
+  if public.dc__count(d, p_from) <= (cfg ->> 'evoCost')::int then raise exception 'Il vous faut % exemplaires (vous en gardez toujours un).', (cfg ->> 'evoCost')::int + 1; end if;
   was_new := public.dc__count(d, p_to) = 0;
   d := public.dc__gain(public.dc__add(d, p_from, -(cfg ->> 'evoCost')::int), p_to, 1);
   d := public.dc__bump(d, 'evos');

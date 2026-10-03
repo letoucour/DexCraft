@@ -1790,7 +1790,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.7.0";
+const APP_VERSION="1.7.1";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -3771,9 +3771,9 @@ function evoFamily(q){
 }
 function vEvolution(){
   const missingTarget=id=>evoTargets(id).some(to=>!has(S,to));
-  const score=id=>{const ready=S.coll[id]>=EVO_COST;return ready&&missingTarget(id)?0:ready?1:2};
+  const score=id=>{const ready=S.coll[id]>EVO_COST;return ready&&missingTarget(id)?0:ready?1:2};
   const owned=Object.keys(S.coll).map(Number).filter(canEvolve).sort((a,b)=>score(a)-score(b)||S.coll[b]-S.coll[a]||a-b);
-  const ready=owned.filter(id=>S.coll[id]>=EVO_COST);
+  const ready=owned.filter(id=>S.coll[id]>EVO_COST); // 1.7.1 : on garde toujours un exemplaire
   // « Pas encore obtenus » (1.3.22, demande de Theo) : Pokémon dont une évolution manque, du plus proche au plus lointain,
   // selon les exemplaires qu'il manque pour la faire en gardant le sien (EVO_COST + 1), puis le plus d'exemplaires
   const lack=id=>Math.max(0,EVO_COST+1-S.coll[id]);
@@ -3782,21 +3782,21 @@ function vEvolution(){
   const q=norm2(evoQ.trim()),fam=q?evoFamily(q):null;
   const list=fam?owned.filter(id=>fam.has(id)):evoFilter==="ready"?ready:evoFilter==="missing"?todo:owned;
   const row=id=>{
-    const c=S.coll[id],ok=c>=EVO_COST,last=c===EVO_COST,st=!ok&&evoCanStone(c)?evoStonesFor(c):0; // st : pierres évolutives (1.7.0)
+    const c=S.coll[id],ok=c>EVO_COST,last=false,st=!ok&&evoCanStone(c)?evoStonesFor(c):0; // st : pierres évolutives (1.7.0)
     return `<div class="evo-row${ok?" ready":""}${last?" last":""}">
       <div class="evo-from"><div class="thumb">${evoTile(id)}</div><div style="min-width:0">
         <h3>${esc(nm(id))}</h3><div class="muted" style="font-size:.9rem">${c} exemplaire${c>1?"s":""}${ok?`, il en restera ${c-EVO_COST}`:""}</div>
         ${!fam&&evoFilter==="missing"?`<div class="evo-lack${lack(id)?"":" ok"}">${lack(id)?`Encore ${lack(id)} exemplaire${lack(id)>1?"s":""} pour découvrir son évolution en gardant le vôtre`:"Prêt : faites-le évoluer en gardant un exemplaire"}</div>`:""}
-        <div class="pips" aria-label="${Math.min(c,EVO_COST)} sur ${EVO_COST}">${Array.from({length:EVO_COST},(_,i)=>`<i class="${i<c?"on":""}"></i>`).join("")}</div>
+        <div class="pips" aria-label="${Math.min(c,EVO_COST+1)} sur ${EVO_COST+1}">${Array.from({length:EVO_COST+1},(_,i)=>`<i class="${i<c?"on":""}"></i>`).join("")}</div>
         ${last?`<div class="evo-warn"><span aria-hidden="true">!</span> Après l’évolution, vous n’aurez plus aucun ${esc(nm(id))} : il redeviendra « ??? » dans votre collection.</div>`:""}</div></div>
       <span class="evo-arrow" aria-hidden="true">→</span>
       <div class="evo-targets">${evoTargets(id).sort((x,y)=>(has(S,x)?1:0)-(has(S,y)?1:0)||x-y).map(to=>{const have=S.coll[to]||0;
-        return `<button class="evo-pick${have?"":" new"}" data-act="evolve" data-from="${id}" data-to="${to}" data-stones="${st}" ${ok||st?"":"disabled"} aria-label="${ok||st?"Faire évoluer en "+esc(nameOrHidden(to)):"Il faut "+EVO_COST+" exemplaires"}">
+        return `<button class="evo-pick${have?"":" new"}" data-act="evolve" data-from="${id}" data-to="${to}" data-stones="${st}" ${ok||st?"":"disabled"} aria-label="${ok||st?"Faire évoluer en "+esc(nameOrHidden(to)):"Il faut "+(EVO_COST+1)+" exemplaires"}">
         <span class="evo-have ${have?"ok":"missing"}">${have?`Déjà ×${have}`:"Pas encore"}</span>
-        ${evoTile(to)}<span class="lbl">${ok?(evoTargets(id).length>1?"Choisir":"Faire évoluer"):st?`Avec ${st} pierre${st>1?"s":""}`:`${Math.min(c,EVO_COST)}/${EVO_COST}`}</span></button>`}).join("")}</div>
+        ${evoTile(to)}<span class="lbl">${ok?(evoTargets(id).length>1?"Choisir":"Faire évoluer"):st?`Avec ${st} pierre${st>1?"s":""}`:`${Math.min(c,EVO_COST+1)}/${EVO_COST+1}`}</span></button>`}).join("")}</div>
     </div>`};
   return `<h1>Évolutions</h1>
-  <p class="muted">Réunissez ${EVO_COST} exemplaires d’un même Pokémon pour les échanger contre 1 carte de son évolution, ou contre une de ses méga-évolutions ou sa forme Gigamax. Les ${EVO_COST} cartes sont consommées. Quand un Pokémon a plusieurs évolutions possibles, vous choisissez laquelle.</p>
+  <p class="muted">Échangez ${EVO_COST} doubles d’un même Pokémon contre 1 carte de son évolution, ou contre une de ses méga-évolutions ou sa forme Gigamax : il vous faut donc ${EVO_COST+1} exemplaires, vous gardez toujours le vôtre. Il vous manque des doubles ? Chaque Pierre évolutive du Souterrain en remplace un. Quand un Pokémon a plusieurs évolutions possibles, vous choisissez laquelle.</p>
   ${(()=>{const plan=quickEvoPlan(),all=quickEvoPlan(true);return `<div class="actions" style="margin-top:12px">
     <button class="btn${plan.length?" primary":""}" data-act="quick-evo" ${plan.length?"":"disabled"}>${plan.length?`Évolution rapide (${plan.length})`:"Évolution rapide : rien à faire"}</button>
     <button class="btn" data-act="quick-evo" data-all="1" ${all.length?"":"disabled"}>${all.length?`Tout faire évoluer (${all.length})`:"Tout faire évoluer : rien à faire"}</button>
@@ -3810,7 +3810,7 @@ function vEvolution(){
   </div>
   ${fam?`<p class="muted" style="margin:10px 0 0;font-size:.9rem">${list.length} Pokémon de votre collection dans cette lignée, prêts ou non.</p>`:""}
   ${list.length?`<div class="evo-list">${list.map(row).join("")}</div>`
-    :`<div class="empty" style="margin-top:14px">${fam?"Aucun Pokémon évolutif de votre collection dans cette lignée.":evoFilter==="missing"?"Vous avez déjà toutes les évolutions de vos Pokémon.":evoFilter==="ready"?`Aucun Pokémon n’a encore ${EVO_COST} exemplaires. Ouvrez des boosters pour accumuler des doubles.`:"Aucun Pokémon évolutif dans votre collection pour l’instant."}</div>`}`;
+    :`<div class="empty" style="margin-top:14px">${fam?"Aucun Pokémon évolutif de votre collection dans cette lignée.":evoFilter==="missing"?"Vous avez déjà toutes les évolutions de vos Pokémon.":evoFilter==="ready"?`Aucun Pokémon n’a encore ${EVO_COST+1} exemplaires. Ouvrez des boosters pour accumuler des doubles.`:"Aucun Pokémon évolutif dans votre collection pour l’instant."}</div>`}`;
 }
 /* Évolution rapide : tous les Pokémon en 4 exemplaires ou plus (il en reste toujours au moins 1).
    all = false : seulement quand une évolution manque encore ; all = true (1.1.1) : aussi quand on les a déjà toutes,
@@ -3854,7 +3854,7 @@ function quickEvo(all){
 }
 
 function evolveDlg(from,to,st=0){ // st : Pierres évolutives (1.7.0), chacune remplace un exemplaire
-  const c=S.coll[from]||0;if(st?st!==evoStonesFor(c)||soStones()<st:c<EVO_COST)return;if(!evoTargets(from).includes(to))return;
+  const c=S.coll[from]||0;if(st?st!==evoStonesFor(c)||soStones()<st:c<=EVO_COST)return;if(!evoTargets(from).includes(to))return;
   const left=c-(EVO_COST-st),have=S.coll[to]||0;
   openDlg(`<div class="side"><button class="close-x" data-act="close" aria-label="Fermer">×</button>
     <h2>Faire évoluer ${esc(nm(from))} ?</h2>
@@ -4479,8 +4479,8 @@ function detail(id){
       <label class="field" style="flex:1;min-width:min(220px,100%)">Carte souhaitée<select id="t-want"><option value="missing" selected>N’importe quelle carte ${RAR[r].toLowerCase()} manquante (que je n’ai pas)</option><option value="">N’importe quelle carte ${RAR[r].toLowerCase()}</option><option value="list">Plusieurs cartes précises…</option>${same.map(x=>`<option value="${x}">${esc(nm(x))}${S.coll[x]?"":" (manquante)"}</option>`).join("")}</select></label>
       <button class="btn primary" data-act="do-trade" data-id="${id}">Proposer</button></div></div>`
     :`<div class="notice">Échanges disponibles dans la version publiée.</div>`}
-    ${evoTargets(id).length?`<div class="panel"><h3>Évolution</h3><p class="muted" style="margin:4px 0 10px">${c>=EVO_COST?`Vous pouvez échanger ${EVO_COST} exemplaires contre ${evoTargets(id).length>1?"une de ses "+evoTargets(id).length+" évolutions":"son évolution"}.`:`Il vous faut ${EVO_COST} exemplaires pour le faire évoluer (${c}/${EVO_COST}).${evoCanStone(c)?` Avec ${evoStonesFor(c)} Pierre${evoStonesFor(c)>1?"s":""} évolutive${evoStonesFor(c)>1?"s":""} du Souterrain, vous pouvez le faire dès maintenant.`:""}`}</p>
-      <div class="actions">${evoTargets(id).map(to=>{const st=c<EVO_COST&&evoCanStone(c)?evoStonesFor(c):0;return `<button class="btn${c>=EVO_COST||st?" primary":""}" data-act="evolve" data-from="${id}" data-to="${to}" data-stones="${st}" ${c>=EVO_COST||st?"":"disabled"}>Évoluer en ${esc(nameOrHidden(to))}${nameOrHidden(to)==="???"?" (№ "+to+")":""}${st?` (avec ${st} pierre${st>1?"s":""})`:""}</button>`}).join("")}</div></div>`:""}
+    ${evoTargets(id).length?`<div class="panel"><h3>Évolution</h3><p class="muted" style="margin:4px 0 10px">${c>EVO_COST?`Vous pouvez échanger ${EVO_COST} doubles contre ${evoTargets(id).length>1?"une de ses "+evoTargets(id).length+" évolutions":"son évolution"}, en gardant le vôtre.`:`Il vous faut ${EVO_COST+1} exemplaires pour le faire évoluer, vous gardez toujours le vôtre (${c}/${EVO_COST+1}).${evoCanStone(c)?` Avec ${evoStonesFor(c)} Pierre${evoStonesFor(c)>1?"s":""} évolutive${evoStonesFor(c)>1?"s":""} du Souterrain, vous pouvez le faire dès maintenant.`:""}`}</p>
+      <div class="actions">${evoTargets(id).map(to=>{const st=c<=EVO_COST&&evoCanStone(c)?evoStonesFor(c):0;return `<button class="btn${c>EVO_COST||st?" primary":""}" data-act="evolve" data-from="${id}" data-to="${to}" data-stones="${st}" ${c>EVO_COST||st?"":"disabled"}>Évoluer en ${esc(nameOrHidden(to))}${nameOrHidden(to)==="???"?" (№ "+to+")":""}${st?` (avec ${st} pierre${st>1?"s":""})`:""}</button>`}).join("")}</div></div>`:""}
     <div class="actions">${r>=6?"":S.fav&&S.fav[id] // 1.6.3 : rien pour les raretés 6 à 8, jamais défaussées (1.5.14)
       ?`<button class="btn" disabled title="Retirez-le des favoris d’abord">★ Favori protégé de la défausse</button>`
       :`<button class="btn danger" data-act="do-discard" data-id="${id}">Défausser 1 exemplaire (+${cr(dVal(id))})</button>`}</div>
@@ -5582,7 +5582,7 @@ let SO=null,soLoading=false,soQ=[],soBusy=false,soEnding=false,soFx={},soGen=1,s
 let soTool=(()=>{try{return localStorage.getItem("dc-so-tool")==="p"?"p":"h"}catch(e){return "h"}})();
 const soEc=()=>+((S&&S.sout&&S.sout.ec)||0);
 const soStones=()=>+((S&&S.sout&&S.sout.ps)||0); // Pierres évolutives (1.7.0) : dans le sac (sout.ps)
-const evoStonesFor=c=>c>=EVO_COST||c<1?0:EVO_COST-c; // pierres qu’il faut pour faire évoluer avec c exemplaires (au moins 1 exemplaire)
+const evoStonesFor=c=>c>EVO_COST||c<1?0:EVO_COST+1-c; // pierres qu’il faut pour faire évoluer avec c exemplaires, en gardant toujours le sien (1.7.1)
 const evoCanStone=c=>{const k=evoStonesFor(c);return k>0&&soStones()>=k};
 const soGot=()=>(S&&S.sout&&S.sout.got)||{};
 const soRes=x=>{const [k,t]=String(x).split(":");return k==="key"?{k:"clef",n:"Clef de voûte",g:"dans votre sac"}:k==="key+"?{k:"clef",n:"Clef de voûte",g:`${fmtN(SOUT.items.clef.key)} éclats`}:{k,t:+t||0,n:soName(k,+t||0),g:soGain(k)}};
