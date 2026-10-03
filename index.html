@@ -749,6 +749,7 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
   background:repeating-radial-gradient(circle at 70% 30%,rgba(255,255,255,.2) 0 2px,transparent 2px 8px),linear-gradient(135deg,var(--c1),var(--c2));
   color:#fff;font-family:var(--display);font-weight:700;font-size:calc(var(--s)*.5);box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--line);vertical-align:middle}
 .ava img{position:absolute;inset:6%;width:88%;height:88%;object-fit:contain;z-index:1}
+img{-webkit-user-drag:none;user-drag:none} /* 1.6.3 : glisser une silhouette « ??? » montrait l’illustration (aussi dragstart plus bas) */
 .ava{min-width:var(--s);min-height:var(--s);max-width:var(--s);max-height:var(--s);box-sizing:border-box;line-height:1;contain:layout paint} /* 1.4.13 : rond décalé sur certains téléphones */
 .ava b{position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--s)*.5);line-height:1}
 .ava img+b{visibility:hidden}
@@ -879,6 +880,8 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .mini-pack.sp-type b{font-size:.62rem}
 .mini-pack.sp-prem{background:repeating-linear-gradient(135deg,rgba(255,215,90,.22) 0 2px,transparent 2px 10px),linear-gradient(160deg,#3a2f14,#15131c 55%,#2b2208);border:1px solid #e0b43a}
 .mini-pack.sp-prem b{color:#ffd35a;background:none;font-size:1.3rem}
+.mini-pack.sp-shiny{background:repeating-linear-gradient(135deg,rgba(255,255,255,.4) 0 2px,transparent 2px 10px),linear-gradient(160deg,#ffd6e7,#fff1b8 25%,#c9f7df 50%,#cfe6ff 75%,#e6d4ff);border:1px solid #c4a3ff}
+.mini-pack.sp-shiny b{background:none;font-size:1.3rem;text-shadow:0 0 6px #fff}
 .offer-visual.sp-vis-gen{background:radial-gradient(circle at 50% 120%,rgba(79,160,255,.55),transparent 60%),var(--surface-2)}
 .offer-visual.sp-vis-type{background:radial-gradient(circle at 50% 120%,rgba(255,255,255,.18),transparent 60%),var(--surface-2)}
 .offer-visual.sp-vis-prem{background:radial-gradient(circle at 50% 120%,rgba(255,207,63,.6),transparent 60%),var(--surface-2)}
@@ -902,6 +905,9 @@ html.revealing,html.revealing body{overscroll-behavior-y:none}
 .pack.spk .pack-emblem{color:#fff}.pack.spk .pk-name{text-shadow:0 1px 3px rgba(0,0,0,.5)}
 .pack.spk .diamond{background:rgba(0,0,0,.28);border-color:#fff;color:#fff}
 .pack.spk-prem .pack-emblem{color:#ffd35a}.pack.spk-prem .diamond{border-color:#ffd35a;background:#15131c}
+/* Booster Shiny (1.6.3) : nacré, aux couleurs de l’aura shiny */
+.pack.spk-shiny{--spk:linear-gradient(160deg,#ffd6e7,#fff1b8 25%,#c9f7df 50%,#cfe6ff 75%,#e6d4ff)}
+.pack.spk-shiny .pack-emblem{color:#4a2a6a}.pack.spk-shiny .pk-name{text-shadow:0 1px 2px rgba(255,255,255,.8)}.pack.spk-shiny .diamond{border-color:#a855f7;background:rgba(255,255,255,.55);color:#7c3aed}
 /* Arène (1.3.0) : tout tient dans la hauteur disponible (--ar-h, calculée par arFit) ; --s = case du terrain */
 html.arena-view:not(.arena-scroll),html.arena-view:not(.arena-scroll) body{overflow:hidden}
 html.arena-scroll .arena{height:auto;overflow:visible;--s:64px;padding-bottom:12px}
@@ -1386,6 +1392,7 @@ nav.tabs .ti{display:none}
 .pl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
 .pl-stats div{background:var(--surface-2);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column}
 .pl-stats b{font-family:var(--display);font-size:1.15rem}
+.pl-stats b.pres-tag{align-self:flex-start;white-space:nowrap;font-size:.95rem;line-height:1.3;padding:2px 10px;margin-bottom:2px} /* 1.6.3 */
 .pl-rar{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;font-size:.85rem}
 .pl-rar .bar{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
 .pl-rar .bar i{display:block;height:100%}
@@ -1559,8 +1566,9 @@ nav.tabs .ti{display:none}
 .pack.sk-lingot .pk-crimp{background:repeating-linear-gradient(90deg,rgba(200,210,230,.7) 0 2px,rgba(255,255,255,.4) 2px 5px)}
 /* --- cadres d'image de profil : anneau autour de l'image (masque), l'image garde sa taille --- */
 .avf{position:relative;display:inline-flex;flex:0 0 auto;vertical-align:middle}
-.avf::before{content:"";position:absolute;inset:calc(var(--s)*-.12);border-radius:50%;z-index:2;pointer-events:none;
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - var(--s)*.1),#000 calc(100% - var(--s)*.1));mask:radial-gradient(farthest-side,transparent calc(100% - var(--s)*.1),#000 calc(100% - var(--s)*.1))}
+.avf::before{content:"";position:absolute;inset:calc(var(--s)*-.1);border-radius:50%;z-index:2;pointer-events:none;
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - var(--s)*.115),#000 calc(100% - var(--s)*.115));mask:radial-gradient(farthest-side,transparent calc(100% - var(--s)*.115),#000 calc(100% - var(--s)*.115))}
+.avf>.ava,.profile-head .avf>.ava{box-shadow:none} /* 1.6.3 (demande de Theo) : plus d’écart entre l’image et le cadre (le liseré de l’image restait dessous) */
 .avf.fr-scotch::before{background:repeating-conic-gradient(from 10deg,rgba(236,232,205,.95) 0 28deg,transparent 28deg 65deg);filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
 .avf.fr-flammes::before{background:conic-gradient(from 90deg,#ffdd55,#ff7a1a,#e0201a,#ff7a1a,#ffdd55,#ff7a1a,#e0201a,#ff7a1a,#ffdd55);filter:drop-shadow(0 0 4px rgba(255,120,30,.8))}
 .avf.fr-marine::before{background:repeating-conic-gradient(#0b2d5e 0 15deg,#fff 15deg 30deg)}
@@ -1755,7 +1763,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.6.2";
+const APP_VERSION="1.6.3";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2140,10 +2148,10 @@ const COS={
   "dos.diamant":"Diamant","sac.lingot":"Lingot de platine","cadre.solitaire":"Solitaire","pseudo.platine":"Platine","fond.palais":"Palais",
   "badge.soutien":"♥ Soutien","badge.flambeur":"💸 Flambeur","titre.lord":"🐋 Lord","titre.fortune":"💰 Fortuné"};
 /* Badges ronds à droite du pseudo : alpha et beta viennent du profil (champs alpha, beta ; 1.0.1), les autres de la boutique (vis.b) */
-const BADGES={alpha:{ic:"✦",t:"Alpha testeur : a aidé au développement en Alpha de DexCraft"},beta:{ic:"◈",t:"Bêta testeur : a participé à la Bêta ouverte de DexCraft"},soutien:{ic:"♥",t:"Soutient DexCraft"},flambeur:{ic:"💸",t:"A dépensé beaucoup trop pour ce badge"},chroma:{ic:"✧",t:"Charme Chroma : obtenu en passant un prestige. Chaque prestige ajoute 40 rencontres à tous les Pokémon pour la chance de shiny"}};
+const PRES_CHARM=15; // rencontres ajoutées par prestige (Charme Chroma) : 15 depuis la 1.6.3 (demande de Theo), 40 avant
+const BADGES={alpha:{ic:"✦",t:"Alpha testeur : a aidé au développement en Alpha de DexCraft"},beta:{ic:"◈",t:"Bêta testeur : a participé à la Bêta ouverte de DexCraft"},soutien:{ic:"♥",t:"Soutient DexCraft"},flambeur:{ic:"💸",t:"A dépensé beaucoup trop pour ce badge"},chroma:{ic:"✧",t:"Charme Chroma : obtenu en passant un prestige. Chaque prestige ajoute "+PRES_CHARM+" rencontres à tous les Pokémon pour la chance de shiny"}};
 /* Prestige (1.5.0, demande de Theo) : Pokédex complet → on repart de zéro (collection du Pokédex seulement) et on gagne un Charme Chroma,
-   +PRES_CHARM rencontres sur tous les Pokémon pour la chance de shiny, cumulable. Fond de classement selon le niveau (pres1 à pres5). */
-const PRES_CHARM=40;
+   +PRES_CHARM rencontres sur tous les Pokémon pour la chance de shiny, cumulable. Fond de classement selon le niveau (pres1 à pres5). PRES_CHARM : au-dessus de BADGES. */
 const PRES_TITLES=["Renaissance","Ascension","Élite","Éminence","Suprématie","Apogée","Immortel"]; // titres des 7 premiers prestiges (noms choisis par Theo)
 const presOf=(p=S)=>+((p&&p.prestige)||0);
 const chromaBadge=p=>{const n=presOf(p);return n?`<span class="bdg bdg-chroma" title="Charme Chroma${n>1?" ×"+n:""}" data-act="badge-info" data-k="chroma" role="button" tabindex="0">✧${n>1?`<sub>${n}</sub>`:""}</span>`:""};
@@ -2431,7 +2439,7 @@ function otLine(id,c){ // fiche d'une carte : d'où viennent ses exemplaires
   return `<p class="muted" style="margin:2px 0 0;font-size:.85rem"><abbr title="Dresseur d’origine">DO</abbr> : ${[mien>0?`vous ×${mien}`:"",...autres.map(([u,n])=>`${esc(nameOf(u))} ×${n}`)].filter(Boolean).join(" · ")}</p>`;
 }
 function canOffer(m,c){
-  if(rar(c)!==rar(m.card))return false;
+  if(rar(c)!==rar(m.card)||rar(c)===8)return false; // 1.6.3 : cartes spéciales jamais échangées
   if((S.coll[c]||0)-otFrom(c,m.owner)<1)return false; // seul exemplaire venu du propriétaire de l'annonce : il ne peut pas le récupérer
   return wantsCard(m,c);
 }
@@ -3007,6 +3015,7 @@ function setupHand(){
 }
 const drag={down:false,sx:0,sl:0};
 addEventListener("pointermove",e=>{if(!drag.down)return;const h=$("#hand");if(!h)return;const dx=e.clientX-drag.sx;if(Math.abs(dx)>6){dragMoved=true;h.classList.add("dragging")}if(dragMoved)h.scrollLeft=drag.sl-dx});
+addEventListener("dragstart",e=>{if(e.target&&e.target.tagName==="IMG")e.preventDefault()}); // 1.6.3 : aucune image ne se glisse hors de la page
 addEventListener("pointerup",()=>{if(!drag.down)return;drag.down=false;const h=$("#hand");if(h&&dragMoved){const cur=fanUpdate();h.classList.remove("dragging");centerCard(handCards()[cur])}});
 addEventListener("resize",()=>{if($("#hand"))fanUpdate()});
 /* Booster : il s'incline vers le pointeur (souris, ou doigt posé dessus sur téléphone) */
@@ -3056,7 +3065,7 @@ function vBooster(){
     <button class="btn shop-cta sp-cta" data-act="goto-special">✨ Boosters spéciaux : génération, type ou Premium</button>
     ${discordHTML()}${installHTML()}</div>
     <div class="bh-main">${(()=>{const A=spActiveNow(); // booster spécial choisi dans l'inventaire : à la place du booster de base (1.2.5)
-      return A?`<div class="pack-wrap"><button class="pack-hit" data-act="sp-open" data-key="${esc(A.k)}" data-n="1" aria-label="Ouvrir un ${esc(spName(A.kind,A.v))}"><div class="pack spk spk-${A.kind}"${A.kind==="type"?` style="--t:${TYPES[A.v][1]}"`:""}><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>${A.kind==="gen"?ROMAN[A.v]:A.kind==="prem"?"★":"DC"}</span></div><strong class="pk-name">${esc(spShort(A.kind,A.v))}</strong><small>${A.kind==="prem"?"5 cartes rares +":"5 cartes"}</small></div><div class="pk-cut"></div><div class="pk-glow"></div></div></button><div class="pack-shadow"></div></div>
+      return A?`<div class="pack-wrap"><button class="pack-hit" data-act="sp-open" data-key="${esc(A.k)}" data-n="1" aria-label="Ouvrir un ${esc(spName(A.kind,A.v))}"><div class="pack spk spk-${A.kind}"${A.kind==="type"?` style="--t:${TYPES[A.v][1]}"`:""}><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>${A.kind==="gen"?ROMAN[A.v]:A.kind==="prem"?"★":A.kind==="shiny"?"✨":"DC"}</span></div><strong class="pk-name">${esc(spShort(A.kind,A.v))}</strong><small>${A.kind==="prem"?"5 cartes rares +":A.kind==="shiny"?"5 cartes shiny":"5 cartes"}</small></div><div class="pk-cut"></div><div class="pk-glow"></div></div></button><div class="pack-shadow"></div></div>
     <div class="open-row">${OPEN_OPTS.map(k=>`<button class="btn${A.n>=k?" primary":""}" data-act="sp-open" data-key="${esc(A.k)}" data-n="${k}" ${A.n<k?"disabled":""}>Ouvrir${k>1?" "+k:""}</button>`).join("")}</div>
     <div class="sp-sel-line"><b>${esc(spName(A.kind,A.v))}</b> : ${A.n} en stock · <button class="linkish" data-act="sp-sel" data-key="">Revenir au booster normal</button></div>`
       :`<div class="pack-wrap"><button class="pack-hit" data-act="open" ${p.n<1&&!S.bonus?"disabled":""} aria-label="Ouvrir un booster"><div class="pack${myLook("sac")?" sk-"+cosCls(myLook("sac")):""}"><div class="cap"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="bd"><div class="pk-skin"></div><div class="pk-crimp"></div></div><div class="pack-emblem"><div class="diamond"><span>DC</span></div><strong class="pk-name">DexCraft</strong><small>5 cartes</small></div><div class="pk-cut"></div><div class="pk-glow"></div></div></button><div class="pack-shadow"></div></div>
@@ -3119,7 +3128,7 @@ function openGift(){
     const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shiny:!!c.shiny,shown:false})); // shiny : boosters spéciaux offerts (1.2.3)
     if(drawn.length){revealKey=Date.now();saveReveal(drawn,true)}
     const extra=[res.credits?`+${cr(res.credits)}`:"",res.packs?`+${res.packs} booster${res.packs>1?"s":""}`:"",
-      ...(res.spec||[]).map(s=>{const {kind,v}=spParse(s.k);return SPB[kind]?`+${s.n} ${spName(kind,v)}`:""})].filter(Boolean); // boosters spéciaux : dans l’inventaire (1.2.5)
+      ...(res.spec||[]).map(s=>{const {kind,v}=spParse(s.k);return spDef(kind)?`+${s.n} ${spName(kind,v)}`:""})].filter(Boolean); // boosters spéciaux : dans l’inventaire (1.2.5)
     if(drawn.length){ // des cartes : on les retourne comme un booster
       reveal=drawn;revealGift=true;hitsMode=false;handScroll=0;
       renderAll();window.scrollTo(0,0);
@@ -3654,7 +3663,7 @@ function vProfile(){
       <label class="field">Boosters<input type="number" id="gr-packs" data-keep="gr-packs" value="0" style="width:110px"></label>
       <button class="btn primary" data-act="grant">Appliquer</button></div>
     <div class="actions" style="margin-top:12px;align-items:end">
-      <label class="field" style="flex:1;min-width:200px">Booster à offrir<select id="gb-kind" data-keep="gb-kind"><option value="pk:0">Booster normal</option><option value="prem:0">Booster Premium</option>${ROMAN.slice(1).map((r,i)=>`<option value="gen:${i+1}">Booster Génération ${r}</option>`).join("")}${TYPES.slice(1).map((t,i)=>`<option value="type:${i+1}">Booster Type ${t[0]}</option>`).join("")}</select></label>
+      <label class="field" style="flex:1;min-width:200px">Booster à offrir<select id="gb-kind" data-keep="gb-kind"><option value="pk:0">Booster normal</option><option value="prem:0">Booster Premium</option><option value="shiny:0">Booster Shiny</option>${ROMAN.slice(1).map((r,i)=>`<option value="gen:${i+1}">Booster Génération ${r}</option>`).join("")}${TYPES.slice(1).map((t,i)=>`<option value="type:${i+1}">Booster Type ${t[0]}</option>`).join("")}</select></label>
       <label class="field">Nombre<input type="number" id="gb-n" data-keep="gb-n" value="1" min="1" max="100" style="width:100px"></label>
       <button class="btn primary" data-act="give-booster">Offrir</button></div>
     <p class="muted" style="margin:6px 0 0;font-size:.85rem">Au joueur choisi ci-dessus, dans sa boîte cadeau : les boosters spéciaux s’ouvrent avec le cadeau, les normaux vont dans sa réserve.</p>
@@ -3712,6 +3721,7 @@ const nameOrHidden=id=>has(S,id)?nm(id):"???";
 /* Recherche (1.2.0) : les Pokémon dont le nom ou le numéro correspond, avec toute leur lignée (ceux dont ils viennent
    et leurs évolutions), pour retrouver vite le Pokémon à faire évoluer avant un autre. */
 let evoQ="",EVO_PRE=null;
+const evoPreOf=id=>{if(!EVO_PRE){EVO_PRE={};for(const x of DEX_ORDER)for(const to of evoTargets(x))(EVO_PRE[to]=EVO_PRE[to]||[]).push(x)}return EVO_PRE[id]||[]};
 let evoFamQ=null,evoFamS=null; // dernière recherche gardée : la collection la relit à chaque paquet de vignettes
 function evoFamily(q){
   if(q===evoFamQ)return evoFamS;
@@ -4265,14 +4275,19 @@ function resetAll(full){
    aucune carte du choix serait retirée du tirage (aucune aujourd'hui). Premium : raretés Rare et plus seulement,
    chances d’un booster normal réparties sur ces seules raretés (mythiques et transcendantes comprises, 1.2.4). */
 const SPB={gen:{n:"Booster Génération",price:300},type:{n:"Booster Type",price:300},prem:{n:"Booster Premium",price:750}}; // prix revus par Theo (1.2.4) : 500, 500 et 2 000 avant
+// Booster Shiny (1.6.3, demande de Theo) : 5 cartes toutes shiny, mêmes chances de rareté qu’un booster normal ; jamais vendu,
+// seulement offert (boîte cadeau : 2 à chaque joueur sans prestige à la sortie de la 1.6.3, outil développeur) ; hors de SPB, donc hors de la boutique
+const SP_GIFT={shiny:{n:"Booster Shiny"}};
+const spDef=k=>SPB[k]||SP_GIFT[k];
+const spNoV=k=>k==="prem"||k==="shiny"; // boosters sans génération ni type
 // Premium (1.2.4, choix de Theo) : les chances d’un booster normal réparties sur les seules raretés Rare et plus, mythiques et transcendantes comprises
 const PREM_K=(()=>{const s=ODDS_K.slice(2).reduce((a,b)=>a+b,0),k=[0,0,...ODDS_K.slice(2).map(v=>Math.floor(v*SCALE/s))];k[2]+=SCALE-k.reduce((a,b)=>a+b,0);return k})();
 let SP_LISTS=null; // cartes possibles de chaque génération et de chaque type
 const spList=(kind,v)=>{if(!SP_LISTS){SP_LISTS={gen:{},type:{}};for(const id of DEX_ORDER){(SP_LISTS.gen[genOf(id)]=SP_LISTS.gen[genOf(id)]||[]).push(id);for(const t of D(id)[3]||[])(SP_LISTS.type[t]=SP_LISTS.type[t]||[]).push(id)}}return SP_LISTS[kind][v]||[]};
-const spName=(kind,v)=>kind==="gen"?`Booster Génération ${ROMAN[v]}`:kind==="type"?`Booster Type ${TYPES[v][0]}`:"Booster Premium";
+const spName=(kind,v)=>kind==="gen"?`Booster Génération ${ROMAN[v]}`:kind==="type"?`Booster Type ${TYPES[v][0]}`:kind==="shiny"?"Booster Shiny":"Booster Premium";
 let spSel={gen:1,type:10,q:{gen:1,type:1,prem:1}},lastSpecial=null; // lastSpecial : dernier booster spécial ouvert (bouton « Racheter »)
 function spPackHTML(kind,v){ // petit sachet de la boutique
-  const lbl=kind==="gen"?ROMAN[v]:kind==="type"?TYPES[v][0]:"★";
+  const lbl=kind==="gen"?ROMAN[v]:kind==="type"?TYPES[v][0]:kind==="shiny"?"✨":"★";
   return `<span class="mini-pack sp-${kind}"${kind==="type"?` style="--t:${TYPES[v][1]}"`:""}><b>${lbl}</b></span>`;
 }
 function spOfferHTML(kind,dev){
@@ -4295,19 +4310,19 @@ function spOfferHTML(kind,dev){
 function shopGo(id){const h=document.getElementById(id),top=$("header.top");if(h)window.scrollTo({top:h.getBoundingClientRect().top+scrollY-(top?top.offsetHeight:0)-12,behavior:"smooth"})}
 /* Inventaire des boosters spéciaux (1.2.5) : achetés ou offerts, rangés dans le profil (spInv = {"prem": n, "gen:3": n,
    "type:10": n}) et ouverts quand on veut depuis l'écran des boosters (spInvHTML, spActive). */
-const spKey=(kind,v)=>kind==="prem"?"prem":kind+":"+v;
+const spKey=(kind,v)=>spNoV(kind)?kind:kind+":"+v;
 const spParse=k=>{const [kind,v]=String(k).split(":");return {kind,v:+v||0}};
 const spInvN=k=>{const n=S&&S.spInv&&+S.spInv[k];return n>0?n:0};
-function spInvList(){ // Premium, puis générations, puis types par nom
-  const ord=({kind,v})=>kind==="prem"?"0":kind==="gen"?"1"+v:"2"+TYPES[v][0];
-  return Object.keys((S&&S.spInv)||{}).map(k=>({k,...spParse(k),n:spInvN(k)})).filter(x=>x.n&&SPB[x.kind]&&(x.kind!=="type"||TYPES[x.v])).sort((a,b)=>ord(a).localeCompare(ord(b),"fr"));
+function spInvList(){ // Shiny, Premium, puis générations, puis types par nom
+  const ord=({kind,v})=>kind==="shiny"?"0":kind==="prem"?"0p":kind==="gen"?"1"+v:"2"+TYPES[v][0];
+  return Object.keys((S&&S.spInv)||{}).map(k=>({k,...spParse(k),n:spInvN(k)})).filter(x=>x.n&&spDef(x.kind)&&(x.kind!=="type"||TYPES[x.v])).sort((a,b)=>ord(a).localeCompare(ord(b),"fr"));
 }
-const spShort=(kind,v)=>kind==="gen"?`Génération ${ROMAN[v]}`:kind==="type"?TYPES[v][0]:"Premium";
+const spShort=(kind,v)=>kind==="gen"?`Génération ${ROMAN[v]}`:kind==="type"?TYPES[v][0]:kind==="shiny"?"Shiny":"Premium";
 /* Booster choisi dans l'inventaire (1.2.5) : il prend la place du booster de base au centre de l'écran, avec ses propres
    boutons d'ouverture ; une fois le stock épuisé, le booster de base revient (sa réserve gratuite continue de se remplir). */
 let spActive=null;
 function spActiveNow(){
-  if(spActive&&spInvN(spActive)>0){const {kind,v}=spParse(spActive);if(SPB[kind])return {k:spActive,kind,v,n:spInvN(spActive)}}
+  if(spActive&&spInvN(spActive)>0){const {kind,v}=spParse(spActive);if(spDef(kind))return {k:spActive,kind,v,n:spInvN(spActive)}}
   spActive=null;return null;
 }
 function spInvHTML(){
@@ -4324,11 +4339,11 @@ function buySpecial(kind,v,q){
   });
 }
 function openSpecial(kind,v,k){
-  const sp=SPB[kind];if(!sp||opening||k<1||k>10)return;
+  const sp=spDef(kind);if(!sp||opening||k<1||k>10)return;
   if(spInvN(spKey(kind,v))<k){toast("Vous n’avez plus assez de ces boosters.");return}
   opening=true;document.documentElement.classList.add("revealing");
   run(async()=>{
-    const res=await rpc("dc_open_special",{p_kind:kind,p_val:kind==="prem"?0:v,p_k:k},{render:false});
+    const res=await rpc("dc_open_special",{p_kind:kind,p_val:spNoV(kind)?0:v,p_k:k},{render:false});
     const drawn=(res.drawn||[]).map(c=>({id:c.id,isNew:!!c.isNew,shiny:!!c.shiny,shown:false}));
     revealKey=(S.lastOpen&&S.lastOpen.t)||0;saveReveal(drawn,false);
     SFX.open(k>1);lastSpecial={kind,v,k};closeDlg();
@@ -4419,14 +4434,14 @@ function detail(id){
     <div><h2>${esc(nm(id))}</h2><p class="muted">${c} exemplaire${c>1?"s":""} dans votre collection${r<6?`, obtenue ${fmtN(Math.max(gotN(id),c))} fois au total`:""}</p>${otLine(id,c)}
       <div class="actions" style="margin-top:8px"><button class="btn small fav-btn${S.fav&&S.fav[id]?" on":""}" data-act="toggle-fav" data-id="${id}" aria-pressed="${!!(S.fav&&S.fav[id])}">${S.fav&&S.fav[id]?"★ Retirer des favoris":"☆ Ajouter aux favoris"}</button><button class="btn small" data-act="share-card" data-id="${id}">📤 Partager</button>${r>=6||fxRar(id)===5||hasShiny(id)?`<button class="btn small" data-act="replay-fx" data-id="${id}">🎬 Revoir l’animation</button>`:""}${r>=6||mode!=="online"?"":`<button class="btn small wish-btn${wished(id)?" on":""}" data-act="toggle-wish" data-id="${id}" aria-pressed="${wished(id)}" title="Être prévenu quand un joueur la met à l’échange">${wished(id)?"🔔 Je la recherche · Arrêter":"🔔 Je la recherche"}</button>`}${online&&(inVit(id)||vitOf(S).length<VIT_MAX)?`<button class="btn small" data-act="vit-card" data-id="${id}">${inVit(id)?"🏆 Retirer de la vitrine":"🏆 Mettre en vitrine"}</button>`:""}</div></div>
     ${shinyPanelHTML(id)}
-    ${online?`<div class="panel"><h3>Proposer à l’échange</h3>
+    ${r===8?`<div class="notice">✵ Carte spéciale : elle ne s’échange pas et ne se défausse pas.</div>`:online?`<div class="panel"><h3>Proposer à l’échange</h3>
       <div class="actions" style="margin-top:10px;align-items:end">
       <label class="field" style="flex:1;min-width:min(220px,100%)">Carte souhaitée<select id="t-want"><option value="missing" selected>N’importe quelle carte ${RAR[r].toLowerCase()} manquante (que je n’ai pas)</option><option value="">N’importe quelle carte ${RAR[r].toLowerCase()}</option><option value="list">Plusieurs cartes précises…</option>${same.map(x=>`<option value="${x}">${esc(nm(x))}${S.coll[x]?"":" (manquante)"}</option>`).join("")}</select></label>
       <button class="btn primary" data-act="do-trade" data-id="${id}">Proposer</button></div></div>`
     :`<div class="notice">Échanges disponibles dans la version publiée.</div>`}
     ${evoTargets(id).length?`<div class="panel"><h3>Évolution</h3><p class="muted" style="margin:4px 0 10px">${c>=EVO_COST?`Vous pouvez échanger ${EVO_COST} exemplaires contre ${evoTargets(id).length>1?"une de ses "+evoTargets(id).length+" évolutions":"son évolution"}.`:`Il vous faut ${EVO_COST} exemplaires pour le faire évoluer (${c}/${EVO_COST}).`}</p>
       <div class="actions">${evoTargets(id).map(to=>`<button class="btn${c>=EVO_COST?" primary":""}" data-act="evolve" data-from="${id}" data-to="${to}" ${c>=EVO_COST?"":"disabled"}>Évoluer en ${esc(nameOrHidden(to))}${nameOrHidden(to)==="???"?" (№ "+to+")":""}</button>`).join("")}</div></div>`:""}
-    <div class="actions">${S.fav&&S.fav[id]
+    <div class="actions">${r>=6?"":S.fav&&S.fav[id] // 1.6.3 : rien pour les raretés 6 à 8, jamais défaussées (1.5.14)
       ?`<button class="btn" disabled title="Retirez-le des favoris d’abord">★ Favori protégé de la défausse</button>`
       :`<button class="btn danger" data-act="do-discard" data-id="${id}">Défausser 1 exemplaire (+${cr(dVal(id))})</button>`}</div>
   </div>`);
@@ -5288,7 +5303,7 @@ function arUnitHTML(u,enemy){
 function vArena(){
   if(!AR_V){arLoad();return `<div class="empty">Chargement de l’Arène…</div>`}
   const r=arRun(),left=Math.max(0,AR_V.cap-AR_V.gained);
-  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.5</span></h1>
+  const top=`<div class="ar-top"><h1>⚔️ Arène <span class="ar-v">v4.6</span></h1>
     ${r&&!r.over?`<span class="ar-chip">Manche <b>${arFightView?arFightView.round:r.round}</b>/${AR.rounds}</span><span class="ar-chip ar-purse-top" title="Vies">${"❤️".repeat(arShown().hp)}${"🖤".repeat(Math.max(0,AR.lives-arShown().hp))}</span><span class="ar-chip ar-purse-top" title="${arIntTip(r)}">🪙 <b>${r.gold}</b> or${arInt(r)?`<i class="ar-int"> · +${arInt(r)}</i>`:""}</span>`:""}
     <span class="ar-chip" title="Crédits gagnés aujourd’hui dans l’Arène, cagnotte de la partie en cours comprise">💰 <b>${fmtN(AR_V.gained)}</b> / ${fmtN(AR_V.cap)}</span>
     <span class="ar-spd" role="group" aria-label="Vitesse des combats">⏱️${AR_SPEEDS.map(([v,l])=>`<button data-ar="speed" data-v="${v}" aria-pressed="${v===arSpeed}">${l}</button>`).join("")}</span>
@@ -5299,7 +5314,8 @@ function vArena(){
     <p class="muted">${left?`Encore ${fmtN(left)} crédits à gagner aujourd’hui.`:`Plafond du jour atteint : jusqu’à minuit, chaque manche gagnée du premier coup rapporte encore ${AR.afterRound} crédits, et l’Arène réussie ${AR.afterCap} de plus (${AR.afterCapPerfect} sans perdre de vie).`}</p>
     <button class="btn primary ar-fight" data-ar="start">⚔️ ${r?"Nouvelle partie":"Lancer une partie"}</button></div></div>`;
   const F=arFightView||{board:r.board,enemy:r.enemy,round:r.round}; // 1.5.14 : terrain du combat pendant l'animation
-  const on=F.board.filter(Boolean).length,max=arMax(F.round),counts={},c1s={},owned=new Set();arUnits().forEach(u=>{owned.add(u.i);if(!u.s)counts[u.i]=(counts[u.i]||0)+1;else if(u.s===1)c1s[u.i]=(c1s[u.i]||0)+1}); // 1.4.9 : offres d’un Pokémon déjà dans l’équipe en surbrillance (owned), progrès vers les deux étoiles (c1s)
+  const on=F.board.filter(Boolean).length,max=arMax(F.round),counts={},c1s={},owned=new Set();arUnits().forEach(u=>{owned.add(u.i);if(!u.s)counts[u.i]=(counts[u.i]||0)+1;else if(u.s===1)c1s[u.i]=(c1s[u.i]||0)+1;
+    if(u.s<=1)for(let x=u.i,k=0;k<4&&(x=x===902?550:evoPreOf(x).find(y=>y<=1025));k++)owned.add(x)}); // 1.6.3 : et ses formes d’avant (Carvanha pour Sharpedo) // 1.4.9 : offres d’un Pokémon déjà dans l’équipe en surbrillance (owned), progrès vers les deux étoiles (c1s)
   const empt=[0,1,2,3,4,5].filter(i=>!F.board[i]).slice(0,Math.max(0,max-on)),sel=arSel&&arFind(arSel);
   return `<div class="arena">${top}
   <div class="ar-stage"><div class="ar-colL">${arSideInfo()}</div><div class="ar-play">
@@ -5557,7 +5573,7 @@ function soShopHTML(){
     <div class="so-lots">${SOUT.lots.map(lot).join("")}</div></div>
     ${soBagHTML()}
     <div class="so-box"><h3>🎒 Vos trouvailles</h3><div class="so-got">${SO_ORDER.map(k=>`<div class="${got[k]?"":"none"}">${soIco(k)}<span>${esc(SOUT.items[k].n)}</span><b>${fmtN(got[k]||0)}</b></div>`).join("")}</div></div></div>`}
-/* sac du Souterrain (1.6.0) : les 17 plaques (titre « Élu d’Arceus » une fois toutes réunies) et la Clef de voûte ;
+/* sac du Souterrain (1.6.0) : les 18 plaques (titre « Élu d’Arceus » une fois toutes réunies) et la Clef de voûte ;
    une fois débloqué par le serveur (stats.souPlateX), 2 plaques d’un même type s’échangent contre 1 Booster Type (dc_sout_plate) */
 function soBagHTML(){
   const so=(S&&S.sout)||{},pl=so.pl||{},ts=Object.keys(SO_PLATE).map(Number),n=ts.filter(t=>(pl[t]||0)>0).length,open=!!(S&&S.stats&&S.stats.souPlateX);
@@ -5868,10 +5884,10 @@ document.addEventListener("click",e=>{
     case"trade-mode":tradeSel=new Map();discardSel=null;filt.own="own";renderView();break;
     case"trade-cancel":tradeSel=null;renderView();break;
     case"tsel-clear":tradeSel=new Map();renderView();break;
-    case"tsel-dups":{const ids=Object.keys(S.coll).filter(k=>S.coll[k]>1).map(Number),ok=ids.filter(x=>!keepCard(x));tradeSel=new Map(ok.map(x=>[x,1]));
+    case"tsel-dups":{const ids=Object.keys(S.coll).filter(k=>S.coll[k]>1&&rar(+k)!==8).map(Number),ok=ids.filter(x=>!keepCard(x));tradeSel=new Map(ok.map(x=>[x,1]));
       if(!ids.length)toast("Vous n’avez aucun double pour l’instant.");else keptToast(ids.length-ok.length);renderView();break}
-    case"tsel-shown":{const all=filtered().filter(x=>(S.coll[x]||0)>0),ids=all.filter(x=>!keepCard(x));ids.forEach(x=>{if(!tradeSel.has(x))tradeSel.set(x,1)});if(!all.length)toast("Aucune carte de votre collection n’est affichée.");else keptToast(all.length-ids.length);renderView();break} // cartes possédées de la liste filtrée, même celles pas encore affichées plus bas (1.1.12)
-    case"tpick":{const c=S.coll[id]||0;if(!c)break;const nx=(tradeSel.get(id)||0)>=c?0:(tradeSel.get(id)||0)+1;if(nx)tradeSel.set(id,nx);else tradeSel.delete(id); // 1.4.15 : un toucher = un exemplaire de plus, comme la défausse (demande de Theo)
+    case"tsel-shown":{const all=filtered().filter(x=>(S.coll[x]||0)>0&&rar(x)!==8),ids=all.filter(x=>!keepCard(x));ids.forEach(x=>{if(!tradeSel.has(x))tradeSel.set(x,1)});if(!all.length)toast("Aucune carte de votre collection n’est affichée.");else keptToast(all.length-ids.length);renderView();break} // cartes possédées de la liste filtrée, même celles pas encore affichées plus bas (1.1.12)
+    case"tpick":{const c=S.coll[id]||0;if(!c)break;if(rar(id)===8){toast("Les cartes spéciales ne s’échangent pas.");break} // 1.6.3const nx=(tradeSel.get(id)||0)>=c?0:(tradeSel.get(id)||0)+1;if(nx)tradeSel.set(id,nx);else tradeSel.delete(id); // 1.4.15 : un toucher = un exemplaire de plus, comme la défausse (demande de Theo)
   const y=window.scrollY;renderView();window.scrollTo(0,y);break}
     case"tsel-go":{const ids=[...tradeSel].flatMap(([x,n])=>Array(n).fill(x)),v=$("#ts-want").value,au=$("#ts-auto").checked;
       if(v==="list")wantPickOpen(ids.map(rar),"Chaque annonce n’acceptera que les cartes choisies de sa rareté.",ws=>tradeMany(ids,"list",au,ws));

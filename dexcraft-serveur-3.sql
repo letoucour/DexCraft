@@ -237,7 +237,7 @@ begin
   -- 1.4.15 (demande de Theo) : une même carte peut revenir plusieurs fois (une annonce par exemplaire) ; au-delà des exemplaires
   -- possédés, les suivantes sont ignorées (skipped), car dc__ot_take retire un exemplaire à chaque annonce
   for c in select x from unnest(p_cards) with ordinality u(x, o) where x is not null order by o loop
-    if public.dc__rar(cfg, c) is null or public.dc__count(d, c) < 1 then skipped := skipped || c; continue; end if;
+    if coalesce(public.dc__rar(cfg, c), 8) = 8 or public.dc__count(d, c) < 1 then skipped := skipped || c; continue; end if;   -- 1.6.3 : rareté 8 jamais
     if n >= room then capped := capped + 1; continue; end if;  -- plafond d'annonces atteint
     wl := null; w := null;   -- liste de cartes demandées (1.0.3) : celles de la même rareté ; aucune → carte non publiée
     if p_wants is not null then
@@ -426,7 +426,7 @@ begin
     cr := cr + g.cr; pk := pk + g.pk;                              -- crédits et boosters offerts
     if g.sp is not null then                                       -- boosters spéciaux offerts (1.2.3) : dans l'inventaire (spInv, 1.2.5)
       o := case when jsonb_typeof(d -> 'spInv') = 'object' then d -> 'spInv' else '{}' end;
-      c := to_jsonb(case when g.sp = 'prem' then 'prem' else g.sp || ':' || coalesce(g.v, 0) end);
+      c := to_jsonb(case when g.sp in ('prem', 'shiny') then g.sp else g.sp || ':' || coalesce(g.v, 0) end);
       d := d || jsonb_build_object('spInv', o || jsonb_build_object(c #>> '{}', coalesce((o ->> (c #>> '{}'))::int, 0) + g.n));
       spec := spec || jsonb_build_array(jsonb_build_object('k', c, 'n', g.n));
       continue;

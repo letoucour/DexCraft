@@ -128,9 +128,11 @@ begin
   for j in 1 .. coalesce(array_length(ids, 1), 0) loop if ids[j] = any(maxd) then rs[j] := -1; end if; end loop;
   for j in 1 .. coalesce(array_length(ids, 1), 0) loop if rs[j] >= 0 then cnt[rs[j] + 1] := cnt[rs[j] + 1] + 1; end if; end loop;   -- nombre par rareté (0 à 5)
   av := array[cnt[1] > 0, cnt[2] > 0, cnt[3] > 0, cnt[4] > 0, cnt[6] > 0];
-  -- 1.4.7 / 1.4.9 : Pokémon de l'équipe à 0 ou 1 étoile reproposés, un tirage par Pokémon différent (historique : CLAUDE.md)
-  select coalesce(array_agg(distinct (v ->> 'i')::int), '{}') into mine
-    from public.dc__ar_units(st) v where (v ->> 's')::int <= 1 and (v ->> 'i')::int = any(ids) and not ((v ->> 'i')::int = any(maxd));
+  -- 1.4.7 / 1.4.9 : Pokémon de l'équipe à 0 ou 1 étoile reproposés, un tirage par Pokémon différent (historique : CLAUDE.md) ;
+  -- 1.6.3 : absent de la collection (obtenu par évolution), sa forme d'avant possédée (dc__ar_base, partie 6)
+  select coalesce(array_agg(distinct public.dc__ar_base(cfg, (v ->> 'i')::int, ids)), '{}') into mine
+    from public.dc__ar_units(st) v where (v ->> 's')::int <= 1 and not ((v ->> 'i')::int = any(maxd));
+  mine := array_remove(mine, null);
   for k in 1 .. 5 loop
     if coalesce(array_length(mine, 1), 0) > 0 and random() < slot then
       shop := shop || to_jsonb(mine[1 + floor(random() * array_length(mine, 1))::int]); continue;

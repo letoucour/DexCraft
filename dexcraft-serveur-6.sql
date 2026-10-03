@@ -264,12 +264,26 @@ begin
   return d;
 end $$;
 
+-- Arène (1.6.3, bug vu par Theo : Sharpedo obtenu en faisant évoluer 3 Carvanha ne revenait jamais dans la boutique, qui ne
+-- propose que les Pokémon de la collection) : forme de l'équipe à reproposer, la sienne si elle est dans la réserve ids, sinon
+-- la forme d'avant la plus proche qui y est (Carvanha pour Sharpedo), null s'il n'y en a aucune. Bargantua (550) donne Paragruel.
+create or replace function public.dc__ar_base(cfg jsonb, id int, ids int[]) returns int language plpgsql stable as $$
+declare evo jsonb := cfg -> 'evo'; k int := 0;
+begin
+  while id is not null and k < 4 loop
+    if id = any(ids) then return id; end if;
+    id := case when id = 902 then 550 else (select e.key::int from jsonb_each(evo) e where e.value @> to_jsonb(id) and e.key::int <= 1025 limit 1) end;
+    k := k + 1;
+  end loop;
+  return null;
+end $$;
+
 -- ============================================================
 --  Droits d'exécution des fonctions de cette partie
 -- ============================================================
 do $$ declare f record; begin
   for f in select p.oid::regprocedure as sig, p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-           where n.nspname = 'public' and (p.proname like 'dc\_\_sout\_%' or p.proname like 'dc\_sout\_%' or p.proname in ('dc__vb_titles', 'dc__ar_titles')) loop
+           where n.nspname = 'public' and (p.proname like 'dc\_\_sout\_%' or p.proname like 'dc\_sout\_%' or p.proname in ('dc__vb_titles', 'dc__ar_titles', 'dc__ar_base')) loop
     execute format('revoke all on function %s from public, anon%s', f.sig, case when f.proname like 'dc\_\_%' then ', authenticated' else '' end);
     if f.proname not like 'dc\_\_%' then execute format('grant execute on function %s to authenticated', f.sig); end if;
     execute format('alter function %s set search_path = public, extensions', f.sig);

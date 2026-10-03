@@ -418,7 +418,7 @@ begin
       -- shiny (1.1.0) : (1 + fois obtenue) sur 4 096 ; jamais pour une carte secrète ou sans illustration shiny
       sh := false;
       if r <= 5 and cfg ? 'shinyBase' and not (cfg -> 'shinyNo' @> to_jsonb(id)) and not (d -> 'shiny' ? id::text) then
-        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 40) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1);   -- + Charmes Chroma (1.5.0)
+        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 15) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1);   -- + Charmes Chroma (1.5.0)
       end if;
       if sh then d := jsonb_set(d, '{shiny}', (d -> 'shiny') || jsonb_build_object(id::text, now_ms)); end if;
       drawn := drawn || jsonb_build_array(jsonb_build_object('id', id, 'isNew', public.dc__count(d, id) = 0)

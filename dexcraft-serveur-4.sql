@@ -6,13 +6,16 @@
 -- Tirage de p_k boosters spéciaux dans le profil d, sans l'enregistrer. Renvoie {d, drawn}.
 --   'gen'  : 5 cartes de la génération p_val (1 à 9) ;
 --   'type' : 5 cartes du type p_val (1 à 18) ;
---   'prem' : 5 cartes Rare ou mieux (chances premK : celles d'un booster normal réparties sur les raretés Rare et plus, depuis la 1.2.4).
+--   'prem' : 5 cartes Rare ou mieux (chances premK : celles d'un booster normal réparties sur les raretés Rare et plus, depuis la 1.2.4) ;
+--   'shiny' (1.6.3, demande de Theo, offert seulement : jamais vendu) : 5 cartes toutes shiny, mêmes chances de rareté qu'un booster
+--   normal sans mythique ni transcendante (jamais shiny), seulement des cartes qui existent en shiny ; chaque carte est prise parmi
+--   celles de sa rareté pas encore débloquées en shiny par le joueur (toutes, s'il les a déjà toutes).
 -- Génération et Type : même tirage de rareté qu'un booster normal (oddsK), Pokémon pris seulement dans le choix
 -- (cfg.spCard : génération et types de chaque carte de dexOrder), jamais de mythique ni de transcendante ; une rareté
 -- sans aucune carte du choix est retirée du tirage, pour que le booster respecte toujours ce qui a été acheté.
 create or replace function public.dc__open_special(d jsonb, cfg jsonb, p_kind text, p_val int, p_k int) returns jsonb language plpgsql volatile as $$
 declare now_ms bigint := public.dc__now(); sc text := cfg ->> 'spCard'; lst jsonb; pools jsonb := '[]'; pool jsonb;
-  odds bigint[] := '{}'; tot bigint := 0; b int; i int; r int; x bigint; id int; sh boolean; drawn jsonb := '[]'; legend int; spc int; spset text;
+  odds bigint[] := '{}'; tot bigint := 0; b int; i int; r int; x bigint; id int; sh boolean; drawn jsonb := '[]'; legend int; spc int; spset text; cand jsonb;
 begin
   -- cartes spéciales (1.4.17, rareté 8, jamais tirées au hasard) : condition dans secret_cards (unlock : need = cartes à posséder,
   -- sp = booster spécial) ; la première fois qu'un joueur qui la remplit ouvre ce booster, sa dernière carte est la carte spéciale.
@@ -31,14 +34,17 @@ begin
   elsif p_kind = 'type' and p_val between 1 and 18 then
     select coalesce(jsonb_agg(v), '[]') into lst from jsonb_array_elements(cfg -> 'dexOrder') with ordinality as t(v, n)
       where chr(96 + p_val) in (substr(sc, 3 * n::int - 1, 1), substr(sc, 3 * n::int, 1));
-  elsif p_kind <> 'prem' then raise exception 'Booster inconnu.';
+  elsif p_kind not in ('prem', 'shiny') then raise exception 'Booster inconnu.';
   end if;
-  if sc is null and p_kind <> 'prem' then raise exception 'Configuration du jeu à mettre à jour.'; end if;
+  if sc is null and p_kind in ('gen', 'type') then raise exception 'Configuration du jeu à mettre à jour.'; end if;
   for r in 0 .. 7 loop
     pool := coalesce(cfg -> 'pool' -> (r::text), cfg -> 'byr' -> r);
     if lst is not null then
       pool := case when r >= 6 then '[]'::jsonb
         else (select coalesce(jsonb_agg(v), '[]') from jsonb_array_elements(pool) v where lst @> v) end;
+    elsif p_kind = 'shiny' then
+      pool := case when r >= 6 then '[]'::jsonb
+        else (select coalesce(jsonb_agg(v), '[]') from jsonb_array_elements(pool) v where not (coalesce(cfg -> 'shinyNo', '[]') @> v)) end;
     end if;
     pools := pools || jsonb_build_array(pool);
     odds := odds || case when jsonb_array_length(pool) = 0 then 0::bigint
@@ -55,17 +61,21 @@ begin
         x := x - odds[k + 1];
       end loop;
       pool := pools -> r;
+      if p_kind = 'shiny' then   -- pas encore débloquées en shiny, s'il en reste dans cette rareté
+        select coalesce(jsonb_agg(v), '[]') into cand from jsonb_array_elements(pool) v where not (coalesce(d -> 'shiny', '{}') ? (v #>> '{}'));
+        if jsonb_array_length(cand) > 0 then pool := cand; end if;
+      end if;
       id := (pool ->> public.dc__rnd(jsonb_array_length(pool)))::int;
       if spc is not null and b = 1 and i = (cfg ->> 'cards')::int then
         id := spc; r := 8; d := jsonb_set(d, '{spGot}', coalesce(d -> 'spGot', '{}') || jsonb_build_object(spc::text, now_ms));
         if spset is not null then d := jsonb_set(d, array['stats', spset], '1'); end if;
       end if;
       -- shiny : même règle que dc_open
-      sh := false;
-      if r <= 5 and cfg ? 'shinyBase' and not (cfg -> 'shinyNo' @> to_jsonb(id)) and not (d -> 'shiny' ? id::text) then
-        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 40) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1);   -- + Charmes Chroma (1.5.0)
+      sh := p_kind = 'shiny';
+      if not sh and r <= 5 and cfg ? 'shinyBase' and not (cfg -> 'shinyNo' @> to_jsonb(id)) and not (d -> 'shiny' ? id::text) then
+        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 15) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1);   -- + Charmes Chroma (1.5.0)
       end if;
-      if sh then d := jsonb_set(d, '{shiny}', (d -> 'shiny') || jsonb_build_object(id::text, now_ms)); end if;
+      if sh and not coalesce(d -> 'shiny', '{}') ? id::text then d := jsonb_set(d, '{shiny}', coalesce(d -> 'shiny', '{}') || jsonb_build_object(id::text, now_ms)); end if;
       drawn := drawn || jsonb_build_array(jsonb_build_object('id', id, 'isNew', public.dc__count(d, id) = 0)
         || case when sh then '{"shiny": true}'::jsonb else '{}'::jsonb end);
       d := public.dc__gain(d, id, 1);
@@ -80,9 +90,9 @@ end $$;
 -- Inventaire des boosters spéciaux (1.2.5) : profil spInv = {"prem": n, "gen:3": n, "type:10": n}. Clé d'un booster, ou erreur.
 create or replace function public.dc__sp_key(cfg jsonb, p_kind text, p_val int) returns text language plpgsql immutable as $$
 begin
-  if (cfg -> 'spb' -> p_kind) is null or (p_kind = 'gen' and not coalesce(p_val between 1 and 9, false))
+  if (cfg -> 'spb' -> p_kind) is null and p_kind <> 'shiny' or (p_kind = 'gen' and not coalesce(p_val between 1 and 9, false))
      or (p_kind = 'type' and not coalesce(p_val between 1 and 18, false)) then raise exception 'Booster inconnu.'; end if;
-  return case when p_kind = 'prem' then 'prem' else p_kind || ':' || p_val end;
+  return case when p_kind in ('prem', 'shiny') then p_kind else p_kind || ':' || p_val end;
 end $$;
 
 -- Achat en crédits : les boosters vont dans l'inventaire, ouverts plus tard depuis l'écran des boosters
@@ -92,6 +102,7 @@ declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jso
   cost bigint := (cfg -> 'spb' -> p_kind ->> 'price')::bigint * p_q; free_ boolean; inv jsonb;
 begin
   if not (cfg -> 'openOpts' @> to_jsonb(p_q)) then raise exception 'Quantité invalide.'; end if;
+  if (cfg -> 'spb' -> p_kind ->> 'price') is null then raise exception 'Ce booster ne s’achète pas.'; end if;   -- Booster Shiny (1.6.3) : offert seulement
   free_ := public.dc__is_admin(u) and coalesce((d ->> 'dev')::boolean, false);
   if not free_ then
     if public.dc__int(d, 'credits') < cost then raise exception 'Vous n’avez pas assez de crédits.'; end if;
@@ -121,12 +132,12 @@ begin
 end $$;
 
 -- Outil administrateur : boosters de toutes sortes dans la boîte cadeau d'un joueur.
--- 'pk' : boosters normaux (vont dans sa réserve à l'ouverture) ; 'gen', 'type', 'prem' : dans son inventaire à l'ouverture (dc_gift_open).
+-- 'pk' : boosters normaux (vont dans sa réserve à l'ouverture) ; 'gen', 'type', 'prem', 'shiny' : dans son inventaire à l'ouverture (dc_gift_open).
 create or replace function public.dc_admin_give_booster(p_uid uuid, p_kind text, p_val int, p_n int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare a uuid := public.dc__admin(); d jsonb; cfg jsonb := public.dc__cfg();
 begin
   if p_n is null or p_n < 1 or p_n > 100 then raise exception 'Indiquez un nombre de boosters entre 1 et 100.'; end if;
-  if p_kind <> 'pk' and (cfg -> 'spb' -> p_kind) is null then raise exception 'Booster inconnu.'; end if;
+  if p_kind not in ('pk', 'shiny') and (cfg -> 'spb' -> p_kind) is null then raise exception 'Booster inconnu.'; end if;
   if (p_kind = 'gen' and not coalesce(p_val between 1 and 9, false)) or (p_kind = 'type' and not coalesce(p_val between 1 and 18, false)) then
     raise exception 'Booster inconnu.'; end if;
   d := public.dc__lock(p_uid, p_uid = a);

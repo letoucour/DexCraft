@@ -29,9 +29,10 @@ $$ select coalesce((select sum((value #>> '{}')::int) from jsonb_each(case when 
 
 -- met un exemplaire en jeu (annonce, proposition) : d'abord un exemplaire à son nom, sinon un autre dont le dresseur
 -- d'origine n'est pas p_avoid (le destinataire, quand il est connu). Renvoie {d, ot}.
-create or replace function public.dc__ot_take(d jsonb, u uuid, id int, p_avoid text) returns jsonb language plpgsql immutable as $$
+create or replace function public.dc__ot_take(d jsonb, u uuid, id int, p_avoid text) returns jsonb language plpgsql stable as $$
 declare k text := id::text; o text; n int;
 begin
+  if exists (select 1 from public.secret_cards c where c.id = $3 and c.data ->> 7 = '8') then raise exception 'Les cartes spéciales ne s’échangent pas.'; end if;   -- 1.6.3
   if public.dc__count(d, id) < 1 then raise exception 'Vous ne possédez plus cette carte.'; end if;
   if public.dc__count(d, id) > public.dc__ot_n(d, id) and u::text is distinct from p_avoid then o := u::text;
   else
