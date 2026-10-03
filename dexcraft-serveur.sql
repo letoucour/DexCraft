@@ -393,7 +393,7 @@ create or replace function public.dc_open(p_k int) returns jsonb language plpgsq
 declare
   u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg();
   now_ms bigint := public.dc__now(); maxp int := (cfg ->> 'maxp')::int; per bigint := (cfg ->> 'per')::bigint;
-  b int; i int; r int; x int; k int; id int; legend int; pk record; drawn jsonb := '[]'; pool jsonb; sh boolean;
+  b int; i int; r int; x int; k int; id int; legend int; pk record; drawn jsonb := '[]'; pool jsonb; sh boolean; shm numeric := public.dc__evfx(cfg, 'shiny');
 begin
   if not (cfg -> 'openOpts' @> to_jsonb(p_k)) then raise exception 'Nombre de boosters invalide.'; end if;
   select * into pk from public.dc__packinfo(d, now_ms);
@@ -419,7 +419,7 @@ begin
       -- shiny (1.1.0) : (1 + fois obtenue) sur 4 096 ; jamais pour une carte secrète ou sans illustration shiny
       sh := false;
       if r <= 5 and cfg ? 'shinyBase' and not (cfg -> 'shinyNo' @> to_jsonb(id)) and not (d -> 'shiny' ? id::text) then
-        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 15) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1);   -- + Charmes Chroma (1.5.0)
+        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < (1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 15) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1)) * shm;   -- + Charmes Chroma (1.5.0) ; × événement (1.10.0)
       end if;
       if sh then d := jsonb_set(d, '{shiny}', (d -> 'shiny') || jsonb_build_object(id::text, now_ms)); end if;
       drawn := drawn || jsonb_build_array(jsonb_build_object('id', id, 'isNew', public.dc__count(d, id) = 0)

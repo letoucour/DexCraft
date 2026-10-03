@@ -150,6 +150,7 @@ begin
   if nd = jsonb_array_length(st -> 'objs') and (st ->> 'ir')::int = 0 then d := jsonb_set(d, '{stats,souClean}', '1'); end if;
   if (select count(*) from unnest(array['pb','gb','pr','gr','pv','gv','pj','gj','pd','gd']) z where got ? z) = 10 then d := jsonb_set(d, '{stats,souRainbow}', '1'); end if;
   if (select count(*) from generate_series(1, 18) z where coalesce((pl ->> z::text)::int, 0) > 0) = 18 then d := jsonb_set(d, '{stats,souArceus}', '1'); end if;
+  ec := round(ec * public.dc__evfx(public.dc__cfg(), 'ec'));   -- événement « éclats » (1.10.0)
   d := d || jsonb_build_object('credits', public.dc__int(d, 'credits') + cr,
     'sout', so || jsonb_build_object('ec', coalesce((so ->> 'ec')::bigint, 0) + ec, 'got', got, 'pl', pl));
   st := st || jsonb_build_object('over', true, 'res', jsonb_build_object('ec', ec, 'cr', cr, 'items', items));

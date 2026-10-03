@@ -3,6 +3,17 @@
 --  À lancer après dexcraft-serveur.sql, dexcraft-serveur-2.sql et dexcraft-serveur-3.sql (et la configuration).
 -- ============================================================
 
+-- événements (1.10.0) : multiplicateur de l'effet k (shiny, hatch, eggs, ec) le jour p_day (heure de Paris, AAAA-MM-JJ ; aujourd'hui par
+-- défaut) : produit des événements de cfg.events en cours ce jour-là (from et to inclus) qui ont cet effet dans fx ; 1 sinon
+create or replace function public.dc__evfx(cfg jsonb, k text, p_day text default null) returns numeric language plpgsql stable as $$
+declare m numeric := 1; e jsonb; dd text := coalesce(p_day, public.dc__day());
+begin
+  for e in select x from jsonb_array_elements(case when jsonb_typeof(cfg -> 'events') = 'array' then cfg -> 'events' else '[]' end) x loop
+    if (e -> 'fx') ? k and dd between e ->> 'from' and e ->> 'to' then m := m * (e -> 'fx' ->> k)::numeric; end if;
+  end loop;
+  return m;
+end $$;
+
 -- Tirage de p_k boosters spéciaux dans le profil d, sans l'enregistrer. Renvoie {d, drawn}.
 --   'gen'  : 5 cartes de la génération p_val (1 à 9) ;
 --   'type' : 5 cartes du type p_val (1 à 18) ;
@@ -16,6 +27,7 @@
 create or replace function public.dc__open_special(d jsonb, cfg jsonb, p_kind text, p_val int, p_k int) returns jsonb language plpgsql volatile as $$
 declare now_ms bigint := public.dc__now(); sc text := cfg ->> 'spCard'; lst jsonb; pools jsonb := '[]'; pool jsonb;
   odds bigint[] := '{}'; tot bigint := 0; b int; i int; r int; x bigint; id int; sh boolean; drawn jsonb := '[]'; legend int; spc int; spset text; cand jsonb;
+  shm numeric := public.dc__evfx(cfg, 'shiny');
 begin
   -- cartes spéciales (1.4.17, rareté 8, jamais tirées au hasard) : condition dans secret_cards (unlock : need = cartes à posséder,
   -- sp = booster spécial) ; la première fois qu'un joueur qui la remplit ouvre ce booster, sa dernière carte est la carte spéciale.
@@ -73,7 +85,7 @@ begin
       -- shiny : même règle que dc_open
       sh := p_kind = 'shiny';
       if not sh and r <= 5 and cfg ? 'shinyBase' and not (cfg -> 'shinyNo' @> to_jsonb(id)) and not (d -> 'shiny' ? id::text) then
-        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < 1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 15) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1);   -- + Charmes Chroma (1.5.0)
+        sh := public.dc__rnd((cfg ->> 'shinyBase')::int) < (1 + least(coalesce((d -> 'got' ->> id::text)::int, 0) + coalesce((cfg ->> 'presCharm')::int, 15) * coalesce((d ->> 'prestige')::int, 0), (cfg ->> 'shinyMax')::int - 1)) * shm;   -- + Charmes Chroma (1.5.0) ; × événement (1.10.0)
       end if;
       if sh and not coalesce(d -> 'shiny', '{}') ? id::text then d := jsonb_set(d, '{shiny}', coalesce(d -> 'shiny', '{}') || jsonb_build_object(id::text, now_ms)); end if;
       drawn := drawn || jsonb_build_array(jsonb_build_object('id', id, 'isNew', public.dc__count(d, id) = 0)
@@ -263,6 +275,7 @@ revoke all on function public.dc__market_trg() from public, anon, authenticated;
 revoke all on function public.dc_market_since(timestamptz) from public, anon;
 grant execute on function public.dc_market_since(timestamptz) to authenticated;
 revoke all on function public.dc__open_special(jsonb,jsonb,text,integer,integer) from public, anon, authenticated;
+revoke all on function public.dc__evfx(jsonb,text,text) from public, anon, authenticated;
 revoke all on function public.dc_open_special(text,integer,integer) from public, anon;
 grant execute on function public.dc_open_special(text,integer,integer) to authenticated;
 revoke all on function public.dc__sp_key(jsonb,text,integer) from public, anon, authenticated;

@@ -146,7 +146,7 @@ h3{font-size:1.1rem}
 .booster.home .bh-left>*{order:1}
 .booster.home .bh-main>*{order:2}
 .booster.home .bh-right>*{order:3}
-@media (max-width:999px){.booster.home .bh-left>.daily{order:3}} /* téléphone : la récompense du jour sous le booster, qu'elle ne pousse plus hors de l'écran (1.0.10) */
+@media (max-width:999px){.booster.home .bh-left>.daily,.booster.home .bh-left>.defis{order:3}} /* téléphone : la récompense du jour sous le booster, qu'elle ne pousse plus hors de l'écran (1.0.10) */
 @media (min-width:1000px){
   .booster.home{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-areas:"head head head" "left main right";column-gap:32px;row-gap:6px;align-items:center;max-width:1280px;margin:0 auto}
   .booster.home .bh-head{display:flex;flex-direction:column;gap:6px;grid-area:head}
@@ -155,7 +155,6 @@ h3{font-size:1.1rem}
   .booster.home .bh-right{display:flex;flex-direction:column;align-items:stretch;gap:12px;grid-area:right}
   .booster.home .bh-right .btn{margin-top:0;justify-content:center;text-align:center}
   .booster.home .daily{margin:0 auto;padding:12px 10px}
-  .booster.home .daily-steps{grid-template-columns:repeat(4,minmax(0,1fr))}
   .booster.home details{align-self:center}
   .booster.home .pack-hit{--w:clamp(130px,30vh,230px)}
 }
@@ -1407,14 +1406,33 @@ nav.tabs .ti{display:none}
 .daily{width:min(640px,100%);background:var(--surface);border:1px solid var(--gold);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;align-items:center;margin:4px auto 6px}
 .daily.done{border-color:var(--line)}
 .daily-head{display:flex;flex-direction:column;gap:2px;text-align:center;font-size:.9rem}
-.daily-steps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;width:100%}
-.dstep{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;background:var(--surface-2);font-size:.72rem;text-align:center;line-height:1.2}
-.dstep .dn{font-weight:800;color:var(--ink-soft)}
-.dstep .dr{font-weight:700}
-.dstep.now{outline:2px solid var(--gold);background:var(--bg)}
-.dstep.got{opacity:.55}
-.dstep .dk{position:absolute;top:-6px;right:-4px;background:var(--ok);color:#fff;border-radius:50%;width:18px;height:18px;font-size:.7rem;line-height:18px}
-@media (max-width:520px){.daily-steps{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* calendrier de 30 jours (1.10.0) : une case par jour, ✓ récupéré, cadre doré aujourd’hui, violet et or les jours des Boosters Premium */
+.daily-cal{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;width:100%}
+.dday{aspect-ratio:1;display:flex;align-items:center;justify-content:center;min-width:0;padding:0;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft);font:inherit;font-size:.72rem;font-weight:800;cursor:pointer}
+.dday.prem{background:linear-gradient(135deg,rgba(150,90,220,.3),rgba(240,190,80,.25));color:var(--ink)}
+.dday.last{border:2px solid var(--gold);box-shadow:0 0 8px rgba(240,190,80,.5)}
+.dday.got{background:var(--ok);border-color:var(--ok);color:#fff;opacity:.65}
+.dday.now{outline:2px solid var(--gold);outline-offset:1px;background:var(--bg);color:var(--ink)}
+.daily-next{display:flex;flex-direction:column;gap:2px;align-items:center;text-align:center;font-size:.86rem}
+/* défis du jour (1.10.0) */
+.defis{width:min(640px,100%);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;margin:4px auto 6px}
+.defi{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;padding:7px 9px;border-radius:10px;background:var(--surface-2);font-size:.86rem}
+.defi.ok{outline:2px solid var(--gold)}
+.defi.got{opacity:.6}
+.df-ic{font-size:1.2rem;line-height:1}
+.df-t{display:flex;flex-direction:column;gap:5px;min-width:0}
+.df-bar{height:5px;border-radius:999px;background:var(--line);overflow:hidden}.df-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ffd36b)}
+.df-n{font-weight:700;color:var(--ink-soft);font-size:.8rem;white-space:nowrap}
+.df-k{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--ok);color:#fff;font-size:.8rem}
+/* bandeau d’un événement (1.10.0) ; big : gros événement, couleurs --ev1 et --ev2 */
+.ev-banner{display:flex;align-items:center;gap:12px;width:min(720px,100%);margin:10px auto 2px;padding:10px 14px;border-radius:16px;border:2px solid var(--ev1,#d9a441);text-align:left;color:var(--ink);
+  background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--ev1,#d9a441) 20%,var(--surface)),color-mix(in srgb,var(--ev2,#9b59d0) 14%,var(--surface)));box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.ev-ic{font-size:2rem;line-height:1}
+.ev-t{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}.ev-t b{font-family:var(--display);font-size:1.05rem}.ev-t small{color:var(--ink-soft)}.ev-t p{margin:2px 0 0;font-size:.88rem}
+.ev-fxs{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.ev-fx{font-size:.78rem;padding:2px 8px;border-radius:999px;background:var(--surface-2)}
+.ev-banner.big{padding:16px 18px}.ev-banner.big .ev-ic{font-size:2.6rem}
+@media (max-width:600px){.ev-banner{flex-wrap:wrap}.ev-banner>.btn{width:100%}}
+.push-list{margin:0 0 10px;padding-left:20px;font-size:.88rem;color:var(--ink-soft)}
 /* Profil d'un autre joueur (depuis le classement) */
 .pl-head{display:flex;gap:14px;align-items:center}
 .pl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
@@ -1557,6 +1575,7 @@ nav.tabs .ti{display:none}
 .lb-last{margin-top:16px}.lb-last h3{margin:0 0 10px;color:#f3e3b0}.lb-last p{margin:8px 0 0}
 .lb-note{margin:6px 0 0;color:#f6e7b8;font-size:.9rem}
 .lb-side{display:flex;flex-direction:column;gap:12px}
+.lumibois .so-box{background:rgba(4,14,10,.62);border-color:rgba(150,210,170,.18);color:#e8f3ec}.lumibois .so-box .muted{color:#b9d6c3}.lumibois .so-lot{background:rgba(255,255,255,.06)}.lb-start .so-box{margin-top:14px;text-align:left} /* comptoir des éclats (1.10.0) */
 .lb-box{background:rgba(4,14,10,.62);border:1px solid rgba(150,210,170,.18);border-radius:16px;padding:12px 14px}
 .lb-box h3{margin:0 0 8px;color:#eaf5ee}
 .lb-got{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 12px}
@@ -1675,8 +1694,14 @@ span.lb-c{cursor:default}
 .pn-slot.warm{border-color:rgba(255,190,90,.6);box-shadow:inset 0 0 26px rgba(255,170,60,.22);background:radial-gradient(ellipse 80% 60% at 50% 0,rgba(255,170,70,.28),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02))}
 .pn-heat{position:absolute;top:8px;left:50%;width:44px;height:10px;margin-left:-22px;border-radius:0 0 22px 22px;background:linear-gradient(#5d4d31,#3a2f1e);box-shadow:0 6px 18px 4px rgba(255,170,60,.55)} /* 1.9.2 : lampe chauffante des 3 places actives */
 .pn-heat::after{content:"";position:absolute;left:8px;right:8px;bottom:-3px;height:4px;border-radius:4px;background:#ffcf6b;box-shadow:0 0 10px 2px #ffb23d;animation:lbFlick 2.6s ease-in-out infinite}
-.pn-x{position:absolute;top:4px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,220,160,.35);background:rgba(0,0,0,.35);color:#f6ead6;font-size:16px;line-height:1;cursor:pointer;padding:0}
-.pn-x:hover{background:#7a2a1a;border-color:#ff9a7a}
+/* panier des œufs prêts (1.10.0) */
+.pn-ready{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:12px 0 16px;padding:12px 16px;border-radius:16px;border:1px solid rgba(255,220,160,.25);background:rgba(255,255,255,.05);color:#fff2dc}
+.pn-ready.on{border:2px solid #ffd36b;background:radial-gradient(ellipse at 20% 0,rgba(255,211,107,.22),transparent 60%),rgba(255,255,255,.06);box-shadow:0 0 22px rgba(255,210,100,.3)}
+.pn-ready-eggs{display:flex;gap:12px;align-items:flex-end}
+.pn-rk{display:flex;flex-direction:column;align-items:center;gap:2px}.pn-rk b{font-family:var(--display)}
+.pn-ready-t{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}.pn-ready-t b{font-family:var(--display);font-size:1.1rem}.pn-ready-t small{color:#d9c7a8}
+.pn-go{font-size:1rem;padding:10px 18px}
+.pn-more{margin:8px 0 0;color:#d9c7a8;font-size:.88rem}
 .pn-slot.warm .pn-egg{animation:pnBreath 3s ease-in-out infinite}
 .pn-slot.ready{border-color:#ffd36b;box-shadow:0 0 22px rgba(255,210,100,.45)}
 .pn-egg.wobble{animation:pnWobble 1.5s ease-in-out infinite;transform-origin:50% 92%}
@@ -1985,7 +2010,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.9.3";
+const APP_VERSION="1.10.0";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2457,9 +2482,15 @@ function playerName(id,suffix){
   const p=profOf(id)||{},keys=[p.alpha?"alpha":"",p.beta?"beta":"",...(v.b||[]).map(cosCls)].filter(Boolean); // Alpha, Bêta, puis ceux de la boutique
   return `${v.p?`<span class="ps-${cosCls(v.p)}">${n}</span>`:n}${keys.map(k=>{const B=BADGES[k];return B?`<span class="bdg bdg-${k}" title="${esc(B.t)}" data-act="badge-info" data-k="${k}" role="button" tabindex="0">${B.ic}</span>`:""}).join("")}${chromaBadge(p)}`; // Charme Chroma toujours en dernier
 }
-/* Récompense de connexion quotidienne : série de 7 jours (heure de Paris), qui repart à zéro si un jour est manqué.
+/* Récompense de connexion quotidienne : série de jours (heure de Paris), qui repart à zéro si un jour est manqué.
    Versée par le serveur (dc_daily_claim) : boosters dans la réserve achetée, crédits sur le compte. */
-const DAILY=[{packs:10,credits:500},{packs:15,credits:700},{packs:20,credits:1000},{packs:25,credits:1400},{packs:30,credits:2000},{packs:40,credits:2800},{packs:50,credits:4000}]; // 1.3.7 : de 10 boosters et 500 crédits à 50 et 4 000, crédits exponentiels (×1,41 par jour), boosters arrondis à 5 (demande de Theo) ; 1.0.3 : 1 à 10 boosters, 300 à 3 000 crédits
+// Récompense du jour : calendrier de 30 jours depuis la 1.10.0 (demande de Theo), en progression exponentielle du jour 1 (1 booster et
+// 100 crédits) au jour 30 (20 Boosters Premium et 10 000 crédits) : crédits ×1,17 par jour, valeur des boosters ×1,16 par jour (booster
+// à 200 crédits, Premium à 750), boosters normaux jusqu’au jour 14 puis Premium (prem : rangés dans l’inventaire). La série en cours au
+// passage continue (dc_daily_claim, partie 8). Avant : 7 jours, de 10 boosters et 500 crédits à 50 et 4 000 (1.3.7) ; 1.0.3 : 1 à 10 boosters.
+const DAILY=[[1,0,100],[1,0,120],[1,0,140],[2,0,160],[2,0,190],[2,0,220],[2,0,260],[3,0,300],[3,0,360],[4,0,420],[4,0,490],[5,0,570],[6,0,670],[7,0,790],
+  [0,2,920],[0,2,1100],[0,3,1250],[0,3,1500],[0,4,1750],[0,5,2050],[0,5,2400],[0,6,2800],[0,7,3300],[0,8,3850],[0,10,4500],[0,11,5300],[0,13,6200],[0,15,7300],[0,17,8500],[0,20,10000]]
+  .map(([packs,prem,credits])=>Object.assign({credits},packs?{packs}:{},prem?{prem}:{}));
 let OWNER=false;
 const devOn=()=>OWNER&&!!(S&&S.dev);
 const fmtN=n=>Number(n).toLocaleString("fr-FR");
@@ -3129,14 +3160,14 @@ let placeT=0;addEventListener("scroll",()=>{clearTimeout(placeT);placeT=setTimeo
    en était. Booster : seulement si c'est toujours le dernier tirage du serveur (lastOpen.t) ; cadeau : moins d'un jour. */
 let revealKey=0;
 function saveReveal(list=reveal,g=revealGift){
-  try{if(list&&ME&&!list.every(c=>c.shown))localStorage.setItem("dc-reveal",JSON.stringify({u:ME,t:revealKey,g:!!g,c:list.map(c=>[c.id,c.isNew?1:0,c.shiny?1:0,c.shown?1:0])}));
+  try{if(list&&ME&&!list.every(c=>c.shown))localStorage.setItem("dc-reveal",JSON.stringify({u:ME,t:revealKey,g:g||false,c:list.map(c=>[c.id,c.isNew?1:0,c.shiny?1:0,c.shown?1:0])}));
     else localStorage.removeItem("dc-reveal")}catch(e){}
 }
 function restoreReveal(){
   try{const r=JSON.parse(localStorage.getItem("dc-reveal")||"null");if(!r||r.u!==ME||!Array.isArray(r.c)||!r.c.length)return false;
     const ok=r.g?Date.now()-r.t<864e5:!!(S.lastOpen&&S.lastOpen.t===r.t);
     if(!ok){localStorage.removeItem("dc-reveal");return false}
-    reveal=r.c.map(([id,n,s,sh])=>({id:+id,isNew:!!n,shiny:!!s,shown:!!sh,fx:!!sh}));revealGift=!!r.g;revealKey=r.t;handScroll=0;view="booster";
+    reveal=r.c.map(([id,n,s,sh])=>({id:+id,isNew:!!n,shiny:!!s,shown:!!sh,fx:!!sh}));revealGift=r.g||false;revealKey=r.t;handScroll=0;view="booster";
     return true}catch(e){return false}
 }
 /* Collection redessinée (1.2.0) : les vignettes hors de l'écran reprennent une hauteur estimée (content-visibility),
@@ -3282,7 +3313,7 @@ function vBooster(){
   if(reveal){
     const all=reveal.every(c=>c.shown);
     const multi=reveal.length>CARDS,dosCls=myLook("dos")?" bk-"+cosCls(myLook("dos")):""; // dos de carte équipé (boutique)
-    return `<div class="booster"><h1>${revealGift?`Votre cadeau`:lastSpecial?`${spName(lastSpecial.kind,lastSpecial.v)}${multi?` × ${reveal.length/CARDS}`:""}`:multi?`Vos ${reveal.length/CARDS} boosters`:"Votre booster"}</h1>
+    return `<div class="booster"><h1>${revealGift==="eggs"?`Vos œufs ont éclos`:revealGift?`Votre cadeau`:lastSpecial?`${spName(lastSpecial.kind,lastSpecial.v)}${multi?` × ${reveal.length/CARDS}`:""}`:multi?`Vos ${reveal.length/CARDS} boosters`:"Votre booster"}</h1>
     <div class="reveal-bar" id="reveal-head">${revealHeadHTML()}</div>
     <div class="hand-wrap"><button class="hand-nav prev" data-act="hand-prev" aria-label="Carte précédente">‹</button>
     <div class="hand" id="hand">${reveal.map((c,i)=>hitsMode&&!isHit(c)?"":`<button class="flip${c.shown?" shown":""}" data-act="flip" data-i="${i}" aria-label="${c.shown?esc(nm(c.id)):"Retourner la carte "+(i+1)}"><div class="flip-in">
@@ -3297,8 +3328,8 @@ function vBooster(){
   const p=packInfo(S);
   return `<div class="booster home">
     <div class="bh-head"><h1>Ouvrir un booster</h1>
-    <p class="muted">5 cartes au hasard. Attrapez-les tous !</p>${launchNewsHTML()}</div>
-    <div class="bh-left">${tipHTML()}${giftHTML()}${dailyHTML()}
+    <p class="muted">5 cartes au hasard. Attrapez-les tous !</p>${eventsHTML()}${launchNewsHTML()}</div>
+    <div class="bh-left">${tipHTML()}${giftHTML()}${dailyHTML()}${defisHTML()}
     <details class="rules-box"><summary><span aria-hidden="true">📖</span> Comment ça marche ?<span class="rb-chev" aria-hidden="true">▼</span></summary><div class="rules">
       <p>Vous recevez un booster toutes les 10 minutes, jusqu’à 10 boosters en réserve. Chaque carte a sa propre rareté :</p>
       <table><tr><td class="muted">Rareté</td><td class="muted">Chance</td><td class="muted">Défausse</td></tr>${RAR.slice(0,6).map((r,i)=>`<tr><td><span style="color:var(--r${i})">${gems(i)}</span> ${r} (${POOLS[i].length} cartes)</td><td>${pct(ODDS[i])}</td><td>${cr(DISCARD[i])}</td></tr>`).join("")}</table>
@@ -3406,20 +3437,51 @@ function dailyState(){
   const done=d.day===today,streak=d.streak||0;
   return {done,step:done?streak:(d.day===yest?streak%DAILY.length+1:1)}; // step : jour de la série récupéré (done) ou à récupérer
 }
-const dailyTxt=r=>[r.packs?`${r.packs} booster${r.packs>1?"s":""}`:"",r.credits?cr(r.credits):""].filter(Boolean).join(" + ");
+const dailyTxt=r=>[r.packs?`${r.packs} booster${r.packs>1?"s":""}`:"",r.prem?`${r.prem} Booster${r.prem>1?"s":""} Premium`:"",r.credits?cr(r.credits):""].filter(Boolean).join(" + ");
+// calendrier de 30 jours (1.10.0) : les jours en petites cases (✓ récupéré, cadre doré : aujourd’hui, violet : Boosters Premium),
+// un toucher montre la récompense d’un jour ; aujourd’hui, demain et le jour 30 en clair
 function dailyHTML(){
-  const {done,step}=dailyState();
-  return `<div class="daily${done?" done":""}"><div class="daily-head"><b>Récompense du jour</b><span class="muted">${done?"Revenez demain pour continuer la série.":"Connectez-vous chaque jour : la série repart de zéro si vous manquez un jour."}</span></div>
-    <div class="daily-steps">${DAILY.map((r,i)=>{const n=i+1,st=n<step||done&&n===step?"got":n===step?"now":"";
-      return `<div class="dstep ${st}"><span class="dn">Jour ${n}</span><span class="dr">${dailyTxt(r)}</span>${st==="got"?`<span class="dk" aria-label="Récupéré">✓</span>`:""}</div>`}).join("")}</div>
-    ${done?"":`<button class="btn primary" data-act="daily-claim">Récupérer : ${dailyTxt(DAILY[step-1])}</button>`}</div>`;
+  const {done,step}=dailyState(),nx=step%DAILY.length+1,last=DAILY.length;
+  return `<div class="daily${done?" done":""}"><div class="daily-head"><b>Récompense du jour · jour ${step} / ${last}</b><span class="muted">${done?"Revenez demain pour continuer la série.":"Connectez-vous chaque jour : la série repart de zéro si vous manquez un jour."}</span></div>
+    <div class="daily-cal">${DAILY.map((r,i)=>{const n=i+1,st=n<step||done&&n===step?"got":n===step?"now":"";
+      return `<button class="dday ${st}${r.prem?" prem":""}${n===last?" last":""}" data-act="daily-day" data-d="${n}" title="Jour ${n} : ${esc(dailyTxt(r))}">${st==="got"?"✓":n}</button>`}).join("")}</div>
+    <div class="daily-next">${done?`<span>Demain (jour ${nx}) : <b>${dailyTxt(DAILY[nx-1])}</b></span>`:`<span>Aujourd’hui : <b>${dailyTxt(DAILY[step-1])}</b></span><span class="muted">Demain : ${dailyTxt(DAILY[nx-1])}</span>`}
+      ${step<last?`<span class="muted">Jour ${last} : ${dailyTxt(DAILY[last-1])}</span>`:""}</div>
+    ${done?"":`<button class="btn primary" data-act="daily-claim">Récupérer la récompense du jour</button>`}</div>`;
 }
 function claimDaily(){
   run(async()=>{
     const r=await rpc("dc_daily_claim");
-    toast(`Jour ${r.streak} de la série : +${dailyTxt({packs:r.packs,credits:r.credits})} !`);
+    toast(`Jour ${r.streak} de la série : +${dailyTxt({packs:r.packs,prem:r.prem,credits:r.credits})} !`);
     SFX.flip&&SFX.flip(2);
   });
+}
+/* Défis du jour (1.10.0, demande de Theo) : chaque jour, 3 défis tirés par le serveur (dc_defi_state, partie 8) dans DEFIS.list ;
+   progression = compteur de stats (s) depuis le tirage, donc aucun jeu n’a besoin de les connaître. Chaque défi réussi rapporte
+   DEFIS.reward, les trois réunis DEFIS.bonus en plus (dc_defi_claim). Les textes viennent d’ici, le serveur ne garde que k. */
+const DEFIS={n:3,reward:{packs:5},bonus:{prem:1},list:[
+  {k:"packs",s:"packs",need:10,ic:"📦",n:"Ouvrir 10 boosters"},
+  {k:"eclos",s:"pnHatch",need:3,ic:"🥚",n:"Faire éclore 3 œufs à la Pension"},
+  {k:"lumi",s:"lbRuns",need:3,ic:"🏮",n:"Explorer 3 clairières de Lumi-Bois"},
+  {k:"sout",s:"souRuns",need:2,ic:"💎",n:"Fouiller 2 murs du Souterrain"},
+  {k:"volto",s:"vbWins",need:5,ic:"⚡",n:"Gagner 5 manches de VoltoBataille"},
+  {k:"arene",s:"arWins",need:3,ic:"⚔️",n:"Gagner 3 manches d’Arène"},
+  {k:"evo",s:"evos",need:3,ic:"🧬",n:"Faire évoluer 3 Pokémon"},
+  {k:"defausse",s:"discards",need:20,ic:"♻️",n:"Défausser 20 cartes"},
+  {k:"echange",s:"trades",need:1,ic:"🔁",n:"Conclure 1 échange"},
+  {k:"objets",s:"souItems",need:5,ic:"⛏️",n:"Déterrer 5 objets au Souterrain"}]};
+let defiAsked="";
+function defisHTML(){
+  const df=S&&S.defis,today=parisDay();
+  if(!df||df.day!==today){if(S&&defiAsked!==today){defiAsked=today;rpc("dc_defi_state",{}).catch(()=>{})}return ""} // tirage du jour (une fois par jour et par page)
+  const got=df.got||[],st=S.stats||{},n=got.length,all=n>=df.l.length;
+  const rows=df.l.map(x=>{const D=DEFIS.list.find(z=>z.k===x.k)||{ic:"🎯",n:x.k},p=Math.max(0,Math.min(x.need,(+st[x.s]||0)-x.b)),ok=p>=x.need,g=got.includes(x.k);
+    return `<div class="defi${g?" got":ok?" ok":""}"><span class="df-ic" aria-hidden="true">${D.ic}</span><span class="df-t"><span>${esc(D.n)}</span><span class="df-bar"><i style="width:${Math.round(p*100/x.need)}%"></i></span></span>
+      ${g?`<span class="df-k" aria-label="Récupéré">✓</span>`:ok?`<button class="btn small primary" data-act="defi-claim" data-k="${esc(x.k)}">${dailyTxt(DEFIS.reward)}</button>`:`<span class="df-n">${p} / ${x.need}</span>`}</div>`}).join("");
+  return `<div class="defis${all?" done":""}"><div class="daily-head"><b>🎯 Défis du jour</b><span class="muted">${all?"Les trois sont réussis : rendez-vous demain pour de nouveaux défis !":`${dailyTxt(DEFIS.reward)} par défi, et ${dailyTxt(DEFIS.bonus)} pour les trois.`}</span></div>${rows}</div>`;
+}
+function claimDefi(k){
+  run(async()=>{const r=await rpc("dc_defi_claim",{p_k:k});toast(`Défi réussi : +${dailyTxt(DEFIS.reward)} !${r.bonus?` Les trois défis sont réussis : +${dailyTxt(DEFIS.bonus)} !`:""}`);SFX.flip&&SFX.flip(r.bonus?3:2)});
 }
 function filtered(){
   const q=filt.q.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
@@ -3886,6 +3948,7 @@ function vProfile(){
       <p class="muted" style="margin:6px 0 0;font-size:.85rem">Réglages propres à cet appareil.</p>`})()}
     ${canInstall()?`<h3 class="psub">Appli</h3>
     <p class="muted" style="margin:4px 0 10px">Installez DexCraft sur cet appareil : une icône sur l'écran d'accueil, en plein écran, sans barre d'adresse.</p>${installHTML()}`:""}
+    <h3 class="psub">Notifications</h3>${pushHTML()}
     <h3 class="psub">Shiny</h3>
     <label class="pref"><input type="checkbox" data-act="shiny-norm"${S.shinyNorm?" checked":""}> Toujours afficher les formes normales, même pour les cartes obtenues en shiny</label>
     <p class="muted" style="margin:6px 0 0;font-size:.85rem">Pour une seule carte, utilisez le bouton de sa fiche. Réglage enregistré sur votre compte.</p>
@@ -4258,9 +4321,32 @@ const launchOn=()=>!!LAUNCH&&Date.now()<LAUNCH.until;
    ensuite (1.0.4), une invitation à personnaliser son profil depuis son pseudo */
 function lookNewsSeen(){try{return localStorage.getItem("dc-look-news")==="1"}catch(e){return false}}
 function launchNewsHTML(){
-  if(launchOn()&&!(S.bought&&S.bought[LAUNCH.k]))return `<p class="launch-news">🎉 <b>DexCraft est officiellement lancé !</b> Un pack gratuit vous attend dans la <button class="linkish" data-view="shop">boutique</button>, jusqu’au ${LAUNCH.end} inclus.</p>`;
+  if(launchOn()&&!(S.bought&&S.bought[LAUNCH.k]))return ""; // 1.10.0 : le pack est annoncé par le bandeau de l’événement Bienvenue
   if(lookNewsSeen())return ""; // lien déjà cliqué sur cet appareil (1.0.5)
   return `<p class="launch-news look-news">✨ Personnalisez votre profil et votre environnement de jeu, et gérez vos titres, en cliquant sur <button class="linkish" data-act="look-news">votre pseudo</button>.</p>`;
+}
+/* Événements (1.10.0, demande de Theo) : dates de début et de fin (AAAA-MM-JJ, heure de Paris, incluses), bandeau sur l’écran des
+   boosters, effets appliqués par le serveur (dc__evfx, partie 4) : shiny (chances de shiny ×N, boosters et œufs), hatch (éclosions
+   N fois plus rapides), eggs (œufs N fois plus fréquents à Lumi-Bois), ec (éclats ×N au Souterrain et à Lumi-Bois) ; pack : cadeau à
+   récupérer une fois pendant l’événement ({credits, packs, prem}, dc_event_claim, partie 8) ; once : offre unique de cfg.once (le pack
+   de bienvenue, LAUNCH) ; big : gros événement (bandeau plus grand, couleurs c1 et c2). Exemple :
+   {k:"shiny-w1",n:"Week-end shiny",ic:"✨",from:"2026-10-24",to:"2026-10-25",fx:{shiny:2},d:"Deux fois plus de shiny tout le week-end !"}
+   Exporté dans la configuration (cfg.events) : la régénérer et la passer après chaque changement. */
+const EVENTS=[{k:"bienvenue",n:"Bienvenue dans DexCraft",ic:"🎉",from:"2026-09-26",to:"2026-10-14",once:"lancement",
+  d:"Pour fêter l’ouverture du jeu, un pack de bienvenue vous attend : 1 000 crédits et 10 boosters, à récupérer une fois."}];
+const evOn=(e,day=parisDay())=>day>=e.from&&day<=e.to;
+const evFx=(k,day=parisDay())=>EVENTS.reduce((m,e)=>evOn(e,day)&&e.fx&&e.fx[k]?m*e.fx[k]:m,1);
+const EV_FX={shiny:["✨","Shiny",m=>`${fmtNum(m)} fois plus de chances`],hatch:["🥚","Éclosions",m=>`${fmtNum(m)} fois plus rapides`],
+  eggs:["🏮","Œufs à Lumi-Bois",m=>`${fmtNum(m)} fois plus fréquents`],ec:["💠","Éclats",m=>`×${fmtNum(m)} au Souterrain et à Lumi-Bois`]};
+const fmtNum=m=>(+m).toLocaleString("fr-FR",{maximumFractionDigits:2});
+const evDay=d=>new Date(d+"T12:00:00Z").toLocaleDateString("fr-FR",{day:"numeric",month:"long",timeZone:"UTC"});
+function eventsHTML(){
+  return EVENTS.filter(e=>evOn(e)).map(e=>{
+    const once=e.once&&LAUNCH&&e.once===LAUNCH.k&&launchOn()&&!(S.bought&&S.bought[LAUNCH.k]),pack=e.pack&&!(S.evGot&&S.evGot[e.k]);
+    const fx=Object.entries(e.fx||{}).filter(([k])=>EV_FX[k]).map(([k,m])=>`<span class="ev-fx"><b>${EV_FX[k][0]} ${EV_FX[k][1]}</b> ${EV_FX[k][2](m)}</span>`).join("");
+    return `<div class="ev-banner${e.big?" big":""}"${e.c1?` style="--ev1:${e.c1};--ev2:${e.c2||e.c1}"`:""}><span class="ev-ic" aria-hidden="true">${e.ic||"🎉"}</span>
+      <div class="ev-t"><b>${esc(e.n)}</b><small>Événement jusqu’au ${evDay(e.to)} inclus</small>${e.d?`<p>${esc(e.d)}</p>`:""}${fx?`<div class="ev-fxs">${fx}</div>`:""}</div>
+      ${once?`<button class="btn primary" data-act="claim-launch">Récupérer le pack</button>`:pack?`<button class="btn primary" data-act="ev-claim" data-k="${esc(e.k)}">Récupérer : ${dailyTxt(e.pack)}</button>`:""}</div>`}).join("");
 }
 function launchHTML(){
   if(!launchOn())return "";
@@ -5857,13 +5943,17 @@ function soTopHTML(){
     <button class="btn small" data-so="rules" title="Règles">?<span class="ar-wide"> Règles</span></button>${musicSlider("sout","somus","ar-music","")}${sfxSlider("sout","sosfx")}
     ${(()=>{const n=+((S&&S.stats&&S.stats.souRuns)||0);return SO&&SO.run&&!SO.run.over?`<span class="ar-chip so-stat" title="Vos éclats avant cette fouille">💠 ${fmtN(soEc())} éclats</span>`
       :`<span class="ar-chip so-stat" title="Murs fouillés depuis le début">⛏ ${fmtN(n)} fouille${n>1?"s":""}</span>`})()}</div>`} // 1.7.0 (demande de Theo)
-function soShopHTML(){
-  const ec=soEc(),got=soGot();
+// comptoir des éclats (1.5.9) ; aussi à Lumi-Bois depuis la 1.10.0 (même solde : sout.ec)
+function soCounterHTML(note){
+  const ec=soEc();
   const lot=l=>{const can=ec>=l.p,sel=l.sp==="gen"?`<select data-so-sel="gen" aria-label="Génération">${REGIONS.slice(1).map((reg,i)=>`<option value="${i+1}"${soGen===i+1?" selected":""}>${ROMAN[i+1]} · ${reg}</option>`).join("")}</select>`
       :l.sp==="type"?`<select data-so-sel="type" aria-label="Type">${TYPES.slice(1).map(([tn],i)=>`<option value="${i+1}"${soType===i+1?" selected":""}>${tn}</option>`).join("")}</select>`:"";
     return `<div class="so-lot"><b>${esc(l.n)}</b>${sel}<button class="btn small${can?" primary":""}" data-so="buy" data-k="${l.k}"${can?"":" disabled"}>💠 ${fmtN(l.p)}</button></div>`};
-  return `<div class="so-side"><div class="so-box"><h3 class="so-h3">🏪 Comptoir<span class="so-ec" title="Vos éclats">💠 ${fmtN(ec)} éclats</span></h3><p class="muted ar-small">Vos sphères sont changées en éclats à la fin de chaque fouille.</p>
-    <div class="so-lots">${SOUT.lots.map(lot).join("")}</div></div>
+  return `<div class="so-box"><h3 class="so-h3">🏪 Comptoir<span class="so-ec" title="Vos éclats">💠 ${fmtN(ec)} éclats</span></h3><p class="muted ar-small">${note}</p>
+    <div class="so-lots">${SOUT.lots.map(lot).join("")}</div></div>`}
+function soShopHTML(){
+  const got=soGot();
+  return `<div class="so-side">${soCounterHTML("Vos sphères sont changées en éclats à la fin de chaque fouille, comme les trouvailles de Lumi-Bois.")}
     ${soBagHTML()}
     <div class="so-box"><h3>🎒 Vos trouvailles</h3><div class="so-got">${SO_ORDER.map(k=>`<div class="${got[k]?"":"none"}">${soIco(k)}<span>${esc(SOUT.items[k].n)}</span><b>${fmtN(got[k]||0)}</b></div>`).join("")}</div></div></div>`}
 /* sac du Souterrain (1.6.0) : les 18 plaques (titre « Élu d’Arceus » une fois toutes réunies) et la Clef de voûte ;
@@ -5979,7 +6069,7 @@ function soRules(){
     <table class="so-tab"><thead><tr><th>Objet</th><th>Taille</th><th>Chance</th><th>Gain</th></tr></thead><tbody>${SO_ORDER.map(row).join("")}</tbody></table></div>`,true);
 }
 document.addEventListener("click",e=>{
-  const b=e.target.closest("[data-so]");if(!b||!e.target.closest(".souterrain,#dlg"))return;
+  const b=e.target.closest("[data-so]");if(!b||!e.target.closest(".souterrain,.lumibois,#dlg"))return; // comptoir aussi à Lumi-Bois (1.10.0)
   const a=b.dataset.so;
   if(a==="rules"){soRules();return}
   if(a==="plate"){const t=+b.dataset.t;actBtn=b;run(async()=>{await rpc("dc_sout_plate",{p_type:t},{render:false});toast(`Booster Type ${TYPES[t][0]} ajouté à vos boosters spéciaux !`);renderView()});return}
@@ -6002,8 +6092,8 @@ document.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;co
    entièrement éclairés sont gagnés (gris tant qu’ils ne le sont pas). Serveur : partie 7 (dc_lb_*), la page ne voit que les
    cases éclairées. Caché sauf en mode développeur tant que LUMI.open est faux (comme le Souterrain à ses débuts) ; ouvert à tous depuis la 1.9.0.
    ============================================================ */
-const LUMI={v:"v1.0",open:true,cost:100,lamps:6,w:12,h:12,rows:[6,8,10,12,12,12,12,12,12,10,8,6],n:[6,9],
-  // s : taille (colonnes, lignes) ; m : masque des cases ; w : poids du tirage ; r : rareté affichée (1 commune … 5 ???) ; cr : crédits ;
+const LUMI={v:"v1.1",open:true,cost:100,lamps:6,w:12,h:12,rows:[6,8,10,12,12,12,12,12,12,10,8,6],n:[6,9],
+  // s : taille (colonnes, lignes) ; m : masque des cases ; w : poids du tirage ; r : rareté affichée (1 commune … 5 ???) ; ec : éclats (crédits jusqu’à la 1.9.3) ;
   // lamp : +1 lanterne ; trap : piège (−1 lanterne), look : objet qu’il imite tant qu’il n’est pas entièrement éclairé ; stone : +1 Pierre
   // évolutive ; egg : œuf pour la Pension ; gs : GS Ball (crédits une fois la carte obtenue) ; mush : champignon (titre Mycologue).
   // Réglage par simulation : 1.8.1 (demande de Theo), même rentabilité que le Souterrain mesurée sur 2 000 et 20 000 parties (1,40 fois la
@@ -6014,11 +6104,14 @@ const LUMI={v:"v1.0",open:true,cost:100,lamps:6,w:12,h:12,rows:[6,8,10,12,12,12,
   // 1.9.1 (demande de Theo, un peu trop rentable) : entre-deux, 1,65 fois la mise rendue en moyenne (1,40 en 1.8.2, 1,91 en 1.8.3)
   // 1.9.2 (demande de Theo) : Œuf 20 % plus rare (poids 1 500 → 1 200), Œuf rare 10 % plus rare (700 → 630), Œuf doré inchangé
   // 1.9.3 (demande de Theo) : retour à la rentabilité du Souterrain, 1,40 fois la mise (140 crédits pour 100, médiane 92, 46 % des clairières remboursent)
-  items:{baie:{n:"Baie Oran",s:[1,1],w:3000,r:1,cr:7},pchamp:{n:"Petit Champignon",s:[1,2],w:3000,r:1,cr:15,mush:1},miel:{n:"Miel",s:[2,2],w:3000,r:1,cr:24},
-    noig:{n:"Noigrume",s:[1,1],w:2000,r:2,cr:37},gchamp:{n:"Gros Champignon",s:[2,2],w:2000,r:2,cr:55,mush:1},bocal:{n:"Bocal de lucioles",s:[1,2],w:2000,r:2,lamp:1},
-    oeuf:{n:"Œuf",s:[2,3],w:1200,r:2,egg:"oeuf"},amonita:{n:"Amonita",s:[2,2],w:1000,r:2,trap:1,look:"gchamp"},
-    ambre:{n:"Vieil Ambre",s:[2,2],w:700,r:3,cr:148},pierre:{n:"Pierre Plante",s:[2,2],w:700,r:3,stone:1},suave:{n:"Champi Suave",s:[3,3],m:"111111010",w:700,r:3,cr:268,mush:1},
-    oeufr:{n:"Œuf rare",s:[2,3],w:630,r:3,egg:"rare"},oeufd:{n:"Œuf doré",s:[2,3],w:80,r:4,egg:"dore"},gs:{n:"GS Ball",s:[2,2],w:24,r:5,gs:2000}}};
+  // 1.10.0 (demandes de Theo) : gains en éclats (même solde et même comptoir que le Souterrain) ; Œuf et Œuf rare deux fois moins fréquents
+  // (poids 600 et 315 ; Œuf doré inchangé) ; valeurs réajustées, mesurées sur 3 × 30 000 parties : 140 éclats pour 100 crédits, médiane 94,
+  // 48 % des clairières remboursent (comme les murs du Souterrain) ; pour 100 clairières, environ 16 Œufs, 9 Œufs rares et 2 Œufs dorés
+  items:{baie:{n:"Baie Oran",s:[1,1],w:3000,r:1,ec:7},pchamp:{n:"Petit Champignon",s:[1,2],w:3000,r:1,ec:14,mush:1},miel:{n:"Miel",s:[2,2],w:3000,r:1,ec:23},
+    noig:{n:"Noigrume",s:[1,1],w:2000,r:2,ec:35},gchamp:{n:"Gros Champignon",s:[2,2],w:2000,r:2,ec:52,mush:1},bocal:{n:"Bocal de lucioles",s:[1,2],w:2000,r:2,lamp:1},
+    oeuf:{n:"Œuf",s:[2,3],w:600,r:2,egg:"oeuf"},amonita:{n:"Amonita",s:[2,2],w:1000,r:2,trap:1,look:"gchamp"},
+    ambre:{n:"Vieil Ambre",s:[2,2],w:700,r:3,ec:138},pierre:{n:"Pierre Plante",s:[2,2],w:700,r:3,stone:1},suave:{n:"Champi Suave",s:[3,3],m:"111111010",w:700,r:3,ec:250,mush:1},
+    oeufr:{n:"Œuf rare",s:[2,3],w:315,r:3,egg:"rare"},oeufd:{n:"Œuf doré",s:[2,3],w:80,r:4,egg:"dore"},gs:{n:"GS Ball",s:[2,2],w:24,r:5,gs:2000}}};
 const LB_ORDER=["baie","pchamp","miel","noig","gchamp","bocal","oeuf","ambre","pierre","suave","oeufr","oeufd","amonita","gs"];
 const LB_RAR=["","Commune","Peu commune","Rare","Très rare","???"];
 const lbOn=()=>LUMI.open||devOn();
@@ -6030,8 +6123,8 @@ function lbLoad(){if(lbLoading)return;lbLoading=true;rpc("dc_lb_state",{},{rende
 // dessin d’un objet : l’élément couvre tout l’objet, chaque case n’en montre que sa part (comme au Souterrain)
 const lbItemEl=(k,ox,oy)=>{const it=LUMI.items[k];return `<i class="lb-it lb-${k}" style="--w:${it.s[0]};--h:${it.s[1]};--x:${ox};--y:${oy}"></i>`};
 const lbIco=k=>{const [w,h]=LUMI.items[k].s,u=Math.min(28/w,28/h);return `<span class="lb-ico" style="width:${Math.round(w*u)}px;height:${Math.round(h*u)}px;--cs:${u.toFixed(1)}px" title="${esc(LUMI.items[k].n)}">${lbItemEl(k,0,0)}</span>`};
-const lbGain=k=>{const it=LUMI.items[k];return it.cr?`${fmtN(it.cr)} crédits`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"+1 Pierre évolutive":it.egg?"un œuf pour la Pension":"???"};
-const lbVal=k=>{const it=LUMI.items[k];return it.cr?`${fmtN(it.cr)} crédits`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"Pierre évolutive":it.egg?"Pension":S&&S.stats&&S.stats.lbGsX?`${fmtN(it.gs)} crédits`:"???"}; // 1.8.1 : affichée dans le Sac à dos
+const lbGain=k=>{const it=LUMI.items[k];return it.ec?`${fmtN(it.ec)} éclats`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"+1 Pierre évolutive":it.egg?"un œuf pour la Pension":"???"};
+const lbVal=k=>{const it=LUMI.items[k];return it.ec?`${fmtN(it.ec)} éclats`:it.lamp?"+1 lanterne":it.trap?"−1 lanterne":it.stone?"Pierre évolutive":it.egg?"Pension":S&&S.stats&&S.stats.lbGsX?`${fmtN(it.gs)} éclats`:"???"}; // 1.8.1 : affichée dans le Sac à dos
 const lbChance=k=>{const t=LB_ORDER.reduce((a,x)=>a+LUMI.items[x].w,0);return LUMI.items[k].w/t*100};
 const lbStartBtn=()=>{const m=lbMiss(),free=devOn();return m?`<button class="btn primary ar-fight" disabled>Il vous manque ${fmtN(m)} crédits</button>`
   :`<button class="btn primary ar-fight lb-go" data-lb="start">🏮 Explorer une clairière · ${free?"gratuit (mode développeur)":fmtN(LUMI.cost)+" crédits"}</button>`};
@@ -6061,7 +6154,7 @@ function lbInfoHTML(r){const f=r.objs.filter(o=>o.done&&!LUMI.items[o.k].trap);
 function lbResNotes(r){
   const it=r.res.items,eggs=it.filter(x=>LUMI.items[x]&&LUMI.items[x].egg).length,st=it.filter(x=>x==="pierre").length;
   return [eggs?`🥚 ${eggs} œuf${eggs>1?"s":""} ${eggs>1?"partent":"part"} à la Pension.`:"",st?`🌿 +${st} Pierre${st>1?"s":""} évolutive${st>1?"s":""}.`:"",
-    it.includes("gs")?"La GS Ball vibre doucement entre vos mains… Elle semble attendre quelque chose.":"",it.includes("gs+")?`GS Ball : +${fmtN(LUMI.items.gs.gs)} crédits.`:""]
+    it.includes("gs")?"La GS Ball vibre doucement entre vos mains… Elle semble attendre quelque chose.":"",it.includes("gs+")?`GS Ball : +${fmtN(LUMI.items.gs.gs)} éclats.`:""]
     .filter(Boolean).map(t=>`<p class="lb-note">${t}</p>`).join("");
 }
 function lbTopHTML(){const n=+((S&&S.stats&&S.stats.lbRuns)||0);
@@ -6082,10 +6175,10 @@ function vLumi(){
   const r=LB.run;
   if(!r||r.over){
     const last=r&&r.over&&r.res?`<div class="lb-last"><h3>${r.lamps>0?"Clairière explorée : tout est trouvé !":"Dernière clairière : les lanternes se sont éteintes"}</h3>${lbFinal(r)}
-      <p>${r.res.items.length?r.res.items.map(x=>lbIco(x==="gs+"?"gs":x)).join(""):"Aucun objet trouvé en entier."}${r.res.cr?` <b>+${fmtN(r.res.cr)} crédits</b>`:""}</p>${lbResNotes(r)}</div>`:"";
+      <p>${r.res.items.length?r.res.items.map(x=>lbIco(x==="gs+"?"gs":x)).join(""):"Aucun objet trouvé en entier."}${r.res.ec?` <b>+${fmtN(r.res.ec)} éclats</b>`:""}${r.res.cr?` <b>+${fmtN(r.res.cr)} crédits</b>`:""}</p>${lbResNotes(r)}</div>`:"";
     return `<div class="lumibois">${LB_SKY}<div class="lb-wrap">${lbTopHTML()}<div class="lb-intro"><div class="lb-start">
       <p>La nuit est tombée sur la clairière. Quelque part dans l’ombre, des trésors attendent. Vous avez <b>${LUMI.lamps} lanternes</b> : chacune éclaire un carré de 3 × 3 cases. Seuls les objets <b>entièrement éclairés</b> sont à vous… et méfiez-vous de ce qui dort sous les champignons.</p>
-      ${lbStartBtn()}${last}</div>${lbBagHTML()}</div></div></div>`;
+      ${lbStartBtn()}${last}${soCounterHTML("Les objets trouvés sont changés en éclats à la fin de chaque clairière, comme au Souterrain.")}</div>${lbBagHTML()}</div></div></div>`;
   }
   return `<div class="lumibois playing">${LB_SKY}<div class="lb-wrap">${lbTopHTML()}<div class="lb-stage">${lbLampsHTML(r)}${lbInfoHTML(r)}<div class="lb-boardw">${lbBoardHTML(r)}</div></div></div></div>`;
 }
@@ -6121,7 +6214,7 @@ function lbRules(){
     <li>Vous avez <b>${LUMI.lamps} lanternes</b>. Touchez une case : la lanterne éclaire le carré de 3 × 3 cases autour d’elle.</li>
     <li>Un objet en partie éclairé reste gris. <b>Entièrement éclairé</b>, il passe en couleur et il est à vous.</li>
     <li>Un Bocal de lucioles rallume une lanterne. Mais un Amonita se cache parfois parmi les Gros Champignons : entièrement éclairé, il libère ses spores et éteint une lanterne (un seul par clairière au plus).</li>
-    <li>La partie s’arrête quand les lanternes sont éteintes ou que tout est trouvé. Les œufs partent à la Pension, la Pierre Plante rejoint vos Pierres évolutives. Une partie quittée reprend telle quelle.</li></ul>
+    <li>La partie s’arrête quand les lanternes sont éteintes ou que tout est trouvé. Les objets sont changés en <b>éclats</b>, à échanger au comptoir contre des boosters (le même qu’au Souterrain). Les œufs partent à la Pension, la Pierre Plante rejoint vos Pierres évolutives. Une partie quittée reprend telle quelle.</li></ul>
     <table class="so-tab"><thead><tr><th>Objet</th><th>Taille</th><th>Rareté</th><th>Chance</th><th>Gain</th></tr></thead><tbody>${LB_ORDER.map(row).join("")}</tbody></table></div>`,true);
 }
 /* textures de Lumi-Bois, dessinées une fois dans des canvas : silhouettes d’arbres sur trois plans, feuillage des cases dans le
@@ -6186,51 +6279,80 @@ document.addEventListener("pointerover",e=>{if(e.pointerType!=="mouse")return;co
   const old=lbAimSet();lbAim=i;const now=lbAimSet();document.querySelectorAll("#lb-board .lb-c[data-i]").forEach(el=>{const k=+el.dataset.i;if(old.has(k)!==now.has(k))el.classList.toggle("aim",now.has(k))})});
 
 /* ============================================================
-   Pension (1.8.0, idée de Theo) : les œufs (trouvés à Lumi-Bois, et plus tard ailleurs) attendent dans la réserve ; jusqu’à
-   10 dans la couveuse, dont 3 couvent en même temps (15 min, 30 min, 1 h 30 depuis la 1.9.2, demande de Theo : 30 min, 1 h, 3 h avant ; le temps passe aussi hors ligne). Contenu : dc__pn_draw (partie 7). Le Pokémon n’est
-   tiré qu’à l’éclosion (serveur, partie 7 : dc_pn_*). Un mini-jeu s’y ajoutera plus tard. Caché sauf en mode développeur
-   tant que PENSION.open est faux ; ouverte à tous depuis la 1.9.0.
+   Pension (1.8.0, idée de Theo) : les œufs trouvés à Lumi-Bois arrivent dans la réserve. Depuis la 1.10.0 (demande de Theo : les
+   œufs s’entassaient), la couveuse se remplit toute seule : 3 œufs couvent en même temps, les dorés d’abord, puis les rares, puis
+   les normaux ; dès qu’une place se libère, l’œuf suivant y entre, même hors ligne. Les œufs prêts attendent dans un panier sans
+   limite, et « Faire éclore » les ouvre d’un coup (50 au plus) comme une ouverture de boosters. 15 min, 30 min, 1 h 30 (1.9.2).
+   Contenu : dc__pn_draw (partie 7). Le Pokémon n’est tiré qu’à l’éclosion (serveur, partie 7 : dc_pn_*). La page refait le même
+   calcul que le serveur (pnSync = dc__pn_sync) pour afficher l’état à la seconde près sans le lui demander.
    ============================================================ */
-const PENSION={open:true,q:10,slots:3,shiny:512,dur:{oeuf:900000,rare:1800000,dore:5400000},
+const PENSION={open:true,q:10,slots:3,shiny:512,dur:{oeuf:900000,rare:1800000,dore:5400000}, // q : places montrées (3 qui couvent, 7 qui attendent)
   rareW:[0,0,40,30,20,10]}; // Œuf rare (poids par rareté 0 à 5) : 1.8.3 (demande de Theo) Rare 40 %, Épique 30 %, Méga et Gigamax 20 %, Légendaire 10 % ; 1.8.2 : 50 / 35 / 0 / 15
 const PN_EGGS=[["oeuf","Œuf","un Pokémon commun ou peu commun, ou un premier stade d’évolution, jamais légendaire"],["rare","Œuf rare","un Pokémon rare (40 %), épique (30 %), Méga ou Gigamax (20 %) ou légendaire (10 %)"],["dore","Œuf doré","toujours un Pokémon légendaire"]];
 const PN_KEY={oeuf:"oeuf",rare:"oeufr",dore:"oeufd"}; // dessin de l’œuf : celui de Lumi-Bois
+const PN_ORDER=["dore","rare","oeuf"]; // ordre d’entrée dans la couveuse
 const pnOn=()=>PENSION.open||devOn();
 let pnOff=0,pnBusy=false,pnNext=0,pnSynced=false; // pnOff : écart entre l’heure du serveur et celle de l’appareil ; pnNext : prochain changement d’état
 const pnNow=()=>Date.now()+pnOff;
+const pnSum=o=>PN_ORDER.reduce((a,k)=>a+(+((o||{})[k])||0),0);
+// couveuse calculée jusqu’à maintenant, comme le serveur (dc__pn_sync) : q (en couvaison), rdy (prêts), res (réserve), plan (œufs
+// suivants, dans l’ordre où ils entreront, avec leurs heures prévues), end (heure à laquelle tout sera prêt)
+function pnSync(p0,now){
+  const p=p0||{},n=PENSION.slots,legacy=(p.v||0)<2,res={...(p.res||{})},rdy={...(p.rdy||{})},sl=[],add=(o,k)=>{o[k]=(o[k]||0)+1};
+  (Array.isArray(p.q)?p.q:[]).forEach(x=>{
+    if(legacy&&x.e<=now)add(rdy,x.k);
+    else if(legacy&&x.s>now||sl.length>=n)add(res,x.k);
+    else sl.push({k:x.k,s:x.s,e:x.e})});
+  while(sl.length<n)sl.push({k:null,s:0,e:now});
+  const next=r=>PN_ORDER.find(k=>(r[k]||0)>0),dur=(k,t)=>Math.round(PENSION.dur[k]/evFx("hatch",parisDay(t)));
+  for(;;){let m=-1;sl.forEach((x,i)=>{if(x.e<=now&&(m<0||x.e<sl[m].e))m=i});if(m<0)break;
+    const f=sl[m].e;if(sl[m].k)add(rdy,sl[m].k);const k=next(res);
+    if(!k){sl[m]={k:null,s:0,e:Infinity};continue}
+    res[k]--;sl[m]={k,s:f,e:f+dur(k,f)}}
+  const plan=[],rc={...res},se=sl.map(x=>x.e);let end=0;
+  for(;;){let m=-1;se.forEach((e,i)=>{if(e<Infinity&&(m<0||e<se[m]))m=i});if(m<0)break;
+    const k=next(rc);if(!k){end=Math.max(end,se[m]);se[m]=Infinity;continue}
+    rc[k]--;const s=se[m];se[m]=s+dur(k,s);if(plan.length<50)plan.push({k,s,e:se[m]})}
+  return {q:sl.filter(x=>x.k),rdy,res,plan,end};
+}
+const pnState=()=>pnSync(S&&S.pension,pnNow());
 /* encart de l’écran des boosters (1.8.3, demande de Theo : bien visible) : état de la couveuse, ouvre la Pension */
 let pnHomeNext=0;
-const pnReady=()=>pnOn()&&((S&&S.pension&&S.pension.q)||[]).some(e=>e.e<=pnNow());
+const pnReady=()=>pnOn()&&pnSum(pnState().rdy)>0;
 function pnHomeHTML(m){ // m : version de la colonne du booster (téléphone : juste sous la réserve)
   if(!pnOn())return "";
-  const p=(S&&S.pension)||{},res=p.res||{},q=Array.isArray(p.q)?p.q:[],now=pnNow(),ready=q.filter(e=>e.e<=now).length,warm=q.filter(e=>e.s<=now&&e.e>now).length;
-  const nr=(res.oeuf||0)+(res.rare||0)+(res.dore||0),k=(q.find(e=>e.e<=now)||q[0]||{}).k||(res.dore?"dore":res.rare?"rare":"oeuf");
-  pnHomeNext=Math.min(Infinity,...q.map(e=>e.e>now?e.e:Infinity));if(pnHomeNext===Infinity)pnHomeNext=0;
-  const t=ready?`${ready} œuf${ready>1?"s":""} prêt${ready>1?"s":""} à éclore !`:warm?`${warm} œuf${warm>1?"s":""} en couvaison`:nr?`${nr} œuf${nr>1?"s":""} en réserve : mettez-les à couver`:"Faites couver et éclore vos œufs";
+  const P=pnState(),ready=pnSum(P.rdy),warm=P.q.length,nr=pnSum(P.res),k=PN_ORDER.find(x=>P.rdy[x])||(P.q[0]||{}).k||"oeuf";
+  pnHomeNext=Math.min(Infinity,...P.q.map(e=>e.e));if(pnHomeNext===Infinity)pnHomeNext=0;
+  const t=ready?`${ready} œuf${ready>1?"s":""} prêt${ready>1?"s":""} à éclore !`:warm?`${warm+nr} œuf${warm+nr>1?"s":""} en couvaison ou en attente`:"Trouvez des œufs à Lumi-Bois et faites-les éclore";
   return `<button class="pn-home${m?" m":""}${ready?" ready":""}" data-view="pension"><span class="pn-home-egg">${pnEgg(k,ready?"wobble":"")}</span><span class="pn-home-t"><b>🥚 Pension</b><small>${t}</small></span><span class="pn-home-go" aria-hidden="true">›</span></button>`;
 }
 const pnEgg=(k,cls="")=>`<span class="pn-egg${cls?" "+cls:""}">${lbItemEl(PN_KEY[k],0,0)}</span>`;
 function vPension(){
   if(!pnOn())return `<div class="empty">Ce jeu n’est pas encore ouvert.</div>`;
-  if(!pnSynced){pnSynced=true;rpc("dc_pn_state",{},{render:false}).then(r=>{if(r.now){pnOff=r.now-Date.now();if(view==="pension")renderView()}}).catch(()=>{pnSynced=false})} // heure du serveur (et couveuse remise en ordre, 1.9.2)
-  const p=(S&&S.pension)||{},res=p.res||{},q=Array.isArray(p.q)?p.q:[],now=pnNow(),full=q.length>=PENSION.q;
-  pnNext=Math.min(Infinity,...q.map(e=>e.s>now?e.s:e.e>now?e.e:Infinity));
-  const slot=(e,i)=>{
+  if(!pnSynced){pnSynced=true;rpc("dc_pn_state",{},{render:false}).then(r=>{if(r.now){pnOff=r.now-Date.now();if(view==="pension")renderView()}}).catch(()=>{pnSynced=false})} // heure du serveur (et couveuse mise à l’heure)
+  const P=pnState(),now=pnNow(),ready=pnSum(P.rdy),wait=P.plan.slice(0,Math.max(0,PENSION.q-P.q.length));
+  pnNext=Math.min(Infinity,...P.q.map(e=>e.e));if(pnNext===Infinity)pnNext=0;
+  const slot=(e,st)=>{
     if(!e)return `<div class="pn-slot empty"><span class="pn-nest"></span><small>Place libre</small></div>`;
-    const st=e.e<=now?"ready":e.s<=now?"warm":"wait",pc=st==="warm"?Math.min(100,Math.round((now-e.s)*100/(e.e-e.s))):0;
-    return `<div class="pn-slot ${st}"><button class="pn-x" data-pn="remove" data-i="${i}" title="Retirer cet œuf de la couveuse" aria-label="Retirer cet œuf">×</button>${st==="warm"?`<span class="pn-heat" aria-hidden="true"></span>`:""}${pnEgg(e.k,st==="ready"?"wobble":"")}<span class="pn-nest"></span>
-      ${st==="ready"?`<button class="btn small primary" data-pn="hatch" data-i="${i}">Faire éclore</button>`
-        :st==="warm"?`<div class="pn-bar"><i style="width:${pc}%"></i></div><small>Éclot dans <b data-countdown="${e.e-pnOff}">${fmtLeft(e.e-now)}</b></small>`
-        :`<small>En attente : éclot dans <b data-countdown="${e.e-pnOff}">${fmtLeft(e.e-now)}</b></small>`}
-      ${st!=="ready"&&devOn()?`<button class="btn small pn-dev" data-pn="hatch" data-i="${i}" data-force="1" title="Mode développeur">⚡ Éclore (dév.)</button>`:""}</div>`};
+    const pc=st==="warm"?Math.min(100,Math.round((now-e.s)*100/(e.e-e.s))):0;
+    return `<div class="pn-slot ${st}">${st==="warm"?`<span class="pn-heat" aria-hidden="true"></span>`:""}${pnEgg(e.k)}<span class="pn-nest"></span>
+      ${st==="warm"?`<div class="pn-bar"><i style="width:${pc}%"></i></div><small>Éclot dans <b data-countdown="${e.e-pnOff}">${fmtLeft(e.e-now)}</b></small>`
+        :`<small>En attente : éclot dans <b data-countdown="${e.e-pnOff}">${fmtLeft(e.e-now)}</b></small>`}</div>`};
+  const places=[...P.q.map(e=>slot(e,"warm")),...wait.map(e=>slot(e,"wait"))];
+  while(places.length<PENSION.q)places.push(slot(null));
+  const more=pnSum(P.res)-wait.length,nh=Math.min(50,ready);
   return `<div class="pension"><div class="ar-top pn-top"><button class="btn small pn-back" data-view="booster">← Retour</button><h1>🥚 Pension</h1>
       <button class="btn small pn-lumi" data-view="lumi">🏮 Trouver des œufs dans le Lumi-Bois</button><span class="ar-chip so-stat" title="Œufs éclos">🐣 ${fmtN(+((S.stats&&S.stats.pnHatch)||0))} éclos</span></div>
-    <p class="pn-intro">Les œufs que vous trouvez attendent ici. Jusqu’à <b>${PENSION.q} œufs</b> dans la couveuse, dont <b>${PENSION.slots}</b> couvent en même temps : 15 minutes pour un Œuf, 30 minutes pour un Œuf rare, 1 h 30 pour un Œuf doré. Le temps passe même quand vous n’êtes pas là.</p>
-    <div class="pn-res">${PN_EGGS.map(([k,n,d])=>`<div class="pn-card${res[k]?"":" none"}">${pnEgg(k)}<div><b>${n}</b><small>${d}</small></div><span class="pn-n">×${fmtN(res[k]||0)}</span>
-      <button class="btn small${res[k]&&!full?" primary":""}" data-pn="add" data-k="${k}" ${res[k]&&!full?"":"disabled"}>${full&&res[k]?"Couveuse pleine":"Mettre à couver"}</button></div>`).join("")}</div>
-    <h3 class="pn-h">Couveuse <span>${q.length} / ${PENSION.q}</span></h3>
-    <div class="pn-grid">${Array.from({length:PENSION.q},(_,i)=>slot(q[i],i)).join("")}</div>
-    <p class="pn-foot">Chaque œuf a 1 chance sur ${PENSION.shiny} de faire éclore un Pokémon shiny : toujours un shiny que vous n’avez pas encore.</p></div>`;
+    <p class="pn-intro">Les œufs que vous trouvez passent tout seuls dans la couveuse : <b>${PENSION.slots}</b> couvent en même temps, les Œufs dorés d’abord, puis les rares, puis les autres. 15 minutes pour un Œuf, 30 minutes pour un Œuf rare, 1 h 30 pour un Œuf doré. Le temps passe même quand vous n’êtes pas là.</p>
+    <div class="pn-ready${ready?" on":""}"><div class="pn-ready-eggs">${ready?PN_ORDER.filter(k=>P.rdy[k]).map(k=>`<span class="pn-rk">${pnEgg(k,"wobble")}<b>×${fmtN(P.rdy[k])}</b></span>`).join(""):pnEgg("oeuf")}</div>
+      <div class="pn-ready-t"><b>${ready?`${fmtN(ready)} œuf${ready>1?"s":""} prêt${ready>1?"s":""} à éclore`:"Aucun œuf prêt pour l’instant"}</b><small>${ready?(ready>50?"Ils éclosent par 50 au plus à la fois.":"Ils éclosent tous d’un coup."):P.q.length?`Le prochain éclot dans <b data-countdown="${Math.min(...P.q.map(e=>e.e))-pnOff}">${fmtLeft(Math.min(...P.q.map(e=>e.e))-now)}</b>.`:"Explorez le Lumi-Bois pour trouver des œufs."}</small></div>
+      ${ready?`<button class="btn primary pn-go" data-pn="hatch" data-n="${nh}">🐣 Faire éclore${nh>1?` ${nh} œufs`:""}</button>`:""}</div>
+    <h3 class="pn-h">Couveuse <span>${P.q.length} en couvaison${pnSum(P.res)?` · ${fmtN(pnSum(P.res))} en attente`:""}</span></h3>
+    <div class="pn-grid">${places.join("")}</div>
+    ${more>0?`<p class="pn-more">Et ${fmtN(more)} ${more>1?"autres œufs qui attendent leur tour":"autre œuf qui attend son tour"}.</p>`:""}
+    <div class="pn-res">${PN_EGGS.map(([k,n,d])=>`<div class="pn-card${P.res[k]?"":" none"}">${pnEgg(k)}<div><b>${n}</b><small>${d}</small></div><span class="pn-n" title="En attente">×${fmtN(P.res[k]||0)}</span></div>`).join("")}</div>
+    ${devOn()&&P.q.length?`<button class="btn small pn-dev" data-pn="dev" title="Mode développeur">⚡ Terminer la couvaison en cours (dév.)</button>`:""}
+    <p class="pn-foot">Chaque œuf a ${evFx("shiny")>1?`<b>${evFx("shiny")} chances</b>`:"1 chance"} sur ${PENSION.shiny} de faire éclore un Pokémon shiny : toujours un shiny que vous n’avez pas encore.</p></div>`;
 }
 // éclosion : l’œuf tremble, se fend, un éclair de lumière, puis la carte (scène Légendaire ou shiny si c’en est une)
 function pnHatchFx(c){return new Promise(done=>{
@@ -6251,18 +6373,20 @@ function pnHatchFx(c){return new Promise(done=>{
   setTimeout(()=>{ov.classList.add("flash");SFX.pnHatch(v)},2300);
   setTimeout(show,2700);
 })}
+// plusieurs œufs : ils éclosent ensemble et se retournent comme les cartes d’un booster (1.10.0)
+function pnHatchMany(list){
+  const drawn=list.map(c=>({id:c.id,isNew:!!c.isNew,shiny:!!c.shiny,shown:false}));
+  revealKey=Date.now();saveReveal(drawn,"eggs");
+  reveal=drawn;revealGift="eggs";hitsMode=false;handScroll=0;view="booster";
+  SFX.pnHatch(sfxVol("pension")||.5);renderAll();window.scrollTo(0,0);
+}
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-pn]");if(!b||!e.target.closest(".pension"))return;
   const a=b.dataset.pn;
-  if(a==="remove"){const i=+b.dataset.i,eg=((S.pension&&S.pension.q)||[])[i];if(!eg)return;
-    const go=()=>{run(async()=>{const r=await rpc("dc_pn_remove",{p_i:i},{render:false});if(r.now)pnOff=r.now-Date.now();toast("L’œuf retourne dans la réserve.");renderView()})};
-    if(eg.s<=pnNow()){openDlg(`<div class="side"><h2>Retirer cet œuf ?</h2><p>${eg.e<=pnNow()?"Il est prêt à éclore : s’il retourne dans la réserve, il faudra le faire couver de nouveau.":"Sa couvaison est en cours : elle sera perdue et repartira de zéro."}</p>
-      <div class="actions"><button class="btn danger" data-pn-ok>Retirer</button><button class="btn" data-act="close">Annuler</button></div></div>`,true);
-      const ok=document.querySelector("#dlg [data-pn-ok]");if(ok)ok.onclick=()=>{closeDlg();go()}}
-    else go();return}
-  if(a==="add"){actBtn=b;run(async()=>{const r=await rpc("dc_pn_add",{p_k:b.dataset.k},{render:false});if(r.now)pnOff=r.now-Date.now();SFX.flip(1);renderView()});return}
+  if(a==="dev"){actBtn=b;run(async()=>{const r=await rpc("dc_pn_dev",{},{render:false});if(r.now)pnOff=r.now-Date.now();renderView()});return}
   if(a==="hatch"){if(pnBusy)return;pnBusy=true;actBtn=b;
-    run(async()=>{const r=await rpc("dc_pn_hatch",{p_i:+b.dataset.i,p_force:!!b.dataset.force},{render:false});if(r.now)pnOff=r.now-Date.now();renderView();await pnHatchFx(r.drawn);renderView()}).finally(()=>{pnBusy=false});return}
+    run(async()=>{const r=await rpc("dc_pn_hatch",{p_n:+b.dataset.n||1},{render:false});if(r.now)pnOff=r.now-Date.now();
+      const l=r.drawn||[];if(l.length===1){renderView();await pnHatchFx(l[0]);renderView()}else if(l.length)pnHatchMany(l)}).finally(()=>{pnBusy=false});return}
 });
 /* menu « Jeux » de l'en-tête (1.3.3) : s'ouvre au toucher, se ferme en choisissant un jeu, en touchant ailleurs ou avec Échap */
 function gamesMenu(open){const p=$("#games-pop"),t=$("#tab-games");if(!p)return;p.hidden=!open;t.setAttribute("aria-expanded",open)}
@@ -6319,7 +6443,7 @@ document.addEventListener("click",e=>{
     case"flip-all":flipAll();break;
     case"flip-fast":flipFast();break;
     case"hits-only":goHits();break; // 1.1.4
-    case"done-reveal":reveal=null;revealGift=false;hitsMode=false;handScroll=0;renderView();window.scrollTo(0,0);break;
+    case"done-reveal":if(revealGift==="eggs")view="pension";reveal=null;revealGift=false;hitsMode=false;handScroll=0;renderAll();window.scrollTo(0,0);break; // œufs (1.10.0) : retour à la Pension
     case"next-pack":{const k=+b.dataset.n||1;reveal=null;revealGift=false;hitsMode=false;handScroll=0;renderView();window.scrollTo(0,0);openPack(k);break}
     case"detail":detail(id);break;
     case"recent":recentDlg();break;
@@ -6429,6 +6553,10 @@ document.addEventListener("click",e=>{
     case"pseudo-first-go":pseudoFirstGo();break;
     case"player":playerDlg(b.dataset.uid);break;
     case"daily-claim":claimDaily();break;
+    case"push-toggle":run(async()=>{if(pushSub)await pushOff();else await pushOn();renderView()});break;
+    case"daily-day":{const n=+b.dataset.d,r=DAILY[n-1];if(r)toast(`Jour ${n} : ${dailyTxt(r)}`);break}
+    case"defi-claim":claimDefi(b.dataset.k);break;
+    case"ev-claim":{const ev=EVENTS.find(x=>x.k===b.dataset.k);if(ev&&ev.pack)run(async()=>{await rpc("dc_event_claim",{p_k:ev.k});toast(`${ev.n} : +${dailyTxt(ev.pack)} !`)});break}
     case"gift-open":openGift();break;
     case"packs-info":packsInfo();break;
     case"tip-x":tipDone(b.dataset.k);{const tp=b.closest(".tip");if(tp)tp.remove()}break;
@@ -6520,6 +6648,52 @@ themeBar();
    « Partager » puis « Sur l'écran d'accueil ». Bouton caché dans l'appli déjà installée et sur les autres navigateurs. */
 let installEvt=null;
 const inApp=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+/* Notifications (1.10.0, demande de Theo : très peu, jamais de relance) : les 10 boosters gratuits sont prêts, tous les œufs sont
+   prêts à éclore, un joueur a proposé une carte sur une de vos annonces (une seule fois jusqu’à votre retour ; rien pour un échange
+   automatique), une mise à jour majeure (les deux premiers nombres de la version). Abonnement par appareil (dc_push_sub, partie 8),
+   envoi par la fonction Supabase dc-push. Service worker images/sw.js : notifications seulement, rien en cache (en-tête
+   Service-Worker-Allowed de _headers : il s’occupe de tout le site depuis le dossier images, publié sans changer Cloudflare Pages). */
+const PUSH_KEY="BLXmRPZfaguqeZKfcS6Zx_Niwfd_cMfL7ZaivLZLdZaV_HyU_TsrAQZbot3rIwaH4aqVfiP7bnxoNDE3mT7FsMM"; // clé publique VAPID (outils/cles-notifications.ps1) ; vide : notifications pas encore en place
+const pushOk=()=>!!PUSH_KEY&&"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
+let pushSub=null,pushChecked=false;
+const b64u=t=>{const b=atob((t+"=".repeat((4-t.length%4)%4)).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(b,c=>c.charCodeAt(0))};
+const swActive=r=>r.active?Promise.resolve(r):new Promise(ok=>{const w=r.installing||r.waiting;if(!w)return ok(r);w.addEventListener("statechange",()=>{if(w.state==="activated")ok(r)})});
+async function pushReg(){
+  let r=await navigator.serviceWorker.getRegistration("./");if(r&&r.active&&/images\/sw\.js/.test(r.active.scriptURL))return r;
+  try{r=await navigator.serviceWorker.register("images/sw.js",{scope:"./"})}catch(e){r=await navigator.serviceWorker.register("images/sw.js")} // sans l’en-tête : dossier images seulement (suffit pour les notifications)
+  return swActive(r);
+}
+async function pushCheck(){
+  if(!pushOk())return;
+  try{const rs=await navigator.serviceWorker.getRegistrations(),r=rs.find(x=>(x.active||x.installing||x.waiting||{}).scriptURL&&/images\/sw\.js/.test((x.active||x.installing||x.waiting).scriptURL));
+    pushSub=r?await r.pushManager.getSubscription():null}catch(e){pushSub=null}
+  pushChecked=true;
+}
+async function pushOn(){
+  const perm=await Notification.requestPermission();
+  if(perm!=="granted"){toast("Les notifications sont bloquées pour ce site : autorisez-les dans les réglages du navigateur, puis réessayez.");return}
+  const r=await pushReg(),sub=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(PUSH_KEY)}),j=sub.toJSON();
+  await rpc("dc_push_sub",{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth},{render:false});
+  pushSub=sub;toast("Notifications activées sur cet appareil.");
+}
+async function pushOff(){
+  const sub=pushSub;pushSub=null;if(!sub)return;
+  const ep=sub.endpoint;try{await sub.unsubscribe()}catch(e){}
+  await rpc("dc_push_unsub",{p_endpoint:ep},{render:false}).catch(()=>{});toast("Notifications désactivées sur cet appareil.");
+}
+let pushSeenAt=0;
+function pushSeen(){if(!ME||Date.now()-pushSeenAt<60000)return;pushSeenAt=Date.now();rpc("dc_push_seen",{},{render:false}).catch(()=>{})} // retour dans le jeu : une nouvelle proposition pourra être signalée
+function pushHTML(){
+  if(!PUSH_KEY)return `<p class="muted" style="margin:4px 0 0">Bientôt disponibles.</p>`;
+  const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1;
+  if(!pushOk())return `<p class="muted" style="margin:4px 0 0">${ios&&!inApp()?"Sur iPhone et iPad, installez d’abord l’appli DexCraft (bouton Partager, puis « Sur l’écran d’accueil »), puis activez les notifications depuis l’appli.":"Ce navigateur ne permet pas les notifications."}</p>`;
+  if(!pushChecked)pushCheck().then(()=>{if(view==="profile")renderView()});
+  const on=!!pushSub,denied=Notification.permission==="denied";
+  return `<p class="muted" style="margin:4px 0 6px">Quatre notifications seulement, jamais de relance :</p>
+    <ul class="push-list"><li>vos ${MAXP} boosters gratuits sont prêts ;</li><li>tous vos œufs de la Pension sont prêts à éclore ;</li><li>un joueur vous a proposé une carte sur une de vos annonces (une seule fois jusqu’à votre retour dans le jeu) ;</li><li>une grande mise à jour de DexCraft est sortie.</li></ul>
+    <button class="switch" role="switch" aria-checked="${on}" data-act="push-toggle"${denied&&!on?" disabled":""}><span class="track"></span><span>${on?"Activées sur cet appareil":"Désactivées sur cet appareil"}</span></button>
+    ${denied&&!on?`<p class="muted" style="margin:6px 0 0;font-size:.85rem">Les notifications sont bloquées pour ce site : autorisez-les dans les réglages du navigateur, puis revenez ici.</p>`:""}`;
+}
 const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 const canInstall=()=>!inApp()&&(!!installEvt||isIOS());
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;if(S&&!dlg.open)renderView()});
@@ -6776,6 +6950,7 @@ document.addEventListener("visibilitychange",()=>{
   musicSync(); // onglet caché : musique en pause, reprise au retour
   if(!SB||!ME)return;
   if(document.hidden){hiddenAt=Date.now();return}
+  if(hiddenAt&&Date.now()-hiddenAt>30000)pushSeen();
   if(hiddenAt&&Date.now()-hiddenAt>30000){loadMe();loadMarket(Date.now()-hiddenAt>300000).then(loadOwnerColls);if(Date.now()-playersTs>60000)loadPlayers()}
   hiddenAt=0;
 });
@@ -7020,6 +7195,7 @@ async function startOnline(session){
     requestAnimationFrame(()=>{const i=reveal.findIndex(c=>!c.shown),b=document.querySelector(`#hand .flip[data-i="${i}"]`);if(b)centerCard(b,true)});
     toast(`Vous n’aviez pas fini ${revealGift?"d’ouvrir votre cadeau":"d’ouvrir vos boosters"} : retournez les cartes qui restent.`);
   }
+  pushSeen(); // notifications (1.10.0)
   if(!S.pseudoSet)pseudoFirstDlg();
   else payReturn(); // retour de la page de paiement Stripe
 }
@@ -7049,7 +7225,8 @@ function gameConfig(){
     arChart:Array.from({length:324},(_,k)=>{const m=((AR_CHART[Math.floor(k/18)+1]||{})[k%18+1]);return m===2?"2":m===.5?"h":m===0?"0":"1"}).join(""),
     arBase:(()=>{const ev=new Set(Object.values(EVO).flat()),b={};POKE_IDS.filter(id=>!ev.has(id)).forEach(id=>(b[DEX[id-1][7]]=b[DEX[id-1][7]]||[]).push(id));return b})(),
     sout:SOUT, // Souterrain (1.5.9) : règles, objets, comptoir (lus par la partie 6 du serveur)
-    lumi:LUMI,pension:PENSION}; // Lumi-Bois et Pension (1.8.0, partie 7 du serveur)
+    lumi:LUMI,pension:PENSION, // Lumi-Bois et Pension (1.8.0, partie 7 du serveur)
+    events:EVENTS.map(e=>({k:e.k,from:e.from,to:e.to,fx:e.fx||{},...(e.pack?{pack:e.pack}:{})})),defis:{n:DEFIS.n,reward:DEFIS.reward,bonus:DEFIS.bonus,list:DEFIS.list.map(({k,s,need})=>({k,s,need}))}}; // événements et défis (1.10.0, partie 8)
 }
 /* Condition d'un titre, pour que le serveur calcule lui-même les titres affichés (champ shown du profil).
    Un nouveau titre d'un genre inconnu arrête l'export : il faut alors l'ajouter ici et dans dc__stamp. */
@@ -7100,7 +7277,7 @@ function titleDef(t){
     if(!sec){document.body.innerHTML=`<pre id="export-error">Cartes secrètes absentes : lancer outils/generer-config.ps1 (fichier secret/cartes-secretes.json).</pre>`;return}
     const ids={6:[],7:[],8:[]};for(const [id,d] of Object.entries(sec))ids[d[7]].push(+id);applySecrets({ids,cards:sec});
     // en deux parties (1.1.8) : l'éditeur SQL de Supabase tronque au-delà d'environ 40 000 caractères ; la 2e partie est ajoutée à la 1re
-    const cfg=gameConfig(),P2=["evo","pool","titleKeys","titleDefault","titleDefs","pgen","ptype","spCard"],P3=["arena","arStat","arChart","arBase","sout","lumi","pension"],a={},b={},c={};
+    const cfg=gameConfig(),P2=["evo","pool","titleKeys","titleDefault","titleDefs","pgen","ptype","spCard"],P3=["arena","arStat","arChart","arBase","sout","lumi","pension","events","defis"],a={},b={},c={};
     for(const [k,v] of Object.entries(cfg))(P3.includes(k)?c:P2.includes(k)?b:a)[k]=v; // partie 3 (1.3.0) : données de l'Arène
     document.body.innerHTML=`<pre id="export-config">${esc(JSON.stringify(a))}</pre><pre id="export-config-2">${esc(JSON.stringify(b))}</pre><pre id="export-config-3">${esc(JSON.stringify(c))}</pre>`;return}
   renderHeader();

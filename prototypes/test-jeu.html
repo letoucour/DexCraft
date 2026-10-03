@@ -9,6 +9,7 @@ const scene=new URLSearchParams(location.search).get("scene")||"shop";
 const f=document.getElementById("f");
 f.onload=()=>setTimeout(()=>{const w=f.contentWindow;try{const s=w.document.createElement("script");s.textContent=`try{(${setup})(${JSON.stringify(scene)})}catch(e){document.title="ERREUR "+e.message}`;w.document.body.append(s)}catch(e){document.body.insertAdjacentHTML("afterbegin",`<pre style="position:fixed;z-index:9;color:#f55;background:#000;padding:8px">${e.stack}</pre>`)}},5000);
 function setup(scene){
+  const pnStore=(p,now)=>{const P=pnSync(p,now);return Object.assign({v:2,q:P.q,res:P.res,rdy:P.rdy},P.end?{end:P.end}:{})}; // Pension 1.10.0 (dc__pn_sync)
   const stamp=d=>{const l=d.look||{};const vis={};if(l.cadre&&(d.cos||{})[l.cadre])vis.f=l.cadre;if(l.pseudo&&(d.cos||{})[l.pseudo])vis.p=l.pseudo;const b=Object.keys(d.cos||{}).filter(k=>k.startsWith("badge.")).sort();if(b.length)vis.b=b;d.vis=vis;d.updated=(d.updated||0)+1;return d};
   const rpcMock=async(n,a)=>{const d=clone(S);
     if(n==="dc_set_look"){d.look=d.look||{};if(a.p_item)d.look[a.p_slot]=a.p_item;else delete d.look[a.p_slot];return {data:{profile:stamp(d)},error:null}}
@@ -49,21 +50,27 @@ function setup(scene){
         W.__lb={o,l:Array(144).fill(false),objs,lamps:A.lamps,used:0,over:false};d.stats.lbRuns=(d.stats.lbRuns||0)+1;return {data:Object.assign(vw(W.__lb,d),{profile:stamp(d)}),error:null}}
       if(n==="dc_lb_light"){const st=W.__lb;await new Promise(r=>setTimeout(r,120));for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(lbPlay(a.p_x+dx,a.p_y+dy))st.l[(a.p_y+dy)*12+a.p_x+dx]=true;
         st.lamps--;st.used++;st.ev=[];const fresh=[];st.objs.forEach((b,i)=>{if(b.done)return;if(st.o.every((x,k)=>x!==i||st.l[k])){b.done=true;fresh.push(i);const it=A.items[b.k];if(it.lamp){st.lamps++;st.ev.push("lamp")}if(it.trap){st.lamps=Math.max(0,st.lamps-1);st.ev.push("trap")}}});
-        if(st.lamps<=0||st.objs.every(b=>b.done||A.items[b.k].trap)){st.over=true;const res={cr:0,items:[]};d.lumi=d.lumi||{};d.lumi.got=d.lumi.got||{};d.pension=d.pension||{};d.pension.res=d.pension.res||{};
+        if(st.lamps<=0||st.objs.every(b=>b.done||A.items[b.k].trap)){st.over=true;const res={ec:0,items:[]};d.pension=pnStore(d.pension,Date.now());d.lumi=d.lumi||{};d.lumi.got=d.lumi.got||{};d.pension=d.pension||{};d.pension.res=d.pension.res||{};
           st.objs.filter(b=>b.done).forEach(b=>{const it=A.items[b.k];d.lumi.got[b.k]=(d.lumi.got[b.k]||0)+1;if(it.trap)return;if(it.egg)d.pension.res[it.egg]=(d.pension.res[it.egg]||0)+1;if(it.stone){d.sout=d.sout||{};d.sout.ps=(d.sout.ps||0)+1}
-            if(it.gs){if(!d.lumi.gs){d.lumi.gs=1;res.items.push("gs")}else{res.cr+=it.gs;res.items.push("gs+")}return}res.cr+=it.cr||0;res.items.push(b.k)});
-          d.credits+=res.cr;st.res=res;return {data:Object.assign(vw(st,d),{profile:stamp(d),fresh}),error:null}}
+            if(it.gs){if(!d.lumi.gs){d.lumi.gs=1;res.items.push("gs")}else{res.ec+=it.gs;res.items.push("gs+")}return}res.ec+=it.ec||0;res.items.push(b.k)});
+          d.sout=d.sout||{};d.sout.ec=(d.sout.ec||0)+res.ec;d.pension=pnStore(d.pension,Date.now());st.res=res;return {data:Object.assign(vw(st,d),{profile:stamp(d),fresh}),error:null}}
         const v=vw(st);delete v.lumi;return {data:Object.assign(v,{fresh}),error:null}}
     }
-    if(/^dc_pn_/.test(n)){const now=Date.now(),P=PENSION;d.pension=d.pension||{};d.pension.res=d.pension.res||{};d.pension.q=d.pension.q||[];
-      if(n==="dc_pn_state")return {data:{pension:d.pension,now},error:null};
-      if(n==="dc_pn_add"){const q=d.pension.q,ends=q.map(e=>e.e).sort((x,y)=>y-x).slice(0,P.slots);while(ends.length<P.slots)ends.push(now);const s=Math.max(now,Math.min(...ends));
-        q.push({k:a.p_k,s,e:s+(window.__pnFast?8000:P.dur[a.p_k])});d.pension.res[a.p_k]--;return {data:{profile:stamp(d),now},error:null}}
-      if(n==="dc_pn_hatch"){const eg=d.pension.q[a.p_i];if(!eg||eg.e>now&&!a.p_force)return {data:null,error:{message:"Cet œuf n’est pas encore prêt à éclore."}};
-        const pool=eg.k==="dore"?BYR[5]:eg.k==="rare"?DEX_ORDER:DEX_ORDER.filter(x=>rar(x)<5&&!evoPreOf(x).length),id=pool[Math.floor(Math.random()*pool.length)];
-        d.pension.q.splice(a.p_i,1);d.coll[id]=(d.coll[id]||0)+1;d.stats.pnHatch=(d.stats.pnHatch||0)+1;const sh=!!window.__pnShiny;if(sh){d.shiny=d.shiny||{};d.shiny[id]=now}
-        return {data:{profile:stamp(d),drawn:{id,isNew:true,shiny:sh,k:eg.k},now},error:null}}
+    if(/^dc_pn_/.test(n)){const now=Date.now();d.pension=pnStore(d.pension,now);
+      if(n==="dc_pn_state")return {data:{pension:d.pension,now,profile:stamp(d)},error:null};
+      if(n==="dc_pn_dev"){d.pension.q.forEach(e=>e.e=now);d.pension=pnStore(d.pension,now);return {data:{profile:stamp(d),now},error:null}}
+      if(n==="dc_pn_hatch"){let left=Math.min(50,a.p_n||1);const rdy=d.pension.rdy,drawn=[];
+        for(const k of PN_ORDER)while(left>0&&(rdy[k]||0)>0){rdy[k]--;left--;const pool=k==="dore"?BYR[5]:k==="rare"?DEX_ORDER.filter(x=>rar(x)>=2&&rar(x)<6):DEX_ORDER.filter(x=>rar(x)<2),id=pool[Math.floor(Math.random()*pool.length)];
+          d.coll[id]=(d.coll[id]||0)+1;d.stats.pnHatch=(d.stats.pnHatch||0)+1;drawn.unshift({id,isNew:true,shiny:!!window.__pnShiny,k})}
+        if(!drawn.length)return {data:null,error:{message:"Aucun œuf n’est prêt à éclore."}};
+        return {data:{profile:stamp(d),drawn,now},error:null}}
     }
+    // récompense du jour, défis, événements, notifications (1.10.0)
+    if(n==="dc_daily_claim"){const st=(d.daily&&d.daily.streak||0)%DAILY.length+1,r=DAILY[st-1];d.daily={day:parisDay(),streak:st};d.credits+=r.credits;d.bonus=(d.bonus||0)+(r.packs||0);if(r.prem){d.spInv=d.spInv||{};d.spInv.prem=(d.spInv.prem||0)+r.prem}
+      return {data:{profile:stamp(d),streak:st,credits:r.credits,packs:r.packs||0,prem:r.prem||0},error:null}}
+    if(n==="dc_defi_state"){if(!d.defis||d.defis.day!==parisDay()){const l=[...DEFIS.list].sort(()=>Math.random()-.5).slice(0,3).map(x=>({k:x.k,s:x.s,need:x.need,b:(d.stats[x.s]||0)-(window.__dfDone?x.need:Math.floor(Math.random()*x.need))}));d.defis={day:parisDay(),l,got:[]}}return {data:{profile:stamp(d)},error:null}}
+    if(n==="dc_defi_claim"){d.defis.got.push(a.p_k);d.bonus=(d.bonus||0)+5;const b=d.defis.got.length===3;if(b){d.spInv=d.spInv||{};d.spInv.prem=(d.spInv.prem||0)+1}return {data:{profile:stamp(d),bonus:b},error:null}}
+    if(/^dc_push_/.test(n))return {data:{ok:true},error:null};
     // Souterrain : faux serveur (même logique que dexcraft-serveur-6.sql) ; ?scene=sout
     if(/^dc_sout_/.test(n)){const W=window,A=SOUT,R=k=>Math.floor(Math.random()*k);
       const vw=(st,p)=>{if(!st)return {run:null,sout:(p||S).sout||{}};const r=st.d.map((dd,i)=>dd>0?null:st.o[i]===-1?0:st.o[i]===-2?"f":(o=>[o.k,i%st.w-o.x,Math.floor(i/st.w)-o.y,st.o[i],o.t])(st.objs[st.o[i]]));
@@ -124,7 +131,7 @@ function setup(scene){
   if(scene==="ranking"){view="ranking";renderAll()}
   if(scene==="volto"){view="volto";renderAll()}
   if(scene==="lumi"){localStorage.setItem("dc-mute","1");S.dev=true;view="lumi";renderAll()} // Lumi-Bois (1.8.0), mode développeur
-  if(scene==="pension"){localStorage.setItem("dc-mute","1");S.dev=true;S.pension={res:{oeuf:4,rare:2,dore:1},q:[]};view="pension";renderAll()}
+  if(scene==="pension"){localStorage.setItem("dc-mute","1");S.dev=true;const t=Date.now();S.pension={v:2,res:{oeuf:9,rare:2,dore:1},rdy:new URLSearchParams(parent.location.search).get("vide")?{}:{oeuf:4,rare:2,dore:1},q:[{k:"oeuf",s:t-300000,e:t+600000},{k:"rare",s:t-900000,e:t+900000},{k:"oeuf",s:t-60000,e:t+840000}]};view="pension";renderAll()}
   if(scene==="sout"){localStorage.setItem("dc-mute","1");S.dev=true;S.sout={ec:640,got:{pb:5,gb:2,pr:3,or:4,pv:1,plaque:9},pl:{10:3,11:1,12:2,13:1,8:1,16:1},key:1};view="sout";renderAll()} // Souterrain (1.5.9), mode développeur
   if(scene==="coll"){view="collection";renderAll()}
   if(scene==="shiny"){S.shiny={25:Date.now()-864e5,6:Date.now(),4007:Date.now()};S.got={25:14,6:3,1:40,4:2,7:1,129:1,150:1,4007:1};S.shinyN=3;S.stats.shinyN=3;S.avaS=true;PLAYERS.me.shinyN=3;PLAYERS.me.avaS=true;PLAYERS.a.shinyN=420;PLAYERS.b.shinyN=60;Object.values(PLAYERS).forEach(p=>p.byrV=BYR_V);view=new URLSearchParams(parent.location.search).get("v")||"collection";renderAll()}

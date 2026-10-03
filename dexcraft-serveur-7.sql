@@ -1,5 +1,5 @@
 -- ============================================================
---  DexCraft — fonctions du serveur, PARTIE 7 (1.8.0) : Lumi-Bois (clairière à éclairer à la lanterne, inspirée du Crystal
+--  DexCraft — fonctions du serveur, PARTIE 7 (1.8.0 ; gains en éclats et Pension automatique depuis la 1.10.0) : Lumi-Bois (clairière à éclairer à la lanterne, inspirée du Crystal
 --  Sphere de Slay the Spire 2) et Pension (œufs à faire couver puis éclore). À lancer après les parties 1 à 6 et la
 --  configuration (clés lumi et pension de dexcraft-config-3.sql).
 --  Le serveur arbitre tout : la clairière (objets, piège) est tirée et gardée ici, la page ne voit que les cases éclairées ;
@@ -51,18 +51,19 @@ end $$;
 create or replace function public.dc__lb_grid(a jsonb) returns jsonb language plpgsql volatile as $$
 declare w int := (a ->> 'w')::int; h int := (a ->> 'h')::int; oo int[]; objs jsonb := '[]'; n int; i int; j int; t int; x int; y int;
   tot int; r int; it record; key text; mk text; ow int; oh int; ok boolean; trap boolean := false; px int; py int;
+  em numeric := public.dc__evfx(public.dc__cfg(), 'eggs');   -- événement : œufs plus fréquents (1.10.0)
 begin
   oo := array_fill(-1, array[w * h]);
   for y in 0 .. h - 1 loop for x in 0 .. w - 1 loop
     if not public.dc__lb_play(a, x, y) then oo[y * w + x + 1] := -2; end if;
   end loop; end loop;
-  select sum((v ->> 'w')::int) into tot from jsonb_each(a -> 'items') e(k, v);
+  select sum(round((v ->> 'w')::int * case when v ? 'egg' then em else 1 end)::int) into tot from jsonb_each(a -> 'items') e(k, v);
   n := (a -> 'n' ->> 0)::int + public.dc__rnd((a -> 'n' ->> 1)::int - (a -> 'n' ->> 0)::int + 1);
   for i in 1 .. n loop
     loop
       r := public.dc__rnd(tot); key := null;
       for it in select e.k, e.v from jsonb_each(a -> 'items') e(k, v) order by e.k loop
-        r := r - (it.v ->> 'w')::int;
+        r := r - round((it.v ->> 'w')::int * case when it.v ? 'egg' then em else 1 end)::int;
         if r < 0 then key := it.k; ow := (it.v -> 's' ->> 0)::int; oh := (it.v -> 's' ->> 1)::int; mk := it.v ->> 'm'; exit; end if;
       end loop;
       exit when not ((a -> 'items' -> key) ? 'trap' and trap);   -- un seul piège par clairière
@@ -111,17 +112,16 @@ begin
   return public.dc__lb_view(st, d) || jsonb_build_object('profile', d);
 end $$;
 
--- fin de partie : crédits, Pierres évolutives (stock du Souterrain, sout.ps), œufs (réserve de la Pension), GS Ball,
+-- fin de partie : éclats (1.10.0, demande de Theo : avant, des crédits ; même solde que le Souterrain, sout.ec), Pierres évolutives (stock du Souterrain, sout.ps), œufs (réserve de la Pension), GS Ball,
 -- trouvailles (lumi.got) et statistiques des titres
 create or replace function public.dc__lb_end(u uuid, st jsonb, a jsonb) returns jsonb language plpgsql volatile as $$
-declare d jsonb := public.dc__lock(u, true); ob jsonb; it jsonb; k text; cr bigint := 0; nd int := 0; nm int := 0; nb int := 0; lu jsonb; got jsonb;
-  so jsonb; pn jsonb; res jsonb; items jsonb := '[]'; clear boolean := true;
+declare d jsonb := public.dc__lock(u, true); ob jsonb; it jsonb; k text; ec bigint := 0; nd int := 0; nm int := 0; nb int := 0; lu jsonb; got jsonb;
+  so jsonb; pn jsonb; res jsonb; items jsonb := '[]'; clear boolean := true; ne jsonb := '{}'; cfg jsonb := public.dc__cfg(); now_ bigint := public.dc__now();
 begin
   lu := case when jsonb_typeof(d -> 'lumi') = 'object' then d -> 'lumi' else '{}' end;
   got := case when jsonb_typeof(lu -> 'got') = 'object' then lu -> 'got' else '{}' end;
   so := case when jsonb_typeof(d -> 'sout') = 'object' then d -> 'sout' else '{}' end;
   pn := case when jsonb_typeof(d -> 'pension') = 'object' then d -> 'pension' else '{}' end;
-  res := case when jsonb_typeof(pn -> 'res') = 'object' then pn -> 'res' else '{}' end;
   for ob in select x from jsonb_array_elements(st -> 'objs') x loop
     k := ob ->> 'k'; it := a -> 'items' -> k;
     if not coalesce((ob ->> 'done')::boolean, false) then
@@ -134,24 +134,29 @@ begin
     if it ? 'mush' then nm := nm + 1; end if;
     if it ? 'lamp' then nb := nb + 1; end if;
     if it ? 'stone' then so := so || jsonb_build_object('ps', coalesce((so ->> 'ps')::int, 0) + 1); end if;
-    if it ? 'egg' then res := res || jsonb_build_object(it ->> 'egg', coalesce((res ->> (it ->> 'egg'))::int, 0) + 1); end if;
+    if it ? 'egg' then ne := ne || jsonb_build_object(it ->> 'egg', coalesce((ne ->> (it ->> 'egg'))::int, 0) + 1); end if;
     if k = 'oeufd' then d := jsonb_set(d, '{stats,lbGold}', '1'); end if;
-    if it ? 'gs' then   -- GS Ball : la première donne le titre « Hors du Temps » ; une fois la carte obtenue (lbGsX), elle vaut it.gs crédits
+    if it ? 'gs' then   -- GS Ball : la première donne le titre « Hors du Temps » ; une fois la carte obtenue (lbGsX), elle vaut it.gs éclats
       if coalesce(d -> 'stats' ->> 'lbGs', '') = '' then d := jsonb_set(d, '{stats,lbGs}', '1'); lu := lu || '{"gs": 1}'; items := items || '"gs"';
-      elsif coalesce(d -> 'stats' ->> 'lbGsX', '') <> '' then cr := cr + (it ->> 'gs')::int; items := items || '"gs+"';
+      elsif coalesce(d -> 'stats' ->> 'lbGsX', '') <> '' then ec := ec + (it ->> 'gs')::int; items := items || '"gs+"';
       else items := items || '"gs"'; end if;
       continue;
     end if;
-    cr := cr + coalesce((it ->> 'cr')::int, 0); items := items || to_jsonb(k);
+    ec := ec + coalesce((it ->> 'ec')::int, 0); items := items || to_jsonb(k);
   end loop;
   if nd > 0 then d := public.dc__bump(d, 'lbItems', nd); end if;
   if nm > 0 then d := public.dc__bump(d, 'lbMush', nm); end if;
   if nb > 0 then d := public.dc__bump(d, 'lbBocal', nb); end if;
   if coalesce((st ->> 'trap')::boolean, false) then d := public.dc__bump(d, 'lbTrap'); end if;
   if clear then d := jsonb_set(d, '{stats,lbClear}', '1'); end if;
-  d := d || jsonb_build_object('credits', public.dc__int(d, 'credits') + cr, 'lumi', lu || jsonb_build_object('got', got), 'sout', so,
-    'pension', pn || jsonb_build_object('res', res));
-  st := st || jsonb_build_object('over', true, 'res', jsonb_build_object('cr', cr, 'items', items));
+  ec := round(ec * public.dc__evfx(cfg, 'ec'));   -- événement « éclats »
+  so := so || jsonb_build_object('ec', coalesce((so ->> 'ec')::bigint, 0) + ec);
+  -- œufs : la couveuse est mise à l'heure avec l'ancienne réserve, puis prend aussitôt les nouveaux s'il y a de la place (1.10.0)
+  pn := public.dc__pn_sync(pn, cfg, now_); res := pn -> 'res';
+  for k in select key from jsonb_each(ne) loop res := res || jsonb_build_object(k, coalesce((res ->> k)::int, 0) + (ne ->> k)::int); end loop;
+  pn := public.dc__pn_sync(pn || jsonb_build_object('res', res), cfg, now_);
+  d := d || jsonb_build_object('lumi', lu || jsonb_build_object('got', got), 'sout', so, 'pension', pn);
+  st := st || jsonb_build_object('over', true, 'res', jsonb_build_object('ec', ec, 'items', items));
   update public.lumi_runs set data = st, updated_at = now() where uid = u;
   return jsonb_build_object('st', st, 'd', public.dc__save(u, d));
 end $$;
@@ -194,76 +199,86 @@ begin
 end $$;
 
 -- ============================================================
---  Pension : réserve d'œufs (pension.res, sans limite), file de couvaison (pension.q, cfg.pension.q places, 10) où
---  cfg.pension.slots œufs (3) couvent en même temps. L'heure de début et de fin de chaque œuf est fixée dès son entrée
---  dans la file (le temps passe aussi hors ligne) ; un œuf prêt attend que le joueur le fasse éclore et garde sa place.
+--  Pension (1.10.0, demande de Theo : les œufs s'entassaient dans la réserve). pension.res : réserve {oeuf, rare, dore}, sans
+--  limite ; pension.q : œufs en couvaison ({k, s, e}, cfg.pension.slots au plus, 3) ; pension.rdy : œufs prêts à éclore {k: nombre},
+--  sans limite ; pension.end : heure à laquelle tous les œufs seront prêts (notification). La couveuse se remplit toute seule depuis
+--  la réserve, dans l'ordre doré, rare, normal : dès qu'une place se libère, l'œuf suivant y entre, même hors ligne. Rien ne change
+--  entre deux actions du joueur sauf le temps : chaque fonction refait le calcul jusqu'à maintenant (dc__pn_sync) avant d'agir.
 -- ============================================================
--- horaires de la couveuse (1.9.2) : les œufs déjà en couvaison (ou prêts) gardent les leurs ; ceux qui attendent, dans l'ordre, prennent
--- la première des places qui se libère. Recalculé à chaque entrée ou sortie d'un œuf : avant, un œuf sorti avant l'heure (éclosion
--- immédiate du mode développeur) gardait sa place réservée jusqu'à sa fin prévue, et les suivants attendaient pour rien.
-create or replace function public.dc__pn_sched(q jsonb, a jsonb, now_ bigint) returns jsonb language plpgsql immutable as $$
-declare fr bigint[] := '{}'; r jsonb := '[]'; x jsonb; s bigint; m int;
+-- Ancien format (1.8.0 à 1.9.3 : file de 10 œufs aux heures fixées d'avance, sans pension.v) : les œufs prêts vont dans rdy, ceux qui
+-- couvent gardent leur place, ceux qui attendaient retournent dans la réserve. Durée d'un œuf : cfg.pension.dur, divisée par l'effet
+-- « hatch » des événements du jour où il entre dans la couveuse.
+create or replace function public.dc__pn_sync(pn jsonb, cfg jsonb, now_ bigint) returns jsonb language plpgsql stable as $$
+declare a jsonb := cfg -> 'pension'; n int := coalesce((a ->> 'slots')::int, 3); res jsonb; rdy jsonb; x jsonb; ks text[] := array['dore', 'rare', 'oeuf'];
+  sk text[] := '{}'; ss bigint[] := '{}'; se bigint[] := '{}'; m int; f bigint; k text; legacy boolean; q jsonb := '[]'; endt bigint; rc jsonb; INF bigint := 9000000000000000;
 begin
-  for x in select v from jsonb_array_elements(q) with ordinality t(v, n) order by n loop
-    if (x ->> 's')::bigint <= now_ and (x ->> 'e')::bigint > now_ then fr := fr || (x ->> 'e')::bigint; end if;
+  pn := case when jsonb_typeof(pn) = 'object' then pn else '{}' end;
+  legacy := coalesce((pn ->> 'v')::int, 0) < 2;
+  res := case when jsonb_typeof(pn -> 'res') = 'object' then pn -> 'res' else '{}' end;
+  rdy := case when jsonb_typeof(pn -> 'rdy') = 'object' then pn -> 'rdy' else '{}' end;
+  for x in select v from jsonb_array_elements(case when jsonb_typeof(pn -> 'q') = 'array' then pn -> 'q' else '[]' end) v loop
+    k := x ->> 'k';
+    if legacy and (x ->> 'e')::bigint <= now_ then rdy := rdy || jsonb_build_object(k, coalesce((rdy ->> k)::int, 0) + 1);
+    elsif legacy and (x ->> 's')::bigint > now_ or coalesce(array_length(sk, 1), 0) >= n then res := res || jsonb_build_object(k, coalesce((res ->> k)::int, 0) + 1);
+    else sk := sk || k; ss := ss || (x ->> 's')::bigint; se := se || (x ->> 'e')::bigint; end if;
   end loop;
-  while coalesce(array_length(fr, 1), 0) < (a ->> 'slots')::int loop fr := fr || now_; end loop;
-  for x in select v from jsonb_array_elements(q) with ordinality t(v, n) order by n loop
-    if (x ->> 's')::bigint <= now_ then r := r || jsonb_build_array(x); continue; end if;
-    select min(f) into s from unnest(fr) f; m := array_position(fr, s); s := greatest(now_, s);
-    fr[m] := s + (a -> 'dur' ->> (x ->> 'k'))::bigint;
-    r := r || jsonb_build_array(x || jsonb_build_object('s', s, 'e', fr[m]));
+  while coalesce(array_length(sk, 1), 0) < n loop sk := sk || null::text; ss := ss || 0::bigint; se := se || now_; end loop;
+  -- jusqu'à maintenant : chaque place libérée (œuf terminé, ou place vide) prend l'œuf suivant de la réserve à ce moment-là
+  loop
+    select i into m from generate_subscripts(se, 1) i where se[i] <= now_ order by se[i], i limit 1;
+    exit when m is null;
+    f := se[m];
+    if sk[m] is not null then rdy := rdy || jsonb_build_object(sk[m], coalesce((rdy ->> sk[m])::int, 0) + 1); sk[m] := null; end if;
+    k := (select z from unnest(ks) with ordinality t(z, o) where coalesce((res ->> z)::int, 0) > 0 order by o limit 1);
+    if k is null then se[m] := INF; continue; end if;
+    res := res || jsonb_build_object(k, (res ->> k)::int - 1);
+    sk[m] := k; ss[m] := f;
+    se[m] := f + round((a -> 'dur' ->> k)::numeric / public.dc__evfx(cfg, 'hatch', to_char(to_timestamp(f / 1000.0) at time zone 'Europe/Paris', 'YYYY-MM-DD')))::bigint;
   end loop;
-  return r;
+  for m in 1 .. n loop
+    if sk[m] is not null then q := q || jsonb_build_object('k', sk[m], 's', ss[m], 'e', se[m]); end if;
+  end loop;
+  -- heure à laquelle tout sera prêt : la suite du même calcul avec la réserve actuelle (pour les notifications)
+  rc := res;
+  loop
+    select i into m from generate_subscripts(se, 1) i where se[i] < INF order by se[i], i limit 1;
+    exit when m is null;
+    k := (select z from unnest(ks) with ordinality t(z, o) where coalesce((rc ->> z)::int, 0) > 0 order by o limit 1);
+    if k is null then endt := greatest(coalesce(endt, 0), se[m]); se[m] := INF; continue; end if;
+    rc := rc || jsonb_build_object(k, (rc ->> k)::int - 1);
+    se[m] := se[m] + round((a -> 'dur' ->> k)::numeric / public.dc__evfx(cfg, 'hatch', to_char(to_timestamp(se[m] / 1000.0) at time zone 'Europe/Paris', 'YYYY-MM-DD')))::bigint;
+  end loop;
+  res := (select coalesce(jsonb_object_agg(key, value), '{}') from jsonb_each(res) where value::text <> '0');
+  rdy := (select coalesce(jsonb_object_agg(key, value), '{}') from jsonb_each(rdy) where value::text <> '0');
+  return (pn - 'end') || jsonb_build_object('v', 2, 'q', q, 'res', res, 'rdy', rdy) || case when endt is not null then jsonb_build_object('end', endt) else '{}' end;
 end $$;
 
--- état de la Pension (et heure du serveur) ; une couveuse décalée (avant la 1.9.2) est remise en ordre au passage
+-- état de la Pension (et heure du serveur) : la couveuse est remise à l'heure et enregistrée si elle a changé
 create or replace function public.dc_pn_state() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); a jsonb := public.dc__cfg() -> 'pension'; q jsonb; q2 jsonb; now_ bigint := public.dc__now();
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); pn jsonb; now_ bigint := public.dc__now();
 begin
-  q := case when jsonb_typeof(d -> 'pension' -> 'q') = 'array' then d -> 'pension' -> 'q' else '[]' end;
-  q2 := public.dc__pn_sched(q, a, now_);
-  if q2 is distinct from q then
-    d := public.dc__save(u, jsonb_set(d, '{pension,q}', q2));
-    return jsonb_build_object('pension', d -> 'pension', 'now', now_, 'profile', d);
+  pn := public.dc__pn_sync(d -> 'pension', public.dc__cfg(), now_);
+  if pn is distinct from d -> 'pension' then
+    d := public.dc__save(u, d || jsonb_build_object('pension', pn));
+    return jsonb_build_object('pension', pn, 'now', now_, 'profile', d);
   end if;
-  return jsonb_build_object('pension', coalesce(d -> 'pension', '{}'), 'now', now_);
+  return jsonb_build_object('pension', pn, 'now', now_);
 end $$;
 
--- retirer l'œuf n° p_i de la couveuse (1.9.2, demande de Theo) : il retourne dans la réserve, sa couvaison est perdue
-create or replace function public.dc_pn_remove(p_i int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); a jsonb := public.dc__cfg() -> 'pension'; pn jsonb; q jsonb; res jsonb; eg jsonb; now_ bigint := public.dc__now();
+-- mode développeur (administrateur) : les œufs en couvaison sont prêts tout de suite, les suivants entrent dans la couveuse
+create or replace function public.dc_pn_dev() returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); pn jsonb; now_ bigint := public.dc__now();
 begin
-  pn := case when jsonb_typeof(d -> 'pension') = 'object' then d -> 'pension' else '{}' end;
-  q := case when jsonb_typeof(pn -> 'q') = 'array' then pn -> 'q' else '[]' end;
-  res := case when jsonb_typeof(pn -> 'res') = 'object' then pn -> 'res' else '{}' end;
-  eg := q -> p_i;
-  if eg is null then raise exception 'Cet œuf n’est plus là.'; end if;
-  res := res || jsonb_build_object(eg ->> 'k', coalesce((res ->> (eg ->> 'k'))::int, 0) + 1);
-  d := d || jsonb_build_object('pension', pn || jsonb_build_object('q', public.dc__pn_sched(q - p_i, a, now_), 'res', res));
-  return jsonb_build_object('profile', public.dc__save(u, d), 'now', now_);
-end $$;
-
-create or replace function public.dc_pn_add(p_k text) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); a jsonb := public.dc__cfg() -> 'pension'; pn jsonb; q jsonb; res jsonb;
-  now_ bigint := public.dc__now(); s bigint;
-begin
-  if a is null or not coalesce((a ->> 'open')::boolean, false) and not public.dc__is_admin(u) then raise exception 'La Pension n’est pas encore ouverte.'; end if;
-  if (a -> 'dur' -> p_k) is null then raise exception 'Œuf inconnu.'; end if;
-  pn := case when jsonb_typeof(d -> 'pension') = 'object' then d -> 'pension' else '{}' end;
-  q := case when jsonb_typeof(pn -> 'q') = 'array' then pn -> 'q' else '[]' end;
-  res := case when jsonb_typeof(pn -> 'res') = 'object' then pn -> 'res' else '{}' end;
-  if coalesce((res ->> p_k)::int, 0) < 1 then raise exception 'Vous n’avez pas cet œuf.'; end if;
-  if jsonb_array_length(q) >= (a ->> 'q')::int then raise exception 'La couveuse est pleine (% œufs).', a ->> 'q'; end if;
-  -- début : dès qu'une des places se libère (dc__pn_sched, 1.9.2)
-  q := public.dc__pn_sched(q || jsonb_build_array(jsonb_build_object('k', p_k, 's', 9000000000000000, 'e', 9000000000000000)), a, now_);
-  d := d || jsonb_build_object('pension', pn || jsonb_build_object('q', q, 'res', res || jsonb_build_object(p_k, (res ->> p_k)::int - 1)));
+  if not (public.dc__is_admin(u) and coalesce((d ->> 'dev')::boolean, false)) then raise exception 'Réservé au mode développeur.'; end if;
+  pn := public.dc__pn_sync(d -> 'pension', cfg, now_);
+  pn := jsonb_set(pn, '{q}', (select coalesce(jsonb_agg(x || jsonb_build_object('e', now_)), '[]') from jsonb_array_elements(pn -> 'q') x));
+  d := d || jsonb_build_object('pension', public.dc__pn_sync(pn, cfg, now_));
   return jsonb_build_object('profile', public.dc__save(u, d), 'now', now_);
 end $$;
 
 -- Pokémon d'un œuf (1.8.2, demande de Theo) : 'oeuf' = n'importe quel Pokémon Commun ou Peu commun, ou un premier stade d'évolution
--- (aucune évolution n'y mène) Rare ou Épique, jamais légendaire, raretés aux chances d'un booster ; 'rare' = Rare, Épique ou Légendaire
--- aux chances cfg.pension.rareW (50 / 35 / 15 %), jamais de Méga ni Gigamax ; 'dore' = un Légendaire (réserve des Légendaires des boosters).
+-- (aucune évolution n'y mène) Rare ou Épique, jamais légendaire, raretés aux chances d'un booster ; 'rare' = Rare, Épique, Méga et Gigamax
+-- ou Légendaire aux chances cfg.pension.rareW (40 / 30 / 20 / 10 % depuis la 1.8.3) ; 'dore' = un Légendaire (réserve des Légendaires des boosters).
 -- Jamais de mythique, transcendante ni spéciale. Shiny : 1 sur cfg.pension.shiny, sans rencontres ni Charme Chroma, et
 -- toujours un shiny que le joueur n'a pas encore (sinon pas de shiny).
 create or replace function public.dc__pn_draw(d jsonb, cfg jsonb, p_k text) returns jsonb language plpgsql volatile as $$
@@ -286,7 +301,7 @@ begin
     x := x - odds[i + 1];
   end loop;
   pool := pools -> r;
-  sh := public.dc__rnd((cfg -> 'pension' ->> 'shiny')::int) = 0;
+  sh := public.dc__rnd((cfg -> 'pension' ->> 'shiny')::int) < greatest(1, round(public.dc__evfx(cfg, 'shiny')))::int;   -- × événement (1.10.0)
   if sh then
     c := (select coalesce(jsonb_agg(v), '[]') from jsonb_array_elements(pool) v
           where not coalesce(d -> 'shiny', '{}') ? (v #>> '{}') and not coalesce(cfg -> 'shinyNo', '[]') @> jsonb_build_array(v));
@@ -296,29 +311,34 @@ begin
   return jsonb_build_object('id', id, 'sh', sh, 'r', r);
 end $$;
 
--- éclosion de l'œuf n° p_i de la file (0 = le premier), s'il est prêt ; p_force (1.8.1) : tout de suite, pour l'administrateur
--- en mode développeur (essais)
-drop function if exists public.dc_pn_hatch(int);
-create or replace function public.dc_pn_hatch(p_i int, p_force boolean default false) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
-declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); pn jsonb; q jsonb; eg jsonb; o jsonb; id int; was_new boolean;
-  now_ bigint := public.dc__now();
+-- éclosion (1.10.0) : jusqu'à p_n œufs prêts d'un coup (50 au plus), les plus précieux d'abord ; chaque Pokémon n'est tiré qu'à ce
+-- moment-là. Les cartes sont renvoyées dans l'ordre normal, rare, doré (les meilleures à la fin de la main).
+drop function if exists public.dc_pn_hatch(int, boolean);
+drop function if exists public.dc_pn_add(text);
+drop function if exists public.dc_pn_remove(int);
+create or replace function public.dc_pn_hatch(p_n int) returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare u uuid := public.dc__uid(); d jsonb := public.dc__lock(u, true); cfg jsonb := public.dc__cfg(); pn jsonb; rdy jsonb; o jsonb; id int; k text;
+  drawn jsonb := '[]'; now_ bigint := public.dc__now(); left_ int := least(greatest(coalesce(p_n, 1), 1), 50); nh int := 0; ng int := 0;
 begin
-  pn := case when jsonb_typeof(d -> 'pension') = 'object' then d -> 'pension' else '{}' end;
-  q := case when jsonb_typeof(pn -> 'q') = 'array' then pn -> 'q' else '[]' end;
-  eg := q -> p_i;
-  if eg is null then raise exception 'Cet œuf n’est plus là.'; end if;
-  if (eg ->> 'e')::bigint > now_ and not (coalesce(p_force, false) and public.dc__is_admin(u) and coalesce((d ->> 'dev')::boolean, false)) then
-    raise exception 'Cet œuf n’est pas encore prêt à éclore.'; end if;
-  o := public.dc__pn_draw(d, cfg, eg ->> 'k'); id := (o ->> 'id')::int;
-  was_new := public.dc__count(d, id) = 0;
-  d := d || jsonb_build_object('pension', pn || jsonb_build_object('q', public.dc__pn_sched(q - p_i, cfg -> 'pension', now_)));
-  if (o ->> 'sh')::boolean then
-    d := jsonb_set(d, '{shiny}', coalesce(d -> 'shiny', '{}') || jsonb_build_object(id::text, now_));
-    d := jsonb_set(d, '{stats,pnShiny}', '1');
-  end if;
-  d := public.dc__bump(public.dc__gain(d, id, 1), 'pnHatch');
-  if eg ->> 'k' = 'dore' then d := public.dc__bump(d, 'pnGold'); end if;
-  return jsonb_build_object('profile', public.dc__save(u, d), 'drawn', jsonb_build_object('id', id, 'isNew', was_new, 'shiny', (o ->> 'sh')::boolean, 'k', eg ->> 'k'), 'now', now_);
+  if not coalesce((cfg -> 'pension' ->> 'open')::boolean, false) and not public.dc__is_admin(u) then raise exception 'La Pension n’est pas encore ouverte.'; end if;
+  pn := public.dc__pn_sync(d -> 'pension', cfg, now_); rdy := pn -> 'rdy';
+  foreach k in array array['dore', 'rare', 'oeuf'] loop
+    while left_ > 0 and coalesce((rdy ->> k)::int, 0) > 0 loop
+      rdy := rdy || jsonb_build_object(k, (rdy ->> k)::int - 1); left_ := left_ - 1;
+      o := public.dc__pn_draw(d, cfg, k); id := (o ->> 'id')::int;
+      drawn := jsonb_build_array(jsonb_build_object('id', id, 'isNew', public.dc__count(d, id) = 0, 'shiny', (o ->> 'sh')::boolean, 'k', k)) || drawn;
+      if (o ->> 'sh')::boolean then
+        d := jsonb_set(jsonb_set(d, '{shiny}', coalesce(d -> 'shiny', '{}') || jsonb_build_object(id::text, now_)), '{stats,pnShiny}', '1');
+      end if;
+      d := public.dc__gain(d, id, 1); nh := nh + 1;
+      if k = 'dore' then ng := ng + 1; end if;
+    end loop;
+  end loop;
+  if nh = 0 then raise exception 'Aucun œuf n’est prêt à éclore.'; end if;
+  pn := pn || jsonb_build_object('rdy', (select coalesce(jsonb_object_agg(key, value), '{}') from jsonb_each(rdy) where value::text <> '0'));
+  d := public.dc__bump(d || jsonb_build_object('pension', pn), 'pnHatch', nh);
+  if ng > 0 then d := public.dc__bump(d, 'pnGold', ng); end if;
+  return jsonb_build_object('profile', public.dc__save(u, d), 'drawn', drawn, 'now', now_);
 end $$;
 
 -- ============================================================

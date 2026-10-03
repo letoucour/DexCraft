@@ -7,3 +7,9 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Service worker des notifications (1.10.0) : rangé dans images/ (publié sans changer la commande de Cloudflare Pages), il
+# s'occupe de tout le site grâce à Service-Worker-Allowed ; jamais gardé en cache.
+/images/sw.js
+  Service-Worker-Allowed: /
+  Cache-Control: no-cache
