@@ -1790,7 +1790,7 @@ body[data-fond] main .booster:not(.home) :is(h1,.recap h2,.muted,.hand-count,.re
 "use strict";
 /* Version affichée en bas à gauche. +1 au dernier chiffre à chaque mise en ligne (0.2.1, 0.2.2…),
    0.3.0 pour une mise à jour majeure de la bêta, 1.0.0 à la sortie publique. */
-const APP_VERSION="1.7.1";
+const APP_VERSION="1.7.2";
 /* Serveur Discord de DexCraft : lien d'invitation permanent (Discord, clic droit sur le serveur, Inviter des gens,
    Modifier le lien, Expire : Jamais). Vide : les boutons s'affichent mais préviennent que le lien arrive bientôt. */
 const DISCORD_URL="https://discord.gg/KE6fSBqKRP";
@@ -2782,10 +2782,14 @@ const TITLES=[
   ...PRES_TITLES.map((n,i)=>({k:"pres"+(i+1),n,ic:"✧",g:"Prestige",cls:"tc",c:"#a855f7",d:`A atteint le prestige ${i+1}`,stat:"prestige",need:i+1})),
 ];
 /* Titres « catégorie complète » (1.7.0, demande de Theo, noms validés) : tous les titres de la catégorie, en scintillant (cls tsp).
-   Seulement là où c'est un exploit à part : Pokédex, Collections, Régions et Types tomberaient tous avec Maître, Échanges avec
-   Empereur, Shiny avec « Dormir n’est pas une option », Prestige avec Immortel. Serveur : condition « all » de dc__title_ok. */
+   1.7.2 (demande de Theo) : toutes les catégories, sauf Spéciaux (titres payants de la boutique). Pokédex, Collections, Régions et Types
+   tombent avec Maître, Échanges avec Empereur, Shiny avec « Dormir n’est pas une option », Prestige avec Immortel (choix assumé).
+   Serveur : condition « all » de dc__title_ok. */
 for(const [g,k,n,ic,c] of [["Activité","allAct","Âme de DexCraft","✺","#b8860b"],["Arène","allAr","Panthéon","⚔","#b3261e"],
-  ["VoltoBataille","allVb","Voltorbe d’or","⚡","#c98f00"],["Souterrain","allSou","Roi des Profondeurs","💎","#8a5a2b"]])
+  ["VoltoBataille","allVb","Voltorbe d’or","⚡","#c98f00"],["Souterrain","allSou","Roi des Profondeurs","💎","#8a5a2b"],
+  ["Pokédex","allDex","Encyclopédiste","📖","#4b2d86"],["Collections","allColl","Conservateur","🏛","#2f6f8f"],["Régions","allReg","Citoyen du monde","🗺","#2e7d4f"],
+  ["Types","allType","Maître des éléments","🌈","#6d3fc0"],["Shiny","allShiny","Prisme","💠","#c9a227"],["Échanges","allTrade","Roi du troc","⚜","#7a4a1e"],
+  ["Prestige","allPres","Éternel","✧","#a855f7"]])
   TITLES.push({k,n,ic,g,cls:"tsp",c,d:`A obtenu tous les titres de la catégorie ${g}`,all:TITLES.filter(t=>t.g===g).map(t=>t.k)});
 const TITLE_BY=Object.fromEntries(TITLES.map(t=>[t.k,t]));
 const TITLE_MAX=3,TITLE_DEFAULT=["maitre"]; // Alpha et Bêta testeur : badges à côté du pseudo depuis la 1.0.1, plus des titres
